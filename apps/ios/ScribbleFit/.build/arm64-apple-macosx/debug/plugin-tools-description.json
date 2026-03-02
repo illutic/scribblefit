@@ -1,0 +1,252 @@
+{
+  "builtTestProducts" : [
+
+  ],
+  "copyCommands" : {
+
+  },
+  "explicitTargetDependencyImportCheckingMode" : {
+    "none" : {
+
+    }
+  },
+  "generatedSourceTargetSet" : [
+
+  ],
+  "pluginDescriptions" : [
+
+  ],
+  "swiftCommands" : {
+    "C.ScribbleFit-arm64-apple-macosx26.0-debug.module" : {
+      "executable" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "fileList" : "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/.build/arm64-apple-macosx/debug/ScribbleFit.build/sources",
+      "importPath" : "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/.build/arm64-apple-macosx/debug/Modules",
+      "inputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/Sources/ScribbleFitApp.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/Sources/UI/Canvas/ContentView.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/.build/arm64-apple-macosx/debug/ScribbleFit.build/sources"
+        }
+      ],
+      "isLibrary" : true,
+      "moduleName" : "ScribbleFit",
+      "moduleOutputPath" : "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/.build/arm64-apple-macosx/debug/Modules/ScribbleFit.swiftmodule",
+      "objects" : [
+        "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/.build/arm64-apple-macosx/debug/ScribbleFit.build/ScribbleFitApp.swift.o",
+        "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/.build/arm64-apple-macosx/debug/ScribbleFit.build/ContentView.swift.o"
+      ],
+      "otherArguments" : [
+        "-target",
+        "arm64-apple-macosx10.13",
+        "-incremental",
+        "-enable-batch-mode",
+        "-serialize-diagnostics",
+        "-index-store-path",
+        "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/.build/arm64-apple-macosx/debug/index/store",
+        "-Onone",
+        "-enable-testing",
+        "-j14",
+        "-DSWIFT_PACKAGE",
+        "-DDEBUG",
+        "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+        "-module-cache-path",
+        "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/.build/arm64-apple-macosx/debug/ModuleCache",
+        "-parseable-output",
+        "-parse-as-library",
+        "-emit-objc-header",
+        "-emit-objc-header-path",
+        "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/.build/arm64-apple-macosx/debug/ScribbleFit.build/include/ScribbleFit-Swift.h",
+        "-color-diagnostics",
+        "-swift-version",
+        "6",
+        "-plugin-path",
+        "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+        "-sdk",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-F",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-I",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-L",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+        "-g",
+        "-Xcc",
+        "-isysroot",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+        "-Xcc",
+        "-F",
+        "-Xcc",
+        "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+        "-Xcc",
+        "-fPIC",
+        "-Xcc",
+        "-g",
+        "-package-name",
+        "scribblefit"
+      ],
+      "outputFileMapPath" : "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/.build/arm64-apple-macosx/debug/ScribbleFit.build/output-file-map.json",
+      "outputs" : [
+        {
+          "kind" : "file",
+          "name" : "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/.build/arm64-apple-macosx/debug/ScribbleFit.build/ScribbleFitApp.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/.build/arm64-apple-macosx/debug/ScribbleFit.build/ContentView.swift.o"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/.build/arm64-apple-macosx/debug/Modules/ScribbleFit.swiftmodule"
+        }
+      ],
+      "prepareForIndexing" : false,
+      "sources" : [
+        "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/Sources/ScribbleFitApp.swift",
+        "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/Sources/UI/Canvas/ContentView.swift"
+      ],
+      "tempsPath" : "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/.build/arm64-apple-macosx/debug/ScribbleFit.build",
+      "wholeModuleOptimization" : false
+    }
+  },
+  "swiftFrontendCommands" : {
+
+  },
+  "swiftTargetScanArgs" : {
+    "ScribbleFit" : [
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc",
+      "-module-name",
+      "ScribbleFit",
+      "-package-name",
+      "scribblefit",
+      "-c",
+      "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/Sources/ScribbleFitApp.swift",
+      "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/Sources/UI/Canvas/ContentView.swift",
+      "-I",
+      "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/.build/arm64-apple-macosx/debug/Modules",
+      "-target",
+      "arm64-apple-macosx10.13",
+      "-incremental",
+      "-enable-batch-mode",
+      "-serialize-diagnostics",
+      "-index-store-path",
+      "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/.build/arm64-apple-macosx/debug/index/store",
+      "-Onone",
+      "-enable-testing",
+      "-j14",
+      "-DSWIFT_PACKAGE",
+      "-DDEBUG",
+      "-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE",
+      "-module-cache-path",
+      "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/.build/arm64-apple-macosx/debug/ModuleCache",
+      "-parseable-output",
+      "-parse-as-library",
+      "-emit-objc-header",
+      "-emit-objc-header-path",
+      "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/.build/arm64-apple-macosx/debug/ScribbleFit.build/include/ScribbleFit-Swift.h",
+      "-color-diagnostics",
+      "-swift-version",
+      "6",
+      "-plugin-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing",
+      "-sdk",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-F",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-I",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-L",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib",
+      "-g",
+      "-Xcc",
+      "-isysroot",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks",
+      "-Xcc",
+      "-F",
+      "-Xcc",
+      "/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks",
+      "-Xcc",
+      "-fPIC",
+      "-Xcc",
+      "-g",
+      "-package-name",
+      "scribblefit",
+      "-driver-use-frontend-path",
+      "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+    ]
+  },
+  "targetDependencyMap" : {
+    "ScribbleFit" : [
+
+    ]
+  },
+  "testDiscoveryCommands" : {
+
+  },
+  "testEntryPointCommands" : {
+
+  },
+  "traitConfiguration" : {
+    "default" : {
+
+    }
+  },
+  "writeCommands" : {
+    "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/.build/arm64-apple-macosx/debug/ScribbleFit.build/sources" : {
+      "alwaysOutOfDate" : false,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<sources-file-list>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/Sources/ScribbleFitApp.swift"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/Sources/UI/Canvas/ContentView.swift"
+        }
+      ],
+      "outputFilePath" : "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/.build/arm64-apple-macosx/debug/ScribbleFit.build/sources"
+    },
+    "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt" : {
+      "alwaysOutOfDate" : true,
+      "inputs" : [
+        {
+          "kind" : "virtual",
+          "name" : "<swift-get-version>"
+        },
+        {
+          "kind" : "file",
+          "name" : "/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"
+        }
+      ],
+      "outputFilePath" : "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/.build/arm64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+    }
+  }
+}

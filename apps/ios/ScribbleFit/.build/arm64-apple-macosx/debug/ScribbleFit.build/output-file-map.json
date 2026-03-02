@@ -1,0 +1,19 @@
+{
+  "": {
+    "swift-dependencies": "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/.build/arm64-apple-macosx/debug/ScribbleFit.build/master.swiftdeps"
+  },
+  "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/Sources/ScribbleFitApp.swift": {
+    "dependencies": "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/.build/arm64-apple-macosx/debug/ScribbleFit.build/ScribbleFitApp.d",
+    "object": "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/.build/arm64-apple-macosx/debug/ScribbleFit.build/ScribbleFitApp.swift.o",
+    "swiftmodule": "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/.build/arm64-apple-macosx/debug/ScribbleFit.build/ScribbleFitApp~partial.swiftmodule",
+    "swift-dependencies": "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/.build/arm64-apple-macosx/debug/ScribbleFit.build/ScribbleFitApp.swiftdeps",
+    "diagnostics": "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/.build/arm64-apple-macosx/debug/ScribbleFit.build/ScribbleFitApp.dia"
+  },
+  "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/Sources/UI/Canvas/ContentView.swift": {
+    "dependencies": "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/.build/arm64-apple-macosx/debug/ScribbleFit.build/ContentView.d",
+    "object": "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/.build/arm64-apple-macosx/debug/ScribbleFit.build/ContentView.swift.o",
+    "swiftmodule": "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/.build/arm64-apple-macosx/debug/ScribbleFit.build/ContentView~partial.swiftmodule",
+    "swift-dependencies": "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/.build/arm64-apple-macosx/debug/ScribbleFit.build/ContentView.swiftdeps",
+    "diagnostics": "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/.build/arm64-apple-macosx/debug/ScribbleFit.build/ContentView.dia"
+  }
+}
