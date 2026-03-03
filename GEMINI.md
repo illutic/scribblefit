@@ -8,7 +8,7 @@ ScribbleFit is a fully native mobile fitness application designed to eliminate t
 2.  **Utilitarian Minimalism:** Hyper-minimalist, airy, and text-focused UI. Pure white backgrounds, rich black text, and soft gray input pills.
 3.  **Event-Driven Intelligence:** AI features are triggered by database insert events, not cron jobs.
 4.  **Robust Abstraction:** Prioritize interfaces for all services to ensure testability and modularity. Avoid hardcoding; use configuration files or environment variables for all variable parameters.
-5.  **Feature-Based Architecture:** Organize code by features (e.g., `features.canvas`, `features.ledger`) rather than technical layers (e.g., `models`, `routes`). Cross-cutting concerns should reside in `core` packages.
+5.  **Feature-Based Architecture:** Organize code by features (e.g., `feature:ai`). Each feature should be further sub-grouped into `domain` (pure business logic and interfaces) and `data` (implementations and external dependencies). Cross-cutting concerns should reside in `core` packages.
 6.  **Centralized Configuration:** Maintain all environmental and application-wide constants (e.g., API base URLs, feature toggles) in a dedicated configuration module or class to ensure consistency across the project.
 
 ## 🛠️ Tech Stack
