@@ -17,13 +17,6 @@ fun Application.configureRouting() {
         
         route("/api") {
             configRoutes(configService)
-            
-            // Existing sync routes
-            route("/sync") {
-                get("/metadata") {
-                    call.respond(mapOf("status" to "ok", "version" to "1.0.0"))
-                }
-            }
         }
     }
 }

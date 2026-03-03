@@ -31,4 +31,24 @@ class ConfigTest {
         assertEquals("1.0.0", json["version"]?.jsonPrimitive?.content)
         assertEquals("Test Prompt", json["prompt"]?.jsonPrimitive?.content)
     }
+
+    @Test
+    fun testGetMetadata() = testApplication {
+        environment {
+            config = MapApplicationConfig(
+                "scribblefit.version" to "1.2.3"
+            )
+        }
+        application {
+            module()
+        }
+        val response = client.get("/api/sync/metadata")
+        assertEquals(HttpStatusCode.OK, response.status)
+        
+        val body = response.bodyAsText()
+        val json = Json.parseToJsonElement(body).jsonObject
+        
+        assertEquals("ok", json["status"]?.jsonPrimitive?.content)
+        assertEquals("1.2.3", json["version"]?.jsonPrimitive?.content)
+    }
 }

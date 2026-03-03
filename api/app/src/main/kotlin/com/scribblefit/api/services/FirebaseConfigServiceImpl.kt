@@ -2,6 +2,7 @@ package com.scribblefit.api.services
 
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
 import com.scribblefit.api.models.ConfigResponse
+import com.scribblefit.api.models.MetadataResponse
 import org.slf4j.LoggerFactory
 
 class FirebaseConfigServiceImpl : ConfigService {
@@ -21,5 +22,12 @@ class FirebaseConfigServiceImpl : ConfigService {
             // Fallback to a safe minimum or rethrow depending on strategy
             ConfigResponse(version = "error", prompt = "Error loading remote config")
         }
+    }
+
+    override fun getMetadata(): MetadataResponse {
+        return MetadataResponse(
+            status = "ok",
+            version = "1.0.0"
+        )
     }
 }

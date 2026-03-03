@@ -12,4 +12,11 @@ fun Route.configRoutes(configService: ConfigService) {
             call.respond(config)
         }
     }
+    
+    route("/sync") {
+        get("/metadata") {
+            val metadata = configService.getMetadata()
+            call.respond(metadata)
+        }
+    }
 }
