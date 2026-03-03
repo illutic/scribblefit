@@ -1,0 +1,15 @@
+package com.scribblefit.api.routes
+
+import com.scribblefit.api.services.ConfigService
+import io.ktor.server.application.*
+import io.ktor.server.response.*
+import io.ktor.server.routing.*
+
+fun Route.configRoutes(configService: ConfigService) {
+    route("/config") {
+        get("/prompt") {
+            val config = configService.getPromptConfig()
+            call.respond(config)
+        }
+    }
+}
