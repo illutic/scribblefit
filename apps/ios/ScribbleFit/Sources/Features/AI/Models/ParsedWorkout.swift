@@ -1,6 +1,6 @@
 import Foundation
 
-public struct ParsedWorkout: Codable, Sendable {
+public struct ParsedWorkout: Sendable {
     public let date: String
     public let location: String?
     public let exercises: [ParsedExercise]
@@ -12,7 +12,7 @@ public struct ParsedWorkout: Codable, Sendable {
     }
 }
 
-public struct ParsedExercise: Codable, Sendable {
+public struct ParsedExercise: Sendable {
     public let canonicalName: String
     public let sets: [ParsedSet]
     
@@ -22,7 +22,7 @@ public struct ParsedExercise: Codable, Sendable {
     }
 }
 
-public struct ParsedSet: Codable, Sendable {
+public struct ParsedSet: Sendable {
     public let weight: Double
     public let reps: Int
     public let rpe: Double?

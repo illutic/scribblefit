@@ -26,8 +26,6 @@ public final class OpenAIEngine: LLMEngine {
             ],
             responseFormat: OpenAIResponseFormat(type: "json_object")
         )
-
-
         
         request.httpBody = try JSONEncoder().encode(openAIRequest)
         
@@ -47,7 +45,8 @@ public final class OpenAIEngine: LLMEngine {
             throw NetworkError.decodingError
         }
         
-        return try JSONDecoder().decode(ParsedWorkout.self, from: contentData)
+        let serializableWorkout = try JSONDecoder().decode(ParsedWorkoutSerializable.self, from: contentData)
+        return serializableWorkout.toDomain()
     }
 }
 
@@ -79,4 +78,48 @@ private struct OpenAIResponse: Codable {
 
 private struct OpenAIChoice: Codable {
     let message: OpenAIMessage
+}
+
+// MARK: - Serializable Mapping
+
+private struct ParsedWorkoutSerializable: Codable {
+    let date: String
+    let location: String?
+    let exercises: [ParsedExerciseSerializable]
+    
+    func toDomain() -> ParsedWorkout {
+        return ParsedWorkout(
+            date: self.date,
+            location: self.location,
+            exercises: self.exercises.map { $0.toDomain() }
+        )
+    }
+}
+
+private struct ParsedExerciseSerializable: Codable {
+    let canonicalName: String
+    let sets: [ParsedSetSerializable]
+    
+    func toDomain() -> ParsedExercise {
+        return ParsedExercise(
+            canonicalName: self.canonicalName,
+            sets: self.sets.map { $0.toDomain() }
+        )
+    }
+}
+
+private struct ParsedSetSerializable: Codable {
+    let weight: Double
+    let reps: Int
+    let rpe: Double?
+    let notes: String?
+    
+    func toDomain() -> ParsedSet {
+        return ParsedSet(
+            weight: self.weight,
+            reps: self.reps,
+            rpe: self.rpe,
+            notes: self.notes
+        )
+    }
 }

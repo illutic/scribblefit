@@ -1,6 +1,9 @@
-package com.scribblefit.core.ai.engine
+package com.scribblefit.core.ai.data.engine
 
+import com.scribblefit.core.ai.data.mapper.toDomain
+import com.scribblefit.core.ai.engine.LLMEngine
 import com.scribblefit.core.ai.model.ParsedWorkout
+import com.scribblefit.core.network.model.ParsedWorkoutDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.header
@@ -41,8 +44,8 @@ class OpenAIEngine @Inject constructor(
             val content = response.choices.firstOrNull()?.message?.content
                 ?: throw Exception("Empty response from OpenAI")
             
-            val parsedWorkout = json.decodeFromString<ParsedWorkout>(content)
-            Result.success(parsedWorkout)
+            val parsedWorkoutDto = json.decodeFromString<ParsedWorkoutDto>(content)
+            Result.success(parsedWorkoutDto.toDomain())
         } catch (e: Exception) {
             Result.failure(e)
         }
@@ -50,29 +53,29 @@ class OpenAIEngine @Inject constructor(
 }
 
 @Serializable
-data class OpenAIRequest(
+private data class OpenAIRequest(
     val model: String,
     val messages: List<OpenAIMessage>,
     @SerialName("response_format") val responseFormat: OpenAIResponseFormat
 )
 
 @Serializable
-data class OpenAIMessage(
+private data class OpenAIMessage(
     val role: String,
     val content: String
 )
 
 @Serializable
-data class OpenAIResponseFormat(
+private data class OpenAIResponseFormat(
     val type: String
 )
 
 @Serializable
-data class OpenAIResponse(
+private data class OpenAIResponse(
     val choices: List<OpenAIChoice>
 )
 
 @Serializable
-data class OpenAIChoice(
+private data class OpenAIChoice(
     val message: OpenAIMessage
 )

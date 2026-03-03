@@ -27,7 +27,7 @@ public final class ScribbleFitNetworkClient: Sendable {
         return try await fetchData(from: url)
     }
     
-    public func parseProxy(request: ParseRequest) async throws -> ParsedWorkoutDto {
+    public func parseProxy(request: ParseRequest) async throws -> ParsedWorkout {
         let url = baseURL.appendingPathComponent("api/parse/proxy")
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = "POST"
@@ -41,7 +41,8 @@ public final class ScribbleFitNetworkClient: Sendable {
         }
         
         do {
-            return try JSONDecoder().decode(ParsedWorkoutDto.self, from: data)
+            let dto = try JSONDecoder().decode(ParsedWorkoutDto.self, from: data)
+            return dto.toDomain()
         } catch {
             throw NetworkError.decodingError
         }
@@ -60,5 +61,27 @@ public final class ScribbleFitNetworkClient: Sendable {
         } catch {
             throw NetworkError.decodingError
         }
+    }
+}
+
+private extension ParsedWorkoutDto {
+    func toDomain() -> ParsedWorkout {
+        return ParsedWorkout(
+            date: date,
+            location: location,
+            exercises: exercises.map { exerciseDto in
+                ParsedExercise(
+                    canonicalName: exerciseDto.canonicalName,
+                    sets: exerciseDto.sets.map { setDto in
+                        ParsedSet(
+                            weight: setDto.weight,
+                            reps: setDto.reps,
+                            rpe: setDto.rpe,
+                            notes: setDto.notes
+                        )
+                    }
+                )
+            }
+        )
     }
 }
