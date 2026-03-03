@@ -12,6 +12,5 @@ data class ExerciseDictionaryEntity(
     val canonicalName: String,
     @ColumnInfo(name = "muscle_group")
     val muscleGroup: String,
-    // Store JSON array as a String, or use TypeConverters later
-    val aliases: String
+    val aliases: List<String>
 )

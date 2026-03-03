@@ -2,6 +2,7 @@ package com.scribblefit.core.database
 
 import androidx.room.Database
 import androidx.room.RoomDatabase
+import androidx.room.TypeConverters
 import com.scribblefit.core.database.dao.ExerciseDictionaryDao
 import com.scribblefit.core.database.dao.InsightsCacheDao
 import com.scribblefit.core.database.dao.SetDao
@@ -27,6 +28,7 @@ import com.scribblefit.core.database.model.WorkoutLogEntity
     version = 1,
     exportSchema = true
 )
+@TypeConverters(Converters::class)
 abstract class ScribbleFitDatabase : RoomDatabase() {
     abstract fun syncQueueDao(): SyncQueueDao
     abstract fun workoutLogDao(): WorkoutLogDao
