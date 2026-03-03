@@ -25,10 +25,10 @@ ScribbleFit supports two operational modes for AI parsing:
 
 ## 2. PROVIDER ABSTRACTION (ENGINE)
 
-Both apps must implement a `LLMEngine` interface to allow switching providers.
+Both apps must implement a `LLMEngine` interface to allow switching providers. The system prompt is injected into the implementation at initialization.
 
 ### Interface: `LLMEngine`
-* `parseWorkout(rawText: String, prompt: String): Result<ParsedWorkout>`
+* `parseWorkout(rawText: String): Result<ParsedWorkout>`
 
 ### Supported Engines:
 1. **OpenAI Engine:** Uses `gpt-4o-mini` or `gpt-4o` with `response_format: { type: "json_object" }`.
