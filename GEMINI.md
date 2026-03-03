@@ -9,7 +9,8 @@ ScribbleFit is a fully native mobile fitness application designed to eliminate t
 3.  **Event-Driven Intelligence:** AI features are triggered by database insert events, not cron jobs.
 4.  **Robust Abstraction:** Prioritize interfaces for all services to ensure testability and modularity. Avoid hardcoding; use configuration files or environment variables for all variable parameters.
 5.  **Feature-Based Architecture:** Organize code by features (e.g., `feature:ai`). Each feature should be further sub-grouped into `domain` (pure business logic and interfaces) and `data` (implementations and external dependencies). Cross-cutting concerns should reside in `core` packages.
-6.  **Centralized Configuration:** Maintain all environmental and application-wide constants (e.g., API base URLs, feature toggles) in a dedicated configuration module or class to ensure consistency across the project.
+6.  **Strict Clean Architecture:** Maintain a rigorous separation of concerns. The `domain` layer must be pure (no dependencies on frameworks, network, or database modules) and contain only business logic, models, and interfaces. Domain modules may depend on other domain modules to share business logic, but cross-feature dependencies are strictly restricted to `domain-to-domain` only. The `data` layer handles all external integrations and must map Data Transfer Objects (DTOs) to domain models before returning them. Dependencies must always point inwards toward the `domain`.
+7.  **Centralized Configuration:** Maintain all environmental and application-wide constants (e.g., API base URLs, feature toggles) in a dedicated configuration module or class to ensure consistency across the project.
 
 ## 🛠️ Tech Stack
 - **Android:** Kotlin & Jetpack Compose, Room Database, WorkManager for background tasks.
