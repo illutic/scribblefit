@@ -1,6 +1,6 @@
-package com.scribblefit.api.routes
+package com.scribblefit.api.features.config
 
-import com.scribblefit.api.services.ConfigService
+import com.scribblefit.api.features.config.ConfigService
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*

@@ -1,7 +1,7 @@
-package com.scribblefit.api.services
+package com.scribblefit.api.features.config
 
-import com.scribblefit.api.models.ConfigResponse
-import com.scribblefit.api.models.MetadataResponse
+import com.scribblefit.api.features.config.ConfigResponse
+import com.scribblefit.api.features.config.MetadataResponse
 import io.ktor.server.config.*
 
 class ConfigServiceImpl(config: ApplicationConfig) : ConfigService {

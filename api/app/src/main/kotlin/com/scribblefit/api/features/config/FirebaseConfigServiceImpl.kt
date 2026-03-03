@@ -1,8 +1,8 @@
-package com.scribblefit.api.services
+package com.scribblefit.api.features.config
 
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
-import com.scribblefit.api.models.ConfigResponse
-import com.scribblefit.api.models.MetadataResponse
+import com.scribblefit.api.features.config.ConfigResponse
+import com.scribblefit.api.features.config.MetadataResponse
 import org.slf4j.LoggerFactory
 
 class FirebaseConfigServiceImpl : ConfigService {

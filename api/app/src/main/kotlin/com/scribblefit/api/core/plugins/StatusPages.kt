@@ -1,4 +1,4 @@
-package com.scribblefit.api.plugins
+package com.scribblefit.api.core.plugins
 
 import io.ktor.http.*
 import io.ktor.server.application.*

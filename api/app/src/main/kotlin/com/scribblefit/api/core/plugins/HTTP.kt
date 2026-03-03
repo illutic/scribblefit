@@ -1,4 +1,4 @@
-package com.scribblefit.api.plugins
+package com.scribblefit.api.core.plugins
 
 import io.ktor.server.application.*
 import io.ktor.server.plugins.cors.routing.*

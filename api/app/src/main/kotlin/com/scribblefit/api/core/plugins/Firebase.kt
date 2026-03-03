@@ -1,4 +1,4 @@
-package com.scribblefit.api.plugins
+package com.scribblefit.api.core.plugins
 
 import com.google.auth.oauth2.GoogleCredentials
 import com.google.firebase.FirebaseApp

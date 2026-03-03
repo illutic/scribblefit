@@ -1,8 +1,8 @@
-package com.scribblefit.api.plugins
+package com.scribblefit.api.core.plugins
 
-import com.scribblefit.api.services.ConfigService
-import com.scribblefit.api.services.ConfigServiceImpl
-import com.scribblefit.api.services.FirebaseConfigServiceImpl
+import com.scribblefit.api.features.config.ConfigService
+import com.scribblefit.api.features.config.ConfigServiceImpl
+import com.scribblefit.api.features.config.FirebaseConfigServiceImpl
 import io.ktor.server.application.*
 import org.koin.dsl.module
 import org.koin.ktor.plugin.Koin
