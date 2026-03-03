@@ -18,6 +18,7 @@ dependencies {
     implementation(libs.hilt.android)
 
     testImplementation(libs.junit)
+    testImplementation(libs.mockk)
     testImplementation(libs.coroutines.test)
     testImplementation(libs.ktor.client.mock)
     testImplementation(libs.ktor.client.content.negotiation)
