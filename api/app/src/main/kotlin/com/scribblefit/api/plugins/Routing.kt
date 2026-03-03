@@ -1,13 +1,13 @@
 package com.scribblefit.api.plugins
 
 import com.scribblefit.api.routes.configRoutes
-import com.scribblefit.api.services.ConfigService
+import com.scribblefit.api.services.ConfigServiceImpl
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
 
 fun Application.configureRouting() {
-    val configService = ConfigService()
+    val configService = ConfigServiceImpl(environment.config)
     
     routing {
         get("/") {
