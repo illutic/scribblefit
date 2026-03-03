@@ -26,6 +26,7 @@ dependencies {
     implementation(libs.ktor.server.cors)
     implementation(libs.ktor.server.status.pages)
     implementation(libs.logback.classic)
+    implementation("com.google.firebase:firebase-admin:9.4.2")
 
     testImplementation(libs.ktor.server.test.host)
     testImplementation(libs.kotlin.test)
