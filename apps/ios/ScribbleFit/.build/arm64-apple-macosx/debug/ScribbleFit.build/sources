@@ -1,2 +1,11 @@
+/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/Sources/Core/Database/DatabaseContainer.swift
+/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/Sources/Core/Database/Models/ExerciseDictionary.swift
+/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/Sources/Core/Database/Models/InsightsCache.swift
+/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/Sources/Core/Database/Models/SyncQueue.swift
+/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/Sources/Core/Database/Models/SyncStatus.swift
+/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/Sources/Core/Database/Models/SystemConfig.swift
+/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/Sources/Core/Database/Models/WorkoutLog.swift
+/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/Sources/Core/Database/Models/WorkoutSet.swift
+/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/Sources/Core/Database/ScribbleFitDatabase.swift
 /Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/Sources/ScribbleFitApp.swift
 /Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/Sources/UI/Canvas/ContentView.swift

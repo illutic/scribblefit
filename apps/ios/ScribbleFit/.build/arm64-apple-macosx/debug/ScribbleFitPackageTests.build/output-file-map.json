@@ -1,0 +1,12 @@
+{
+  "": {
+    "swift-dependencies": "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/.build/arm64-apple-macosx/debug/ScribbleFitPackageTests.build/master.swiftdeps"
+  },
+  "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/.build/arm64-apple-macosx/debug/ScribbleFitPackageTests.derived/runner.swift": {
+    "dependencies": "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/.build/arm64-apple-macosx/debug/ScribbleFitPackageTests.build/runner.d",
+    "object": "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/.build/arm64-apple-macosx/debug/ScribbleFitPackageTests.build/runner.swift.o",
+    "swiftmodule": "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/.build/arm64-apple-macosx/debug/ScribbleFitPackageTests.build/runner~partial.swiftmodule",
+    "swift-dependencies": "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/.build/arm64-apple-macosx/debug/ScribbleFitPackageTests.build/runner.swiftdeps",
+    "diagnostics": "/Users/george.sigalas/AndroidStudioProjects/scribblefit/apps/ios/ScribbleFit/.build/arm64-apple-macosx/debug/ScribbleFitPackageTests.build/runner.dia"
+  }
+}
