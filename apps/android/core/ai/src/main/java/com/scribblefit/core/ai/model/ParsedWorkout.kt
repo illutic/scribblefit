@@ -1,4 +1,4 @@
-package com.scribblefit.core.model
+package com.scribblefit.core.ai.model
 
 import kotlinx.serialization.Serializable
 
