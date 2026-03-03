@@ -17,6 +17,7 @@ import io.ktor.client.plugins.logging.LogLevel
 import io.ktor.client.plugins.logging.Logging
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
+import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
@@ -30,16 +31,32 @@ abstract class NetworkModule {
     companion object {
         @Provides
         @Singleton
-        fun provideHttpClient(networkConfig: NetworkConfig): HttpClient {
+        fun provideJson(): Json = Json {
+            ignoreUnknownKeys = true
+        }
+
+        @Provides
+        @Singleton
+        @Named("base")
+        fun provideBaseHttpClient(json: Json): HttpClient {
             return HttpClient(OkHttp) {
                 install(ContentNegotiation) {
-                    json(Json {
-                        ignoreUnknownKeys = true
-                    })
+                    json(json)
                 }
                 install(Logging) {
                     level = LogLevel.BODY
                 }
+            }
+        }
+
+        @Provides
+        @Singleton
+        @Named("scribblefit")
+        fun provideScribbleFitHttpClient(
+            @Named("base") baseClient: HttpClient,
+            networkConfig: NetworkConfig
+        ): HttpClient {
+            return baseClient.config {
                 defaultRequest {
                     url(networkConfig.baseUrl)
                 }
@@ -48,7 +65,7 @@ abstract class NetworkModule {
 
         @Provides
         @Singleton
-        fun provideScribbleFitApi(client: HttpClient): ScribbleFitApi {
+        fun provideScribbleFitApi(@Named("scribblefit") client: HttpClient): ScribbleFitApi {
             return ScribbleFitApiImpl(client)
         }
     }
