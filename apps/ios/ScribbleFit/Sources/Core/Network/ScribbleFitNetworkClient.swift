@@ -10,7 +10,7 @@ public enum NetworkError: Error {
 public final class ScribbleFitNetworkClient: Sendable {
     public static let shared = ScribbleFitNetworkClient()
     
-    private let baseURL = URL(string: "http://localhost:8080/")!
+    private let baseURL = ScribbleFitConfig.baseURL
     private let session: URLSession
     
     public init(session: URLSession = .shared) {

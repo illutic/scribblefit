@@ -1,7 +1,10 @@
 package com.scribblefit.core.network.di
 
+import com.scribblefit.core.network.NetworkConfig
+import com.scribblefit.core.network.NetworkConfigImpl
 import com.scribblefit.core.network.ScribbleFitApi
 import com.scribblefit.core.network.ScribbleFitApiImpl
+import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -18,29 +21,35 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object NetworkModule {
+abstract class NetworkModule {
 
-    @Provides
+    @Binds
     @Singleton
-    fun provideHttpClient(): HttpClient {
-        return HttpClient(OkHttp) {
-            install(ContentNegotiation) {
-                json(Json {
-                    ignoreUnknownKeys = true
-                })
-            }
-            install(Logging) {
-                level = LogLevel.BODY
-            }
-            defaultRequest {
-                url("http://10.0.2.2:8080/")
+    abstract fun bindNetworkConfig(impl: NetworkConfigImpl): NetworkConfig
+
+    companion object {
+        @Provides
+        @Singleton
+        fun provideHttpClient(networkConfig: NetworkConfig): HttpClient {
+            return HttpClient(OkHttp) {
+                install(ContentNegotiation) {
+                    json(Json {
+                        ignoreUnknownKeys = true
+                    })
+                }
+                install(Logging) {
+                    level = LogLevel.BODY
+                }
+                defaultRequest {
+                    url(networkConfig.baseUrl)
+                }
             }
         }
-    }
 
-    @Provides
-    @Singleton
-    fun provideScribbleFitApi(client: HttpClient): ScribbleFitApi {
-        return ScribbleFitApiImpl(client)
+        @Provides
+        @Singleton
+        fun provideScribbleFitApi(client: HttpClient): ScribbleFitApi {
+            return ScribbleFitApiImpl(client)
+        }
     }
 }
