@@ -52,4 +52,5 @@ The project structure is planned to be scaffolded into `apps/` and `api/` direct
 ## 🗂️ Key Documentation
 - `README.md`: Project overview and agent instructions.
 - `ARCHITECTURE_SPEC.md`: Detailed local storage, background worker, and API specifications.
+- `AI_PARSER_SPEC.md`: Specification for Bring-Your-Own-Key (BYOK) and managed AI parsing.
 - `UI_UX_SPEC.md`: Global design system and screen-by-screen requirements.

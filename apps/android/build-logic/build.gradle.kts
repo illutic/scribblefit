@@ -27,6 +27,10 @@ gradlePlugin {
             id = "scribblefit.android.application.compose"
             implementationClass = "AndroidApplicationComposeConventionPlugin"
         }
+        register("androidLibrary") {
+            id = "scribblefit.android.library"
+            implementationClass = "AndroidLibraryConventionPlugin"
+        }
         register("androidLibraryCompose") {
             id = "scribblefit.android.library.compose"
             implementationClass = "AndroidLibraryComposeConventionPlugin"

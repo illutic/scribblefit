@@ -118,5 +118,11 @@
       124,500 lbs".
 * **Settings List:**
     * Standard text rows with subtle bottom borders.
-    * Sections: "Preferences" (Weight Units, Appearance), "Data & Storage" (Export Ledger), and "
-      Danger Zone" (Clear All Data in red text `#FF3B30`).
+    * Sections: 
+        * "AI Engine":
+            * "Parsing Mode": Toggle between "ScribbleFit Cloud" and "Personal API Key".
+            * "API Key": Masked input field (only visible if Personal Key is selected).
+            * "Provider": Segmented control (OpenAI / Anthropic).
+        * "Preferences" (Weight Units, Appearance), 
+        * "Data & Storage" (Export Ledger), 
+        * "Danger Zone" (Clear All Data in red text `#FF3B30`).
