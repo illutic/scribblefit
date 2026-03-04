@@ -3,9 +3,8 @@ package com.scribblefit.feature.ai.domain.usecase
 import com.scribblefit.feature.ai.domain.engine.LLMEngine
 import com.scribblefit.feature.ai.domain.repository.SyncRepository
 import kotlinx.coroutines.flow.first
-import javax.inject.Inject
 
-class SyncWorkoutUseCase @Inject constructor(
+class SyncWorkoutUseCase(
     private val syncRepository: SyncRepository,
     private val engine: LLMEngine
 ) {

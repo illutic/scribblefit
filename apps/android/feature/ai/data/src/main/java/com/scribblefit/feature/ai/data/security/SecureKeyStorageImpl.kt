@@ -7,10 +7,11 @@ import com.scribblefit.feature.ai.domain.security.SecureKeyStorage
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
+import androidx.core.content.edit
 
 @Singleton
 class SecureKeyStorageImpl @Inject constructor(
-    @ApplicationContext private val context: Context
+    @param:ApplicationContext private val context: Context
 ) : SecureKeyStorage {
 
     private val masterKey = MasterKey.Builder(context)
@@ -26,7 +27,7 @@ class SecureKeyStorageImpl @Inject constructor(
     )
 
     override suspend fun saveApiKey(key: String) {
-        sharedPreferences.edit().putString(KEY_API_KEY, key).apply()
+        sharedPreferences.edit { putString(KEY_API_KEY, key) }
     }
 
     override suspend fun getApiKey(): String? {
@@ -34,7 +35,7 @@ class SecureKeyStorageImpl @Inject constructor(
     }
 
     override suspend fun clearApiKey() {
-        sharedPreferences.edit().remove(KEY_API_KEY).apply()
+        sharedPreferences.edit { remove(KEY_API_KEY) }
     }
 
     companion object {

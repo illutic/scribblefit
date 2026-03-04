@@ -18,7 +18,7 @@ import javax.inject.Inject
 import javax.inject.Named
 
 class OpenAIEngine @Inject constructor(
-    @Named("base") private val client: HttpClient,
+    @param:Named("base") private val client: HttpClient,
     private val apiKey: String,
     private val systemPrompt: String,
     private val json: Json
@@ -41,7 +41,7 @@ class OpenAIEngine @Inject constructor(
         }.body<OpenAIResponse>()
 
         val content = response.choices.firstOrNull()?.message?.content
-            ?: throw Exception("Empty response from OpenAI")
+            ?: error("Empty response from OpenAI")
 
         val parsedWorkoutDto = json.decodeFromString<ParsedWorkoutDto>(content)
         parsedWorkoutDto.toDomain()

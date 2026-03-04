@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "47b934b5600c0f3a64d6019c948ce507",
+    "identityHash": "d6c6d9902645de1ed028611c6764129b",
     "entities": [
       {
         "tableName": "Sync_Queue",
@@ -208,7 +208,7 @@
       },
       {
         "tableName": "System_Config",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `prompt_version` TEXT NOT NULL, `prompt_text` TEXT NOT NULL, `updated_at` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `prompt_version` TEXT NOT NULL, `prompt_text` TEXT NOT NULL, `preferred_llm_provider` TEXT NOT NULL, `updated_at` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -225,6 +225,12 @@
           {
             "fieldPath": "promptText",
             "columnName": "prompt_text",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "preferredLlmProvider",
+            "columnName": "preferred_llm_provider",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -275,7 +281,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '47b934b5600c0f3a64d6019c948ce507')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'd6c6d9902645de1ed028611c6764129b')"
     ]
   }
 }

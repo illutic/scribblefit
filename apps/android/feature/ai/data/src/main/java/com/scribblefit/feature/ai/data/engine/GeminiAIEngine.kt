@@ -16,7 +16,7 @@ import javax.inject.Inject
 import javax.inject.Named
 
 class GeminiAIEngine @Inject constructor(
-    @Named("base") private val client: HttpClient,
+    @param:Named("base") private val client: HttpClient,
     private val apiKey: String,
     private val systemPrompt: String,
     private val json: Json
@@ -45,7 +45,7 @@ class GeminiAIEngine @Inject constructor(
         }.body<GeminiResponse>()
 
         val content = response.candidates.firstOrNull()?.content?.parts?.firstOrNull()?.text
-            ?: throw Exception("Empty response from Gemini")
+            ?: error("Empty response from Gemini")
 
         val parsedWorkoutDto = json.decodeFromString<ParsedWorkoutDto>(content)
         parsedWorkoutDto.toDomain()

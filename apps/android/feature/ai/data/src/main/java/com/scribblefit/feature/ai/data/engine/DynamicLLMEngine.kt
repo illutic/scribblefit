@@ -9,9 +9,9 @@ import javax.inject.Inject
 import javax.inject.Named
 
 class DynamicLLMEngine @Inject constructor(
-    @Named("openai") private val openAIEngine: LLMEngine,
-    @Named("gemini") private val geminiAIEngine: LLMEngine,
-    @Named("proxy") private val proxyEngine: LLMEngine,
+    @param:Named("openai") private val openAIEngine: LLMEngine,
+    @param:Named("gemini") private val geminiAIEngine: LLMEngine,
+    @param:Named("proxy") private val proxyEngine: LLMEngine,
     private val localAIEngine: LocalAIEngine,
     private val systemConfigDao: SystemConfigDao
 ) : LLMEngine {
