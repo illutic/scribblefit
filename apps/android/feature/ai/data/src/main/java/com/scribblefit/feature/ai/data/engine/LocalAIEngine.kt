@@ -19,37 +19,29 @@ class LocalAIEngine @Inject constructor(
     private val systemPrompt: String
 ) : LLMEngine {
 
-    override suspend fun parseWorkout(rawText: String): Result<ParsedWorkout> {
-        return try {
-            val status = generativeModel.checkStatus()
-            if (status != FeatureStatus.AVAILABLE) {
-                return Result.failure(Exception("Local AI Engine is not available (Status: $status)."))
-            }
-
-            val fullPrompt = "$systemPrompt\n\nInput Workout:\n$rawText"
-            val response = generativeModel.generateContent(fullPrompt)
-            
-            val content = response.candidates.firstOrNull()?.text 
-                ?: throw Exception("Empty response from Local Gemini Nano")
-            
-            // The model might include markdown code blocks, strip them if present
-            val cleanContent = content.trim()
-                .removePrefix("```json")
-                .removeSuffix("```")
-                .trim()
-
-            val parsedWorkoutDto = json.decodeFromString<ParsedWorkoutDto>(cleanContent)
-            Result.success(parsedWorkoutDto.toDomain())
-        } catch (e: Exception) {
-            Result.failure(e)
+    override suspend fun parseWorkout(rawText: String): Result<ParsedWorkout> = runCatching {
+        val status = generativeModel.checkStatus()
+        if (status != FeatureStatus.AVAILABLE) {
+            throw Exception("Local AI Engine is not available (Status: $status).")
         }
+
+        val fullPrompt = "$systemPrompt\n\nInput Workout:\n$rawText"
+        val response = generativeModel.generateContent(fullPrompt)
+        
+        val content = response.candidates.firstOrNull()?.text 
+            ?: throw Exception("Empty response from Local Gemini Nano")
+        
+        // The model might include markdown code blocks, strip them if present
+        val cleanContent = content.trim()
+            .removePrefix("```json")
+            .removeSuffix("```")
+            .trim()
+
+        val parsedWorkoutDto = json.decodeFromString<ParsedWorkoutDto>(cleanContent)
+        parsedWorkoutDto.toDomain()
     }
     
-    suspend fun isAvailable(): Boolean {
-        return try {
-            generativeModel.checkStatus() == FeatureStatus.AVAILABLE
-        } catch (e: Exception) {
-            false
-        }
-    }
+    suspend fun isAvailable(): Boolean = runCatching {
+        generativeModel.checkStatus() == FeatureStatus.AVAILABLE
+    }.getOrDefault(false)
 }

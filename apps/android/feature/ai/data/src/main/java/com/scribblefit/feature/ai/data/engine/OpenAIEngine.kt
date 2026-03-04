@@ -24,31 +24,27 @@ class OpenAIEngine @Inject constructor(
     private val json: Json
 ) : LLMEngine {
 
-    override suspend fun parseWorkout(rawText: String): Result<ParsedWorkout> {
-        return try {
-            val response = client.post("https://api.openai.com/v1/chat/completions") {
-                header("Authorization", "Bearer $apiKey")
-                contentType(ContentType.Application.Json)
-                setBody(
-                    OpenAIRequest(
-                        model = "gpt-4o-mini",
-                        messages = listOf(
-                            OpenAIMessage(role = "system", content = systemPrompt),
-                            OpenAIMessage(role = "user", content = rawText)
-                        ),
-                        responseFormat = OpenAIResponseFormat(type = "json_object")
-                    )
+    override suspend fun parseWorkout(rawText: String): Result<ParsedWorkout> = runCatching {
+        val response = client.post("https://api.openai.com/v1/chat/completions") {
+            header("Authorization", "Bearer $apiKey")
+            contentType(ContentType.Application.Json)
+            setBody(
+                OpenAIRequest(
+                    model = "gpt-4o-mini",
+                    messages = listOf(
+                        OpenAIMessage(role = "system", content = systemPrompt),
+                        OpenAIMessage(role = "user", content = rawText)
+                    ),
+                    responseFormat = OpenAIResponseFormat(type = "json_object")
                 )
-            }.body<OpenAIResponse>()
+            )
+        }.body<OpenAIResponse>()
 
-            val content = response.choices.firstOrNull()?.message?.content
-                ?: throw Exception("Empty response from OpenAI")
-            
-            val parsedWorkoutDto = json.decodeFromString<ParsedWorkoutDto>(content)
-            Result.success(parsedWorkoutDto.toDomain())
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
+        val content = response.choices.firstOrNull()?.message?.content
+            ?: throw Exception("Empty response from OpenAI")
+
+        val parsedWorkoutDto = json.decodeFromString<ParsedWorkoutDto>(content)
+        parsedWorkoutDto.toDomain()
     }
 }
 

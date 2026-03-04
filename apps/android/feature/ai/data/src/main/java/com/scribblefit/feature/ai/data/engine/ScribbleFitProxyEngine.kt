@@ -12,16 +12,12 @@ class ScribbleFitProxyEngine @Inject constructor(
     private val systemPrompt: String
 ) : LLMEngine {
     
-    override suspend fun parseWorkout(rawText: String): Result<ParsedWorkout> {
-        return try {
-            val request = ParseRequest(
-                rawText = rawText,
-                prompt = systemPrompt
-            )
-            val responseDto = api.parseProxy(request)
-            Result.success(responseDto.toDomain())
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
+    override suspend fun parseWorkout(rawText: String): Result<ParsedWorkout> = runCatching {
+        val request = ParseRequest(
+            rawText = rawText,
+            prompt = systemPrompt
+        )
+        val responseDto = api.parseProxy(request)
+        responseDto.toDomain()
     }
 }

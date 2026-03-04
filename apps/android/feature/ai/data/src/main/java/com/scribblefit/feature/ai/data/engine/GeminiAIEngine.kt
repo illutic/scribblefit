@@ -22,35 +22,33 @@ class GeminiAIEngine @Inject constructor(
     private val json: Json
 ) : LLMEngine {
 
-    override suspend fun parseWorkout(rawText: String): Result<ParsedWorkout> {
-        return try {
-            val response = client.post("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$apiKey") {
-                contentType(ContentType.Application.Json)
-                setBody(
-                    GeminiRequest(
-                        contents = listOf(
-                            GeminiContent(
-                                parts = listOf(GeminiPart(text = rawText))
-                            )
-                        ),
-                        systemInstruction = GeminiSystemInstruction(
-                            parts = listOf(GeminiPart(text = systemPrompt))
-                        ),
-                        generationConfig = GeminiGenerationConfig(
-                            responseMimeType = "application/json"
+    private val baseUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:"
+
+    override suspend fun parseWorkout(rawText: String): Result<ParsedWorkout> = runCatching {
+        val response = client.post("${baseUrl}generateContent?key=$apiKey") {
+            contentType(ContentType.Application.Json)
+            setBody(
+                GeminiRequest(
+                    contents = listOf(
+                        GeminiContent(
+                            parts = listOf(GeminiPart(text = rawText))
                         )
+                    ),
+                    systemInstruction = GeminiSystemInstruction(
+                        parts = listOf(GeminiPart(text = systemPrompt))
+                    ),
+                    generationConfig = GeminiGenerationConfig(
+                        responseMimeType = "application/json"
                     )
                 )
-            }.body<GeminiResponse>()
+            )
+        }.body<GeminiResponse>()
 
-            val content = response.candidates.firstOrNull()?.content?.parts?.firstOrNull()?.text
-                ?: throw Exception("Empty response from Gemini")
-            
-            val parsedWorkoutDto = json.decodeFromString<ParsedWorkoutDto>(content)
-            Result.success(parsedWorkoutDto.toDomain())
-        } catch (e: Exception) {
-            Result.failure(e)
-        }
+        val content = response.candidates.firstOrNull()?.content?.parts?.firstOrNull()?.text
+            ?: throw Exception("Empty response from Gemini")
+
+        val parsedWorkoutDto = json.decodeFromString<ParsedWorkoutDto>(content)
+        parsedWorkoutDto.toDomain()
     }
 }
 

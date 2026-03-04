@@ -15,13 +15,20 @@ class SyncWorker @AssistedInject constructor(
     private val syncWorkoutUseCase: SyncWorkoutUseCase
 ) : CoroutineWorker(context, workerParams) {
 
-    override suspend fun doWork(): Result {
-        return try {
-            syncWorkoutUseCase()
-            Result.success()
-        } catch (e: Exception) {
-            // In a real app, distinguish between fatal and retryable errors
-            Result.retry()
+    override suspend fun doWork(): Result = runCatching {
+        syncWorkoutUseCase()
+    }.fold(
+        onSuccess = { Result.success() },
+        onFailure = {
+            if (runAttemptCount < MAX_RETRIES) {
+                Result.retry()
+            } else {
+                Result.failure()
+            }
         }
+    )
+
+    companion object {
+        private const val MAX_RETRIES = 3
     }
 }

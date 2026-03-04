@@ -1,10 +1,39 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
+  <component name="GradleMigrationSettings" migrationVersion="1" />
   <component name="GradleSettings">
     <option name="linkedExternalProjectsSettings">
       <GradleProjectSettings>
+        <compositeConfiguration>
+          <compositeBuild compositeDefinitionSource="SCRIPT">
+            <builds>
+              <build path="$PROJECT_DIR$/apps/android/build-logic" name="build-logic">
+                <projects>
+                  <project path="$PROJECT_DIR$/apps/android/build-logic" />
+                </projects>
+              </build>
+            </builds>
+          </compositeBuild>
+        </compositeConfiguration>
         <option name="testRunner" value="CHOOSE_PER_TEST" />
         <option name="externalProjectPath" value="$PROJECT_DIR$/apps/android" />
+        <option name="gradleJvm" value="#GRADLE_LOCAL_JAVA_HOME" />
+        <option name="modules">
+          <set>
+            <option value="$PROJECT_DIR$/apps/android" />
+            <option value="$PROJECT_DIR$/apps/android/app" />
+            <option value="$PROJECT_DIR$/apps/android/build-logic" />
+            <option value="$PROJECT_DIR$/apps/android/core" />
+            <option value="$PROJECT_DIR$/apps/android/core/database" />
+            <option value="$PROJECT_DIR$/apps/android/core/network" />
+            <option value="$PROJECT_DIR$/apps/android/feature" />
+            <option value="$PROJECT_DIR$/apps/android/feature/ai" />
+            <option value="$PROJECT_DIR$/apps/android/feature/ai/data" />
+            <option value="$PROJECT_DIR$/apps/android/feature/ai/domain" />
+            <option value="$PROJECT_DIR$/apps/android/feature/canvas" />
+            <option value="$PROJECT_DIR$/apps/android/feature/ledger" />
+          </set>
+        </option>
       </GradleProjectSettings>
     </option>
   </component>
