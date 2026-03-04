@@ -1,5 +1,9 @@
 import Foundation
 
+#if canImport(FoundationModels)
+import FoundationModels
+#endif
+
 /**
  * Local AI Engine for iOS.
  * Leverages Apple Intelligence via the FoundationModels framework.
@@ -12,27 +16,23 @@ public final class LocalAIEngine: LLMEngine {
     }
     
     public func parseWorkout(rawText: String) async throws -> ParsedWorkout {
-        // TODO: Integrate with FoundationModels (iOS 19+ / Apple Intelligence)
-        /*
-        import FoundationModels
-        
-        let session = LanguageModelSession {
-            self.systemPrompt
+        #if canImport(FoundationModels)
+        if #available(iOS 26.0, *) {
+            // TODO: Finalize FoundationModels integration once SDK stability is confirmed
+            // For now, we stub this to avoid complex Generable conformance errors
+            throw NetworkError.noData
         }
+        #endif
         
-        // Use Guided Generation for structured output
-        let workout = try await session.respond(generating: ParsedWorkoutSerializable.self,
-                                               prompt: rawText)
-        return workout.toDomain()
-        */
-        
-        throw NetworkError.noData // Use appropriate local error or placeholder
+        throw NetworkError.noData
     }
     
     public func isAvailable() async -> Bool {
-        // TODO: Check SystemLanguageModel.default.availability
+        #if canImport(FoundationModels)
+        if #available(iOS 26.0, *) {
+            return await SystemLanguageModel.default.availability == .available
+        }
+        #endif
         return false
     }
 }
-
-// Note: FoundationModels is only available on A17 Pro/M1 or later and iOS 19+
