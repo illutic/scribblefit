@@ -33,8 +33,3 @@ dependencies {
     testImplementation(libs.ktor.serialization.kotlinx.json)
 }
 
-tasks.withType<Test> {
-    testLogging {
-        showStandardStreams = true
-    }
-}

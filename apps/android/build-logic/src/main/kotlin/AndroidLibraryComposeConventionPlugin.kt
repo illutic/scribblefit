@@ -2,6 +2,8 @@ import com.android.build.api.dsl.LibraryExtension
 import com.scribblefit.buildlogic.libs
 import org.gradle.api.Plugin
 import org.gradle.api.Project
+import org.gradle.api.tasks.testing.Test
+import org.gradle.api.tasks.testing.logging.TestExceptionFormat
 import org.gradle.kotlin.dsl.configure
 import org.gradle.kotlin.dsl.dependencies
 import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
@@ -40,6 +42,14 @@ class AndroidLibraryComposeConventionPlugin : Plugin<Project> {
                 add("implementation", libs.findLibrary("androidx-ui").get())
                 add("implementation", libs.findLibrary("androidx-ui-tooling-preview").get())
                 add("debugImplementation", libs.findLibrary("androidx-ui-tooling").get())
+            }
+
+            tasks.withType(Test::class.java).configureEach {
+                testLogging {
+                    events("passed", "skipped", "failed")
+                    showStandardStreams = true
+                    exceptionFormat = TestExceptionFormat.FULL
+                }
             }
         }
     }
