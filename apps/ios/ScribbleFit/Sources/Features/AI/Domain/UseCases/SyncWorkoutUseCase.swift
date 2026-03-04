@@ -1,0 +1,39 @@
+import Foundation
+
+public final class SyncWorkoutUseCase: Sendable {
+    private let syncRepository: SyncRepository
+    private let secureKeyStorage: SecureKeyStorage
+    private let openAIEngine: LLMEngine
+    private let proxyEngine: LLMEngine
+    
+    public init(
+        syncRepository: SyncRepository,
+        secureKeyStorage: SecureKeyStorage,
+        openAIEngine: LLMEngine,
+        proxyEngine: LLMEngine
+    ) {
+        self.syncRepository = syncRepository
+        self.secureKeyStorage = secureKeyStorage
+        self.openAIEngine = openAIEngine
+        self.proxyEngine = proxyEngine
+    }
+    
+    public func execute() async throws {
+        let pendingItems = try await syncRepository.getPendingSyncItems()
+        
+        for item in pendingItems {
+            try await syncRepository.updateSyncStatus(id: item.id, status: .processing)
+            
+            // Priority 1: Personal API Key (BYOK)
+            let apiKey = try await secureKeyStorage.getApiKey()
+            let engine = (apiKey != nil) ? openAIEngine : proxyEngine
+            
+            do {
+                let workout = try await engine.parseWorkout(rawText: item.rawText)
+                try await syncRepository.saveParsedWorkout(syncItemId: item.id, workout: workout)
+            } catch {
+                try await syncRepository.updateSyncStatus(id: item.id, status: .failed)
+            }
+        }
+    }
+}

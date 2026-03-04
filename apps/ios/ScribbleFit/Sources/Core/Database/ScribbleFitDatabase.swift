@@ -50,6 +50,38 @@ public final class ScribbleFitDatabase {
         try? context.save()
     }
     
+    public func saveParsedWorkout(syncItemId: String, workout: ParsedWorkout) {
+        let log = WorkoutLog(
+            id: UUID().uuidString,
+            date: Date(), // TODO: Parse from workout.date
+            location: workout.location,
+            totalVolume: 0.0
+        )
+        context.insert(log)
+        
+        for exercise in workout.exercises {
+            for set in exercise.sets {
+                let workoutSet = WorkoutSet(
+                    id: UUID().uuidString,
+                    weight: set.weight,
+                    reps: set.reps,
+                    rpe: set.rpe,
+                    notes: set.notes,
+                    exerciseId: exercise.canonicalName
+                )
+                workoutSet.workout = log
+                context.insert(workoutSet)
+            }
+        }
+        
+        // Update Sync Queue status
+        if let item = (try? context.fetch(FetchDescriptor<SyncQueue>(predicate: #Predicate { $0.id == syncItemId })) )?.first {
+            item.syncStatus = .completed
+        }
+        
+        try? context.save()
+    }
+    
     // MARK: - ExerciseDictionary
     
     public func upsertExercises(_ exercises: [ExerciseDictionary]) {

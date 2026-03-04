@@ -12,11 +12,18 @@ dependencies {
     implementation(project(":feature:ai:domain"))
     implementation(project(":core:network"))
     implementation(project(":core:database"))
-    
+
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.ktor.client.core)
     implementation(libs.hilt.android)
+    implementation(libs.hilt.work)
+    implementation(libs.work.runtime.ktx)
+    ksp(libs.hilt.compiler)
+    ksp(libs.hilt.work.compiler)
+
     implementation(libs.mlkit.genai.prompt)
+    implementation(libs.androidx.security.crypto)
+
 
     testImplementation(libs.junit)
     testImplementation(libs.mockk)

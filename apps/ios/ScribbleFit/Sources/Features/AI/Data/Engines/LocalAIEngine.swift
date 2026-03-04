@@ -18,9 +18,22 @@ public final class LocalAIEngine: LLMEngine {
     public func parseWorkout(rawText: String) async throws -> ParsedWorkout {
         #if canImport(FoundationModels)
         if #available(iOS 26.0, *) {
-            // TODO: Finalize FoundationModels integration once SDK stability is confirmed
-            // For now, we stub this to avoid complex Generable conformance errors
-            throw NetworkError.noData
+            // Ensure Apple Intelligence is available
+            guard await isAvailable() else {
+                throw NetworkError.noData
+            }
+            
+            let session = LanguageModelSession {
+                self.systemPrompt
+            }
+            
+            // Use Guided Generation for structured output
+            let response = try await session.respond(
+                to: "Parse this gym note: \(rawText)",
+                generating: LocalAIWorkoutDTO.self
+            )
+            
+            return response.content.toDomain()
         }
         #endif
         
@@ -30,9 +43,76 @@ public final class LocalAIEngine: LLMEngine {
     public func isAvailable() async -> Bool {
         #if canImport(FoundationModels)
         if #available(iOS 26.0, *) {
-            return await SystemLanguageModel.default.availability == .available
+            return SystemLanguageModel.default.availability == .available
         }
         #endif
         return false
     }
 }
+
+// MARK: - Serializable Mapping (Internal to Engine)
+
+#if canImport(FoundationModels)
+@available(iOS 26.0, *)
+@Generable
+struct LocalAIWorkoutDTO {
+    @Guide(description: "ISO8601 date string of the workout")
+    let date: String
+    
+    @Guide(description: "Optional location of the workout")
+    let location: String?
+    
+    @Guide(description: "List of exercises performed")
+    let exercises: [LocalAIExerciseDTO]
+    
+    func toDomain() -> ParsedWorkout {
+        return ParsedWorkout(
+            date: self.date,
+            location: self.location,
+            exercises: self.exercises.map { $0.toDomain() }
+        )
+    }
+}
+
+@available(iOS 26.0, *)
+@Generable
+struct LocalAIExerciseDTO {
+    @Guide(description: "The canonical name of the exercise")
+    let canonicalName: String
+    
+    @Guide(description: "List of sets performed for this exercise")
+    let sets: [LocalAISetDTO]
+    
+    func toDomain() -> ParsedExercise {
+        return ParsedExercise(
+            canonicalName: self.canonicalName,
+            sets: self.sets.map { $0.toDomain() }
+        )
+    }
+}
+
+@available(iOS 26.0, *)
+@Generable
+struct LocalAISetDTO {
+    @Guide(description: "The weight used in lbs or kg")
+    let weight: Double
+    
+    @Guide(description: "Number of repetitions")
+    let reps: Int
+    
+    @Guide(description: "Rate of Perceived Exertion (1-10)")
+    let rpe: Double?
+    
+    @Guide(description: "Any extra notes for this set")
+    let notes: String?
+    
+    func toDomain() -> ParsedSet {
+        return ParsedSet(
+            weight: self.weight,
+            reps: self.reps,
+            rpe: self.rpe,
+            notes: self.notes
+        )
+    }
+}
+#endif

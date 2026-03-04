@@ -45,7 +45,7 @@ public final class GeminiAIEngine: LLMEngine {
             throw NetworkError.decodingError
         }
         
-        let serializableWorkout = try JSONDecoder().decode(ParsedWorkoutSerializable.self, from: contentData)
+        let serializableWorkout = try JSONDecoder().decode(AIWorkoutDTO.self, from: contentData)
         return serializableWorkout.toDomain()
     }
 }
@@ -80,48 +80,4 @@ private struct GeminiResponse: Codable {
 
 private struct GeminiCandidate: Codable {
     let content: GeminiContent
-}
-
-// MARK: - Serializable Mapping (Local to Engine)
-
-private struct ParsedWorkoutSerializable: Codable {
-    let date: String
-    let location: String?
-    let exercises: [ParsedExerciseSerializable]
-    
-    func toDomain() -> ParsedWorkout {
-        return ParsedWorkout(
-            date: self.date,
-            location: self.location,
-            exercises: self.exercises.map { $0.toDomain() }
-        )
-    }
-}
-
-private struct ParsedExerciseSerializable: Codable {
-    let canonicalName: String
-    let sets: [ParsedSetSerializable]
-    
-    func toDomain() -> ParsedExercise {
-        return ParsedExercise(
-            canonicalName: self.canonicalName,
-            sets: self.sets.map { $0.toDomain() }
-        )
-    }
-}
-
-private struct ParsedSetSerializable: Codable {
-    let weight: Double
-    let reps: Int
-    let rpe: Double?
-    let notes: String?
-    
-    func toDomain() -> ParsedSet {
-        return ParsedSet(
-            weight: self.weight,
-            reps: self.reps,
-            rpe: self.rpe,
-            notes: self.notes
-        )
-    }
 }
