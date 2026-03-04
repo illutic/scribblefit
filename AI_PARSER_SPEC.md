@@ -33,7 +33,9 @@ Both apps must implement a `LLMEngine` interface to allow switching providers. T
 ### Supported Engines:
 1. **OpenAI Engine:** Uses `gpt-4o-mini` or `gpt-4o` with `response_format: { type: "json_object" }`.
 2. **Anthropic Engine:** Uses `claude-3-5-sonnet` with pre-filling or tool-use for JSON.
-3. **ScribbleFit Proxy Engine:** Wraps the network call to our Ktor backend.
+3. **Gemini Engine:** Uses `gemini-1.5-flash` or `gemini-1.5-pro` with `response_mime_type: "application/json"`.
+4. **Local AI Engine:** Uses on-device models (Gemini Nano on Android via AICore, Apple Intelligence on iOS via FoundationModels).
+5. **ScribbleFit Proxy Engine:** Wraps the network call to our Ktor backend.
 
 ---
 
