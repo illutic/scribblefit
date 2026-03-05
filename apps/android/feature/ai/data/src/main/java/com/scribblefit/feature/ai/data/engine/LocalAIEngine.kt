@@ -35,7 +35,6 @@ class LocalAIEngine @Inject constructor(
         val content = response.candidates.firstOrNull()?.text 
             ?: throw Exception("Empty response from Local Gemini Nano")
         
-        // The model might include markdown code blocks, strip them if present
         val cleanContent = content.trim()
             .removePrefix("```json")
             .removeSuffix("```")
@@ -53,4 +52,22 @@ class LocalAIEngine @Inject constructor(
     suspend fun isAvailable(): Boolean = runCatching {
         generativeModel.checkStatus() == FeatureStatus.AVAILABLE
     }.getOrDefault(false)
+
+    /**
+     * Triggers the download of the local Gemini Nano model if it's not already present.
+     */
+    suspend fun prepareModel(): Result<Unit> = runCatching {
+        val status = generativeModel.checkStatus()
+        if (status == FeatureStatus.NOT_AVAILABLE) {
+            error("Gemini Nano is not supported on this device.")
+        }
+        
+        if (status == FeatureStatus.DOWNLOADABLE) {
+            generativeModel.downloadModel()
+        }
+    }
+
+    suspend fun getStatus(): FeatureStatus = runCatching {
+        generativeModel.checkStatus()
+    }.getOrDefault(FeatureStatus.NOT_AVAILABLE)
 }

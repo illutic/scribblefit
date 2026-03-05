@@ -1,9 +1,11 @@
 package com.scribblefit.feature.ai.data.di
 
+import android.content.Context
 import com.scribblefit.core.network.ScribbleFitApi
 import com.scribblefit.feature.ai.data.engine.GeminiAIEngine
 import com.scribblefit.feature.ai.data.engine.OpenAIEngine
 import com.scribblefit.feature.ai.data.engine.ScribbleFitProxyEngine
+import com.scribblefit.feature.ai.data.engine.LocalAIEngine
 import com.scribblefit.feature.ai.data.repository.SyncRepositoryImpl
 import com.scribblefit.feature.ai.data.repository.ConfigRepositoryImpl
 import com.scribblefit.feature.ai.data.repository.AuthRepositoryImpl
@@ -16,10 +18,12 @@ import com.scribblefit.feature.ai.domain.repository.AuthRepository
 import com.scribblefit.feature.ai.domain.repository.TelemetryRepository
 import com.scribblefit.feature.ai.domain.security.SecureKeyStorage
 import com.scribblefit.feature.ai.domain.usecase.SyncWorkoutUseCase
+import com.google.mlkit.genai.prompt.GenerativeModel
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
+import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.ktor.client.HttpClient
 import kotlinx.serialization.json.Json
@@ -63,6 +67,15 @@ abstract class SyncModule {
 
         @Provides
         @Singleton
+        fun provideGenerativeModel(@ApplicationContext context: Context): GenerativeModel {
+            return GenerativeModel(
+                modelName = "gemini-nano",
+                context = context
+            )
+        }
+
+        @Provides
+        @Singleton
         @Named("openai")
         fun provideOpenAIEngine(
             @Named("base") client: HttpClient,
@@ -97,11 +110,20 @@ abstract class SyncModule {
 
         @Provides
         @Singleton
+        fun provideLocalAIEngine(
+            generativeModel: GenerativeModel,
+            json: Json
+        ): LocalAIEngine {
+            return LocalAIEngine(generativeModel, json, SYSTEM_PROMPT)
+        }
+
+        @Provides
+        @Singleton
         fun provideLLMEngine(
             @Named("openai") openAIEngine: LLMEngine,
             @Named("gemini") geminiAIEngine: LLMEngine,
             @Named("proxy") proxyEngine: LLMEngine,
-            localAIEngine: com.scribblefit.feature.ai.data.engine.LocalAIEngine,
+            localAIEngine: LocalAIEngine,
             systemConfigDao: com.scribblefit.core.database.dao.SystemConfigDao
         ): LLMEngine {
             return com.scribblefit.feature.ai.data.engine.DynamicLLMEngine(
