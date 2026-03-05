@@ -1,5 +1,6 @@
 package com.scribblefit.feature.ai.data.engine
 
+import com.scribblefit.feature.ai.domain.model.AIParsingException
 import com.scribblefit.feature.ai.domain.model.ParsedWorkout
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
@@ -62,6 +63,38 @@ class OpenAIEngineTest {
         assertEquals(1, workout.exercises.size)
         assertEquals("Bench Press", workout.exercises[0].canonicalName)
         assertEquals(135.0, workout.exercises[0].sets[0].weight, 0.0)
+    }
+
+    @Test
+    fun `parseWorkout throws AIParsingException when OpenAI returns invalid JSON`() = runTest {
+        val mockEngine = MockEngine { _ ->
+            respond(
+                content = """
+                {
+                    "choices": [
+                        {
+                            "message": {
+                                "role": "assistant",
+                                "content": "invalid-json"
+                            }
+                        }
+                    ]
+                }
+                """.trimIndent(),
+                status = HttpStatusCode.OK,
+                headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+            )
+        }
+
+        val httpClient = HttpClient(mockEngine) {
+            install(ContentNegotiation) { json(json) }
+        }
+
+        val engine = OpenAIEngine(httpClient, "test-key", "test-prompt", json)
+
+        val result = engine.parseWorkout("Bench 135x5")
+        assertTrue(result.isFailure)
+        assertTrue(result.exceptionOrNull() is AIParsingException)
     }
 
     @Test

@@ -1,5 +1,8 @@
 package com.scribblefit.feature.ai.data.repository
 
+import android.content.Context
+import androidx.work.WorkManager
+import androidx.work.WorkRequest
 import com.scribblefit.core.database.dao.ExerciseDictionaryDao
 import com.scribblefit.core.database.dao.SetDao
 import com.scribblefit.core.database.dao.SyncQueueDao
@@ -11,10 +14,7 @@ import com.scribblefit.feature.ai.domain.model.ParsedExercise
 import com.scribblefit.feature.ai.domain.model.ParsedSet
 import com.scribblefit.feature.ai.domain.model.ParsedWorkout
 import com.scribblefit.feature.ai.domain.model.SyncStatus
-import io.mockk.coEvery
-import io.mockk.coVerify
-import io.mockk.every
-import io.mockk.mockk
+import io.mockk.*
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
@@ -25,19 +25,26 @@ import java.time.Instant
 
 class SyncRepositoryImplTest {
 
+    private lateinit var context: Context
     private lateinit var syncQueueDao: SyncQueueDao
     private lateinit var workoutLogDao: WorkoutLogDao
     private lateinit var setDao: SetDao
     private lateinit var exerciseDictionaryDao: ExerciseDictionaryDao
+    private lateinit var workManager: WorkManager
     private lateinit var repository: SyncRepositoryImpl
 
     @Before
     fun setup() {
+        workManager = mockk(relaxed = true)
+        context = mockk(relaxed = true)
+        
         syncQueueDao = mockk(relaxed = true)
         workoutLogDao = mockk(relaxed = true)
         setDao = mockk(relaxed = true)
         exerciseDictionaryDao = mockk(relaxed = true)
-        repository = SyncRepositoryImpl(syncQueueDao, workoutLogDao, setDao, exerciseDictionaryDao)
+        
+        repository = SyncRepositoryImpl(context, syncQueueDao, workoutLogDao, setDao, exerciseDictionaryDao)
+        repository.workManagerProvider = { workManager }
     }
 
     @Test
@@ -58,7 +65,7 @@ class SyncRepositoryImplTest {
     }
 
     @Test
-    fun `saveParsedWorkout saves workout and sets with mapped IDs`() = runTest {
+    fun `saveParsedWorkout saves workout and sets with mapped IDs and calculated volume`() = runTest {
         // Given
         val syncItemId = "sync1"
         val now = Instant.now()
@@ -68,7 +75,10 @@ class SyncRepositoryImplTest {
             exercises = listOf(
                 ParsedExercise(
                     canonicalName = "Bench Press",
-                    sets = listOf(ParsedSet(135.0, 5))
+                    sets = listOf(
+                        ParsedSet(100.0, 5), // 500
+                        ParsedSet(200.0, 2)  // 400
+                    )
                 )
             )
         )
@@ -80,9 +90,25 @@ class SyncRepositoryImplTest {
         repository.saveParsedWorkout(syncItemId, workout)
 
         // Then
-        coVerify { workoutLogDao.upsertWorkoutLog(match { it.location == "Gym" && it.date == now.toEpochMilli() }) }
-        coVerify { setDao.upsertSets(match { it.size == 1 && it[0].exerciseId == "ex1" }) }
+        coVerify { 
+            workoutLogDao.upsertWorkoutLog(match { 
+                it.location == "Gym" && 
+                it.date == now.toEpochMilli() &&
+                it.totalVolume == 900.0
+            }) 
+        }
+        coVerify { setDao.upsertSets(match { it.size == 2 && it[0].exerciseId == "ex1" }) }
         coVerify { syncQueueDao.updateStatus(syncItemId, EntitySyncStatus.COMPLETED) }
+    }
+
+    @Test
+    fun `enqueueScribble saves item and triggers workmanager`() = runTest {
+        // When
+        repository.enqueueScribble("bench 100x5")
+
+        // Then
+        coVerify { syncQueueDao.upsertSyncItem(match { it.rawText == "bench 100x5" }) }
+        coVerify { workManager.enqueue(any<WorkRequest>()) }
     }
 
     @Test

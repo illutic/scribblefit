@@ -1,6 +1,5 @@
 package com.scribblefit.feature.ai.data.di
 
-import android.content.Context
 import com.scribblefit.core.network.ScribbleFitApi
 import com.scribblefit.feature.ai.data.engine.GeminiAIEngine
 import com.scribblefit.feature.ai.data.engine.OpenAIEngine
@@ -18,12 +17,12 @@ import com.scribblefit.feature.ai.domain.repository.AuthRepository
 import com.scribblefit.feature.ai.domain.repository.TelemetryRepository
 import com.scribblefit.feature.ai.domain.security.SecureKeyStorage
 import com.scribblefit.feature.ai.domain.usecase.SyncWorkoutUseCase
+import com.google.mlkit.genai.prompt.Generation
 import com.google.mlkit.genai.prompt.GenerativeModel
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
-import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
 import io.ktor.client.HttpClient
 import kotlinx.serialization.json.Json
@@ -67,11 +66,8 @@ abstract class SyncModule {
 
         @Provides
         @Singleton
-        fun provideGenerativeModel(@ApplicationContext context: Context): GenerativeModel {
-            return GenerativeModel(
-                modelName = "gemini-nano",
-                context = context
-            )
+        fun provideGenerativeModel(): GenerativeModel {
+            return Generation.getClient()
         }
 
         @Provides

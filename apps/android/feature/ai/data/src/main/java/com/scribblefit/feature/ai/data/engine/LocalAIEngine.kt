@@ -7,6 +7,8 @@ import com.scribblefit.feature.ai.domain.model.ParsedWorkout
 import com.scribblefit.core.network.model.ParsedWorkoutDto
 import com.google.mlkit.genai.common.FeatureStatus
 import com.google.mlkit.genai.prompt.GenerativeModel
+import com.google.mlkit.genai.prompt.TextPart
+import com.google.mlkit.genai.prompt.generateContentRequest
 import kotlinx.serialization.json.Json
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
@@ -30,8 +32,11 @@ class LocalAIEngine @Inject constructor(
         }
 
         val fullPrompt = "$systemPrompt\n\nInput Workout:\n$rawText"
-        val response = generativeModel.generateContent(fullPrompt)
+        val request = generateContentRequest(TextPart(fullPrompt)) {
+            // Configuration options can be set here if needed
+        }
         
+        val response = generativeModel.generateContent(request)
         val content = response.candidates.firstOrNull()?.text 
             ?: throw Exception("Empty response from Local Gemini Nano")
         
@@ -52,22 +57,4 @@ class LocalAIEngine @Inject constructor(
     suspend fun isAvailable(): Boolean = runCatching {
         generativeModel.checkStatus() == FeatureStatus.AVAILABLE
     }.getOrDefault(false)
-
-    /**
-     * Triggers the download of the local Gemini Nano model if it's not already present.
-     */
-    suspend fun prepareModel(): Result<Unit> = runCatching {
-        val status = generativeModel.checkStatus()
-        if (status == FeatureStatus.NOT_AVAILABLE) {
-            error("Gemini Nano is not supported on this device.")
-        }
-        
-        if (status == FeatureStatus.DOWNLOADABLE) {
-            generativeModel.downloadModel()
-        }
-    }
-
-    suspend fun getStatus(): FeatureStatus = runCatching {
-        generativeModel.checkStatus()
-    }.getOrDefault(FeatureStatus.NOT_AVAILABLE)
 }

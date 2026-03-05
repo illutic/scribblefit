@@ -61,34 +61,63 @@ final class ScribbleFitDatabaseTests: XCTestCase {
     }
 
     @MainActor
-    func testUpsertAndGetSetsForWorkout() {
-        let log = WorkoutLog(id: "w1")
-        database.upsertWorkoutLog(log)
+    func testSaveParsedWorkoutCalculatesVolumeAndMapsExercises() {
+        // Seed exercise dictionary
+        let exercise = ExerciseDictionary(id: "ex1", canonicalName: "Bench Press", muscleGroup: "Chest", aliases: ["bench"])
+        database.upsertExercises([exercise])
         
-        let set1 = WorkoutSet(id: "s1", weight: 100, reps: 5, exerciseId: "ex1")
-        set1.workout = log
-        database.upsertWorkoutSet(set1)
+        // Prepare parsed workout
+        let workout = ParsedWorkout(
+            date: ISO8601DateFormatter().string(from: Date()),
+            location: "Gym",
+            exercises: [
+                ParsedExercise(
+                    canonicalName: "Bench Press",
+                    sets: [
+                        ParsedSet(weight: 100, reps: 10),
+                        ParsedSet(weight: 150, reps: 5)
+                    ]
+                )
+            ]
+        )
         
-        let sets = database.getSetsForWorkout(id: "w1")
-        XCTAssertEqual(sets.count, 1)
-        XCTAssertEqual(sets.first?.id, "s1")
+        database.saveParsedWorkout(syncItemId: "sync1", workout: workout)
+        
+        let logs = database.getAllWorkoutLogs()
+        XCTAssertEqual(logs.count, 1)
+        let log = logs.first!
+        XCTAssertEqual(log.totalVolume, 1000 + 750)
+        XCTAssertEqual(log.location, "Gym")
+        
+        let sets = database.getSetsForWorkout(id: log.id)
+        XCTAssertEqual(sets.count, 2)
+        XCTAssertEqual(sets.first?.exerciseId, "ex1")
+    }
+
+    @MainActor
+    func testSystemConfigPersistence() {
+        let config = SystemConfig(promptVersion: "1.0.0", promptText: "Test Prompt", exerciseVersion: "1.0.0")
+        database.upsertConfig(config)
+        
+        let fetched = database.getConfig()
+        XCTAssertNotNil(fetched)
+        XCTAssertEqual(fetched?.promptVersion, "1.0.0")
+        XCTAssertEqual(fetched?.exerciseVersion, "1.0.0")
     }
     
     @MainActor
-    func testDeleteWorkoutLogCascadesToSets() {
-        let log = WorkoutLog(id: "w1")
-        database.upsertWorkoutLog(log)
+    func testSyncQueueOperations() {
+        let item = SyncQueue(id: "1", rawText: "bench 100x5", status: .pending, createdAt: Date())
+        database.upsertSyncItem(item)
         
-        let set1 = WorkoutSet(id: "s1", weight: 100, reps: 5, exerciseId: "ex1")
-        set1.workout = log
-        database.upsertWorkoutSet(set1)
+        var pending = database.getSyncItems(status: .pending)
+        XCTAssertEqual(pending.count, 1)
         
-        database.deleteWorkoutLog(log)
+        database.updateSyncStatus(id: "1", status: .completed)
+        pending = database.getSyncItems(status: .pending)
+        XCTAssertEqual(pending.count, 0)
         
-        let fetchedLog = database.getWorkoutLog(id: "w1")
-        XCTAssertNil(fetchedLog)
-        
-        let sets = database.getSetsForWorkout(id: "w1")
-        XCTAssertEqual(sets.count, 0)
+        let completed = database.getSyncItems(status: .completed)
+        XCTAssertEqual(completed.count, 1)
     }
 }

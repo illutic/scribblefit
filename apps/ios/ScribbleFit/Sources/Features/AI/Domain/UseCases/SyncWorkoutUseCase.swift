@@ -1,6 +1,7 @@
 import Foundation
 
-public final class SyncWorkoutUseCase: Sendable {
+@MainActor
+public final class SyncWorkoutUseCase {
     private let syncRepository: SyncRepository
     private let telemetryRepository: TelemetryRepository
     private let secureKeyStorage: SecureKeyStorage

@@ -1,14 +1,17 @@
 package com.scribblefit.feature.ai.data.engine
 
 import com.google.mlkit.genai.common.FeatureStatus
+import com.google.mlkit.genai.prompt.Candidate
+import com.google.mlkit.genai.prompt.GenerateContentRequest
 import com.google.mlkit.genai.prompt.GenerativeModel
 import com.google.mlkit.genai.prompt.GenerateContentResponse
-import com.google.mlkit.genai.prompt.Candidate
+import com.scribblefit.feature.ai.domain.model.AIParsingException
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -32,12 +35,33 @@ class LocalAIEngineTest {
         }
 
         coEvery { generativeModel.checkStatus() } returns FeatureStatus.AVAILABLE
-        coEvery { generativeModel.generateContent(any<String>()) } returns mockResponse
+        coEvery { generativeModel.generateContent(any<GenerateContentRequest>()) } returns mockResponse
 
         val result = engine.parseWorkout(rawText)
 
         assertTrue("Result should be success, but was $result", result.isSuccess)
         assertEquals("2024-03-03", result.getOrNull()?.date)
+    }
+
+    @Test
+    fun `parseWorkout throws AIParsingException when JSON is invalid`() = runTest {
+        val rawText = "Bench 135x5"
+        val mockResponseContent = "invalid-json"
+        
+        val mockCandidate = mockk<Candidate> {
+            coEvery { text } returns mockResponseContent
+        }
+        val mockResponse = mockk<GenerateContentResponse> {
+            coEvery { candidates } returns listOf(mockCandidate)
+        }
+
+        coEvery { generativeModel.checkStatus() } returns FeatureStatus.AVAILABLE
+        coEvery { generativeModel.generateContent(any<GenerateContentRequest>()) } returns mockResponse
+
+        val result = engine.parseWorkout(rawText)
+
+        assertTrue(result.isFailure)
+        assertTrue(result.exceptionOrNull() is AIParsingException)
     }
 
     @Test
@@ -47,5 +71,17 @@ class LocalAIEngineTest {
         val result = engine.parseWorkout("Bench 135x5")
 
         assertTrue("Result should be failure", result.isFailure)
+    }
+
+    @Test
+    fun `isAvailable returns true when status is AVAILABLE`() = runTest {
+        coEvery { generativeModel.checkStatus() } returns FeatureStatus.AVAILABLE
+        assertTrue(engine.isAvailable())
+    }
+
+    @Test
+    fun `isAvailable returns false when status is not AVAILABLE`() = runTest {
+        coEvery { generativeModel.checkStatus() } returns FeatureStatus.DOWNLOADABLE
+        assertFalse(engine.isAvailable())
     }
 }

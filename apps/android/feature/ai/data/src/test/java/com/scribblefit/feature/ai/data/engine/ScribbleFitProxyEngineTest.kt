@@ -3,6 +3,7 @@ package com.scribblefit.feature.ai.data.engine
 import com.scribblefit.core.network.ScribbleFitApi
 import com.scribblefit.core.network.model.ParseRequest
 import com.scribblefit.core.network.model.ParsedWorkoutDto
+import com.scribblefit.feature.ai.domain.model.AIParsingException
 import com.scribblefit.feature.ai.domain.security.SecureKeyStorage
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -54,11 +55,14 @@ class ScribbleFitProxyEngineTest {
 
     @Test
     fun `parseWorkout returns failure when API throws exception`() = runTest {
+        val rawText = "Bench 135x5"
         coEvery { api.parseProxy(any(), any()) } throws Exception("Network Error")
 
-        val result = engine.parseWorkout("Bench 135x5")
+        val result = engine.parseWorkout(rawText)
 
         assertTrue(result.isFailure)
-        assertEquals("Network Error", result.exceptionOrNull()?.message)
+        val exception = result.exceptionOrNull()
+        assertTrue(exception is AIParsingException)
+        assertEquals("AI Parsing failed for text: $rawText. Error: Proxy Failure: Network Error", exception?.message)
     }
 }

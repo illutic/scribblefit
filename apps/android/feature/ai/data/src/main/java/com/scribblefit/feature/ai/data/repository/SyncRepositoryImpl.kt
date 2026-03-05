@@ -38,6 +38,9 @@ class SyncRepositoryImpl @Inject constructor(
     private val exerciseDictionaryDao: ExerciseDictionaryDao
 ) : SyncRepository {
 
+    // Allow providing WorkManager for testing
+    internal var workManagerProvider: () -> WorkManager = { WorkManager.getInstance(context) }
+
     override fun getPendingSyncItems(): Flow<List<SyncItem>> {
         return syncQueueDao.getSyncItemsByStatus(EntitySyncStatus.PENDING).map { entities ->
             entities.map { it.toDomain() }
@@ -114,7 +117,7 @@ class SyncRepositoryImpl @Inject constructor(
             )
             .build()
 
-        WorkManager.getInstance(context).enqueue(syncRequest)
+        workManagerProvider().enqueue(syncRequest)
     }
 }
 

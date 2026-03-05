@@ -1,6 +1,7 @@
 package com.scribblefit.feature.ai.domain.usecase
 
 import com.scribblefit.feature.ai.domain.engine.LLMEngine
+import com.scribblefit.feature.ai.domain.model.AIParsingException
 import com.scribblefit.feature.ai.domain.model.SyncItem
 import com.scribblefit.feature.ai.domain.model.SyncStatus
 import com.scribblefit.feature.ai.domain.repository.SyncRepository
@@ -52,7 +53,29 @@ class SyncWorkoutUseCaseTest {
     }
 
     @Test
-    fun `when engine fails, it updates status to FAILED and reports telemetry`() = runTest {
+    fun `when engine fails with AIParsingException, it reports hallucination to telemetry`() = runTest {
+        // Given
+        val rawText = "Bench 135x5"
+        val items = listOf(SyncItem("1", rawText, SyncStatus.PENDING, 0L))
+        val hallucinationError = "JSON is malformed"
+        coEvery { syncRepository.getPendingSyncItems() } returns flowOf(items)
+        coEvery { engine.parseWorkout(any()) } returns Result.failure(
+            AIParsingException(rawText, hallucinationError)
+        )
+
+        // When
+        useCase()
+
+        // Then
+        coVerify { 
+            telemetryRepository.reportError(match { 
+                it.rawText == rawText && it.errorMessage == hallucinationError 
+            }) 
+        }
+    }
+
+    @Test
+    fun `when engine fails with general error, it updates status to FAILED`() = runTest {
         // Given
         val items = listOf(SyncItem("1", "Bench 135x5", SyncStatus.PENDING, 0L))
         coEvery { syncRepository.getPendingSyncItems() } returns flowOf(items)
