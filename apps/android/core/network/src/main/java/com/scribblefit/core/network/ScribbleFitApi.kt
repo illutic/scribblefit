@@ -1,6 +1,7 @@
 package com.scribblefit.core.network
 
 import com.scribblefit.core.network.model.ConfigResponse
+import com.scribblefit.core.network.model.ExerciseResponse
 import com.scribblefit.core.network.model.MetadataResponse
 import com.scribblefit.core.network.model.ParseRequest
 import com.scribblefit.core.network.model.ParsedWorkoutDto
@@ -16,6 +17,7 @@ interface ScribbleFitApi {
     suspend fun getMetadata(): MetadataResponse
     suspend fun getPromptConfig(): ConfigResponse
     suspend fun parseProxy(request: ParseRequest): ParsedWorkoutDto
+    suspend fun getExercises(): ExerciseResponse
 }
 
 class ScribbleFitApiImpl(
@@ -34,5 +36,9 @@ class ScribbleFitApiImpl(
             contentType(ContentType.Application.Json)
             setBody(request)
         }.body()
+    }
+
+    override suspend fun getExercises(): ExerciseResponse {
+        return client.get("api/sync/exercises").body()
     }
 }

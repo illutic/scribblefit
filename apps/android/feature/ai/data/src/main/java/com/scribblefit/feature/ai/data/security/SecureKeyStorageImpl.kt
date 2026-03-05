@@ -38,7 +38,20 @@ class SecureKeyStorageImpl @Inject constructor(
         sharedPreferences.edit { remove(KEY_API_KEY) }
     }
 
+    override suspend fun saveAuthToken(token: String) {
+        sharedPreferences.edit { putString(KEY_AUTH_TOKEN, token) }
+    }
+
+    override suspend fun getAuthToken(): String? {
+        return sharedPreferences.getString(KEY_AUTH_TOKEN, null)
+    }
+
+    override suspend fun clearAuthToken() {
+        sharedPreferences.edit { remove(KEY_AUTH_TOKEN) }
+    }
+
     companion object {
         private const val KEY_API_KEY = "ai_api_key"
+        private const val KEY_AUTH_TOKEN = "auth_token"
     }
 }

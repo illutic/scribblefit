@@ -13,6 +13,8 @@ data class SystemConfigEntity(
     val promptVersion: String,
     @ColumnInfo(name = "prompt_text")
     val promptText: String,
+    @ColumnInfo(name = "exercise_version")
+    val exerciseVersion: String = "0.0.0",
     @ColumnInfo(name = "preferred_llm_provider")
     val preferredLlmProvider: LLMProvider = LLMProvider.PROXY,
     @ColumnInfo(name = "updated_at")

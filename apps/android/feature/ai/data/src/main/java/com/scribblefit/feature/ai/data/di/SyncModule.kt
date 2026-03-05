@@ -5,9 +5,11 @@ import com.scribblefit.feature.ai.data.engine.GeminiAIEngine
 import com.scribblefit.feature.ai.data.engine.OpenAIEngine
 import com.scribblefit.feature.ai.data.engine.ScribbleFitProxyEngine
 import com.scribblefit.feature.ai.data.repository.SyncRepositoryImpl
+import com.scribblefit.feature.ai.data.repository.ConfigRepositoryImpl
 import com.scribblefit.feature.ai.data.security.SecureKeyStorageImpl
 import com.scribblefit.feature.ai.domain.engine.LLMEngine
 import com.scribblefit.feature.ai.domain.repository.SyncRepository
+import com.scribblefit.feature.ai.domain.repository.ConfigRepository
 import com.scribblefit.feature.ai.domain.security.SecureKeyStorage
 import dagger.Binds
 import dagger.Module
@@ -27,6 +29,10 @@ abstract class SyncModule {
     @Binds
     @Singleton
     abstract fun bindSyncRepository(impl: SyncRepositoryImpl): SyncRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindConfigRepository(impl: ConfigRepositoryImpl): ConfigRepository
 
     @Binds
     @Singleton
@@ -69,9 +75,10 @@ abstract class SyncModule {
         @Singleton
         @Named("proxy")
         fun provideProxyEngine(
-            api: ScribbleFitApi
+            api: ScribbleFitApi,
+            secureKeyStorage: SecureKeyStorage
         ): LLMEngine {
-            return ScribbleFitProxyEngine(api, SYSTEM_PROMPT)
+            return ScribbleFitProxyEngine(api, secureKeyStorage, SYSTEM_PROMPT)
         }
 
         @Provides
