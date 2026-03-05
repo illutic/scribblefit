@@ -3,6 +3,12 @@ package com.scribblefit.api.core.plugins
 import com.scribblefit.api.features.config.ConfigService
 import com.scribblefit.api.features.config.ConfigServiceImpl
 import com.scribblefit.api.features.config.FirebaseConfigServiceImpl
+import com.scribblefit.api.features.exercises.ExerciseService
+import com.scribblefit.api.features.exercises.ExerciseServiceImpl
+import com.scribblefit.api.features.parser.AiParserService
+import com.scribblefit.api.features.parser.OpenAiParserService
+import com.scribblefit.api.features.telemetry.TelemetryService
+import com.scribblefit.api.features.telemetry.TelemetryServiceImpl
 import io.ktor.server.application.*
 import org.koin.dsl.module
 import org.koin.ktor.plugin.Koin
@@ -10,8 +16,8 @@ import org.koin.logger.slf4jLogger
 
 fun Application.configureDI() {
     val appModule = module {
-        single<com.scribblefit.api.features.exercises.ExerciseService> {
-            com.scribblefit.api.features.exercises.ExerciseServiceImpl()
+        single<ExerciseService> {
+            ExerciseServiceImpl()
         }
 
         single<ConfigService> {
@@ -23,9 +29,13 @@ fun Application.configureDI() {
             }
         }
         
-        single<com.scribblefit.api.features.parser.AiParserService> {
+        single<AiParserService> {
             val apiKey = System.getenv("OPENAI_API_KEY") ?: "missing-key"
-            com.scribblefit.api.features.parser.OpenAiParserService(get(), apiKey)
+            OpenAiParserService(get(), apiKey)
+        }
+
+        single<TelemetryService> {
+            TelemetryServiceImpl()
         }
     }
 
