@@ -28,6 +28,11 @@ dependencies {
     implementation(libs.ktor.server.call.logging)
     implementation(libs.koin.ktor)
     implementation(libs.koin.logger.slf4j)
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.okhttp)
+    implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.client.serialization)
+    implementation(libs.ktor.client.logging)
     implementation(libs.logback.classic)
     implementation("com.google.firebase:firebase-admin:9.4.2")
 

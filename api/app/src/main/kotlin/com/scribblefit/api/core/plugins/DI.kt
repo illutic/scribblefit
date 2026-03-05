@@ -18,6 +18,11 @@ fun Application.configureDI() {
                 ConfigServiceImpl(environment.config)
             }
         }
+        
+        single<com.scribblefit.api.features.parser.AiParserService> {
+            val apiKey = System.getenv("OPENAI_API_KEY") ?: "missing-key"
+            com.scribblefit.api.features.parser.OpenAiParserService(get(), apiKey)
+        }
     }
 
     install(Koin) {
