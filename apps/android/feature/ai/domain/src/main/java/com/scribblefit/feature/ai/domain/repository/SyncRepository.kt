@@ -9,4 +9,5 @@ interface SyncRepository {
     fun getPendingSyncItems(): Flow<List<SyncItem>>
     suspend fun updateSyncStatus(id: String, status: SyncStatus)
     suspend fun saveParsedWorkout(syncItemId: String, workout: ParsedWorkout)
+    suspend fun enqueueScribble(rawText: String)
 }
