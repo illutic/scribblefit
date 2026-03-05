@@ -9,6 +9,8 @@ import com.scribblefit.api.features.parser.AiParserService
 import com.scribblefit.api.features.parser.OpenAiParserService
 import com.scribblefit.api.features.telemetry.TelemetryService
 import com.scribblefit.api.features.telemetry.TelemetryServiceImpl
+import com.scribblefit.api.features.auth.AuthService
+import com.scribblefit.api.features.auth.AuthServiceImpl
 import io.ktor.server.application.*
 import org.koin.dsl.module
 import org.koin.ktor.plugin.Koin
@@ -36,6 +38,10 @@ fun Application.configureDI() {
 
         single<TelemetryService> {
             TelemetryServiceImpl()
+        }
+
+        single<AuthService> {
+            AuthServiceImpl()
         }
     }
 

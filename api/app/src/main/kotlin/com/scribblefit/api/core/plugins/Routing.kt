@@ -8,6 +8,8 @@ import com.scribblefit.api.features.parser.AiParserService
 import com.scribblefit.api.features.parser.parserRoutes
 import com.scribblefit.api.features.telemetry.TelemetryService
 import com.scribblefit.api.features.telemetry.telemetryRoutes
+import com.scribblefit.api.features.auth.AuthService
+import com.scribblefit.api.features.auth.authRoutes
 import io.ktor.server.application.*
 import io.ktor.server.response.*
 import io.ktor.server.routing.*
@@ -18,6 +20,7 @@ fun Application.configureRouting() {
     val aiParserService by inject<AiParserService>()
     val exerciseService by inject<ExerciseService>()
     val telemetryService by inject<TelemetryService>()
+    val authService by inject<AuthService>()
     
     routing {
         get("/") {
@@ -29,6 +32,7 @@ fun Application.configureRouting() {
             parserRoutes(aiParserService)
             exerciseRoutes(exerciseService)
             telemetryRoutes(telemetryService)
+            authRoutes(authService)
         }
     }
 }
