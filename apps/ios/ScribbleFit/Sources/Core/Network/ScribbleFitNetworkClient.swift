@@ -17,6 +17,11 @@ public final class ScribbleFitNetworkClient: Sendable {
         self.session = session
     }
     
+    public func login(request: AuthRequest) async throws -> AuthResponse {
+        let url = baseURL.appendingPathComponent("api/auth/login")
+        return try await postData(to: url, body: request)
+    }
+    
     public func getMetadata() async throws -> MetadataResponse {
         let url = baseURL.appendingPathComponent("api/sync/metadata")
         return try await fetchData(from: url)
@@ -27,11 +32,33 @@ public final class ScribbleFitNetworkClient: Sendable {
         return try await fetchData(from: url)
     }
     
-    public func parseProxy(request: ParseRequest) async throws -> ParsedWorkout {
+    public func getExercises() async throws -> ExerciseResponse {
+        let url = baseURL.appendingPathComponent("api/sync/exercises")
+        return try await fetchData(from: url)
+    }
+    
+    public func reportError(request: TelemetryRequest) async throws {
+        let url = baseURL.appendingPathComponent("api/telemetry/errors")
+        var urlRequest = URLRequest(url: url)
+        urlRequest.httpMethod = "POST"
+        urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        urlRequest.httpBody = try JSONEncoder().encode(request)
+        
+        let (_, response) = try await session.data(for: urlRequest)
+        
+        if let httpResponse = response as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
+            throw NetworkError.serverError(httpResponse.statusCode)
+        }
+    }
+    
+    public func parseProxy(request: ParseRequest, token: String? = nil) async throws -> ParsedWorkout {
         let url = baseURL.appendingPathComponent("api/parse/proxy")
         var urlRequest = URLRequest(url: url)
         urlRequest.httpMethod = "POST"
         urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        if let token = token {
+            urlRequest.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
         urlRequest.httpBody = try JSONEncoder().encode(request)
         
         let (data, response) = try await session.data(for: urlRequest)
@@ -50,6 +77,26 @@ public final class ScribbleFitNetworkClient: Sendable {
     
     private func fetchData<T: Codable>(from url: URL) async throws -> T {
         let (data, response) = try await session.data(from: url)
+        
+        if let httpResponse = response as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
+            throw NetworkError.serverError(httpResponse.statusCode)
+        }
+        
+        do {
+            let decoder = JSONDecoder()
+            return try decoder.decode(T.self, from: data)
+        } catch {
+            throw NetworkError.decodingError
+        }
+    }
+    
+    private func postData<T: Codable, B: Codable>(to url: URL, body: B) async throws -> T {
+        var urlRequest = URLRequest(url: url)
+        urlRequest.httpMethod = "POST"
+        urlRequest.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        urlRequest.httpBody = try JSONEncoder().encode(body)
+        
+        let (data, response) = try await session.data(for: urlRequest)
         
         if let httpResponse = response as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
             throw NetworkError.serverError(httpResponse.statusCode)

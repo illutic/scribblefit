@@ -51,15 +51,23 @@ public final class ScribbleFitDatabase {
     }
     
     public func saveParsedWorkout(syncItemId: String, workout: ParsedWorkout) {
+        let dateFormatter = ISO8601DateFormatter()
+        dateFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        
+        let workoutDate = dateFormatter.date(from: workout.date) ?? Date()
+        
         let log = WorkoutLog(
             id: UUID().uuidString,
-            date: Date(), // TODO: Parse from workout.date
+            date: workoutDate,
             location: workout.location,
             totalVolume: 0.0
         )
         context.insert(log)
         
         for exercise in workout.exercises {
+            // Fuzzy search for the canonical ID from our local dictionary
+            let exerciseId = searchExercises(query: exercise.canonicalName).first?.id ?? exercise.canonicalName
+            
             for set in exercise.sets {
                 let workoutSet = WorkoutSet(
                     id: UUID().uuidString,
@@ -67,7 +75,7 @@ public final class ScribbleFitDatabase {
                     reps: set.reps,
                     rpe: set.rpe,
                     notes: set.notes,
-                    exerciseId: exercise.canonicalName
+                    exerciseId: exerciseId
                 )
                 workoutSet.workout = log
                 context.insert(workoutSet)
@@ -97,14 +105,17 @@ public final class ScribbleFitDatabase {
     }
     
     public func searchExercises(query: String) -> [ExerciseDictionary] {
-        // SwiftData Predicate is a bit limited for complex LIKE queries
-        // For now, we fetch and filter if necessary, or use basic contains
         let descriptor = FetchDescriptor<ExerciseDictionary>(
             predicate: #Predicate { 
                 $0.canonicalName.contains(query)
             }
         )
         return (try? context.fetch(descriptor)) ?? []
+    }
+    
+    public func deleteAllExercises() {
+        try? context.delete(model: ExerciseDictionary.self)
+        try? context.save()
     }
     
     // MARK: - SyncQueue
