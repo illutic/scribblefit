@@ -2,11 +2,13 @@ package com.scribblefit.feature.ai.data.engine
 
 import com.scribblefit.feature.ai.data.mapper.toDomain
 import com.scribblefit.feature.ai.domain.engine.LLMEngine
+import com.scribblefit.feature.ai.domain.model.AIParsingException
 import com.scribblefit.feature.ai.domain.model.ParsedWorkout
 import com.scribblefit.core.network.model.ParsedWorkoutDto
 import com.google.mlkit.genai.common.FeatureStatus
 import com.google.mlkit.genai.prompt.GenerativeModel
 import kotlinx.serialization.json.Json
+import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
 /**
@@ -19,17 +21,19 @@ class LocalAIEngine @Inject constructor(
     private val systemPrompt: String
 ) : LLMEngine {
 
+    private val logger = LoggerFactory.getLogger(javaClass)
+
     override suspend fun parseWorkout(rawText: String): Result<ParsedWorkout> = runCatching {
         val status = generativeModel.checkStatus()
         if (status != FeatureStatus.AVAILABLE) {
-            error("Local AI Engine is not available (Status: $status).")
+            throw Exception("Local AI Engine is not available (Status: $status).")
         }
 
         val fullPrompt = "$systemPrompt\n\nInput Workout:\n$rawText"
         val response = generativeModel.generateContent(fullPrompt)
         
         val content = response.candidates.firstOrNull()?.text 
-            ?: error("Empty response from Local Gemini Nano")
+            ?: throw Exception("Empty response from Local Gemini Nano")
         
         // The model might include markdown code blocks, strip them if present
         val cleanContent = content.trim()
@@ -37,8 +41,13 @@ class LocalAIEngine @Inject constructor(
             .removeSuffix("```")
             .trim()
 
-        val parsedWorkoutDto = json.decodeFromString<ParsedWorkoutDto>(cleanContent)
-        parsedWorkoutDto.toDomain()
+        try {
+            val parsedWorkoutDto = json.decodeFromString<ParsedWorkoutDto>(cleanContent)
+            parsedWorkoutDto.toDomain()
+        } catch (e: Exception) {
+            logger.error("Hallucination detected in Local response: $cleanContent", e)
+            throw AIParsingException(rawText = rawText, error = "Hallucination: ${e.message}", cause = e)
+        }
     }
     
     suspend fun isAvailable(): Boolean = runCatching {

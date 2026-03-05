@@ -2,6 +2,7 @@ package com.scribblefit.feature.ai.data.engine
 
 import com.scribblefit.feature.ai.data.mapper.toDomain
 import com.scribblefit.feature.ai.domain.engine.LLMEngine
+import com.scribblefit.feature.ai.domain.model.AIParsingException
 import com.scribblefit.feature.ai.domain.model.ParsedWorkout
 import com.scribblefit.core.network.model.ParsedWorkoutDto
 import io.ktor.client.HttpClient
@@ -12,6 +13,7 @@ import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
+import org.slf4j.LoggerFactory
 import javax.inject.Inject
 import javax.inject.Named
 
@@ -23,6 +25,7 @@ class GeminiAIEngine @Inject constructor(
 ) : LLMEngine {
 
     private val baseUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:"
+    private val logger = LoggerFactory.getLogger(javaClass)
 
     override suspend fun parseWorkout(rawText: String): Result<ParsedWorkout> = runCatching {
         val response = client.post("${baseUrl}generateContent?key=$apiKey") {
@@ -45,10 +48,15 @@ class GeminiAIEngine @Inject constructor(
         }.body<GeminiResponse>()
 
         val content = response.candidates.firstOrNull()?.content?.parts?.firstOrNull()?.text
-            ?: error("Empty response from Gemini")
+            ?: throw Exception("Empty response from Gemini")
 
-        val parsedWorkoutDto = json.decodeFromString<ParsedWorkoutDto>(content)
-        parsedWorkoutDto.toDomain()
+        try {
+            val parsedWorkoutDto = json.decodeFromString<ParsedWorkoutDto>(content)
+            parsedWorkoutDto.toDomain()
+        } catch (e: Exception) {
+            logger.error("Hallucination detected in Gemini response: $content", e)
+            throw AIParsingException(rawText = rawText, error = "Hallucination: ${e.message}", cause = e)
+        }
     }
 }
 

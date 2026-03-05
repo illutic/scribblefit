@@ -1,6 +1,7 @@
 package com.scribblefit.feature.ai.domain.usecase
 
 import com.scribblefit.feature.ai.domain.engine.LLMEngine
+import com.scribblefit.feature.ai.domain.model.AIParsingException
 import com.scribblefit.feature.ai.domain.model.SyncStatus
 import com.scribblefit.feature.ai.domain.model.TelemetryData
 import com.scribblefit.feature.ai.domain.repository.SyncRepository
@@ -26,12 +27,17 @@ class SyncWorkoutUseCase(
             }.onFailure { error ->
                 syncRepository.updateSyncStatus(item.id, SyncStatus.FAILED)
                 
+                val errorMessage = when (error) {
+                    is AIParsingException -> error.error
+                    else -> error.message ?: "Unknown error during parsing"
+                }
+
                 // Report failure to telemetry
                 telemetryRepository.reportError(
                     TelemetryData(
                         rawText = item.rawText,
                         promptVersion = promptVersion,
-                        errorMessage = error.message ?: "Unknown error during parsing"
+                        errorMessage = errorMessage
                     )
                 )
             }
