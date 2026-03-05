@@ -9,6 +9,8 @@ import com.scribblefit.api.features.parser.AiParserService
 import com.scribblefit.api.features.parser.OpenAiParserService
 import com.scribblefit.api.features.telemetry.TelemetryService
 import com.scribblefit.api.features.telemetry.TelemetryServiceImpl
+import com.scribblefit.api.features.telemetry.TelemetryRepository
+import com.scribblefit.api.features.telemetry.LoggingTelemetryRepositoryImpl
 import com.scribblefit.api.features.auth.AuthService
 import com.scribblefit.api.features.auth.AuthServiceImpl
 import io.ktor.server.application.*
@@ -36,8 +38,12 @@ fun Application.configureDI() {
             OpenAiParserService(get(), apiKey)
         }
 
+        single<TelemetryRepository> {
+            LoggingTelemetryRepositoryImpl()
+        }
+
         single<TelemetryService> {
-            TelemetryServiceImpl()
+            TelemetryServiceImpl(get())
         }
 
         single<AuthService> {

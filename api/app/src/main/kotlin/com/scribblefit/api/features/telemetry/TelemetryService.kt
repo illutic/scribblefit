@@ -6,20 +6,22 @@ interface TelemetryService {
     suspend fun reportError(request: TelemetryRequest)
 }
 
-class TelemetryServiceImpl : TelemetryService {
+class TelemetryServiceImpl(
+    private val repository: TelemetryRepository
+) : TelemetryService {
     private val logger = LoggerFactory.getLogger("Telemetry")
 
     override suspend fun reportError(request: TelemetryRequest) {
-        // Log formatted failure for prompt engineering analysis
+        // 1. Log locally for immediate visibility
         logger.error("""
             [AI PARSE FAILURE]
             Raw Text: "${request.rawText}"
             Prompt Ver: ${request.promptVersion}
             Error: ${request.errorMessage}
             Code: ${request.errorCode ?: "N/A"}
-            Device: ${request.deviceModel ?: "Unknown"}
         """.trimIndent())
         
-        // TODO: In production, save to a HallucinationStore (Database)
+        // 2. Persist to data store (e.g. Supabase in the future)
+        repository.saveError(request)
     }
 }
