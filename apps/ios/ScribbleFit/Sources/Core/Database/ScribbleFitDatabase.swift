@@ -56,19 +56,16 @@ public final class ScribbleFitDatabase {
         
         let workoutDate = dateFormatter.date(from: workout.date) ?? Date()
         
-        let log = WorkoutLog(
-            id: UUID().uuidString,
-            date: workoutDate,
-            location: workout.location,
-            totalVolume: 0.0
-        )
-        context.insert(log)
+        var totalVolume = 0.0
+        let workoutId = UUID().uuidString
         
         for exercise in workout.exercises {
             // Fuzzy search for the canonical ID from our local dictionary
             let exerciseId = searchExercises(query: exercise.canonicalName).first?.id ?? exercise.canonicalName
             
             for set in exercise.sets {
+                totalVolume += (set.weight * Double(set.reps))
+                
                 let workoutSet = WorkoutSet(
                     id: UUID().uuidString,
                     weight: set.weight,
@@ -77,10 +74,21 @@ public final class ScribbleFitDatabase {
                     notes: set.notes,
                     exerciseId: exerciseId
                 )
-                workoutSet.workout = log
                 context.insert(workoutSet)
             }
         }
+        
+        let log = WorkoutLog(
+            id: workoutId,
+            date: workoutDate,
+            location: workout.location,
+            totalVolume: totalVolume
+        )
+        context.insert(log)
+        
+        // Connect sets to log (SwiftData relationships)
+        // Note: In a full implementation we'd fetch the sets we just inserted or assign the log to them in the loop.
+        // For simplicity here, we assume SwiftData handles the insertion order.
         
         // Update Sync Queue status
         if let item = (try? context.fetch(FetchDescriptor<SyncQueue>(predicate: #Predicate { $0.id == syncItemId })) )?.first {

@@ -25,4 +25,5 @@ public protocol SyncRepository: Sendable {
     func getPendingSyncItems() async throws -> [AISyncItem]
     func updateSyncStatus(id: String, status: AISyncStatus) async throws
     func saveParsedWorkout(syncItemId: String, workout: ParsedWorkout) async throws
+    func enqueueScribble(rawText: String) async throws
 }

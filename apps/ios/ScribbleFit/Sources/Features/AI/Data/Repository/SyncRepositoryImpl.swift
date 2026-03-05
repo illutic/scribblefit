@@ -1,5 +1,6 @@
 import Foundation
 import SwiftData
+import BackgroundTasks
 
 /**
  * iOS implementation of SyncRepository using ScribbleFitDatabase (SwiftData).
@@ -17,7 +18,6 @@ public final class SyncRepositoryImpl: SyncRepository {
     }
     
     public func updateSyncStatus(id: String, status: AISyncStatus) async throws {
-        // Map domain status to database status
         let dbStatus: ScribbleFit.SyncStatus = switch status {
         case .pending: .pending
         case .processing: .processing
@@ -29,6 +29,27 @@ public final class SyncRepositoryImpl: SyncRepository {
     
     public func saveParsedWorkout(syncItemId: String, workout: ParsedWorkout) async throws {
         database.saveParsedWorkout(syncItemId: syncItemId, workout: workout)
+    }
+    
+    public func enqueueScribble(rawText: String) async throws {
+        let syncItem = SyncQueue(
+            id: UUID().uuidString,
+            rawText: rawText,
+            status: .pending,
+            createdAt: Date()
+        )
+        database.upsertSyncItem(syncItem)
+        triggerImmediateSync()
+    }
+    
+    private func triggerImmediateSync() {
+        // Trigger a background task or use a simple Task for immediate processing
+        // On iOS, we often use a combination of BackgroundTasks and immediate execution
+        Task {
+            // In a real implementation, this would call the SyncWorkoutUseCase
+            // Or notify a background coordinator
+            print("Sync triggered for new scribble")
+        }
     }
 }
 
