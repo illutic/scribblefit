@@ -1,8 +1,6 @@
 package com.scribblefit.api.features.config
 
 import com.google.firebase.remoteconfig.FirebaseRemoteConfig
-import com.scribblefit.api.features.config.ConfigResponse
-import com.scribblefit.api.features.config.MetadataResponse
 import org.slf4j.LoggerFactory
 
 class FirebaseConfigServiceImpl : ConfigService {
@@ -25,9 +23,12 @@ class FirebaseConfigServiceImpl : ConfigService {
     }
 
     override fun getMetadata(): MetadataResponse {
+        // In a real implementation, we would probably fetch metadata from Remote Config parameters
         return MetadataResponse(
             status = "ok",
-            version = "1.0.0"
+            appVersion = "1.0.0",
+            promptVersion = "1.0.0",
+            exerciseVersion = "1.0.0"
         )
     }
 }
