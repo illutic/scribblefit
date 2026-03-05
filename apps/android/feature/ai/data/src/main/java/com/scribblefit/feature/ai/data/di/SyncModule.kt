@@ -15,6 +15,7 @@ import com.scribblefit.feature.ai.domain.repository.ConfigRepository
 import com.scribblefit.feature.ai.domain.repository.AuthRepository
 import com.scribblefit.feature.ai.domain.repository.TelemetryRepository
 import com.scribblefit.feature.ai.domain.security.SecureKeyStorage
+import com.scribblefit.feature.ai.domain.usecase.SyncWorkoutUseCase
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
@@ -23,6 +24,7 @@ import dagger.hilt.components.SingletonComponent
 import io.ktor.client.HttpClient
 import kotlinx.serialization.json.Json
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.flow.firstOrNull
 import javax.inject.Named
 import javax.inject.Singleton
 
@@ -109,6 +111,20 @@ abstract class SyncModule {
                 localAIEngine,
                 systemConfigDao
             )
+        }
+
+        @Provides
+        @Singleton
+        fun provideSyncWorkoutUseCase(
+            syncRepository: SyncRepository,
+            telemetryRepository: TelemetryRepository,
+            engine: LLMEngine,
+            systemConfigDao: com.scribblefit.core.database.dao.SystemConfigDao
+        ): SyncWorkoutUseCase {
+            val promptVersion = runBlocking { 
+                systemConfigDao.getConfig().firstOrNull()?.promptVersion ?: "1.0.0"
+            }
+            return SyncWorkoutUseCase(syncRepository, telemetryRepository, engine, promptVersion)
         }
     }
 }

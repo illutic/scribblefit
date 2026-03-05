@@ -15,15 +15,13 @@ class ScribbleFitProxyEngine @Inject constructor(
 ) : LLMEngine {
     
     override suspend fun parseWorkout(rawText: String): Result<ParsedWorkout> = runCatching {
-        // In a real app, we would add the token to the API call or via Interceptor
-        // For now, we'll just demonstrate the awareness of the token
         val token = secureKeyStorage.getAuthToken()
         
         val request = ParseRequest(
             rawText = rawText,
             prompt = systemPrompt
         )
-        val responseDto = api.parseProxy(request)
+        val responseDto = api.parseProxy(request, token)
         responseDto.toDomain()
     }
 }
