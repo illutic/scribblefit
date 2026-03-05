@@ -13,6 +13,7 @@ import com.scribblefit.feature.ai.domain.repository.SyncRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import java.time.Instant
 import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -39,9 +40,13 @@ class SyncRepositoryImpl @Inject constructor(
     override suspend fun saveParsedWorkout(syncItemId: String, workout: ParsedWorkout) {
         val workoutId = UUID.randomUUID().toString()
         
+        val workoutDate = runCatching {
+            Instant.parse(workout.date).toEpochMilli()
+        }.getOrDefault(System.currentTimeMillis())
+
         val workoutLog = WorkoutLogEntity(
             id = workoutId,
-            date = System.currentTimeMillis(), // TODO: Parse date from workout.date string
+            date = workoutDate,
             location = workout.location,
             totalVolume = 0.0 // To be calculated or provided by AI
         )

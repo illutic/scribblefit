@@ -3,31 +3,43 @@ package com.scribblefit.feature.ai.data.engine
 import com.scribblefit.core.network.ScribbleFitApi
 import com.scribblefit.core.network.model.ParseRequest
 import com.scribblefit.core.network.model.ParsedWorkoutDto
+import com.scribblefit.feature.ai.domain.security.SecureKeyStorage
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
 
 class ScribbleFitProxyEngineTest {
 
-    private val api: ScribbleFitApi = mockk()
+    private lateinit var api: ScribbleFitApi
+    private lateinit var secureKeyStorage: SecureKeyStorage
+    private lateinit var engine: ScribbleFitProxyEngine
     private val systemPrompt = "test-prompt"
-    private val engine = ScribbleFitProxyEngine(api, systemPrompt)
+
+    @Before
+    fun setup() {
+        api = mockk()
+        secureKeyStorage = mockk(relaxed = true)
+        engine = ScribbleFitProxyEngine(api, secureKeyStorage, systemPrompt)
+    }
 
     @Test
     fun `parseWorkout returns success when API returns valid DTO`() = runTest {
         val rawText = "Bench 135x5"
+        val token = "mock-token"
         val expectedDto = ParsedWorkoutDto(
             date = "2024-03-03",
             location = "Home",
             exercises = emptyList()
         )
 
+        coEvery { secureKeyStorage.getAuthToken() } returns token
         coEvery { 
-            api.parseProxy(ParseRequest(rawText = rawText, prompt = systemPrompt)) 
+            api.parseProxy(ParseRequest(rawText = rawText, prompt = systemPrompt), token) 
         } returns expectedDto
 
         val result = engine.parseWorkout(rawText)
@@ -37,12 +49,12 @@ class ScribbleFitProxyEngineTest {
         assertEquals("2024-03-03", workout.date)
         assertEquals("Home", workout.location)
         
-        coVerify { api.parseProxy(any()) }
+        coVerify { api.parseProxy(any(), token) }
     }
 
     @Test
     fun `parseWorkout returns failure when API throws exception`() = runTest {
-        coEvery { api.parseProxy(any()) } throws Exception("Network Error")
+        coEvery { api.parseProxy(any(), any()) } throws Exception("Network Error")
 
         val result = engine.parseWorkout("Bench 135x5")
 

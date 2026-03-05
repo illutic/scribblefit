@@ -36,7 +36,9 @@ class ConfigTest {
     fun testGetMetadata() = testApplication {
         environment {
             config = MapApplicationConfig(
-                "scribblefit.version" to "1.2.3"
+                "scribblefit.version" to "1.2.3",
+                "scribblefit.config.promptVersion" to "1.0.0",
+                "scribblefit.config.promptText" to "Test Prompt"
             )
         }
         application {
@@ -49,6 +51,8 @@ class ConfigTest {
         val json = Json.parseToJsonElement(body).jsonObject
         
         assertEquals("ok", json["status"]?.jsonPrimitive?.content)
-        assertEquals("1.2.3", json["version"]?.jsonPrimitive?.content)
+        assertEquals("1.2.3", json["appVersion"]?.jsonPrimitive?.content)
+        assertEquals("1.0.0", json["promptVersion"]?.jsonPrimitive?.content)
+        assertEquals("1.0.0", json["exerciseVersion"]?.jsonPrimitive?.content)
     }
 }

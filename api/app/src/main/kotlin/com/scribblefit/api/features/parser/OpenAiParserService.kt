@@ -36,7 +36,7 @@ class OpenAiParserService(
     private val json = Json { ignoreUnknownKeys = true }
 
     override suspend fun parseWorkout(rawText: String, prompt: String?): ParsedWorkoutDto {
-        val systemPrompt = prompt ?: configService.getPromptConfig().promptText
+        val systemPrompt = prompt ?: configService.getPromptConfig().prompt
         
         val response = client.post("https://api.openai.com/v1/chat/completions") {
             header("Authorization", "Bearer $apiKey")
