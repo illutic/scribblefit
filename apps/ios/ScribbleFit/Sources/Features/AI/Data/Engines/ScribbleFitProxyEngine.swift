@@ -14,6 +14,11 @@ public final class ScribbleFitProxyEngine: LLMEngine {
     public func parseWorkout(rawText: String) async throws -> ParsedWorkout {
         let token = try await secureKeyStorage.getAuthToken()
         let request = ParseRequest(rawText: rawText, prompt: systemPrompt)
-        return try await client.parseProxy(request: request, token: token)
+        
+        do {
+            return try await client.parseProxy(request: request, token: token)
+        } catch {
+            throw AIParsingError(rawText = rawText, error: "Proxy Failure: \(error.localizedDescription)")
+        }
     }
 }

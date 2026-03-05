@@ -45,8 +45,12 @@ public final class OpenAIEngine: LLMEngine {
             throw NetworkError.decodingError
         }
         
-        let serializableWorkout = try JSONDecoder().decode(AIWorkoutDTO.self, from: contentData)
-        return serializableWorkout.toDomain()
+        do {
+            let serializableWorkout = try JSONDecoder().decode(AIWorkoutDTO.self, from: contentData)
+            return serializableWorkout.toDomain()
+        } catch {
+            throw AIParsingError(rawText = rawText, error: "Hallucination: \(error.localizedDescription)")
+        }
     }
 }
 

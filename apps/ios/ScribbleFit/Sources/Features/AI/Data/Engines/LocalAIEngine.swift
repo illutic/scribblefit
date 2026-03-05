@@ -20,24 +20,28 @@ public final class LocalAIEngine: LLMEngine {
         if #available(iOS 26.0, *) {
             // Ensure Apple Intelligence is available
             guard await isAvailable() else {
-                throw NetworkError.noData
+                throw AIParsingError(rawText: rawText, error: "Apple Intelligence not available")
             }
             
             let session = LanguageModelSession {
                 self.systemPrompt
             }
             
-            // Use Guided Generation for structured output
-            let response = try await session.respond(
-                to: "Parse this gym note: \(rawText)",
-                generating: LocalAIWorkoutDTO.self
-            )
-            
-            return response.content.toDomain()
+            do {
+                // Use Guided Generation for structured output
+                let response = try await session.respond(
+                    to: "Parse this gym note: \(rawText)",
+                    generating: LocalAIWorkoutDTO.self
+                )
+                
+                return response.content.toDomain()
+            } catch {
+                throw AIParsingError(rawText: rawText, error: "Local Hallucination: \(error.localizedDescription)")
+            }
         }
         #endif
         
-        throw NetworkError.noData
+        throw AIParsingError(rawText: rawText, error: "Local AI Engine not supported on this device/OS")
     }
     
     public func isAvailable() async -> Bool {

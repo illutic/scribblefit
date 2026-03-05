@@ -40,11 +40,17 @@ public final class SyncWorkoutUseCase: Sendable {
             } catch {
                 try await syncRepository.updateSyncStatus(id: item.id, status: .failed)
                 
+                let errorMessage: String = if let parsingError = error as? AIParsingError {
+                    parsingError.error
+                } else {
+                    error.localizedDescription
+                }
+                
                 // Report to telemetry
                 let telemetryData = TelemetryData(
                     rawText: item.rawText,
                     promptVersion: promptVersion,
-                    errorMessage: error.localizedDescription
+                    errorMessage: errorMessage
                 )
                 try? await telemetryRepository.reportError(data: telemetryData)
             }
