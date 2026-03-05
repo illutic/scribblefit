@@ -7,11 +7,13 @@ import com.scribblefit.feature.ai.data.engine.ScribbleFitProxyEngine
 import com.scribblefit.feature.ai.data.repository.SyncRepositoryImpl
 import com.scribblefit.feature.ai.data.repository.ConfigRepositoryImpl
 import com.scribblefit.feature.ai.data.repository.AuthRepositoryImpl
+import com.scribblefit.feature.ai.data.repository.TelemetryRepositoryImpl
 import com.scribblefit.feature.ai.data.security.SecureKeyStorageImpl
 import com.scribblefit.feature.ai.domain.engine.LLMEngine
 import com.scribblefit.feature.ai.domain.repository.SyncRepository
 import com.scribblefit.feature.ai.domain.repository.ConfigRepository
 import com.scribblefit.feature.ai.domain.repository.AuthRepository
+import com.scribblefit.feature.ai.domain.repository.TelemetryRepository
 import com.scribblefit.feature.ai.domain.security.SecureKeyStorage
 import dagger.Binds
 import dagger.Module
@@ -39,6 +41,10 @@ abstract class SyncModule {
     @Binds
     @Singleton
     abstract fun bindAuthRepository(impl: AuthRepositoryImpl): AuthRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindTelemetryRepository(impl: TelemetryRepositoryImpl): TelemetryRepository
 
     @Binds
     @Singleton

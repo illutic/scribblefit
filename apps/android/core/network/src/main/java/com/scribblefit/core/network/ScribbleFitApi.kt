@@ -7,6 +7,7 @@ import io.ktor.client.request.get
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
 import io.ktor.http.contentType
 
 interface ScribbleFitApi {
@@ -15,6 +16,7 @@ interface ScribbleFitApi {
     suspend fun getPromptConfig(): ConfigResponse
     suspend fun parseProxy(request: ParseRequest): ParsedWorkoutDto
     suspend fun getExercises(): ExerciseResponse
+    suspend fun reportError(request: TelemetryRequest): HttpStatusCode
 }
 
 class ScribbleFitApiImpl(
@@ -44,5 +46,12 @@ class ScribbleFitApiImpl(
 
     override suspend fun getExercises(): ExerciseResponse {
         return client.get("api/sync/exercises").body()
+    }
+
+    override suspend fun reportError(request: TelemetryRequest): HttpStatusCode {
+        return client.post("api/telemetry/errors") {
+            contentType(ContentType.Application.Json)
+            setBody(request)
+        }.status
     }
 }
