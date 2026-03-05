@@ -1,5 +1,6 @@
 package com.scribblefit.feature.ai.data.repository
 
+import com.scribblefit.core.database.dao.ExerciseDictionaryDao
 import com.scribblefit.core.database.dao.SetDao
 import com.scribblefit.core.database.dao.SyncQueueDao
 import com.scribblefit.core.database.dao.WorkoutLogDao
@@ -10,6 +11,7 @@ import com.scribblefit.feature.ai.domain.model.SyncItem
 import com.scribblefit.feature.ai.domain.model.SyncStatus
 import com.scribblefit.feature.ai.domain.repository.SyncRepository
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.util.UUID
 import javax.inject.Inject
@@ -20,7 +22,8 @@ import com.scribblefit.core.database.model.SyncStatus as EntitySyncStatus
 class SyncRepositoryImpl @Inject constructor(
     private val syncQueueDao: SyncQueueDao,
     private val workoutLogDao: WorkoutLogDao,
-    private val setDao: SetDao
+    private val setDao: SetDao,
+    private val exerciseDictionaryDao: ExerciseDictionaryDao
 ) : SyncRepository {
 
     override fun getPendingSyncItems(): Flow<List<SyncItem>> {
@@ -44,11 +47,16 @@ class SyncRepositoryImpl @Inject constructor(
         )
         
         val sets = workout.exercises.flatMap { exercise ->
+            // Fuzzy search for the canonical ID from our local dictionary
+            val exerciseId = exerciseDictionaryDao.searchExercises(exercise.canonicalName)
+                .first()
+                .firstOrNull()?.id ?: exercise.canonicalName // Fallback to name as ID
+
             exercise.sets.map { set ->
                 SetEntity(
                     id = UUID.randomUUID().toString(),
                     workoutId = workoutId,
-                    exerciseId = exercise.canonicalName, // Simplification: using name as ID for now
+                    exerciseId = exerciseId,
                     weight = set.weight,
                     reps = set.reps,
                     rpe = set.rpe,
