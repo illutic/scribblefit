@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+public import Combine
 
 @MainActor
 public final class LedgerViewModel: ObservableObject {

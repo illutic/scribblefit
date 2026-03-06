@@ -1,6 +1,7 @@
 import Foundation
 import SwiftUI
 import SwiftData
+public import Combine
 
 @MainActor
 public final class AppViewModel: ObservableObject {
