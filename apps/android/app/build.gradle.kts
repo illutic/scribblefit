@@ -26,6 +26,8 @@ dependencies {
     implementation(project(":core:network"))
     implementation(project(":feature:canvas"))
     implementation(project(":feature:ledger"))
+    implementation(project(":feature:ai:domain"))
+    implementation(project(":feature:ai:data"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
