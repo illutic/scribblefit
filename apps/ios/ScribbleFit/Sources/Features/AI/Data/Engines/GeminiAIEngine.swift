@@ -49,7 +49,7 @@ public final class GeminiAIEngine: LLMEngine {
             let serializableWorkout = try JSONDecoder().decode(AIWorkoutDTO.self, from: contentData)
             return serializableWorkout.toDomain()
         } catch {
-            throw AIParsingError(rawText = rawText, error: "Hallucination: \(error.localizedDescription)")
+            throw AIParsingError(rawText: rawText, error: "Hallucination: \(error.localizedDescription)")
         }
     }
 }

@@ -18,7 +18,7 @@ public final class ScribbleFitProxyEngine: LLMEngine {
         do {
             return try await client.parseProxy(request: request, token: token)
         } catch {
-            throw AIParsingError(rawText = rawText, error: "Proxy Failure: \(error.localizedDescription)")
+            throw AIParsingError(rawText: rawText, error: "Proxy Failure: \(error.localizedDescription)")
         }
     }
 }

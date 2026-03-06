@@ -1,0 +1,632 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		011D2E3FA0894B34988594E1 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7143A68AFD264936AD99CD4D /* ContentView.swift */; };
+		02C4034AC633439AB5BD064C /* LedgerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 272CDF7B9C6A412892138401 /* LedgerView.swift */; };
+		052DE0EA3F9E4484BA4177C1 /* ScribbleFitNetworkClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 45B3B35615F44D4DAD6B6A59 /* ScribbleFitNetworkClient.swift */; };
+		11F8F10BC1FB4FEE95039369 /* AuthRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = D188B35D947B42A2B0C60877 /* AuthRepository.swift */; };
+		1919C6B062284C5797B06723 /* ScribbleFitProxyEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2D14A9090F24CDEA111D696 /* ScribbleFitProxyEngine.swift */; };
+		20B8443E91FE4C7C86EA9053 /* SystemConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = A7940D82DE924AFE85BBB853 /* SystemConfig.swift */; };
+		264EBAB454884EB6BB8232FE /* KeychainSecureKeyStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = CCC6896A6A5342FBA8D1A786 /* KeychainSecureKeyStorage.swift */; };
+		281F975FD4BA4DCC8E00362D /* SyncRepositoryImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72B5011786874EDC9F62FEFB /* SyncRepositoryImpl.swift */; };
+		339B0682726E4E96B6815FB6 /* ConfigRepositoryImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9CA01F18F9D44425A92B6C47 /* ConfigRepositoryImpl.swift */; };
+		358922A604024F70A1D1BD0F /* TelemetryRepositoryImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = C80311EA353E428B97C4C486 /* TelemetryRepositoryImpl.swift */; };
+		3648135F692D43DDA6389419 /* ParseRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2F5CD2CE3CEC4A92BEC8967D /* ParseRequest.swift */; };
+		379A1C55301940EEA79A4655 /* ScribbleFitConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4FA07BE2659484C8D1E5C80 /* ScribbleFitConfig.swift */; };
+		40636C857DC7430B9DBC54F0 /* AuthModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = F5CDB97691D74DB8A7248C9D /* AuthModels.swift */; };
+		456D85EE9CE945D895DDD5EA /* InsightsCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = 044D92D9A91F4093BD1CB671 /* InsightsCache.swift */; };
+		4EB6F886344E4A458C77AEDC /* OpenAIEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61AB16B5D3074D3DB37077B3 /* OpenAIEngine.swift */; };
+		4EF7F22E153F49BEA5CA75D3 /* MainView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 356CC5855C97449D87CC3BF4 /* MainView.swift */; };
+		510A44EFA75E47C98200988D /* ScribbleFitDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = A80906F221604E0493141F87 /* ScribbleFitDatabase.swift */; };
+		5304296456D54607A2952D2E /* WorkoutHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2682E17612E49FA8B1D4F02 /* WorkoutHistory.swift */; };
+		583F45DBBA02436ABA0C6A84 /* AuthRepositoryImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = D17BB82F2056413DA6DBFDB5 /* AuthRepositoryImpl.swift */; };
+		61A87DA1AF4546EAB9D84DC6 /* ParsedWorkout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5647BB1C11D943088B5426F6 /* ParsedWorkout.swift */; };
+		658A611E38C74765AB383B6D /* AppViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 61776DAFF3914E31B4AB2FF3 /* AppViewModel.swift */; };
+		66CE8673F2174ACDA7A11BAF /* AIParsingError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 99537063E4BB41B699ADC205 /* AIParsingError.swift */; };
+		68487C487CF749AD84B8E18A /* AIWorkoutDTO.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6857245F43EB41D1ABE3484A /* AIWorkoutDTO.swift */; };
+		731FA8D659A04228AA66A64A /* SyncQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = E57D88479EE3414382A9914C /* SyncQueue.swift */; };
+		76E1F571D4A94CF18ECB4665 /* GeminiAIEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5DA9B8EF99514755ADAE9649 /* GeminiAIEngineTests.swift */; };
+		7A9D16BDD40F4C63B47C5C44 /* LocalAIEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80B300AF6A742C8A1FD46FA /* LocalAIEngineTests.swift */; };
+		8055B0A3CABA4069828F1CC9 /* WorkoutSet.swift in Sources */ = {isa = PBXBuildFile; fileRef = DE7B3D955C534918B81E1BFD /* WorkoutSet.swift */; };
+		80F5123475A74C34A9A2C9D2 /* ScribbleFitDatabaseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 923B432C00B74035A223D701 /* ScribbleFitDatabaseTests.swift */; };
+		824F80A5BC904DC8BE531222 /* ParsedWorkoutDto.swift in Sources */ = {isa = PBXBuildFile; fileRef = F49486FA918447DC9B5C1204 /* ParsedWorkoutDto.swift */; };
+		82E7D6A66E614730AF61CDB4 /* MetadataResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = 726ED8F6CD6A47F29AB9A63E /* MetadataResponse.swift */; };
+		832BA927B8584B6EAB450ABD /* SecureKeyStorage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C1F228EE6774D038F28EE79 /* SecureKeyStorage.swift */; };
+		8D48D8FCDD04468FAF0A668D /* LLMEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 52BAE50A034541369A5DF5F7 /* LLMEngine.swift */; };
+		8F59807222CC4DFBA151F909 /* LocalAIEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9AF7A8EC9D634C489AED287E /* LocalAIEngine.swift */; };
+		9254FED8361041C8ABD314D6 /* DatabaseContainer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E05FCB496144E328B0B4C10 /* DatabaseContainer.swift */; };
+		942F335D269043179474A93E /* CanvasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D80D42B149C54F69AA4E9584 /* CanvasView.swift */; };
+		9A225BC747444826B2AE0F92 /* SyncRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = AE1F533B42874FFCA0F3000B /* SyncRepository.swift */; };
+		9DFD1F613B73499DAAA5834A /* TelemetryRequest.swift in Sources */ = {isa = PBXBuildFile; fileRef = C92524E3CF2E4082A0148DCF /* TelemetryRequest.swift */; };
+		9E81B26D1F4644539858B038 /* OpenAIEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 14710EC756BE4A5890A2DC43 /* OpenAIEngineTests.swift */; };
+		9EADE25289D8426587B1FED9 /* GeminiAIEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = DC016F771BAD458B9996BE91 /* GeminiAIEngine.swift */; };
+		9F747E6576F64FF783F708B5 /* LedgerViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8A01623015DF4015A4CFC269 /* LedgerViewModel.swift */; };
+		A88FD859024B4EBBB7B1A808 /* LedgerRepositoryImpl.swift in Sources */ = {isa = PBXBuildFile; fileRef = E8231E76750842549BEA96A2 /* LedgerRepositoryImpl.swift */; };
+		B10522163E6E43F7801B8AF7 /* WorkoutLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = 71F4467B517B4B02806AD052 /* WorkoutLog.swift */; };
+		B4CA8D8269B246D4901668BD /* ExerciseDto.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1158F98B437148ABBBD329CE /* ExerciseDto.swift */; };
+		B576F133A9834C3FB3CEFCB9 /* ConfigRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 996BD3502DA440D08F761E36 /* ConfigRepository.swift */; };
+		B5EDBD2E8E7940BCA9382D55 /* ExerciseDictionary.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9E0788D7E901414EADDF02CC /* ExerciseDictionary.swift */; };
+		B7B2008D12A64AA8830ABFD9 /* ConfigResponse.swift in Sources */ = {isa = PBXBuildFile; fileRef = AF7455B2593D426B8EBC7A68 /* ConfigResponse.swift */; };
+		C6342FA922C743E28A114906 /* ScribbleFitApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = D6AA625978874B329DFEF84D /* ScribbleFitApp.swift */; };
+		CAC9B8F30E5B4D35B4AA409F /* CanvasViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8C99E2E14C5F4E22A7B9512B /* CanvasViewModel.swift */; };
+		D5BEBEB564A84F5F92D3708F /* TelemetryRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34C018D2C3384BA88CA675A7 /* TelemetryRepository.swift */; };
+		DE149D33BC284C9AAB91D26C /* SyncWorkoutUseCase.swift in Sources */ = {isa = PBXBuildFile; fileRef = B72770D1914543D5A1D505AD /* SyncWorkoutUseCase.swift */; };
+		DEA93DF9C2274E8191D2D721 /* ScribbleFitProxyEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0788564B16EE4B0BB36D9E0F /* ScribbleFitProxyEngineTests.swift */; };
+		EE77108E1F6645D68A681646 /* ScribbleFitNetworkClientTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8D70C59149974D739737C99C /* ScribbleFitNetworkClientTests.swift */; };
+		F549629D6C144A76B8A2DDBA /* LedgerRepository.swift in Sources */ = {isa = PBXBuildFile; fileRef = 98FFAEDA19EE44F8BB21C392 /* LedgerRepository.swift */; };
+		F7CEA05FBEEC42C29184409D /* AuthRepositoryImplTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = F32649564B474DF9A8B49261 /* AuthRepositoryImplTests.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		044D92D9A91F4093BD1CB671 /* InsightsCache.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Core/Database/Models/InsightsCache.swift; sourceTree = "<group>"; };
+		0788564B16EE4B0BB36D9E0F /* ScribbleFitProxyEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests/Features/AI/Data/Engines/ScribbleFitProxyEngineTests.swift; sourceTree = "<group>"; };
+		1158F98B437148ABBBD329CE /* ExerciseDto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Core/Network/Models/ExerciseDto.swift; sourceTree = "<group>"; };
+		14710EC756BE4A5890A2DC43 /* OpenAIEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests/Features/AI/Data/Engines/OpenAIEngineTests.swift; sourceTree = "<group>"; };
+		272CDF7B9C6A412892138401 /* LedgerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Features/Ledger/UI/LedgerView.swift; sourceTree = "<group>"; };
+		2C1F228EE6774D038F28EE79 /* SecureKeyStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Features/AI/Domain/SecureKeyStorage.swift; sourceTree = "<group>"; };
+		2E05FCB496144E328B0B4C10 /* DatabaseContainer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Core/Database/DatabaseContainer.swift; sourceTree = "<group>"; };
+		2F5CD2CE3CEC4A92BEC8967D /* ParseRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Core/Network/Models/ParseRequest.swift; sourceTree = "<group>"; };
+		34C018D2C3384BA88CA675A7 /* TelemetryRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Features/AI/Domain/Repository/TelemetryRepository.swift; sourceTree = "<group>"; };
+		356CC5855C97449D87CC3BF4 /* MainView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/UI/MainView.swift; sourceTree = "<group>"; };
+		45B3B35615F44D4DAD6B6A59 /* ScribbleFitNetworkClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Core/Network/ScribbleFitNetworkClient.swift; sourceTree = "<group>"; };
+		52BAE50A034541369A5DF5F7 /* LLMEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Features/AI/Domain/LLMEngine.swift; sourceTree = "<group>"; };
+		5647BB1C11D943088B5426F6 /* ParsedWorkout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Features/AI/Domain/Models/ParsedWorkout.swift; sourceTree = "<group>"; };
+		5DA9B8EF99514755ADAE9649 /* GeminiAIEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests/Features/AI/Data/Engines/GeminiAIEngineTests.swift; sourceTree = "<group>"; };
+		60344A282F5B0E5400336125 /* ScribbleFit.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ScribbleFit.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		60344A372F5B0E5500336125 /* ScribbleFitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ScribbleFitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		60344A412F5B0E5500336125 /* ScribbleFitUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ScribbleFitUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		61776DAFF3914E31B4AB2FF3 /* AppViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Features/AppViewModel.swift; sourceTree = "<group>"; };
+		61AB16B5D3074D3DB37077B3 /* OpenAIEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Features/AI/Data/Engines/OpenAIEngine.swift; sourceTree = "<group>"; };
+		6857245F43EB41D1ABE3484A /* AIWorkoutDTO.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Features/AI/Data/Models/AIWorkoutDTO.swift; sourceTree = "<group>"; };
+		7143A68AFD264936AD99CD4D /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/UI/Canvas/ContentView.swift; sourceTree = "<group>"; };
+		71F4467B517B4B02806AD052 /* WorkoutLog.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Core/Database/Models/WorkoutLog.swift; sourceTree = "<group>"; };
+		726ED8F6CD6A47F29AB9A63E /* MetadataResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Core/Network/Models/MetadataResponse.swift; sourceTree = "<group>"; };
+		72B5011786874EDC9F62FEFB /* SyncRepositoryImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Features/AI/Data/Repository/SyncRepositoryImpl.swift; sourceTree = "<group>"; };
+		8A01623015DF4015A4CFC269 /* LedgerViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Features/Ledger/UI/LedgerViewModel.swift; sourceTree = "<group>"; };
+		8C99E2E14C5F4E22A7B9512B /* CanvasViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Features/Canvas/CanvasViewModel.swift; sourceTree = "<group>"; };
+		8D70C59149974D739737C99C /* ScribbleFitNetworkClientTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests/NetworkTests/ScribbleFitNetworkClientTests.swift; sourceTree = "<group>"; };
+		923B432C00B74035A223D701 /* ScribbleFitDatabaseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests/DatabaseTests/ScribbleFitDatabaseTests.swift; sourceTree = "<group>"; };
+		99537063E4BB41B699ADC205 /* AIParsingError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Features/AI/Domain/Models/AIParsingError.swift; sourceTree = "<group>"; };
+		996BD3502DA440D08F761E36 /* ConfigRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Features/AI/Domain/Repository/ConfigRepository.swift; sourceTree = "<group>"; };
+		9AF7A8EC9D634C489AED287E /* LocalAIEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Features/AI/Data/Engines/LocalAIEngine.swift; sourceTree = "<group>"; };
+		9CA01F18F9D44425A92B6C47 /* ConfigRepositoryImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Features/AI/Data/Repository/ConfigRepositoryImpl.swift; sourceTree = "<group>"; };
+		9E0788D7E901414EADDF02CC /* ExerciseDictionary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Core/Database/Models/ExerciseDictionary.swift; sourceTree = "<group>"; };
+		9FFAEDA19EE44F8BB21C392 /* LedgerRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Features/Ledger/Domain/Repository/LedgerRepository.swift; sourceTree = "<group>"; };
+		A2D14A9090F24CDEA111D696 /* ScribbleFitProxyEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Features/AI/Data/Engines/ScribbleFitProxyEngine.swift; sourceTree = "<group>"; };
+		A7940D82DE924AFE85BBB853 /* SystemConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Core/Database/Models/SystemConfig.swift; sourceTree = "<group>"; };
+		A80906F221604E0493141F87 /* ScribbleFitDatabase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Core/Database/ScribbleFitDatabase.swift; sourceTree = "<group>"; };
+		AE1F533B42874FFCA0F3000B /* SyncRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Features/AI/Domain/Repository/SyncRepository.swift; sourceTree = "<group>"; };
+		AF7455B2593D426B8EBC7A68 /* ConfigResponse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Core/Network/Models/ConfigResponse.swift; sourceTree = "<group>"; };
+		B0B075CFFA574E8F802BEFDC /* SyncStatus.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Core/Database/Models/SyncStatus.swift; sourceTree = "<group>"; };
+		B72770D1914543D5A1D505AD /* SyncWorkoutUseCase.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Features/AI/Domain/UseCases/SyncWorkoutUseCase.swift; sourceTree = "<group>"; };
+		B80B300AF6A742C8A1FD46FA /* LocalAIEngineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests/Features/AI/Data/Engines/LocalAIEngineTests.swift; sourceTree = "<group>"; };
+		C80311EA353E428B97C4C486 /* TelemetryRepositoryImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Features/AI/Data/Repository/TelemetryRepositoryImpl.swift; sourceTree = "<group>"; };
+		C92524E3CF2E4082A0148DCF /* TelemetryRequest.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Core/Network/Models/TelemetryRequest.swift; sourceTree = "<group>"; };
+		CCC6896A6A5342FBA8D1A786 /* KeychainSecureKeyStorage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Features/AI/Data/Security/KeychainSecureKeyStorage.swift; sourceTree = "<group>"; };
+		D17BB82F2056413DA6DBFDB5 /* AuthRepositoryImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Features/AI/Data/Repository/AuthRepositoryImpl.swift; sourceTree = "<group>"; };
+		D188B35D947B42A2B0C60877 /* AuthRepository.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Features/AI/Domain/Repository/AuthRepository.swift; sourceTree = "<group>"; };
+		D4FA07BE2659484C8D1E5C80 /* ScribbleFitConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Core/ScribbleFitConfig.swift; sourceTree = "<group>"; };
+		D6AA625978874B329DFEF84D /* ScribbleFitApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/ScribbleFitApp.swift; sourceTree = "<group>"; };
+		D80D42B149C54F69AA4E9584 /* CanvasView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Features/Canvas/CanvasView.swift; sourceTree = "<group>"; };
+		DC016F771BAD458B9996BE91 /* GeminiAIEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Features/AI/Data/Engines/GeminiAIEngine.swift; sourceTree = "<group>"; };
+		DE7B3D955C534918B81E1BFD /* WorkoutSet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Core/Database/Models/WorkoutSet.swift; sourceTree = "<group>"; };
+		E2682E17612E49FA8B1D4F02 /* WorkoutHistory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Features/Ledger/Domain/Models/WorkoutHistory.swift; sourceTree = "<group>"; };
+		E57D88479EE3414382A9914C /* SyncQueue.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Core/Database/Models/SyncQueue.swift; sourceTree = "<group>"; };
+		E8231E76750842549BEA96A2 /* LedgerRepositoryImpl.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Features/Ledger/Data/Repository/LedgerRepositoryImpl.swift; sourceTree = "<group>"; };
+		F32649564B474DF9A8B49261 /* AuthRepositoryImplTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Tests/Features/AI/Data/Repository/AuthRepositoryImplTests.swift; sourceTree = "<group>"; };
+		F49486FA918447DC9B5C1204 /* ParsedWorkoutDto.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Core/Network/Models/ParsedWorkoutDto.swift; sourceTree = "<group>"; };
+		F5CDB97691D74DB8A7248C9D /* AuthModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sources/Core/Network/Models/AuthModels.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		60344A252F5B0E5400336125 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		60344A342F5B0E5500336125 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		60344A3E2F5B0E5500336125 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		60344A1F2F5B0E5400336125 = {
+			isa = PBXGroup;
+			children = (
+				FE14B33C32074CB4B7F2FE81 /* Sources */,
+				C06188ABA4F949FA9BBC33EC /* Tests */,
+				60344A292F5B0E5400336125 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+			isa = PBXGroup;
+			children = (
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+			isa = PBXGroup;
+			children = (
+				9FFAEDA19EE44F8BB21C392 /* LedgerRepository.swift */,
+			);
+			name = Sources;
+			sourceTree = "<group>";
+		};
+			isa = PBXGroup;
+			children = (
+			);
+			name = Tests;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		60344A272F5B0E5400336125 /* ScribbleFit */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 60344A4B2F5B0E5500336125 /* Build configuration list for PBXNativeTarget "ScribbleFit" */;
+			buildPhases = (
+				60344A242F5B0E5400336125 /* Sources */,
+				60344A262F5B0E5400336125 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ScribbleFit;
+			productName = ScribbleFit;
+			productReference = 60344A282F5B0E5400336125 /* ScribbleFit.app */;
+			productType = "com.apple.product-type.application";
+		};
+		60344A362F5B0E5500336125 /* ScribbleFitTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 60344A4E2F5B0E5500336125 /* Build configuration list for PBXNativeTarget "ScribbleFitTests" */;
+			buildPhases = (
+				60344A332F5B0E5500336125 /* Sources */,
+				60344A352F5B0E5500336125 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				60344A392F5B0E5500336125 /* PBXTargetDependency */,
+			);
+			name = ScribbleFitTests;
+			productName = ScribbleFitTests;
+			productReference = 60344A372F5B0E5500336125 /* ScribbleFitTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		60344A402F5B0E5500336125 /* ScribbleFitUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 60344A512F5B0E5500336125 /* Build configuration list for PBXNativeTarget "ScribbleFitUITests" */;
+			buildPhases = (
+				60344A3D2F5B0E5500336125 /* Sources */,
+				60344A3F2F5B0E5500336125 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				60344A432F5B0E5500336125 /* PBXTargetDependency */,
+			);
+			name = ScribbleFitUITests;
+			productName = ScribbleFitUITests;
+			productReference = 60344A412F5B0E5500336125 /* ScribbleFitUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		60344A202F5B0E5400336125 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 2630;
+				LastUpgradeCheck = 2630;
+				TargetAttributes = {
+					60344A272F5B0E5400336125 = {
+						CreatedOnToolsVersion = 26.3;
+					};
+					60344A362F5B0E5500336125 = {
+						CreatedOnToolsVersion = 26.3;
+						TestTargetID = 60344A272F5B0E5400336125;
+					};
+					60344A402F5B0E5500336125 = {
+						CreatedOnToolsVersion = 26.3;
+						TestTargetID = 60344A272F5B0E5400336125;
+					};
+				};
+			};
+			buildConfigurationList = 60344A232F5B0E5400336125 /* Build configuration list for PBXProject "ScribbleFit" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 60344A1F2F5B0E5400336125;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 60344A292F5B0E5400336125 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F9435E6F669B4A77B7773721 /* SyncStatus.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+			isa = PBXTargetDependency;
+			target = 60344A272F5B0E5400336125 /* ScribbleFit */;
+			targetProxy = 60344A382F5B0E5500336125 /* PBXContainerItemProxy */;
+		};
+			isa = PBXTargetDependency;
+			target = 60344A272F5B0E5400336125 /* ScribbleFit */;
+			targetProxy = 60344A422F5B0E5500336125 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		60344A492F5B0E5500336125 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				DEVELOPMENT_TEAM = H4A73TFY37;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+			};
+			name = Debug;
+		};
+		60344A4A2F5B0E5500336125 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				DEVELOPMENT_TEAM = H4A73TFY37;
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		60344A4C2F5B0E5500336125 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = H4A73TFY37;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.scribblefit.ScribbleFit;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		60344A4D2F5B0E5500336125 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = H4A73TFY37;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.scribblefit.ScribbleFit;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		60344A4F2F5B0E5500336125 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = H4A73TFY37;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.scribblefit.ScribbleFitTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ScribbleFit.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/ScribbleFit";
+			};
+			name = Debug;
+		};
+		60344A502F5B0E5500336125 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = H4A73TFY37;
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.scribblefit.ScribbleFitTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/ScribbleFit.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/ScribbleFit";
+			};
+			name = Release;
+		};
+		60344A522F5B0E5500336125 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = H4A73TFY37;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.scribblefit.ScribbleFitUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = ScribbleFit;
+			};
+			name = Debug;
+		};
+		60344A532F5B0E5500336125 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = H4A73TFY37;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.scribblefit.ScribbleFitUITests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				STRING_CATALOG_GENERATE_SYMBOLS = NO;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_TARGET_NAME = ScribbleFit;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		60344A232F5B0E5400336125 /* Build configuration list for PBXProject "ScribbleFit" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		60344A4B2F5B0E5500336125 /* Build configuration list for PBXNativeTarget "ScribbleFit" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		60344A4E2F5B0E5500336125 /* Build configuration list for PBXNativeTarget "ScribbleFitTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		60344A512F5B0E5500336125 /* Build configuration list for PBXNativeTarget "ScribbleFitUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 60344A202F5B0E5400336125 /* Project object */;
+}

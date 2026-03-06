@@ -33,7 +33,7 @@ public final class LedgerRepositoryImpl: LedgerRepository {
                 id: log.id,
                 date: log.date,
                 location: log.location,
-                totalVolume: log.totalVolume,
+                totalVolume: log.totalVolume ?? 0.0,
                 exercises: exercises
             )
         }
