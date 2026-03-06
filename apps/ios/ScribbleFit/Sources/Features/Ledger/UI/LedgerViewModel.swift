@@ -1,0 +1,23 @@
+import Foundation
+import SwiftUI
+
+@MainActor
+public final class LedgerViewModel: ObservableObject {
+    private let ledgerRepository: LedgerRepository
+    
+    @Published public var history: [WorkoutHistory] = []
+    
+    public init(ledgerRepository: LedgerRepository) {
+        self.ledgerRepository = ledgerRepository
+    }
+    
+    public func fetchHistory() {
+        Task {
+            do {
+                self.history = try await ledgerRepository.getWorkoutHistory()
+            } catch {
+                print("Failed to fetch history: \(error)")
+            }
+        }
+    }
+}
