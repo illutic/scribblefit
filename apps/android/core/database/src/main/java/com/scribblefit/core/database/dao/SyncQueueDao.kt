@@ -22,8 +22,17 @@ interface SyncQueueDao {
     @Query("SELECT * FROM Sync_Queue WHERE status = :status ORDER BY created_at ASC")
     fun getSyncItemsByStatus(status: SyncStatus): Flow<List<SyncQueueEntity>>
 
+    @Query("SELECT * FROM Sync_Queue ORDER BY created_at ASC")
+    fun getAllSyncItems(): Flow<List<SyncQueueEntity>>
+
     @Query("UPDATE Sync_Queue SET status = :status WHERE id = :id")
     suspend fun updateStatus(id: String, status: SyncStatus)
+
+    @Query("UPDATE Sync_Queue SET status = :status, parsed_json = :parsedJson WHERE id = :id")
+    suspend fun updateParsedResult(id: String, status: SyncStatus, parsedJson: String?)
+
+    @Query("DELETE FROM Sync_Queue WHERE id = :id")
+    suspend fun deleteById(id: String)
 
     @Query("DELETE FROM Sync_Queue")
     suspend fun deleteAll()

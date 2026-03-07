@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "6ff607d622b75bba09b24a6e61161876",
+    "identityHash": "51aeeaca1c267d0e56d340a0dfaf1af8",
     "entities": [
       {
         "tableName": "Sync_Queue",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `raw_text` TEXT NOT NULL, `status` TEXT NOT NULL, `created_at` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `raw_text` TEXT NOT NULL, `status` TEXT NOT NULL, `created_at` INTEGER NOT NULL, `parsed_json` TEXT, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -31,6 +31,11 @@
             "columnName": "created_at",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "parsedJson",
+            "columnName": "parsed_json",
+            "affinity": "TEXT"
           }
         ],
         "primaryKey": {
@@ -371,7 +376,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '6ff607d622b75bba09b24a6e61161876')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '51aeeaca1c267d0e56d340a0dfaf1af8')"
     ]
   }
 }

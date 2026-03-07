@@ -23,6 +23,9 @@ import org.junit.Before
 import org.junit.Test
 import java.time.Instant
 
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.encodeToString
+
 class SyncRepositoryImplTest {
 
     private lateinit var context: Context
@@ -31,20 +34,21 @@ class SyncRepositoryImplTest {
     private lateinit var setDao: SetDao
     private lateinit var exerciseDictionaryDao: ExerciseDictionaryDao
     private lateinit var workManager: WorkManager
+    private lateinit var json: Json
     private lateinit var repository: SyncRepositoryImpl
 
     @Before
     fun setup() {
         workManager = mockk(relaxed = true)
         context = mockk(relaxed = true)
+        json = Json { ignoreUnknownKeys = true }
         
         syncQueueDao = mockk(relaxed = true)
         workoutLogDao = mockk(relaxed = true)
         setDao = mockk(relaxed = true)
         exerciseDictionaryDao = mockk(relaxed = true)
         
-        repository = SyncRepositoryImpl(context, syncQueueDao, workoutLogDao, setDao, exerciseDictionaryDao)
-        repository.workManagerProvider = { workManager }
+        repository = SyncRepositoryImpl(context, syncQueueDao, workoutLogDao, setDao, exerciseDictionaryDao, json) { workManager }
     }
 
     @Test
@@ -65,66 +69,39 @@ class SyncRepositoryImplTest {
     }
 
     @Test
-    fun `saveParsedWorkout saves workout and sets with mapped IDs and calculated volume`() = runTest {
+    fun `saveParsedWorkout updates sync queue with JSON result`() = runTest {
         // Given
         val syncItemId = "sync1"
-        val now = Instant.now()
         val workout = ParsedWorkout(
-            date = now.toString(),
+            date = "2024-05-20",
             location = "Gym",
             exercises = listOf(
                 ParsedExercise(
                     canonicalName = "Bench Press",
                     sets = listOf(
-                        ParsedSet(100.0, 5), // 500
-                        ParsedSet(200.0, 2)  // 400
+                        ParsedSet(100.0, 5)
                     )
                 )
             )
         )
-        val exerciseEntity = ExerciseDictionaryEntity("ex1", "Bench Press", "Chest", emptyList())
-        
-        every { exerciseDictionaryDao.searchExercises("Bench Press") } returns flowOf(listOf(exerciseEntity))
 
         // When
         repository.saveParsedWorkout(syncItemId, workout)
 
         // Then
+        val expectedJson = json.encodeToString(workout)
         coVerify { 
-            workoutLogDao.upsertWorkoutLog(match { 
-                it.location == "Gym" && 
-                it.date == now.toEpochMilli() &&
-                it.totalVolume == 900.0
-            }) 
+            syncQueueDao.updateParsedResult(syncItemId, EntitySyncStatus.COMPLETED, expectedJson)
         }
-        coVerify { setDao.upsertSets(match { it.size == 2 && it[0].exerciseId == "ex1" }) }
-        coVerify { syncQueueDao.updateStatus(syncItemId, EntitySyncStatus.COMPLETED) }
     }
 
     @Test
-    fun `enqueueScribble saves item and triggers workmanager`() = runTest {
+    fun `enqueueScribble saves item with provided id and triggers workmanager`() = runTest {
         // When
-        repository.enqueueScribble("bench 100x5")
+        repository.enqueueScribble("bench 100x5", "custom-id")
 
         // Then
-        coVerify { syncQueueDao.upsertSyncItem(match { it.rawText == "bench 100x5" }) }
+        coVerify { syncQueueDao.upsertSyncItem(match { it.id == "custom-id" && it.rawText == "bench 100x5" }) }
         coVerify { workManager.enqueue(any<WorkRequest>()) }
-    }
-
-    @Test
-    fun `saveParsedWorkout handles invalid date string`() = runTest {
-        // Given
-        val workout = ParsedWorkout(
-            date = "invalid-date",
-            location = null,
-            exercises = emptyList()
-        )
-        every { exerciseDictionaryDao.searchExercises(any()) } returns flowOf(emptyList())
-
-        // When
-        repository.saveParsedWorkout("sync1", workout)
-
-        // Then
-        coVerify { workoutLogDao.upsertWorkoutLog(any()) } // Should still save with fallback date
     }
 }

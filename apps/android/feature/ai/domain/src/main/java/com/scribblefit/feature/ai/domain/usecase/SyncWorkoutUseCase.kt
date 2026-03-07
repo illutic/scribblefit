@@ -4,17 +4,23 @@ import com.scribblefit.feature.ai.domain.engine.LLMEngine
 import com.scribblefit.feature.ai.domain.model.AIParsingException
 import com.scribblefit.feature.ai.domain.model.SyncStatus
 import com.scribblefit.feature.ai.domain.model.TelemetryData
+import com.scribblefit.feature.ai.domain.engine.ConfigRepository
 import com.scribblefit.feature.ai.domain.engine.SyncRepository
 import com.scribblefit.feature.ai.domain.engine.TelemetryRepository
 import kotlinx.coroutines.flow.first
+
+import com.scribblefit.feature.ai.domain.model.*
 
 class SyncWorkoutUseCase(
     private val syncRepository: SyncRepository,
     private val telemetryRepository: TelemetryRepository,
     private val engine: LLMEngine,
-    private val promptVersion: String
+    private val configRepository: ConfigRepository
 ) {
     suspend operator fun invoke() {
+        val config = configRepository.getConfig().first()
+        val promptVersion = config?.promptVersion ?: "1.0.0"
+        
         val pendingItems = syncRepository.getPendingSyncItems().first()
         
         for (item in pendingItems) {
@@ -22,21 +28,16 @@ class SyncWorkoutUseCase(
             
             val result = engine.parseWorkout(item.rawText)
             
-            result.onSuccess { workout ->
-                syncRepository.saveParsedWorkout(item.id, workout)
-            }.onFailure { error ->
+            if (result.status == ParsingStatus.SUCCESS && result.workout != null) {
+                syncRepository.saveParsedWorkout(item.id, result.workout)
+            } else {
                 syncRepository.updateSyncStatus(item.id, SyncStatus.FAILED)
                 
-                val errorMessage = when (error) {
-                    is AIParsingException -> error.error
-                    else -> error.message ?: "Unknown error during parsing"
-                }
-
                 telemetryRepository.reportError(
                     TelemetryData(
                         rawText = item.rawText,
                         promptVersion = promptVersion,
-                        errorMessage = errorMessage
+                        errorMessage = result.error ?: "Unknown error during parsing"
                     )
                 )
             }

@@ -8,5 +8,6 @@ data class SyncItem(
     val id: String,
     val rawText: String,
     val status: SyncStatus,
-    val createdAt: Long
+    val createdAt: Long,
+    val parsedResult: ParsedWorkout? = null
 )

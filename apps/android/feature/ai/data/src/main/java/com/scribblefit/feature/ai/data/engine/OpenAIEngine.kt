@@ -1,8 +1,12 @@
 package com.scribblefit.feature.ai.data.engine
 
-import com.scribblefit.feature.ai.data.mapper.*
 import com.scribblefit.core.network.model.ParsedWorkoutDto
+import com.scribblefit.feature.ai.data.mapper.ExerciseInsightDto
+import com.scribblefit.feature.ai.data.mapper.SuggestionDto
+import com.scribblefit.feature.ai.data.mapper.SummaryDto
+import com.scribblefit.feature.ai.data.mapper.toDomain
 import com.scribblefit.feature.ai.domain.engine.AnalysisEngine
+import com.scribblefit.feature.ai.domain.engine.ConfigRepository
 import com.scribblefit.feature.ai.domain.engine.LLMEngine
 import com.scribblefit.feature.ai.domain.model.AIParsingException
 import com.scribblefit.feature.ai.domain.model.AnalysisSuggestion
@@ -10,6 +14,7 @@ import com.scribblefit.feature.ai.domain.model.AnalysisSummary
 import com.scribblefit.feature.ai.domain.model.ExerciseInsight
 import com.scribblefit.feature.ai.domain.model.ParsedWorkout
 import com.scribblefit.feature.ai.domain.model.SummaryPeriod
+import com.scribblefit.feature.ai.domain.security.SecureKeyStorage
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.header
@@ -19,61 +24,134 @@ import io.ktor.client.statement.bodyAsText
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
 import io.ktor.http.isSuccess
-import kotlinx.serialization.SerialName
+import kotlinx.coroutines.flow.first
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
-import org.slf4j.LoggerFactory
+import kotlinx.serialization.json.JsonElement
+import kotlinx.serialization.json.JsonPrimitive
+
+import com.scribblefit.feature.ai.domain.model.*
 
 class OpenAIEngine(
     private val client: HttpClient,
-    private val apiKey: String,
-    private val systemPrompt: String,
+    private val secureKeyStorage: SecureKeyStorage,
+    private val configRepository: ConfigRepository,
     private val json: Json
 ) : LLMEngine, AnalysisEngine {
 
-    private val logger = LoggerFactory.getLogger(javaClass)
+    override suspend fun parseWorkout(rawText: String): ParsedWorkoutResult {
+        val startTime = System.currentTimeMillis()
+        return try {
+            val apiKey = secureKeyStorage.getApiKey() ?: ""
+            val systemPrompt = configRepository.getConfig().first()?.promptText ?: error("Prompt is empty. Configuration is not set.")
+            
+            val response = callOpenAIResponse(apiKey, systemPrompt, rawText)
+            val duration = System.currentTimeMillis() - startTime
+            
+            val content = response.output
+                .filter { it.type == "message" }
+                .firstNotNullOfOrNull { item ->
+                    item.content?.firstOrNull { it.type == "text" }?.text
+                } ?: throw Exception("Empty response from OpenAI Responses API")
 
-    override suspend fun parseWorkout(rawText: String): Result<ParsedWorkout> = runCatching {
-        val content = callOpenAI(systemPrompt, rawText)
-        try {
+            val reasoning = response.output
+                .filter { it.type == "reasoning" }
+                .firstNotNullOfOrNull { item ->
+                    item.content?.firstOrNull { it.type == "text" }?.text
+                }
+
             val parsedWorkoutDto = json.decodeFromString<ParsedWorkoutDto>(content)
-            parsedWorkoutDto.toDomain()
-        } catch (e: Exception) {
-            throw AIParsingException(
+            val workout = parsedWorkoutDto.toDomain()
+            
+            ParsedWorkoutResult(
+                workout = workout,
                 rawText = rawText,
-                error = "Hallucination: ${e.message}",
-                cause = e
+                status = ParsingStatus.SUCCESS,
+                modelUsed = "gpt-4o-mini",
+                processingTimeMs = duration,
+                reasoning = reasoning
+            )
+        } catch (e: Exception) {
+            val duration = System.currentTimeMillis() - startTime
+            ParsedWorkoutResult(
+                workout = null,
+                rawText = rawText,
+                status = ParsingStatus.FAILURE,
+                modelUsed = "gpt-4o-mini",
+                processingTimeMs = duration,
+                error = e.message ?: "Unknown error"
             )
         }
     }
 
-    override suspend fun generateSuggestion(context: String): Result<AnalysisSuggestion> = runCatching {
-        val content = callOpenAI(AnalysisPrompts.getSuggestionPrompt(context), "Generate suggestion.")
-        json.decodeFromString<SuggestionDto>(content).toDomain()
-    }
+    override suspend fun generateSuggestion(context: String): Result<AnalysisSuggestion> =
+        runCatching {
+            val apiKey = secureKeyStorage.getApiKey() ?: ""
+            val response = callOpenAIResponse(
+                apiKey,
+                AnalysisPrompts.getSuggestionPrompt(context),
+                "Generate suggestion."
+            )
+            val content = response.output
+                .filter { it.type == "message" }
+                .firstNotNullOfOrNull { item ->
+                    item.content?.firstOrNull { it.type == "text" }?.text
+                } ?: throw Exception("Empty response from OpenAI")
+            json.decodeFromString<SuggestionDto>(content).toDomain()
+        }
 
-    override suspend fun generateSummary(period: SummaryPeriod, workoutData: String): Result<AnalysisSummary> = runCatching {
-        val content = callOpenAI(AnalysisPrompts.getSummaryPrompt(period.name, workoutData), "Generate summary.")
+    override suspend fun generateSummary(
+        period: SummaryPeriod,
+        workoutData: String
+    ): Result<AnalysisSummary> = runCatching {
+        val apiKey = secureKeyStorage.getApiKey() ?: ""
+        val response = callOpenAIResponse(
+            apiKey,
+            AnalysisPrompts.getSummaryPrompt(period.name, workoutData),
+            "Generate summary."
+        )
+        val content = response.output
+            .filter { it.type == "message" }
+            .firstNotNullOfOrNull { item ->
+                item.content?.firstOrNull { it.type == "text" }?.text
+            } ?: throw Exception("Empty response from OpenAI")
         json.decodeFromString<SummaryDto>(content).toDomain(period)
     }
 
-    override suspend fun generateExerciseInsight(exerciseName: String, historyData: String): Result<ExerciseInsight> = runCatching {
-        val content = callOpenAI(AnalysisPrompts.getExerciseInsightPrompt(exerciseName, historyData), "Analyze $exerciseName.")
+    override suspend fun generateExerciseInsight(
+        exerciseName: String,
+        historyData: String
+    ): Result<ExerciseInsight> = runCatching {
+        val apiKey = secureKeyStorage.getApiKey() ?: ""
+        val response = callOpenAIResponse(
+            apiKey,
+            AnalysisPrompts.getExerciseInsightPrompt(exerciseName, historyData),
+            "Analyze $exerciseName."
+        )
+        val content = response.output
+            .filter { it.type == "message" }
+            .firstNotNullOfOrNull { item ->
+                item.content?.firstOrNull { it.type == "text" }?.text
+            } ?: throw Exception("Empty response from OpenAI")
         json.decodeFromString<ExerciseInsightDto>(content).toDomain(exerciseName)
     }
 
-    private suspend fun callOpenAI(prompt: String, userMessage: String): String {
-        val response = client.post("https://api.openai.com/v1/chat/completions") {
+    private suspend fun callOpenAIResponse(
+        apiKey: String,
+        instructions: String,
+        userMessage: String
+    ): OpenAIResponse {
+        val response = client.post("https://api.openai.com/v1/responses") {
             header("Authorization", "Bearer $apiKey")
             contentType(ContentType.Application.Json)
             setBody(
-                OpenAIRequest(
+                OpenAIResponseRequest(
                     model = "gpt-4o-mini",
-                    messages = listOf(
-                        OpenAIMessage(role = "system", content = prompt),
-                        OpenAIMessage(role = "user", content = userMessage)
-                    ),
-                    responseFormat = OpenAIResponseFormat(type = "json_object")
+                    input = JsonPrimitive("$userMessage\n\nOutput in JSON format."),
+                    instructions = instructions,
+                    text = OpenAITextConfig(
+                        format = OpenAIFormatConfig(type = "json_object")
+                    )
                 )
             )
         }
@@ -83,36 +161,56 @@ class OpenAIEngine(
             throw Exception("OpenAI API error: ${response.status} - $errorBody")
         }
 
-        val openAiResponse = response.body<OpenAIResponse>()
-        return openAiResponse.choices.firstOrNull()?.message?.content
-            ?: throw Exception("Empty response from OpenAI")
+        return response.body<OpenAIResponse>()
+    }
+
+    // Deprecated but keeping signature for now if needed internally
+    private suspend fun callOpenAI(
+        apiKey: String,
+        instructions: String,
+        userMessage: String
+    ): String {
+        return callOpenAIResponse(apiKey, instructions, userMessage).output
+            .filter { it.type == "message" }
+            .firstNotNullOfOrNull { item ->
+                item.content?.firstOrNull { it.type == "text" }?.text
+            } ?: throw Exception("Empty response from OpenAI Responses API")
     }
 }
 
 @Serializable
-private data class OpenAIRequest(
+private data class OpenAIResponseRequest(
     val model: String,
-    val messages: List<OpenAIMessage>,
-    @SerialName("response_format") val responseFormat: OpenAIResponseFormat
+    val input: JsonElement,
+    val instructions: String? = null,
+    val text: OpenAITextConfig? = null
 )
 
 @Serializable
-private data class OpenAIMessage(
-    val role: String,
-    val content: String
+private data class OpenAITextConfig(
+    val format: OpenAIFormatConfig
 )
 
 @Serializable
-private data class OpenAIResponseFormat(
+private data class OpenAIFormatConfig(
     val type: String
 )
 
 @Serializable
-private data class OpenAIResponse(
-    val choices: List<OpenAIChoice>
+private data class OpenAIContentPart(
+    val type: String,
+    val text: String
 )
 
 @Serializable
-private data class OpenAIChoice(
-    val message: OpenAIMessage
+private data class OpenAIResponse(
+    val id: String? = null,
+    val output: List<OpenAIOutputItem> = emptyList()
+)
+
+@Serializable
+private data class OpenAIOutputItem(
+    val id: String? = null,
+    val type: String? = null,
+    val content: List<OpenAIContentPart>? = null
 )

@@ -1,8 +1,8 @@
 package com.scribblefit.feature.profile.data.repository
 
 import com.scribblefit.core.database.ScribbleFitDatabase
-import com.scribblefit.core.database.dao.SystemConfigDao
-import com.scribblefit.core.database.model.SystemConfigEntity
+import com.scribblefit.feature.ai.domain.engine.ConfigRepository
+import com.scribblefit.feature.ai.domain.model.SystemConfig
 import com.scribblefit.feature.ai.domain.model.LLMProvider
 import com.scribblefit.feature.profile.domain.model.*
 import io.mockk.*
@@ -15,30 +15,31 @@ import org.junit.Test
 
 class SettingsRepositoryImplTest {
 
-    private lateinit var systemConfigDao: SystemConfigDao
+    private lateinit var configRepository: ConfigRepository
     private lateinit var database: ScribbleFitDatabase
     private lateinit var repository: SettingsRepositoryImpl
 
     @Before
     fun setup() {
-        systemConfigDao = mockk(relaxed = true)
+        configRepository = mockk(relaxed = true)
         database = mockk(relaxed = true)
-        repository = SettingsRepositoryImpl(systemConfigDao, database)
+        repository = SettingsRepositoryImpl(configRepository, database)
     }
 
     @Test
-    fun `getSettings maps entity to AppSettings correctly`() = runTest {
+    fun `getSettings maps domain config to AppSettings correctly`() = runTest {
         // Given
-        val entity = SystemConfigEntity(
+        val config = SystemConfig(
             promptVersion = "1.0",
             promptText = "",
+            exerciseVersion = "0.0.0",
             preferredLlmProvider = LLMProvider.OPENAI,
             parsingMode = "PERSONAL",
             weightUnit = "KG",
             themePreference = "DARK",
             updatedAt = 1000L
         )
-        every { systemConfigDao.getConfig() } returns flowOf(entity)
+        every { configRepository.getConfig() } returns flowOf(config)
 
         // When
         val settings = repository.getSettings().first()
@@ -51,7 +52,7 @@ class SettingsRepositoryImplTest {
     }
 
     @Test
-    fun `updateSettings upserts new configuration`() = runTest {
+    fun `updateSettings updates configuration in repository`() = runTest {
         // Given
         val settings = AppSettings(
             parsingMode = ParsingMode.CLOUD,
@@ -59,13 +60,14 @@ class SettingsRepositoryImplTest {
             weightUnit = WeightUnit.LBS,
             themePreference = ThemePreference.LIGHT
         )
+        every { configRepository.getConfig() } returns flowOf(null)
 
         // When
         repository.updateSettings(settings)
 
         // Then
         coVerify { 
-            systemConfigDao.upsertConfig(match { 
+            configRepository.updateConfig(match { 
                 it.parsingMode == "CLOUD" && 
                 it.preferredLlmProvider == LLMProvider.GEMINI &&
                 it.weightUnit == "LBS"

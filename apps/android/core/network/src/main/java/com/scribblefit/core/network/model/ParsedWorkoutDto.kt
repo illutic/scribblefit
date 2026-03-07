@@ -1,5 +1,6 @@
 package com.scribblefit.core.network.model
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -11,6 +12,7 @@ data class ParsedWorkoutDto(
 
 @Serializable
 data class ParsedExerciseDto(
+    @SerialName("canonical_name")
     val canonicalName: String,
     val sets: List<ParsedSetDto>
 )

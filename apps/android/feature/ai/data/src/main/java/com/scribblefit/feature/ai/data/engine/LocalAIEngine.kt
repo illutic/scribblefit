@@ -18,6 +18,11 @@ import kotlinx.serialization.json.Json
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
+import com.scribblefit.feature.ai.domain.engine.ConfigRepository
+import kotlinx.coroutines.flow.first
+
+import com.scribblefit.feature.ai.domain.model.*
+
 /**
  * Local AI Engine for Android.
  * Leverages on-device Gemini Nano via AICore / ML Kit GenAI Prompt API.
@@ -25,21 +30,37 @@ import javax.inject.Inject
 class LocalAIEngine @Inject constructor(
     private val generativeModel: GenerativeModel,
     private val json: Json,
-    private val systemPrompt: String
+    private val configRepository: ConfigRepository
 ) : LLMEngine, AnalysisEngine {
 
     private val logger = LoggerFactory.getLogger(javaClass)
 
-    override suspend fun parseWorkout(rawText: String): Result<ParsedWorkout> = runCatching {
-        val content = callLocalAI(systemPrompt, rawText)
-        try {
+    override suspend fun parseWorkout(rawText: String): ParsedWorkoutResult {
+        val startTime = System.currentTimeMillis()
+        return try {
+            val systemPrompt = configRepository.getConfig().first()?.promptText ?: error("Prompt is empty. Configuration is not set.")
+            val content = callLocalAI(systemPrompt, rawText)
+            val duration = System.currentTimeMillis() - startTime
+            
             val parsedWorkoutDto = json.decodeFromString<ParsedWorkoutDto>(content)
-            parsedWorkoutDto.toDomain()
-        } catch (e: Exception) {
-            throw AIParsingException(
+            val workout = parsedWorkoutDto.toDomain()
+            
+            ParsedWorkoutResult(
+                workout = workout,
                 rawText = rawText,
-                error = "Hallucination: ${e.message}",
-                cause = e
+                status = ParsingStatus.SUCCESS,
+                modelUsed = "gemini-nano-local",
+                processingTimeMs = duration
+            )
+        } catch (e: Exception) {
+            val duration = System.currentTimeMillis() - startTime
+            ParsedWorkoutResult(
+                workout = null,
+                rawText = rawText,
+                status = ParsingStatus.FAILURE,
+                modelUsed = "gemini-nano-local",
+                processingTimeMs = duration,
+                error = e.message ?: "Unknown local AI error"
             )
         }
     }

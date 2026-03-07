@@ -52,14 +52,6 @@ abstract class SyncModule {
     abstract fun bindSecureKeyStorage(impl: SecureKeyStorageImpl): SecureKeyStorage
 
     companion object {
-        private const val SYSTEM_PROMPT = """
-            You are ScribbleFit AI, a fitness parsing assistant. 
-            Your goal is to take raw, messy gym shorthand and parse it into a structured JSON format.
-            Extract the date, location, and a list of exercises.
-            Each exercise should have a canonical name and a list of sets.
-            Each set should have weight, reps, rpe (optional), and notes (optional).
-        """
-
         @Provides
         @Singleton
         fun provideGenerativeModel(): GenerativeModel {
@@ -72,10 +64,10 @@ abstract class SyncModule {
         fun provideOpenAIEngine(
             @Named("base") client: HttpClient,
             secureKeyStorage: SecureKeyStorage,
+            configRepository: ConfigRepository,
             json: Json
         ): LLMEngine {
-            val apiKey = runBlocking { secureKeyStorage.getApiKey() } ?: ""
-            return OpenAIEngine(client, apiKey, SYSTEM_PROMPT, json)
+            return OpenAIEngine(client, secureKeyStorage, configRepository, json)
         }
 
         @Provides
@@ -84,10 +76,10 @@ abstract class SyncModule {
         fun provideGeminiAIEngine(
             @Named("base") client: HttpClient,
             secureKeyStorage: SecureKeyStorage,
+            configRepository: ConfigRepository,
             json: Json
         ): LLMEngine {
-            val apiKey = runBlocking { secureKeyStorage.getApiKey() } ?: ""
-            return GeminiAIEngine(client, apiKey, SYSTEM_PROMPT, json)
+            return GeminiAIEngine(client, secureKeyStorage, configRepository, json)
         }
 
         @Provides
@@ -95,9 +87,10 @@ abstract class SyncModule {
         @Named("proxy")
         fun provideProxyEngine(
             api: ScribbleFitApi,
-            secureKeyStorage: SecureKeyStorage
+            secureKeyStorage: SecureKeyStorage,
+            configRepository: ConfigRepository
         ): LLMEngine {
-            return ScribbleFitProxyEngine(api, secureKeyStorage, SYSTEM_PROMPT)
+            return ScribbleFitProxyEngine(api, secureKeyStorage, configRepository)
         }
 
         @Provides
@@ -107,14 +100,14 @@ abstract class SyncModule {
             @Named("gemini") geminiAIEngine: LLMEngine,
             @Named("proxy") proxyEngine: LLMEngine,
             localAIEngine: LocalAIEngine,
-            systemConfigDao: SystemConfigDao
+            configRepository: ConfigRepository
         ): LLMEngine {
             return DynamicLLMEngine(
                 openAIEngine,
                 geminiAIEngine,
                 proxyEngine,
                 localAIEngine,
-                systemConfigDao
+                configRepository
             )
         }
 
@@ -130,12 +123,9 @@ abstract class SyncModule {
             syncRepository: SyncRepository,
             telemetryRepository: TelemetryRepository,
             engine: LLMEngine,
-            systemConfigDao: SystemConfigDao
+            configRepository: ConfigRepository
         ): SyncWorkoutUseCase {
-            val promptVersion = runBlocking { 
-                systemConfigDao.getConfig().firstOrNull()?.promptVersion ?: "1.0.0"
-            }
-            return SyncWorkoutUseCase(syncRepository, telemetryRepository, engine, promptVersion)
+            return SyncWorkoutUseCase(syncRepository, telemetryRepository, engine, configRepository)
         }
     }
 }

@@ -13,6 +13,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -116,7 +117,12 @@ private fun ScribbleBubble(
         else -> MaterialTheme.colorScheme.surfaceVariant
     }
 
-    Column(horizontalAlignment = Alignment.End) {
+    val alpha = when (item.status) {
+        ScribbleStatus.PENDING, ScribbleStatus.PROCESSING -> 0.5f
+        else -> 1f
+    }
+
+    Column(horizontalAlignment = Alignment.End, modifier = Modifier.alpha(alpha)) {
         Surface(
             shape = ScribbleFitShapes.Large,
             color = backgroundColor,

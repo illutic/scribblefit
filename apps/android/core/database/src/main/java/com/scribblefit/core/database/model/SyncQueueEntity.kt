@@ -16,5 +16,7 @@ data class SyncQueueEntity(
     val rawText: String,
     val status: SyncStatus,
     @ColumnInfo(name = "created_at")
-    val createdAt: Long
+    val createdAt: Long,
+    @ColumnInfo(name = "parsed_json")
+    val parsedJson: String? = null
 )
