@@ -1,18 +1,20 @@
 import SwiftUI
 
 public struct MainView: View {
-    // In a real DI system, these would be injected or retrieved from a container
-    private let syncRepository: SyncRepository
-    private let ledgerRepository: LedgerRepository
+    private let canvasRepository: CanvasRepository
+    private let processScribbleUseCase: ProcessScribbleUseCase
     
-    public init(syncRepository: SyncRepository, ledgerRepository: LedgerRepository) {
-        self.syncRepository = syncRepository
-        self.ledgerRepository = ledgerRepository
+    public init(canvasRepository: CanvasRepository, processScribbleUseCase: ProcessScribbleUseCase) {
+        self.canvasRepository = canvasRepository
+        self.processScribbleUseCase = processScribbleUseCase
     }
     
     public var body: some View {
         TabView {
-            CanvasView(viewModel: CanvasViewModel(syncRepository: syncRepository))
+            CanvasView(viewModel: CanvasViewModel(
+                canvasRepository: canvasRepository,
+                processScribbleUseCase: processScribbleUseCase
+            ))
             .tabItem {
                 Label("Workout", systemImage: "dumbbell.fill")
             }

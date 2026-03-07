@@ -11,6 +11,7 @@ struct ScribbleFitApp: App {
     private let authRepository: AuthRepository
     private let configRepository: ConfigRepository
     private let analysisRepository: AnalysisRepository
+    private let canvasRepository: CanvasRepository
     
     init() {
         // In a real app, we'd use a proper DI container
@@ -23,12 +24,14 @@ struct ScribbleFitApp: App {
         let authRepo = AuthRepositoryImpl(networkClient: network, secureKeyStorage: keychain)
         let configRepo = ConfigRepositoryImpl(networkClient: network, database: database)
         let analysisRepo = AnalysisRepositoryImpl(database: database)
+        let canvasRepo = CanvasRepositoryImpl(database: database)
         
         self.syncRepository = syncRepo
         self.ledgerRepository = ledgerRepo
         self.authRepository = authRepo
         self.configRepository = configRepo
         self.analysisRepository = analysisRepo
+        self.canvasRepository = canvasRepo
         
         _appViewModel = StateObject(wrappedValue: AppViewModel(
             authRepository: authRepo,
@@ -41,8 +44,8 @@ struct ScribbleFitApp: App {
             Group {
                 if appViewModel.isInitialized {
                     MainView(
-                        syncRepository: syncRepository,
-                        ledgerRepository: ledgerRepository
+                        canvasRepository: canvasRepository,
+                        processScribbleUseCase: ProcessScribbleUseCase(canvasRepository: canvasRepository)
                     )
                 } else {
                     SplashScreenView()
@@ -58,16 +61,16 @@ struct ScribbleFitApp: App {
 struct SplashScreenView: View {
     var body: some View {
         ZStack {
-            Color.white.ignoresSafeArea()
+            ScribbleFitColor.background.ignoresSafeArea()
             
             VStack(spacing: 16) {
                 Text("ScribbleFit")
                     .font(.system(size: 40, weight: .black))
-                    .foregroundColor(Color(hex: "101010"))
+                    .foregroundColor(ScribbleFitColor.primaryText)
                     .tracking(-2)
                 
                 ProgressView()
-                    .progressViewStyle(CircularProgressViewStyle(tint: Color(hex: "101010")))
+                    .progressViewStyle(CircularProgressViewStyle(tint: ScribbleFitColor.primaryText))
             }
         }
     }
