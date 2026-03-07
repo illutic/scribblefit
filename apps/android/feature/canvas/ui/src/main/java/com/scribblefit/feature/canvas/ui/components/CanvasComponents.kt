@@ -13,7 +13,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -22,19 +21,21 @@ import com.scribblefit.core.designsystem.component.ScribbleFitPill
 import com.scribblefit.core.designsystem.component.ScribbleFitTextField
 import com.scribblefit.core.designsystem.theme.tokens.ScribbleFitShapes
 import com.scribblefit.core.designsystem.theme.tokens.ScribbleFitSpacing
-import com.scribblefit.feature.canvas.R
 import com.scribblefit.feature.canvas.domain.model.FeedItem
 import com.scribblefit.feature.canvas.domain.model.ScribbleStatus
+import com.scribblefit.feature.canvas.domain.usecase.QuickActionType
 
 @Composable
-fun CanvasHeader(userName: String) {
+fun CanvasHeader(userName: String, greeting: String) {
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = ScribbleFitSpacing.Medium),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = "EVENING, ${userName.uppercase()}",
+            text = "$greeting, ${userName.uppercase()}",
             style = MaterialTheme.typography.labelMedium.copy(
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 0.8.sp,
@@ -47,6 +48,17 @@ fun CanvasHeader(userName: String) {
             tint = MaterialTheme.colorScheme.onBackground
         )
     }
+}
+
+@Composable
+fun ContextualInsightCard(text: String) {
+    Text(
+        text = text,
+        style = MaterialTheme.typography.headlineSmall.copy(
+            color = MaterialTheme.colorScheme.onBackground,
+            lineHeight = 32.sp
+        )
+    )
 }
 
 @Composable
@@ -111,7 +123,7 @@ private fun ScribbleBubble(
                         color = if (item.status == ScribbleStatus.FAILED) Color(0xFF991B1B) else MaterialTheme.colorScheme.onSurface
                     )
                 )
-
+                
                 if (item.status == ScribbleStatus.PENDING || item.status == ScribbleStatus.PROCESSING) {
                     Spacer(modifier = Modifier.width(8.dp))
                     CircularProgressIndicator(
@@ -122,7 +134,7 @@ private fun ScribbleBubble(
                 }
             }
         }
-
+        
         if (item.status == ScribbleStatus.FAILED) {
             Text(
                 text = "Failed to parse. Tap to retry.",
@@ -155,11 +167,7 @@ private fun ConfirmationCard(item: FeedItem.Confirmation) {
         )
         Spacer(modifier = Modifier.height(12.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            ScribbleFitPill(
-                text = "Confirm",
-                onClick = { },
-                containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
-            )
+            ScribbleFitPill(text = "Confirm", onClick = { }, containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
             ScribbleFitPill(text = "Edit", onClick = { })
         }
     }
@@ -169,8 +177,7 @@ private fun ConfirmationCard(item: FeedItem.Confirmation) {
 private fun InsightBubble(item: FeedItem.Insight) {
     Surface(
         shape = ScribbleFitShapes.Medium,
-        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.05f),
-        border = AssistChipDefaults.assistChipBorder(enabled = true)
+        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.05f)
     ) {
         Row(
             modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
@@ -188,15 +195,23 @@ private fun InsightBubble(item: FeedItem.Insight) {
 }
 
 @Composable
-fun QuickActionPills(pills: List<String>) {
+fun QuickActionPills(
+    actions: List<QuickActionType>,
+    onActionClick: (QuickActionType) -> Unit
+) {
     LazyRow(
         horizontalArrangement = Arrangement.spacedBy(ScribbleFitSpacing.Small),
         modifier = Modifier.fillMaxWidth()
     ) {
-        items(pills) { pill ->
+        items(actions) { action ->
+            val label = when (action) {
+                QuickActionType.REPEAT_LAST -> "Repeat last workout"
+                QuickActionType.REST_DAY -> "Rest Day"
+                QuickActionType.RUN_5K -> "Log 5k Run"
+            }
             ScribbleFitPill(
-                text = pill,
-                onClick = { }
+                text = label,
+                onClick = { onActionClick(action) }
             )
         }
     }
@@ -241,10 +256,7 @@ fun ScribbleInputPill(
                         onClick = { /* Mic action */ },
                         modifier = Modifier.size(32.dp)
                     ) {
-                        Icon(
-                            painter = painterResource(R.drawable.mic_24dp),
-                            contentDescription = "Mic"
-                        )
+                        Text("🎙️", style = MaterialTheme.typography.titleMedium)
                     }
                 }
             }

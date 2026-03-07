@@ -20,6 +20,7 @@ fun CanvasScreen(
     val text by viewModel.scribbleText.collectAsState()
     val isSyncing by viewModel.isSyncing.collectAsState()
     val feedItems by viewModel.feedItems.collectAsState()
+    val uiState by viewModel.uiState.collectAsState()
     
     val listState = rememberLazyListState()
 
@@ -55,7 +56,10 @@ fun CanvasScreen(
                 .padding(paddingValues)
                 .padding(horizontal = ScribbleFitSpacing.ScreenPadding)
         ) {
-            CanvasHeader(userName = "George")
+            CanvasHeader(
+                userName = uiState.userName,
+                greeting = uiState.greeting
+            )
             
             LazyColumn(
                 state = listState,
@@ -64,22 +68,33 @@ fun CanvasScreen(
                     .fillMaxWidth(),
                 contentPadding = PaddingValues(vertical = ScribbleFitSpacing.Medium)
             ) {
+                // If feed is empty and we have a suggestion, show the suggestion first
+                if (feedItems.isEmpty() && uiState.homeSuggestion != null) {
+                    item {
+                        ContextualInsightCard(
+                            text = uiState.homeSuggestion?.fullText ?: ""
+                        )
+                        Spacer(modifier = Modifier.height(ScribbleFitSpacing.Large))
+                    }
+                }
+
                 items(
                     items = feedItems,
                     key = { it.id }
                 ) { item ->
                     FeedItemRow(
                         item = item,
-                        onRetry = { /* viewModel.retry(it) */ }
+                        onRetry = viewModel::onRetryScribble
                     )
                 }
                 
-                // Add Quick Actions at the end of the feed if it's empty or just a suggestion
+                // Show Quick Actions if feed is empty or very short
                 if (feedItems.size <= 1) {
                     item {
                         Spacer(modifier = Modifier.height(ScribbleFitSpacing.Medium))
                         QuickActionPills(
-                            pills = listOf("Repeat last Pull Day", "Log 5k Run", "Rest Day")
+                            actions = uiState.quickActions,
+                            onActionClick = viewModel::onQuickActionClick
                         )
                     }
                 }

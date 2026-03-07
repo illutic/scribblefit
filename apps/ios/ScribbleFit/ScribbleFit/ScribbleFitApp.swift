@@ -45,7 +45,9 @@ struct ScribbleFitApp: App {
                 if appViewModel.isInitialized {
                     MainView(
                         canvasRepository: canvasRepository,
-                        processScribbleUseCase: ProcessScribbleUseCase(canvasRepository: canvasRepository)
+                        analysisRepository: analysisRepository,
+                        processScribbleUseCase: ProcessScribbleUseCase(canvasRepository: canvasRepository),
+                        executeQuickActionUseCase: ExecuteQuickActionUseCase(canvasRepository: canvasRepository)
                     )
                 } else {
                     SplashScreenView()

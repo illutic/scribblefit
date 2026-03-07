@@ -4,11 +4,20 @@ public struct MainView: View {
     @StateObject private var navManager = NavigationManager()
     
     private let canvasRepository: CanvasRepository
+    private let analysisRepository: AnalysisRepository
     private let processScribbleUseCase: ProcessScribbleUseCase
+    private let executeQuickActionUseCase: ExecuteQuickActionUseCase
     
-    public init(canvasRepository: CanvasRepository, processScribbleUseCase: ProcessScribbleUseCase) {
+    public init(
+        canvasRepository: CanvasRepository,
+        analysisRepository: AnalysisRepository,
+        processScribbleUseCase: ProcessScribbleUseCase,
+        executeQuickActionUseCase: ExecuteQuickActionUseCase
+    ) {
         self.canvasRepository = canvasRepository
+        self.analysisRepository = analysisRepository
         self.processScribbleUseCase = processScribbleUseCase
+        self.executeQuickActionUseCase = executeQuickActionUseCase
     }
     
     public var body: some View {
@@ -17,7 +26,9 @@ public struct MainView: View {
             NavigationStack(path: $navManager.workoutPath) {
                 CanvasView(viewModel: CanvasViewModel(
                     canvasRepository: canvasRepository,
-                    processScribbleUseCase: processScribbleUseCase
+                    analysisRepository: analysisRepository,
+                    processScribbleUseCase: processScribbleUseCase,
+                    executeQuickActionUseCase: executeQuickActionUseCase
                 ))
                 .navigationTitle(AppTab.workout.title)
                 .navigationBarTitleDisplayMode(.inline)
