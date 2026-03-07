@@ -17,14 +17,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation3.runtime.NavEntry
-import androidx.navigation3.runtime.NavKey
 import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import com.scribblefit.core.designsystem.theme.ScribbleFitTheme
+import com.scribblefit.core.navigation.Screen
 import com.scribblefit.feature.canvas.ui.CanvasScreen
 import com.scribblefit.feature.ledger.ui.LedgerScreen
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.serialization.Serializable
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -48,14 +47,6 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-}
-
-@Serializable
-sealed interface Screen : NavKey {
-    @Serializable data object Canvas : Screen
-    @Serializable data object Analytics : Screen
-    @Serializable data object Exercises : Screen
-    @Serializable data object Profile : Screen
 }
 
 @Composable

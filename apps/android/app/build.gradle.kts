@@ -1,6 +1,7 @@
 plugins {
     id("scribblefit.android.application.compose")
     id("scribblefit.android.hilt")
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -25,6 +26,7 @@ dependencies {
     implementation(project(":core:database"))
     implementation(project(":core:network"))
     implementation(project(":core:designsystem"))
+    implementation(project(":core:navigation"))
     implementation(project(":feature:canvas:ui"))
     implementation(project(":feature:canvas:data"))
     implementation(project(":feature:ledger"))

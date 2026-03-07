@@ -26,6 +26,7 @@
             <option value="$PROJECT_DIR$/apps/android/core" />
             <option value="$PROJECT_DIR$/apps/android/core/database" />
             <option value="$PROJECT_DIR$/apps/android/core/designsystem" />
+            <option value="$PROJECT_DIR$/apps/android/core/navigation" />
             <option value="$PROJECT_DIR$/apps/android/core/network" />
             <option value="$PROJECT_DIR$/apps/android/feature" />
             <option value="$PROJECT_DIR$/apps/android/feature/ai" />
