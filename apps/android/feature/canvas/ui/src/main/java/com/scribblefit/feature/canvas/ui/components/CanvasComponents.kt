@@ -7,25 +7,14 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.Send
-import androidx.compose.material.icons.filled.Done
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Send
-import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -34,7 +23,6 @@ import com.scribblefit.core.designsystem.component.ScribbleFitPill
 import com.scribblefit.core.designsystem.component.ScribbleFitTextField
 import com.scribblefit.core.designsystem.theme.tokens.ScribbleFitShapes
 import com.scribblefit.core.designsystem.theme.tokens.ScribbleFitSpacing
-import com.scribblefit.feature.canvas.R
 import com.scribblefit.feature.canvas.domain.model.FeedItem
 import com.scribblefit.feature.canvas.domain.model.ScribbleStatus
 import com.scribblefit.feature.canvas.domain.usecase.QuickActionType
@@ -84,7 +72,9 @@ fun ContextualInsightCard(text: String) {
 @Composable
 fun FeedItemRow(
     item: FeedItem,
-    onRetry: (String) -> Unit = {}
+    onRetry: (String) -> Unit = {},
+    onConfirmClick: (FeedItem.Confirmation) -> Unit = {},
+    onEditClick: (FeedItem.Confirmation) -> Unit = {}
 ) {
     Box(
         modifier = Modifier
@@ -98,7 +88,7 @@ fun FeedItemRow(
         when (item) {
             is FeedItem.Prompt -> PromptBubble(item)
             is FeedItem.Scribble -> ScribbleBubble(item, onRetry)
-            is FeedItem.Confirmation -> ConfirmationCard(item)
+            is FeedItem.Confirmation -> ConfirmationCard(item, onConfirmClick, onEditClick)
             is FeedItem.Insight -> InsightBubble(item)
         }
     }
@@ -169,7 +159,11 @@ private fun ScribbleBubble(
 }
 
 @Composable
-private fun ConfirmationCard(item: FeedItem.Confirmation) {
+private fun ConfirmationCard(
+    item: FeedItem.Confirmation,
+    onConfirmClick: (FeedItem.Confirmation) -> Unit,
+    onEditClick: (FeedItem.Confirmation) -> Unit
+) {
     ScribbleFitCard(
         modifier = Modifier.fillMaxWidth(0.9f),
         containerColor = MaterialTheme.colorScheme.surface
@@ -187,8 +181,15 @@ private fun ConfirmationCard(item: FeedItem.Confirmation) {
         )
         Spacer(modifier = Modifier.height(12.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            ScribbleFitPill(text = "Confirm", onClick = { }, containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
-            ScribbleFitPill(text = "Edit", onClick = { })
+            ScribbleFitPill(
+                text = "Confirm", 
+                onClick = { onConfirmClick(item) }, 
+                containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+            )
+            ScribbleFitPill(
+                text = "Edit", 
+                onClick = { onEditClick(item) }
+            )
         }
     }
 }
@@ -278,7 +279,7 @@ fun ScribbleInputPill(
                             )
                         } else {
                             Icon(
-                                imageVector = Icons.AutoMirrored.Filled.Send,
+                                imageVector = Icons.Default.PlayArrow,
                                 contentDescription = "Submit",
                                 tint = MaterialTheme.colorScheme.primary
                             )
@@ -291,15 +292,9 @@ fun ScribbleInputPill(
                             .size(32.dp)
                             .scale(scale)
                     ) {
-                        val painter = if (isRecording) {
-                            painterResource(R.drawable.stop_24dp)
-                        } else {
-                            painterResource(R.drawable.mic_24dp)
-                        }
-
-                        Icon(
-                            painter = painter,
-                            contentDescription = null
+                        Text(
+                            text = if (isRecording) "⏹️" else "🎙️", 
+                            style = MaterialTheme.typography.titleMedium
                         )
                     }
                 }

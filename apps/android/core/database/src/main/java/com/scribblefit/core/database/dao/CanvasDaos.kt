@@ -15,6 +15,9 @@ interface CanvasFeedDao {
     @Delete
     suspend fun deleteFeedItem(item: CanvasFeedEntity)
 
+    @Query("DELETE FROM Canvas_Feed WHERE id = :id")
+    suspend fun deleteFeedItemById(id: String)
+
     @Query("DELETE FROM Canvas_Feed")
     suspend fun clearFeed()
 }

@@ -5,4 +5,5 @@ import kotlinx.coroutines.flow.Flow
 
 interface LedgerRepository {
     fun getWorkoutHistory(): Flow<List<WorkoutHistory>>
+    suspend fun logWorkout(workout: WorkoutHistory)
 }

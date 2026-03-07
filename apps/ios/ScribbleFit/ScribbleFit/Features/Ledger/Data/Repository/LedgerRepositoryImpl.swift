@@ -15,7 +15,6 @@ public final class LedgerRepositoryImpl: LedgerRepository {
         return logs.map { log in
             let sets = database.getSetsForWorkout(id: log.id)
             
-            // Map exerciseId to canonical name if possible
             let exerciseGroups = Dictionary(grouping: sets, by: { $0.exerciseId })
             
             let exercises = exerciseGroups.map { (exerciseId, setEntities) in
@@ -37,5 +36,29 @@ public final class LedgerRepositoryImpl: LedgerRepository {
                 exercises: exercises
             )
         }
+    }
+
+    public func logWorkout(_ workout: WorkoutHistory) async throws {
+        let log = WorkoutLog(
+            id: workout.id,
+            date: workout.date,
+            location: workout.location,
+            totalVolume: workout.totalVolume
+        )
+        database.upsertWorkoutLog(log)
+        
+        let sets = workout.exercises.flatMap { exercise in
+            exercise.sets.map { set in
+                WorkoutSet(
+                    id: UUID().uuidString,
+                    weight: set.weight,
+                    reps: set.reps,
+                    rpe: set.rpe,
+                    notes: set.notes,
+                    exerciseId: exercise.canonicalName
+                )
+            }
+        }
+        database.upsertWorkoutSets(sets)
     }
 }

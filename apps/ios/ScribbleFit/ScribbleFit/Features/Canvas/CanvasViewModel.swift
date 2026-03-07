@@ -39,6 +39,7 @@ public final class CanvasViewModel: ObservableObject {
     private let analysisRepository: AnalysisRepository
     private let processScribbleUseCase: ProcessScribbleUseCase
     private let executeQuickActionUseCase: ExecuteQuickActionUseCase
+    private let confirmWorkoutUseCase: ConfirmWorkoutUseCase
     
     @Published public var uiState: CanvasUiState
     
@@ -46,12 +47,14 @@ public final class CanvasViewModel: ObservableObject {
         canvasRepository: CanvasRepository,
         analysisRepository: AnalysisRepository,
         processScribbleUseCase: ProcessScribbleUseCase,
-        executeQuickActionUseCase: ExecuteQuickActionUseCase
+        executeQuickActionUseCase: ExecuteQuickActionUseCase,
+        confirmWorkoutUseCase: ConfirmWorkoutUseCase
     ) {
         self.canvasRepository = canvasRepository
         self.analysisRepository = analysisRepository
         self.processScribbleUseCase = processScribbleUseCase
         self.executeQuickActionUseCase = executeQuickActionUseCase
+        self.confirmWorkoutUseCase = confirmWorkoutUseCase
         
         self.uiState = CanvasUiState(greeting: Self.getGreeting())
         
@@ -125,6 +128,44 @@ public final class CanvasViewModel: ObservableObject {
         }
     }
 
+    public func onConfirmClick(confirmation: ConfirmationItem) {
+        Task {
+            do {
+                try await confirmWorkoutUseCase.execute(workout: confirmation.workout)
+                try await canvasRepository.addInsight(item: InsightItem(
+                    id: UUID().uuidString,
+                    timestamp: Date(),
+                    text: "Workout saved to ledger!",
+                    emoji: "✅"
+                ))
+                try await canvasRepository.removeFeedItem(id: confirmation.id)
+                try await canvasRepository.removeFeedItem(id: confirmation.scribbleId)
+                refreshFeed()
+            } catch {
+                print("Failed to confirm workout: \(error)")
+            }
+        }
+    }
+
+    public func onEditClick(confirmation: ConfirmationItem) {
+        if let scribble = uiState.feedItems.compactMap({ item -> ScribbleItem? in
+            if case .scribble(let s) = item, s.id == confirmation.scribbleId { return s }
+            return nil
+        }).first {
+            uiState.scribbleText = scribble.rawText
+        }
+        
+        Task {
+            do {
+                try await canvasRepository.removeFeedItem(id: confirmation.id)
+                try await canvasRepository.removeFeedItem(id: confirmation.scribbleId)
+                refreshFeed()
+            } catch {
+                print("Failed to remove items for edit: \(error)")
+            }
+        }
+    }
+
     public func onMicClick() {
         if uiState.isRecording {
             stopRecording()
@@ -139,7 +180,7 @@ public final class CanvasViewModel: ObservableObject {
 
     private func stopRecording() {
         uiState.isRecording = false
-        onTextChange("Simulated voice input...")
+        onTextChange("Bench 135x5, 135x5")
     }
     
     private static func getGreeting() -> String {

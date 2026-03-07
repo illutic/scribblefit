@@ -8,4 +8,5 @@ android {
 
 dependencies {
     implementation(project(":feature:ai:domain"))
+    implementation(project(":feature:ledger"))
 }

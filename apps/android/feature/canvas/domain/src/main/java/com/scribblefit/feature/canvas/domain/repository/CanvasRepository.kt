@@ -25,6 +25,16 @@ interface CanvasRepository {
     suspend fun addConfirmation(item: FeedItem.Confirmation)
 
     /**
+     * Adds a micro-insight bubble to the feed.
+     */
+    suspend fun addInsight(item: FeedItem.Insight)
+
+    /**
+     * Removes a specific item from the conversational feed.
+     */
+    suspend fun removeFeedItem(id: String)
+
+    /**
      * Clears the current canvas feed (e.g., after 4 hours of inactivity).
      */
     suspend fun clearFeed()

@@ -1,20 +1,18 @@
 package com.scribblefit.feature.canvas.data.di
 
-import com.scribblefit.core.database.dao.CanvasFeedDao
-import com.scribblefit.core.database.dao.SyncQueueDao
-import com.scribblefit.core.database.dao.ActiveSessionDao
 import com.scribblefit.feature.canvas.data.repository.CanvasRepositoryImpl
 import com.scribblefit.feature.canvas.data.repository.WorkoutSessionRepositoryImpl
 import com.scribblefit.feature.canvas.domain.repository.CanvasRepository
 import com.scribblefit.feature.canvas.domain.repository.WorkoutSessionRepository
-import com.scribblefit.feature.canvas.domain.usecase.ProcessScribbleUseCase
+import com.scribblefit.feature.canvas.domain.usecase.ConfirmWorkoutUseCase
 import com.scribblefit.feature.canvas.domain.usecase.ExecuteQuickActionUseCase
+import com.scribblefit.feature.canvas.domain.usecase.ProcessScribbleUseCase
+import com.scribblefit.feature.ledger.domain.repository.LedgerRepository
 import dagger.Binds
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import kotlinx.serialization.json.Json
 import javax.inject.Singleton
 
 @Module
@@ -40,6 +38,15 @@ abstract class CanvasModule {
         @Singleton
         fun provideExecuteQuickActionUseCase(repository: CanvasRepository): ExecuteQuickActionUseCase {
             return ExecuteQuickActionUseCase(repository)
+        }
+
+        @Provides
+        @Singleton
+        fun provideConfirmWorkoutUseCase(
+            sessionRepository: WorkoutSessionRepository,
+            ledgerRepository: LedgerRepository
+        ): ConfirmWorkoutUseCase {
+            return ConfirmWorkoutUseCase(sessionRepository, ledgerRepository)
         }
     }
 }

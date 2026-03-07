@@ -22,6 +22,16 @@ public protocol CanvasRepository: Sendable {
     func addConfirmation(item: ConfirmationItem) async throws
 
     /**
+     * Adds a micro-insight bubble to the feed.
+     */
+    func addInsight(item: InsightItem) async throws
+
+    /**
+     * Removes a specific item from the conversational feed.
+     */
+    func removeFeedItem(id: String) async throws
+
+    /**
      * Clears the current canvas feed.
      */
     func clearFeed() async throws

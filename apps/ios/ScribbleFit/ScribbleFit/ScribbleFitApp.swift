@@ -12,12 +12,14 @@ struct ScribbleFitApp: App {
     private let configRepository: ConfigRepository
     private let analysisRepository: AnalysisRepository
     private let canvasRepository: CanvasRepository
+    private let database: ScribbleFitDatabase
     
     init() {
         // In a real app, we'd use a proper DI container
         let keychain = KeychainSecureKeyStorage()
         let network = ScribbleFitNetworkClient.shared
         let database = ScribbleFitDatabase.shared
+        self.database = database
         
         let syncRepo = SyncRepositoryImpl(database: database)
         let ledgerRepo = LedgerRepositoryImpl(database: database)
@@ -47,7 +49,8 @@ struct ScribbleFitApp: App {
                         canvasRepository: canvasRepository,
                         analysisRepository: analysisRepository,
                         processScribbleUseCase: ProcessScribbleUseCase(canvasRepository: canvasRepository),
-                        executeQuickActionUseCase: ExecuteQuickActionUseCase(canvasRepository: canvasRepository)
+                        executeQuickActionUseCase: ExecuteQuickActionUseCase(canvasRepository: canvasRepository),
+                        confirmWorkoutUseCase: ConfirmWorkoutUseCase(sessionRepository: WorkoutSessionRepositoryImpl(database: database), ledgerRepository: ledgerRepository)
                     )
                 } else {
                     SplashScreenView()

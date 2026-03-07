@@ -94,6 +94,8 @@ struct ScribbleInputArea: View {
 struct FeedItemRow: View {
     let item: FeedItem
     let onRetry: (String) -> Void
+    let onConfirmClick: (ConfirmationItem) -> Void
+    let onEditClick: (ConfirmationItem) -> Void
     
     var body: some View {
         HStack {
@@ -107,7 +109,7 @@ struct FeedItemRow: View {
             case .scribble(let scribble):
                 ScribbleBubble(item: scribble, onRetry: onRetry)
             case .confirmation(let confirmation):
-                ConfirmationCard(item: confirmation)
+                ConfirmationCard(item: confirmation, onConfirmClick: onConfirmClick, onEditClick: onEditClick)
             case .insight(let insight):
                 InsightBubble(item: insight)
             }
@@ -168,6 +170,8 @@ struct ScribbleBubble: View {
 
 struct ConfirmationCard: View {
     let item: ConfirmationItem
+    let onConfirmClick: (ConfirmationItem) -> Void
+    let onEditClick: (ConfirmationItem) -> Void
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -181,7 +185,7 @@ struct ConfirmationCard: View {
             }
             
             HStack(spacing: 8) {
-                Button(action: {}) {
+                Button(action: { onConfirmClick(item) }) {
                     Text("Confirm")
                         .font(ScribbleFitFont.titleSmall())
                         .foregroundColor(ScribbleFitColor.primaryText)
@@ -191,7 +195,7 @@ struct ConfirmationCard: View {
                         .cornerRadius(ScribbleFitShape.large)
                 }
                 
-                Button(action: {}) {
+                Button(action: { onEditClick(item) }) {
                     Text("Edit")
                         .font(ScribbleFitFont.titleSmall())
                         .foregroundColor(ScribbleFitColor.primaryText)

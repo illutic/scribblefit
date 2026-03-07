@@ -17,7 +17,6 @@ public final class CanvasRepositoryImpl: CanvasRepository {
         var entities = database.getCanvasFeed()
         
         if entities.isEmpty {
-            // Seed with an initial prompt if empty
             let id = UUID().uuidString
             let now = Date()
             let prompt = PromptItem(id: id, timestamp: now, text: "Ready for a Push day?", emoji: "💪", type: .pattern)
@@ -25,7 +24,6 @@ public final class CanvasRepositoryImpl: CanvasRepository {
             if let jsonString = String(data: data, encoding: .utf8) {
                 let entity = CanvasFeed(id: id, itemType: "PROMPT", jsonData: jsonString, createdAt: now)
                 database.upsertCanvasFeedItem(entity)
-                // Manually add to entities list to avoid immediate re-fetch loop
                 entities = [entity]
             }
         }
@@ -55,11 +53,9 @@ public final class CanvasRepositoryImpl: CanvasRepository {
         let id = UUID().uuidString
         let now = Date()
         
-        // 1. Persist to Sync Queue
         let syncItem = SyncQueue(id: id, rawText: rawText, status: .pending, createdAt: now)
         database.upsertSyncItem(syncItem)
         
-        // 2. Add to Canvas Feed
         let scribble = ScribbleItem(id: id, timestamp: now, rawText: rawText, status: .pending)
         let data = try jsonEncoder.encode(scribble)
         if let jsonString = String(data: data, encoding: .utf8) {
@@ -78,6 +74,18 @@ public final class CanvasRepositoryImpl: CanvasRepository {
             let entity = CanvasFeed(id: item.id, itemType: "CONFIRMATION", jsonData: jsonString, createdAt: item.timestamp)
             database.upsertCanvasFeedItem(entity)
         }
+    }
+
+    public func addInsight(item: InsightItem) async throws {
+        let data = try jsonEncoder.encode(item)
+        if let jsonString = String(data: data, encoding: .utf8) {
+            let entity = CanvasFeed(id: item.id, itemType: "INSIGHT", jsonData: jsonString, createdAt: item.timestamp)
+            database.upsertCanvasFeedItem(entity)
+        }
+    }
+
+    public func removeFeedItem(id: String) async throws {
+        database.removeCanvasFeedItem(id: id)
     }
     
     public func clearFeed() async throws {

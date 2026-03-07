@@ -40,6 +40,13 @@ public final class ScribbleFitDatabase {
         try? context.save()
     }
     
+    public func upsertWorkoutSets(_ sets: [WorkoutSet]) {
+        for set in sets {
+            context.insert(set)
+        }
+        try? context.save()
+    }
+    
     public func getSetsForWorkout(id: String) -> [WorkoutSet] {
         let descriptor = FetchDescriptor<WorkoutSet>(predicate: #Predicate { $0.workout?.id == id })
         return (try? context.fetch(descriptor)) ?? []
@@ -188,6 +195,14 @@ public final class ScribbleFitDatabase {
     public func getCanvasFeed() -> [CanvasFeed] {
         let descriptor = FetchDescriptor<CanvasFeed>(sortBy: [SortDescriptor(\.createdAt)])
         return (try? context.fetch(descriptor)) ?? []
+    }
+    
+    public func removeCanvasFeedItem(id: String) {
+        let descriptor = FetchDescriptor<CanvasFeed>(predicate: #Predicate { $0.id == id })
+        if let item = try? context.fetch(descriptor).first {
+            context.delete(item)
+            try? context.save()
+        }
     }
     
     public func clearCanvasFeed() {

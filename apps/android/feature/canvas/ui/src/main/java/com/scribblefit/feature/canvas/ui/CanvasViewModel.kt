@@ -4,8 +4,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.scribblefit.feature.ai.domain.model.AnalysisSuggestion
 import com.scribblefit.feature.analytics.domain.repository.AnalysisRepository
-import com.scribblefit.feature.canvas.domain.model.FeedItem
+import com.scribblefit.feature.canvas.domain.model.*
 import com.scribblefit.feature.canvas.domain.repository.CanvasRepository
+import com.scribblefit.feature.canvas.domain.usecase.ConfirmWorkoutUseCase
 import com.scribblefit.feature.canvas.domain.usecase.ExecuteQuickActionUseCase
 import com.scribblefit.feature.canvas.domain.usecase.ProcessScribbleUseCase
 import com.scribblefit.feature.canvas.domain.usecase.QuickActionType
@@ -15,6 +16,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.util.Calendar
+import java.util.UUID
 import javax.inject.Inject
 
 data class CanvasUiState(
@@ -38,6 +40,7 @@ class CanvasViewModel @Inject constructor(
     private val analysisRepository: AnalysisRepository,
     private val processScribbleUseCase: ProcessScribbleUseCase,
     private val executeQuickActionUseCase: ExecuteQuickActionUseCase,
+    private val confirmWorkoutUseCase: ConfirmWorkoutUseCase,
     private val navigator: Navigator
 ) : ViewModel() {
 
@@ -85,6 +88,31 @@ class CanvasViewModel @Inject constructor(
         }
     }
 
+    fun onConfirmClick(confirmation: FeedItem.Confirmation) {
+        viewModelScope.launch {
+            confirmWorkoutUseCase(confirmation.workout)
+            canvasRepository.addInsight(FeedItem.Insight(
+                id = UUID.randomUUID().toString(),
+                timestamp = System.currentTimeMillis(),
+                text = "Workout saved to ledger!",
+                emoji = "✅"
+            ))
+            canvasRepository.removeFeedItem(confirmation.id)
+            canvasRepository.removeFeedItem(confirmation.scribbleId)
+        }
+    }
+
+    fun onEditClick(confirmation: FeedItem.Confirmation) {
+        val scribble = uiState.value.feedItems.find { it.id == confirmation.scribbleId } as? FeedItem.Scribble
+        scribble?.let {
+            _internalState.update { it.copy(scribbleText = it.scribbleText) }
+        }
+        viewModelScope.launch {
+            canvasRepository.removeFeedItem(confirmation.id)
+            canvasRepository.removeFeedItem(confirmation.scribbleId)
+        }
+    }
+
     fun onMenuClick() {
         navigator.navigateTo(Screen.Settings)
     }
@@ -99,12 +127,11 @@ class CanvasViewModel @Inject constructor(
 
     private fun startRecording() {
         _internalState.update { it.copy(isRecording = true) }
-        // Simulated voice capture delay and result
     }
 
     private fun stopRecording() {
         _internalState.update { it.copy(isRecording = false) }
-        onTextChange("Simulated voice input...")
+        onTextChange("Bench 135x5, 135x5")
     }
 
     private fun getGreeting(): String {

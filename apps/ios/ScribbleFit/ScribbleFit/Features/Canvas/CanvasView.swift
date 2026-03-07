@@ -24,7 +24,6 @@ public struct CanvasView: View {
                 ScrollViewReader { proxy in
                     ScrollView {
                         VStack(alignment: .leading, spacing: ScribbleFitSpacing.small) {
-                            // If feed is empty and we have a suggestion, show it first
                             if viewModel.uiState.feedItems.isEmpty, let suggestion = viewModel.uiState.homeSuggestion {
                                 PromptBubble(item: PromptItem(
                                     id: "initial",
@@ -39,7 +38,9 @@ public struct CanvasView: View {
                             ForEach(viewModel.uiState.feedItems) { item in
                                 FeedItemRow(
                                     item: item,
-                                    onRetry: viewModel.onRetryScribble
+                                    onRetry: viewModel.onRetryScribble,
+                                    onConfirmClick: viewModel.onConfirmClick,
+                                    onEditClick: viewModel.onEditClick
                                 )
                                 .id(item.id)
                             }
@@ -64,7 +65,6 @@ public struct CanvasView: View {
                 
                 Spacer()
                 
-                // Input Pill
                 ScribbleInputArea(
                     text: Binding(
                         get: { viewModel.uiState.scribbleText },

@@ -7,17 +7,20 @@ public struct MainView: View {
     private let analysisRepository: AnalysisRepository
     private let processScribbleUseCase: ProcessScribbleUseCase
     private let executeQuickActionUseCase: ExecuteQuickActionUseCase
+    private let confirmWorkoutUseCase: ConfirmWorkoutUseCase
     
     public init(
         canvasRepository: CanvasRepository,
         analysisRepository: AnalysisRepository,
         processScribbleUseCase: ProcessScribbleUseCase,
-        executeQuickActionUseCase: ExecuteQuickActionUseCase
+        executeQuickActionUseCase: ExecuteQuickActionUseCase,
+        confirmWorkoutUseCase: ConfirmWorkoutUseCase
     ) {
         self.canvasRepository = canvasRepository
         self.analysisRepository = analysisRepository
         self.processScribbleUseCase = processScribbleUseCase
         self.executeQuickActionUseCase = executeQuickActionUseCase
+        self.confirmWorkoutUseCase = confirmWorkoutUseCase
     }
     
     public var body: some View {
@@ -28,7 +31,8 @@ public struct MainView: View {
                     canvasRepository: canvasRepository,
                     analysisRepository: analysisRepository,
                     processScribbleUseCase: processScribbleUseCase,
-                    executeQuickActionUseCase: executeQuickActionUseCase
+                    executeQuickActionUseCase: executeQuickActionUseCase,
+                    confirmWorkoutUseCase: confirmWorkoutUseCase
                 ))
                 .navigationTitle(AppTab.workout.title)
                 .navigationBarTitleDisplayMode(.inline)
