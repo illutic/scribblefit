@@ -1,6 +1,12 @@
 package com.scribblefit.feature.ai.data.mapper
 
-import com.scribblefit.core.ai.model.*
+import com.scribblefit.feature.ai.domain.model.AnalysisSuggestion
+import com.scribblefit.feature.ai.domain.model.AnalysisSummary
+import com.scribblefit.feature.ai.domain.model.ExerciseInsight
+import com.scribblefit.feature.ai.domain.model.InsightTrend
+import com.scribblefit.feature.ai.domain.model.MuscleGroupStat
+import com.scribblefit.feature.ai.domain.model.SuggestionType
+import com.scribblefit.feature.ai.domain.model.SummaryPeriod
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

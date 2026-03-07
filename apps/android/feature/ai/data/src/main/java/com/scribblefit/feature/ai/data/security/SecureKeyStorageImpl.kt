@@ -3,7 +3,7 @@ package com.scribblefit.feature.ai.data.security
 import android.content.Context
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
-import com.scribblefit.core.ai.security.SecureKeyStorage
+import com.scribblefit.feature.ai.domain.security.SecureKeyStorage
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton

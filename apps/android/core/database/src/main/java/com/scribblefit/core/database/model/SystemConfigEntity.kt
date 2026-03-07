@@ -3,7 +3,7 @@ package com.scribblefit.core.database.model
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.scribblefit.core.ai.model.LLMProvider
+import com.scribblefit.feature.ai.domain.model.LLMProvider
 
 @Entity(tableName = "System_Config")
 data class SystemConfigEntity(

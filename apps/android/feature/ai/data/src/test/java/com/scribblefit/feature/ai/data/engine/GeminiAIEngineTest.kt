@@ -1,6 +1,6 @@
 package com.scribblefit.feature.ai.data.engine
 
-import com.scribblefit.core.ai.model.AIParsingException
+import com.scribblefit.feature.ai.domain.model.AIParsingException
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.mock.MockEngine
 import io.ktor.client.engine.mock.respond

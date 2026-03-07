@@ -1,7 +1,7 @@
 package com.scribblefit.feature.ai.data.repository
 
 import com.scribblefit.core.network.ScribbleFitApi
-import com.scribblefit.core.ai.model.TelemetryData
+import com.scribblefit.feature.ai.domain.model.TelemetryData
 import io.ktor.http.HttpStatusCode
 import io.mockk.coEvery
 import io.mockk.coVerify

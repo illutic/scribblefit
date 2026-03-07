@@ -1,11 +1,17 @@
 package com.scribblefit.feature.ai.data.engine
 
 import com.scribblefit.feature.ai.data.mapper.*
-import com.scribblefit.core.ai.engine.*
-import com.scribblefit.core.ai.model.*
 import com.scribblefit.core.network.ScribbleFitApi
 import com.scribblefit.core.network.model.ParseRequest
-import com.scribblefit.core.ai.security.SecureKeyStorage
+import com.scribblefit.feature.ai.domain.engine.AnalysisEngine
+import com.scribblefit.feature.ai.domain.engine.LLMEngine
+import com.scribblefit.feature.ai.domain.model.AIParsingException
+import com.scribblefit.feature.ai.domain.model.AnalysisSuggestion
+import com.scribblefit.feature.ai.domain.model.AnalysisSummary
+import com.scribblefit.feature.ai.domain.model.ExerciseInsight
+import com.scribblefit.feature.ai.domain.model.ParsedWorkout
+import com.scribblefit.feature.ai.domain.model.SummaryPeriod
+import com.scribblefit.feature.ai.domain.security.SecureKeyStorage
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 
@@ -23,7 +29,11 @@ class ScribbleFitProxyEngine @Inject constructor(
         try {
             api.parseProxy(request, token).toDomain()
         } catch (e: Exception) {
-            throw AIParsingException(rawText = rawText, error = "Proxy Failure: ${e.message}", cause = e)
+            throw AIParsingException(
+                rawText = rawText,
+                error = "Proxy Failure: ${e.message}",
+                cause = e
+            )
         }
     }
 

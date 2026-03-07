@@ -7,7 +7,6 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:ai"))
-    implementation(project(":core:model"))
+    implementation(project(":feature:ai:domain"))
     implementation(libs.coroutines.core)
 }

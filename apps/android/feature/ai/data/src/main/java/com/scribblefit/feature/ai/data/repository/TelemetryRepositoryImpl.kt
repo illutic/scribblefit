@@ -2,8 +2,8 @@ package com.scribblefit.feature.ai.data.repository
 
 import com.scribblefit.core.network.ScribbleFitApi
 import com.scribblefit.core.network.model.TelemetryRequest
-import com.scribblefit.core.ai.model.TelemetryData
-import com.scribblefit.core.ai.engine.TelemetryRepository
+import com.scribblefit.feature.ai.domain.model.TelemetryData
+import com.scribblefit.feature.ai.domain.engine.TelemetryRepository
 import javax.inject.Inject
 import javax.inject.Singleton
 

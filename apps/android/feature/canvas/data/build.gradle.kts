@@ -12,10 +12,8 @@ dependencies {
     implementation(project(":feature:canvas:domain"))
     implementation(project(":feature:ai:domain"))
     implementation(project(":feature:ai:data"))
-    implementation(project(":core:ai"))
     implementation(project(":core:database"))
-    implementation(project(":core:model"))
-    
+
     implementation(libs.hilt.android)
     implementation(libs.kotlinx.serialization.json)
 }

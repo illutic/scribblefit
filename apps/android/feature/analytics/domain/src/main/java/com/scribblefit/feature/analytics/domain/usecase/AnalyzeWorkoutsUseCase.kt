@@ -1,7 +1,7 @@
 package com.scribblefit.feature.analytics.domain.usecase
 
-import com.scribblefit.core.ai.engine.AnalysisEngine
-import com.scribblefit.core.ai.model.*
+import com.scribblefit.feature.ai.domain.engine.AnalysisEngine
+import com.scribblefit.feature.ai.domain.model.SummaryPeriod
 import com.scribblefit.feature.analytics.domain.repository.AnalysisRepository
 
 class AnalyzeWorkoutsUseCase(

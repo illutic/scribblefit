@@ -1,8 +1,14 @@
 package com.scribblefit.feature.ai.domain.usecase
 
-import com.scribblefit.core.ai.engine.AnalysisEngine
+import com.scribblefit.feature.ai.domain.engine.AnalysisEngine
 import com.scribblefit.core.ai.model.*
 import com.scribblefit.core.ai.engine.AnalysisRepository
+import com.scribblefit.feature.ai.domain.model.AnalysisSuggestion
+import com.scribblefit.feature.ai.domain.model.AnalysisSummary
+import com.scribblefit.feature.ai.domain.model.ExerciseInsight
+import com.scribblefit.feature.ai.domain.model.InsightTrend
+import com.scribblefit.feature.ai.domain.model.SuggestionType
+import com.scribblefit.feature.ai.domain.model.SummaryPeriod
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
@@ -60,7 +66,14 @@ class AnalyzeWorkoutsUseCaseTest {
         val exerciseId = "bench_press_id"
         val exerciseName = "Bench Press"
         val history = "Set history"
-        val insight = ExerciseInsight("Bench Press", 225.0, true, InsightTrend.IMPROVING, "Great progress", 1000L)
+        val insight = ExerciseInsight(
+            "Bench Press",
+            225.0,
+            true,
+            InsightTrend.IMPROVING,
+            "Great progress",
+            1000L
+        )
         coEvery { engine.generateExerciseInsight(exerciseName, history) } returns Result.success(insight)
 
         // When

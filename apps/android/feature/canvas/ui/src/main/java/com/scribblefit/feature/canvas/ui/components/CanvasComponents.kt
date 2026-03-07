@@ -1,27 +1,21 @@
 package com.scribblefit.feature.canvas.ui.components
 
 import androidx.compose.animation.animateContentSize
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.scribblefit.core.ai.model.SuggestionType
 import com.scribblefit.core.designsystem.component.ScribbleFitCard
 import com.scribblefit.core.designsystem.component.ScribbleFitPill
 import com.scribblefit.core.designsystem.component.ScribbleFitTextField
@@ -117,7 +111,7 @@ private fun ScribbleBubble(
                         color = if (item.status == ScribbleStatus.FAILED) Color(0xFF991B1B) else MaterialTheme.colorScheme.onSurface
                     )
                 )
-                
+
                 if (item.status == ScribbleStatus.PENDING || item.status == ScribbleStatus.PROCESSING) {
                     Spacer(modifier = Modifier.width(8.dp))
                     CircularProgressIndicator(
@@ -128,7 +122,7 @@ private fun ScribbleBubble(
                 }
             }
         }
-        
+
         if (item.status == ScribbleStatus.FAILED) {
             Text(
                 text = "Failed to parse. Tap to retry.",
@@ -161,7 +155,11 @@ private fun ConfirmationCard(item: FeedItem.Confirmation) {
         )
         Spacer(modifier = Modifier.height(12.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            ScribbleFitPill(text = "Confirm", onClick = { }, containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f))
+            ScribbleFitPill(
+                text = "Confirm",
+                onClick = { },
+                containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
+            )
             ScribbleFitPill(text = "Edit", onClick = { })
         }
     }

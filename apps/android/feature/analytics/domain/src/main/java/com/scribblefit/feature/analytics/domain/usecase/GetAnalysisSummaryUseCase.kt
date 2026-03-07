@@ -1,7 +1,7 @@
 package com.scribblefit.feature.analytics.domain.usecase
 
-import com.scribblefit.core.ai.model.AnalysisSummary
-import com.scribblefit.core.ai.model.SummaryPeriod
+import com.scribblefit.feature.ai.domain.model.AnalysisSummary
+import com.scribblefit.feature.ai.domain.model.SummaryPeriod
 import com.scribblefit.feature.analytics.domain.repository.AnalysisRepository
 import kotlinx.coroutines.flow.Flow
 

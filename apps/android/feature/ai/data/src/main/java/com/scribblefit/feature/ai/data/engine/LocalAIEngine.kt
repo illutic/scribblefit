@@ -1,13 +1,19 @@
 package com.scribblefit.feature.ai.data.engine
 
 import com.scribblefit.feature.ai.data.mapper.*
-import com.scribblefit.core.ai.engine.*
-import com.scribblefit.core.ai.model.*
 import com.scribblefit.core.network.model.ParsedWorkoutDto
 import com.google.mlkit.genai.common.FeatureStatus
 import com.google.mlkit.genai.prompt.GenerativeModel
 import com.google.mlkit.genai.prompt.TextPart
 import com.google.mlkit.genai.prompt.generateContentRequest
+import com.scribblefit.feature.ai.domain.engine.AnalysisEngine
+import com.scribblefit.feature.ai.domain.engine.LLMEngine
+import com.scribblefit.feature.ai.domain.model.AIParsingException
+import com.scribblefit.feature.ai.domain.model.AnalysisSuggestion
+import com.scribblefit.feature.ai.domain.model.AnalysisSummary
+import com.scribblefit.feature.ai.domain.model.ExerciseInsight
+import com.scribblefit.feature.ai.domain.model.ParsedWorkout
+import com.scribblefit.feature.ai.domain.model.SummaryPeriod
 import kotlinx.serialization.json.Json
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
@@ -30,7 +36,11 @@ class LocalAIEngine @Inject constructor(
             val parsedWorkoutDto = json.decodeFromString<ParsedWorkoutDto>(content)
             parsedWorkoutDto.toDomain()
         } catch (e: Exception) {
-            throw AIParsingException(rawText = rawText, error = "Hallucination: ${e.message}", cause = e)
+            throw AIParsingException(
+                rawText = rawText,
+                error = "Hallucination: ${e.message}",
+                cause = e
+            )
         }
     }
 

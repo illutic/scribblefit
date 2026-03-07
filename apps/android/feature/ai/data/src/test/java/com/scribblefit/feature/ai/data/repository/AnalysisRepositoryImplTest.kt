@@ -4,12 +4,15 @@ import com.scribblefit.core.database.dao.InsightsCacheDao
 import com.scribblefit.core.database.model.InsightsCacheEntity
 import com.scribblefit.feature.ai.data.mapper.*
 import com.scribblefit.core.ai.model.*
+import com.scribblefit.feature.ai.domain.model.AnalysisSuggestion
+import com.scribblefit.feature.ai.domain.model.AnalysisSummary
+import com.scribblefit.feature.ai.domain.model.SuggestionType
+import com.scribblefit.feature.ai.domain.model.SummaryPeriod
 import io.mockk.*
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.encodeToString
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
@@ -59,7 +62,8 @@ class AnalysisRepositoryImplTest {
     @Test
     fun `getSummary uses period in key`() = runTest {
         // Given
-        val summary = AnalysisSummary(SummaryPeriod.MONTH, "Good month", emptyList(), emptyList(), 0.0, 1000L)
+        val summary =
+            AnalysisSummary(SummaryPeriod.MONTH, "Good month", emptyList(), emptyList(), 0.0, 1000L)
         val entity = InsightsCacheEntity("summary_month", json.encodeToString(summary.toDto()), 1000L)
         coEvery { insightsCacheDao.getInsightByKey("summary_month") } returns flowOf(entity)
 

@@ -4,7 +4,7 @@ import com.scribblefit.feature.analytics.data.repository.AnalysisRepositoryImpl
 import com.scribblefit.feature.analytics.domain.repository.AnalysisRepository
 import com.scribblefit.feature.analytics.domain.usecase.GetAnalysisSummaryUseCase
 import com.scribblefit.feature.analytics.domain.usecase.AnalyzeWorkoutsUseCase
-import com.scribblefit.core.ai.engine.AnalysisEngine
+import com.scribblefit.feature.ai.domain.engine.AnalysisEngine
 import dagger.Binds
 import dagger.Module
 import dagger.Provides

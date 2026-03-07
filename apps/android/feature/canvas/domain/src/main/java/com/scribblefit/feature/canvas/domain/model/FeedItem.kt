@@ -1,6 +1,7 @@
 package com.scribblefit.feature.canvas.domain.model
 
-import com.scribblefit.core.ai.model.*
+import com.scribblefit.feature.ai.domain.model.ParsedWorkout
+import com.scribblefit.feature.ai.domain.model.SuggestionType
 
 sealed class FeedItem {
     abstract val id: String

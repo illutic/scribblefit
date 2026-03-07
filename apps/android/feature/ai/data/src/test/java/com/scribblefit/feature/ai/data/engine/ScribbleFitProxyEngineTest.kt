@@ -3,8 +3,8 @@ package com.scribblefit.feature.ai.data.engine
 import com.scribblefit.core.network.ScribbleFitApi
 import com.scribblefit.core.network.model.ParseRequest
 import com.scribblefit.core.network.model.ParsedWorkoutDto
-import com.scribblefit.core.ai.model.AIParsingException
-import com.scribblefit.core.ai.security.SecureKeyStorage
+import com.scribblefit.feature.ai.domain.model.AIParsingException
+import com.scribblefit.feature.ai.domain.security.SecureKeyStorage
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk

@@ -7,11 +7,10 @@ import com.scribblefit.core.database.model.SyncQueueEntity
 import com.scribblefit.core.database.model.SyncStatus
 import com.scribblefit.feature.canvas.data.mapper.*
 import com.scribblefit.feature.canvas.domain.model.*
-import com.scribblefit.core.ai.model.*
+import com.scribblefit.feature.ai.domain.model.SuggestionType
 import com.scribblefit.feature.canvas.domain.repository.CanvasRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import java.util.UUID
 import javax.inject.Inject

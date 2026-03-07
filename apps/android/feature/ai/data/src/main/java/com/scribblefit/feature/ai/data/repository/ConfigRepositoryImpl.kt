@@ -5,7 +5,7 @@ import com.scribblefit.core.database.dao.SystemConfigDao
 import com.scribblefit.core.database.model.ExerciseDictionaryEntity
 import com.scribblefit.core.database.model.SystemConfigEntity
 import com.scribblefit.core.network.ScribbleFitApi
-import com.scribblefit.core.ai.engine.ConfigRepository
+import com.scribblefit.feature.ai.domain.engine.ConfigRepository
 import kotlinx.coroutines.flow.firstOrNull
 import javax.inject.Inject
 import javax.inject.Singleton

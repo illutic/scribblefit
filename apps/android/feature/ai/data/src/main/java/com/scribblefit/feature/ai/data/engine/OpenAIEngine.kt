@@ -1,9 +1,15 @@
 package com.scribblefit.feature.ai.data.engine
 
 import com.scribblefit.feature.ai.data.mapper.*
-import com.scribblefit.core.ai.engine.*
-import com.scribblefit.core.ai.model.*
 import com.scribblefit.core.network.model.ParsedWorkoutDto
+import com.scribblefit.feature.ai.domain.engine.AnalysisEngine
+import com.scribblefit.feature.ai.domain.engine.LLMEngine
+import com.scribblefit.feature.ai.domain.model.AIParsingException
+import com.scribblefit.feature.ai.domain.model.AnalysisSuggestion
+import com.scribblefit.feature.ai.domain.model.AnalysisSummary
+import com.scribblefit.feature.ai.domain.model.ExerciseInsight
+import com.scribblefit.feature.ai.domain.model.ParsedWorkout
+import com.scribblefit.feature.ai.domain.model.SummaryPeriod
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.header
@@ -33,7 +39,11 @@ class OpenAIEngine(
             val parsedWorkoutDto = json.decodeFromString<ParsedWorkoutDto>(content)
             parsedWorkoutDto.toDomain()
         } catch (e: Exception) {
-            throw AIParsingException(rawText = rawText, error = "Hallucination: ${e.message}", cause = e)
+            throw AIParsingException(
+                rawText = rawText,
+                error = "Hallucination: ${e.message}",
+                cause = e
+            )
         }
     }
 

@@ -25,12 +25,19 @@
             <option value="$PROJECT_DIR$/apps/android/build-logic" />
             <option value="$PROJECT_DIR$/apps/android/core" />
             <option value="$PROJECT_DIR$/apps/android/core/database" />
+            <option value="$PROJECT_DIR$/apps/android/core/designsystem" />
             <option value="$PROJECT_DIR$/apps/android/core/network" />
             <option value="$PROJECT_DIR$/apps/android/feature" />
             <option value="$PROJECT_DIR$/apps/android/feature/ai" />
             <option value="$PROJECT_DIR$/apps/android/feature/ai/data" />
             <option value="$PROJECT_DIR$/apps/android/feature/ai/domain" />
+            <option value="$PROJECT_DIR$/apps/android/feature/analytics" />
+            <option value="$PROJECT_DIR$/apps/android/feature/analytics/data" />
+            <option value="$PROJECT_DIR$/apps/android/feature/analytics/domain" />
             <option value="$PROJECT_DIR$/apps/android/feature/canvas" />
+            <option value="$PROJECT_DIR$/apps/android/feature/canvas/data" />
+            <option value="$PROJECT_DIR$/apps/android/feature/canvas/domain" />
+            <option value="$PROJECT_DIR$/apps/android/feature/canvas/ui" />
             <option value="$PROJECT_DIR$/apps/android/feature/ledger" />
           </set>
         </option>
