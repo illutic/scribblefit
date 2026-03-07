@@ -178,6 +178,42 @@ public final class ScribbleFitDatabase {
         try? context.save()
     }
     
+    // MARK: - CanvasFeed
+    
+    public func upsertCanvasFeedItem(_ item: CanvasFeed) {
+        context.insert(item)
+        try? context.save()
+    }
+    
+    public func getCanvasFeed() -> [CanvasFeed] {
+        let descriptor = FetchDescriptor<CanvasFeed>(sortBy: [SortDescriptor(\.createdAt)])
+        return (try? context.fetch(descriptor)) ?? []
+    }
+    
+    public func clearCanvasFeed() {
+        try? context.delete(model: CanvasFeed.self)
+        try? context.save()
+    }
+    
+    // MARK: - ActiveSession
+    
+    public func upsertActiveSession(_ session: ActiveSession) {
+        // Ensure only one active session exists
+        try? context.delete(model: ActiveSession.self)
+        context.insert(session)
+        try? context.save()
+    }
+    
+    public func getActiveSession() -> ActiveSession? {
+        let descriptor = FetchDescriptor<ActiveSession>()
+        return try? context.fetch(descriptor).first
+    }
+    
+    public func clearActiveSession() {
+        try? context.delete(model: ActiveSession.self)
+        try? context.save()
+    }
+    
     // MARK: - General
     
     public func deleteAll() {

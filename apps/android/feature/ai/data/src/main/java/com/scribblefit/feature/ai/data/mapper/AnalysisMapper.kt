@@ -16,9 +16,16 @@ data class SuggestionDto(
 data class SummaryDto(
     @SerialName("summary_text") val summaryText: String,
     val highlights: List<String>,
-    @SerialName("focus_muscle_groups") val focusMuscleGroups: List<String>,
+    @SerialName("muscle_distribution") val muscleDistribution: List<MuscleGroupStatDto>,
+    @SerialName("focus_area") val focusArea: String,
     @SerialName("volume_delta") val volumeDelta: Double,
     val timestamp: Long? = null
+)
+
+@Serializable
+data class MuscleGroupStatDto(
+    val muscleGroup: String,
+    val volumePercentage: Double
 )
 
 @Serializable
@@ -48,7 +55,8 @@ fun SummaryDto.toDomain(period: SummaryPeriod) = AnalysisSummary(
     period = period,
     summaryText = summaryText,
     highlights = highlights,
-    focusMuscleGroups = focusMuscleGroups,
+    muscleDistribution = muscleDistribution.map { it.toDomain() },
+    focusArea = focusArea,
     volumeDelta = volumeDelta,
     timestamp = timestamp ?: System.currentTimeMillis()
 )
@@ -56,10 +64,14 @@ fun SummaryDto.toDomain(period: SummaryPeriod) = AnalysisSummary(
 fun AnalysisSummary.toDto() = SummaryDto(
     summaryText = summaryText,
     highlights = highlights,
-    focusMuscleGroups = focusMuscleGroups,
+    muscleDistribution = muscleDistribution.map { it.toDto() },
+    focusArea = focusArea,
     volumeDelta = volumeDelta,
     timestamp = timestamp
 )
+
+fun MuscleGroupStatDto.toDomain() = MuscleGroupStat(muscleGroup, volumePercentage)
+fun MuscleGroupStat.toDto() = MuscleGroupStatDto(muscleGroup, volumePercentage)
 
 fun ExerciseInsightDto.toDomain(exerciseId: String) = ExerciseInsight(
     exerciseId = exerciseId,
