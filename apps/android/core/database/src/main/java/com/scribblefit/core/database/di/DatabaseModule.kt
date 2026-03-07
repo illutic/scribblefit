@@ -3,12 +3,7 @@ package com.scribblefit.core.database.di
 import android.content.Context
 import androidx.room.Room
 import com.scribblefit.core.database.ScribbleFitDatabase
-import com.scribblefit.core.database.dao.ExerciseDictionaryDao
-import com.scribblefit.core.database.dao.InsightsCacheDao
-import com.scribblefit.core.database.dao.SetDao
-import com.scribblefit.core.database.dao.SyncQueueDao
-import com.scribblefit.core.database.dao.SystemConfigDao
-import com.scribblefit.core.database.dao.WorkoutLogDao
+import com.scribblefit.core.database.dao.*
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -61,4 +56,14 @@ object DatabaseModule {
     fun providesInsightsCacheDao(
         database: ScribbleFitDatabase
     ): InsightsCacheDao = database.insightsCacheDao()
+
+    @Provides
+    fun providesCanvasFeedDao(
+        database: ScribbleFitDatabase
+    ): CanvasFeedDao = database.canvasFeedDao()
+
+    @Provides
+    fun providesActiveSessionDao(
+        database: ScribbleFitDatabase
+    ): ActiveSessionDao = database.activeSessionDao()
 }

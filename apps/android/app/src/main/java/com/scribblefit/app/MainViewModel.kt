@@ -4,8 +4,8 @@ import android.provider.Settings
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.scribblefit.feature.ai.domain.repository.AuthRepository
-import com.scribblefit.feature.ai.domain.repository.ConfigRepository
+import com.scribblefit.core.ai.engine.AuthRepository
+import com.scribblefit.core.ai.engine.ConfigRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow

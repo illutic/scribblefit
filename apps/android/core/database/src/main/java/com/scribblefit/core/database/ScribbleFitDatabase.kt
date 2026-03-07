@@ -3,18 +3,8 @@ package com.scribblefit.core.database
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
-import com.scribblefit.core.database.dao.ExerciseDictionaryDao
-import com.scribblefit.core.database.dao.InsightsCacheDao
-import com.scribblefit.core.database.dao.SetDao
-import com.scribblefit.core.database.dao.SyncQueueDao
-import com.scribblefit.core.database.dao.SystemConfigDao
-import com.scribblefit.core.database.dao.WorkoutLogDao
-import com.scribblefit.core.database.model.ExerciseDictionaryEntity
-import com.scribblefit.core.database.model.InsightsCacheEntity
-import com.scribblefit.core.database.model.SetEntity
-import com.scribblefit.core.database.model.SyncQueueEntity
-import com.scribblefit.core.database.model.SystemConfigEntity
-import com.scribblefit.core.database.model.WorkoutLogEntity
+import com.scribblefit.core.database.dao.*
+import com.scribblefit.core.database.model.*
 
 @Database(
     entities = [
@@ -23,7 +13,9 @@ import com.scribblefit.core.database.model.WorkoutLogEntity
         SetEntity::class,
         ExerciseDictionaryEntity::class,
         SystemConfigEntity::class,
-        InsightsCacheEntity::class
+        InsightsCacheEntity::class,
+        CanvasFeedEntity::class,
+        ActiveSessionEntity::class
     ],
     version = 1,
     exportSchema = true
@@ -36,4 +28,6 @@ abstract class ScribbleFitDatabase : RoomDatabase() {
     abstract fun exerciseDictionaryDao(): ExerciseDictionaryDao
     abstract fun systemConfigDao(): SystemConfigDao
     abstract fun insightsCacheDao(): InsightsCacheDao
+    abstract fun canvasFeedDao(): CanvasFeedDao
+    abstract fun activeSessionDao(): ActiveSessionDao
 }

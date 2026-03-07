@@ -5,7 +5,7 @@ import com.scribblefit.core.ai.engine.*
 import com.scribblefit.core.ai.model.*
 import com.scribblefit.core.network.ScribbleFitApi
 import com.scribblefit.core.network.model.ParseRequest
-import com.scribblefit.feature.ai.domain.security.SecureKeyStorage
+import com.scribblefit.core.ai.security.SecureKeyStorage
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 

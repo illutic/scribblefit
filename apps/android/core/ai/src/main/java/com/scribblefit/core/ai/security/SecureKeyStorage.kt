@@ -1,4 +1,4 @@
-package com.scribblefit.feature.ai.domain.security
+package com.scribblefit.core.ai.security
 
 interface SecureKeyStorage {
     suspend fun saveApiKey(key: String)

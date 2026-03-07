@@ -2,7 +2,7 @@ package com.scribblefit.core.database
 
 import androidx.room.TypeConverter
 import com.scribblefit.core.database.model.SyncStatus
-import com.scribblefit.feature.ai.domain.model.LLMProvider
+import com.scribblefit.core.ai.model.LLMProvider
 
 class Converters {
     @TypeConverter

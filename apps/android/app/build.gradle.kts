@@ -24,10 +24,14 @@ android {
 dependencies {
     implementation(project(":core:database"))
     implementation(project(":core:network"))
+    implementation(project(":core:designsystem"))
+    implementation(project(":core:ai"))
     implementation(project(":feature:canvas"))
+    implementation(project(":feature:canvas:data"))
     implementation(project(":feature:ledger"))
     implementation(project(":feature:ai:domain"))
     implementation(project(":feature:ai:data"))
+    implementation(project(":feature:analytics:data"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)

@@ -7,15 +7,13 @@ import androidx.work.WorkerParameters
 import com.scribblefit.feature.ai.domain.usecase.SyncWorkoutUseCase
 import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
-import javax.inject.Inject
 
 @HiltWorker
 class SyncWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted workerParams: WorkerParameters,
+    private val syncWorkoutUseCase: SyncWorkoutUseCase
 ) : CoroutineWorker(context, workerParams) {
-    @Inject
-    lateinit var syncWorkoutUseCase: SyncWorkoutUseCase
 
     override suspend fun doWork(): Result = runCatching {
         syncWorkoutUseCase()
