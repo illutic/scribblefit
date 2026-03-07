@@ -19,9 +19,14 @@ public struct MainView: View {
                 Label("Workout", systemImage: "dumbbell.fill")
             }
             
-            Text("Analytics").tabItem { Label("Analytics", systemImage: "chart.bar.fill") }
-            Text("Exercises").tabItem { Label("Exercises", systemImage: "list.bullet") }
-            Text("Profile").tabItem { Label("Profile", systemImage: "person.fill") }
+            AnalyticsView()
+                .tabItem { Label("Analytics", systemImage: "chart.bar.fill") }
+            
+            ExercisesView()
+                .tabItem { Label("Exercises", systemImage: "list.bullet") }
+            
+            ProfileView()
+                .tabItem { Label("Profile", systemImage: "person.fill") }
         }
         .accentColor(ScribbleFitColor.primaryText)
     }

@@ -15,7 +15,7 @@ class AndroidApplicationComposeConventionPlugin : Plugin<Project> {
             pluginManager.apply("org.jetbrains.kotlin.plugin.compose")
 
             extensions.configure<ApplicationExtension> {
-                compileSdk = 35
+                compileSdk = 36
                 defaultConfig {
                     targetSdk = 35
                     minSdk = 26

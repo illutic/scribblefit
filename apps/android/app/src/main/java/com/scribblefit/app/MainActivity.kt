@@ -16,10 +16,15 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation3.runtime.NavEntry
+import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.navigation3.ui.NavDisplay
 import com.scribblefit.core.designsystem.theme.ScribbleFitTheme
 import com.scribblefit.feature.canvas.ui.CanvasScreen
 import com.scribblefit.feature.ledger.ui.LedgerScreen
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.serialization.Serializable
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -45,9 +50,17 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+@Serializable
+sealed interface Screen : NavKey {
+    @Serializable data object Canvas : Screen
+    @Serializable data object Analytics : Screen
+    @Serializable data object Exercises : Screen
+    @Serializable data object Profile : Screen
+}
+
 @Composable
 fun MainScreen() {
-    var currentScreen by remember { mutableStateOf(Screen.Canvas) }
+    val backStack = rememberNavBackStack(elements = arrayOf(Screen.Canvas as Screen))
 
     Scaffold(
         bottomBar = {
@@ -55,9 +68,14 @@ fun MainScreen() {
                 containerColor = MaterialTheme.colorScheme.background,
                 tonalElevation = 0.dp
             ) {
+                val currentScreen = backStack.last()
+                
                 NavigationBarItem(
-                    selected = currentScreen == Screen.Canvas,
-                    onClick = { currentScreen = Screen.Canvas },
+                    selected = currentScreen is Screen.Canvas,
+                    onClick = { 
+                        backStack.clear()
+                        backStack.add(Screen.Canvas) 
+                    },
                     icon = { Icon(Icons.Default.Create, contentDescription = "Workout") },
                     label = { Text("Workout") },
                     colors = NavigationBarItemDefaults.colors(
@@ -68,8 +86,11 @@ fun MainScreen() {
                     )
                 )
                 NavigationBarItem(
-                    selected = currentScreen == Screen.Analytics,
-                    onClick = { currentScreen = Screen.Analytics },
+                    selected = currentScreen is Screen.Analytics,
+                    onClick = { 
+                        backStack.clear()
+                        backStack.add(Screen.Analytics) 
+                    },
                     icon = { Icon(Icons.Default.PlayArrow, contentDescription = "Analytics") },
                     label = { Text("Analytics") },
                     colors = NavigationBarItemDefaults.colors(
@@ -80,8 +101,11 @@ fun MainScreen() {
                     )
                 )
                 NavigationBarItem(
-                    selected = currentScreen == Screen.Exercises,
-                    onClick = { currentScreen = Screen.Exercises },
+                    selected = currentScreen is Screen.Exercises,
+                    onClick = { 
+                        backStack.clear()
+                        backStack.add(Screen.Exercises) 
+                    },
                     icon = { Icon(Icons.AutoMirrored.Filled.List, contentDescription = "Exercises") },
                     label = { Text("Exercises") },
                     colors = NavigationBarItemDefaults.colors(
@@ -92,8 +116,11 @@ fun MainScreen() {
                     )
                 )
                 NavigationBarItem(
-                    selected = currentScreen == Screen.Profile,
-                    onClick = { currentScreen = Screen.Profile },
+                    selected = currentScreen is Screen.Profile,
+                    onClick = { 
+                        backStack.clear()
+                        backStack.add(Screen.Profile) 
+                    },
                     icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
                     label = { Text("Profile") },
                     colors = NavigationBarItemDefaults.colors(
@@ -106,14 +133,19 @@ fun MainScreen() {
             }
         }
     ) { padding ->
-        Box(modifier = Modifier.padding(padding)) {
-            when (currentScreen) {
-                Screen.Canvas -> CanvasScreen()
-                Screen.Analytics -> AnalyticsPlaceholder()
-                Screen.Exercises -> LedgerScreen() 
-                Screen.Profile -> ProfilePlaceholder()
+        NavDisplay(
+            backStack = backStack,
+            modifier = Modifier.padding(padding),
+            entryProvider = { key ->
+                when (key) {
+                    is Screen.Canvas -> NavEntry(key) { CanvasScreen() }
+                    is Screen.Analytics -> NavEntry(key) { AnalyticsPlaceholder() }
+                    is Screen.Exercises -> NavEntry(key) { LedgerScreen() }
+                    is Screen.Profile -> NavEntry(key) { ProfilePlaceholder() }
+                    else -> error("Unknown screen: $key")
+                }
             }
-        }
+        )
     }
 }
 
@@ -129,10 +161,6 @@ fun ProfilePlaceholder() {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Text("User Profile", style = MaterialTheme.typography.headlineMedium)
     }
-}
-
-enum class Screen {
-    Canvas, Analytics, Exercises, Profile
 }
 
 @Composable
