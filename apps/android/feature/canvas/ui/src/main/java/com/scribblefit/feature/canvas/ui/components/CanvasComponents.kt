@@ -13,6 +13,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -21,15 +22,14 @@ import com.scribblefit.core.designsystem.component.ScribbleFitPill
 import com.scribblefit.core.designsystem.component.ScribbleFitTextField
 import com.scribblefit.core.designsystem.theme.tokens.ScribbleFitShapes
 import com.scribblefit.core.designsystem.theme.tokens.ScribbleFitSpacing
+import com.scribblefit.feature.canvas.R
 import com.scribblefit.feature.canvas.domain.model.FeedItem
 import com.scribblefit.feature.canvas.domain.model.ScribbleStatus
 
 @Composable
 fun CanvasHeader(userName: String) {
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(vertical = ScribbleFitSpacing.Medium),
+        modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -241,7 +241,10 @@ fun ScribbleInputPill(
                         onClick = { /* Mic action */ },
                         modifier = Modifier.size(32.dp)
                     ) {
-                        Text("🎙️", style = MaterialTheme.typography.titleMedium)
+                        Icon(
+                            painter = painterResource(R.drawable.mic_24dp),
+                            contentDescription = "Mic"
+                        )
                     }
                 }
             }
