@@ -40,6 +40,9 @@
             <option value="$PROJECT_DIR$/apps/android/feature/canvas/domain" />
             <option value="$PROJECT_DIR$/apps/android/feature/canvas/ui" />
             <option value="$PROJECT_DIR$/apps/android/feature/ledger" />
+            <option value="$PROJECT_DIR$/apps/android/feature/profile" />
+            <option value="$PROJECT_DIR$/apps/android/feature/profile/data" />
+            <option value="$PROJECT_DIR$/apps/android/feature/profile/domain" />
           </set>
         </option>
       </GradleProjectSettings>
