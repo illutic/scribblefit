@@ -24,38 +24,83 @@ class DynamicLLMEngine @Inject constructor(
 ) : LLMEngine, AnalysisEngine {
 
     override suspend fun parseWorkout(rawText: String): ParsedWorkoutResult {
-        return getActiveEngine().parseWorkout(rawText)
+        val config = configRepository.getConfig().first()
+        val preferredProvider = config?.preferredLlmProvider ?: LLMProvider.PROXY
+        
+        val engines = getEnginePriorityList(preferredProvider)
+        
+        var lastResult: ParsedWorkoutResult? = null
+        
+        for (engine in engines) {
+            val result = engine.parseWorkout(rawText)
+            if (result.status == ParsingStatus.SUCCESS) {
+                return result
+            }
+            lastResult = result
+            // If it's a failure, we continue to the next engine in the priority list
+        }
+        
+        return lastResult ?: ParsedWorkoutResult(
+            workout = null,
+            rawText = rawText,
+            status = ParsingStatus.FAILURE,
+            error = "No engines available or all engines failed"
+        )
+    }
+
+    private fun getEnginePriorityList(preferred: LLMProvider): List<LLMEngine> {
+        val baseList = when (preferred) {
+            LLMProvider.OPENAI -> listOf(openAIEngine, geminiAIEngine, proxyEngine, localAIEngine)
+            LLMProvider.GEMINI -> listOf(geminiAIEngine, openAIEngine, proxyEngine, localAIEngine)
+            LLMProvider.PROXY -> listOf(proxyEngine, geminiAIEngine, openAIEngine, localAIEngine)
+            LLMProvider.LOCAL -> listOf(localAIEngine, geminiAIEngine, openAIEngine, proxyEngine)
+        }
+        return baseList
     }
 
     override suspend fun generateSuggestion(context: String): Result<AnalysisSuggestion> {
-        return getActiveAnalysisEngine().generateSuggestion(context)
+        val config = configRepository.getConfig().first()
+        val preferredProvider = config?.preferredLlmProvider ?: LLMProvider.PROXY
+        val engines = getAnalysisEnginePriorityList(preferredProvider)
+        
+        var lastError: Throwable? = null
+        for (engine in engines) {
+            val result = engine.generateSuggestion(context)
+            if (result.isSuccess) return result
+            lastError = result.exceptionOrNull()
+        }
+        return Result.failure(lastError ?: Exception("All analysis engines failed"))
     }
 
     override suspend fun generateSummary(period: SummaryPeriod, workoutData: String): Result<AnalysisSummary> {
-        return getActiveAnalysisEngine().generateSummary(period, workoutData)
+        val config = configRepository.getConfig().first()
+        val preferredProvider = config?.preferredLlmProvider ?: LLMProvider.PROXY
+        val engines = getAnalysisEnginePriorityList(preferredProvider)
+        
+        var lastError: Throwable? = null
+        for (engine in engines) {
+            val result = engine.generateSummary(period, workoutData)
+            if (result.isSuccess) return result
+            lastError = result.exceptionOrNull()
+        }
+        return Result.failure(lastError ?: Exception("All analysis engines failed"))
     }
 
     override suspend fun generateExerciseInsight(exerciseName: String, historyData: String): Result<ExerciseInsight> {
-        return getActiveAnalysisEngine().generateExerciseInsight(exerciseName, historyData)
-    }
-
-    private suspend fun getActiveEngine(): LLMEngine {
         val config = configRepository.getConfig().first()
-        val provider = config?.preferredLlmProvider ?: LLMProvider.PROXY
+        val preferredProvider = config?.preferredLlmProvider ?: LLMProvider.PROXY
+        val engines = getAnalysisEnginePriorityList(preferredProvider)
         
-        return when (provider) {
-            LLMProvider.OPENAI -> openAIEngine
-            LLMProvider.GEMINI -> geminiAIEngine
-            LLMProvider.LOCAL -> localAIEngine
-            LLMProvider.PROXY -> proxyEngine
+        var lastError: Throwable? = null
+        for (engine in engines) {
+            val result = engine.generateExerciseInsight(exerciseName, historyData)
+            if (result.isSuccess) return result
+            lastError = result.exceptionOrNull()
         }
+        return Result.failure(lastError ?: Exception("All analysis engines failed"))
     }
 
-    private suspend fun getActiveAnalysisEngine(): AnalysisEngine {
-        val engine = getActiveEngine()
-        return if (engine is AnalysisEngine) engine else {
-            // Fallback or throw if selected engine doesn't support analysis
-            throw IllegalStateException("Selected engine ${engine.javaClass.simpleName} does not support analysis")
-        }
+    private fun getAnalysisEnginePriorityList(preferred: LLMProvider): List<AnalysisEngine> {
+        return getEnginePriorityList(preferred).filterIsInstance<AnalysisEngine>()
     }
 }
