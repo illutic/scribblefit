@@ -1,4 +1,4 @@
-package com.scribblefit.feature.ai.domain.repository
+package com.scribblefit.core.ai.engine
 
 interface ConfigRepository {
     suspend fun syncMetadata(): Result<Unit>

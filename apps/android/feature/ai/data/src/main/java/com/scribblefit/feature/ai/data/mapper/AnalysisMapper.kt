@@ -1,6 +1,6 @@
 package com.scribblefit.feature.ai.data.mapper
 
-import com.scribblefit.feature.ai.domain.model.*
+import com.scribblefit.core.ai.model.*
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 

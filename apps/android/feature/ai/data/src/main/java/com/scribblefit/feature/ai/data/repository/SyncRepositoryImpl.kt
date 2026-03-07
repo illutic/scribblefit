@@ -14,10 +14,10 @@ import com.scribblefit.core.database.model.SetEntity
 import com.scribblefit.core.database.model.SyncQueueEntity
 import com.scribblefit.core.database.model.WorkoutLogEntity
 import com.scribblefit.feature.ai.data.worker.SyncWorker
-import com.scribblefit.feature.ai.domain.model.ParsedWorkout
-import com.scribblefit.feature.ai.domain.model.SyncItem
-import com.scribblefit.feature.ai.domain.model.SyncStatus
-import com.scribblefit.feature.ai.domain.repository.SyncRepository
+import com.scribblefit.core.ai.model.ParsedWorkout
+import com.scribblefit.core.ai.model.SyncItem
+import com.scribblefit.core.ai.model.SyncStatus
+import com.scribblefit.core.ai.engine.SyncRepository
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first

@@ -10,6 +10,8 @@ android {
 
 dependencies {
     implementation(project(":feature:ai:domain"))
+    implementation(project(":core:ai"))
+    implementation(project(":core:ai"))
     implementation(project(":core:network"))
     implementation(project(":core:database"))
 

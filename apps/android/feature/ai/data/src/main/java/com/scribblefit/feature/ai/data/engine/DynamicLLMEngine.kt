@@ -1,8 +1,8 @@
 package com.scribblefit.feature.ai.data.engine
 
 import com.scribblefit.core.database.dao.SystemConfigDao
-import com.scribblefit.feature.ai.domain.engine.*
-import com.scribblefit.feature.ai.domain.model.*
+import com.scribblefit.core.ai.engine.*
+import com.scribblefit.core.ai.model.*
 import kotlinx.coroutines.flow.firstOrNull
 import javax.inject.Inject
 import javax.inject.Named

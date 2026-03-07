@@ -2,7 +2,7 @@ package com.scribblefit.feature.ai.data.repository
 
 import com.scribblefit.core.network.ScribbleFitApi
 import com.scribblefit.core.network.model.AuthRequest
-import com.scribblefit.feature.ai.domain.repository.AuthRepository
+import com.scribblefit.core.ai.engine.AuthRepository
 import com.scribblefit.feature.ai.domain.security.SecureKeyStorage
 import javax.inject.Inject
 import javax.inject.Singleton

@@ -13,7 +13,8 @@ room {
 }
 
 dependencies {
-    implementation(project(":feature:ai:domain"))
+    implementation(project(":core:ai"))
+    implementation(project(":core:model"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.coroutines.core)
     implementation(libs.coroutines.android)

@@ -1,8 +1,8 @@
 package com.scribblefit.feature.ai.domain.usecase
 
-import com.scribblefit.feature.ai.domain.engine.AnalysisEngine
-import com.scribblefit.feature.ai.domain.model.*
-import com.scribblefit.feature.ai.domain.repository.AnalysisRepository
+import com.scribblefit.core.ai.engine.AnalysisEngine
+import com.scribblefit.core.ai.model.*
+import com.scribblefit.core.ai.engine.AnalysisRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk

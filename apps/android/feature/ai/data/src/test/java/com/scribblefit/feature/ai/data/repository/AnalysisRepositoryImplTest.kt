@@ -3,7 +3,7 @@ package com.scribblefit.feature.ai.data.repository
 import com.scribblefit.core.database.dao.InsightsCacheDao
 import com.scribblefit.core.database.model.InsightsCacheEntity
 import com.scribblefit.feature.ai.data.mapper.*
-import com.scribblefit.feature.ai.domain.model.*
+import com.scribblefit.core.ai.model.*
 import io.mockk.*
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf

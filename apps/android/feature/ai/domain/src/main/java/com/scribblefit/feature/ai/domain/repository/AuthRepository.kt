@@ -1,4 +1,4 @@
-package com.scribblefit.feature.ai.domain.repository
+package com.scribblefit.core.ai.engine
 
 interface AuthRepository {
     suspend fun login(deviceId: String): Result<Unit>

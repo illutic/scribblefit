@@ -1,11 +1,11 @@
 package com.scribblefit.feature.ai.domain.usecase
 
-import com.scribblefit.feature.ai.domain.engine.LLMEngine
-import com.scribblefit.feature.ai.domain.model.AIParsingException
-import com.scribblefit.feature.ai.domain.model.SyncItem
-import com.scribblefit.feature.ai.domain.model.SyncStatus
-import com.scribblefit.feature.ai.domain.repository.SyncRepository
-import com.scribblefit.feature.ai.domain.repository.TelemetryRepository
+import com.scribblefit.core.ai.engine.LLMEngine
+import com.scribblefit.core.ai.model.AIParsingException
+import com.scribblefit.core.ai.model.SyncItem
+import com.scribblefit.core.ai.model.SyncStatus
+import com.scribblefit.core.ai.engine.SyncRepository
+import com.scribblefit.core.ai.engine.TelemetryRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk

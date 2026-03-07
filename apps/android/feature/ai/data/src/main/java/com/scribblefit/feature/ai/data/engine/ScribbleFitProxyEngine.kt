@@ -1,8 +1,8 @@
 package com.scribblefit.feature.ai.data.engine
 
 import com.scribblefit.feature.ai.data.mapper.*
-import com.scribblefit.feature.ai.domain.engine.*
-import com.scribblefit.feature.ai.domain.model.*
+import com.scribblefit.core.ai.engine.*
+import com.scribblefit.core.ai.model.*
 import com.scribblefit.core.network.ScribbleFitApi
 import com.scribblefit.core.network.model.ParseRequest
 import com.scribblefit.feature.ai.domain.security.SecureKeyStorage

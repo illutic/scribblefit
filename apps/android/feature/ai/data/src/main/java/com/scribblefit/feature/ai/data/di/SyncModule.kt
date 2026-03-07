@@ -6,8 +6,10 @@ import com.scribblefit.core.network.ScribbleFitApi
 import com.scribblefit.feature.ai.data.engine.*
 import com.scribblefit.feature.ai.data.repository.*
 import com.scribblefit.feature.ai.data.security.SecureKeyStorageImpl
-import com.scribblefit.feature.ai.domain.engine.*
-import com.scribblefit.feature.ai.domain.repository.*
+import com.scribblefit.core.ai.engine.*
+import com.scribblefit.core.ai.engine.*
+import com.scribblefit.core.ai.engine.*
+import com.scribblefit.core.ai.engine.*
 import com.scribblefit.feature.ai.domain.security.SecureKeyStorage
 import com.scribblefit.feature.ai.domain.usecase.*
 import com.google.mlkit.genai.prompt.Generation
@@ -47,10 +49,6 @@ abstract class SyncModule {
     @Binds
     @Singleton
     abstract fun bindSecureKeyStorage(impl: SecureKeyStorageImpl): SecureKeyStorage
-
-    @Binds
-    @Singleton
-    abstract fun bindAnalysisRepository(impl: AnalysisRepositoryImpl): AnalysisRepository
 
     companion object {
         private const val SYSTEM_PROMPT = """
@@ -137,15 +135,6 @@ abstract class SyncModule {
                 systemConfigDao.getConfig().firstOrNull()?.promptVersion ?: "1.0.0"
             }
             return SyncWorkoutUseCase(syncRepository, telemetryRepository, engine, promptVersion)
-        }
-
-        @Provides
-        @Singleton
-        fun provideAnalyzeWorkoutsUseCase(
-            repository: AnalysisRepository,
-            engine: AnalysisEngine
-        ): AnalyzeWorkoutsUseCase {
-            return AnalyzeWorkoutsUseCase(repository, engine)
         }
     }
 }

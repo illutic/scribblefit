@@ -5,7 +5,7 @@ import com.google.mlkit.genai.prompt.Candidate
 import com.google.mlkit.genai.prompt.GenerateContentRequest
 import com.google.mlkit.genai.prompt.GenerativeModel
 import com.google.mlkit.genai.prompt.GenerateContentResponse
-import com.scribblefit.feature.ai.domain.model.AIParsingException
+import com.scribblefit.core.ai.model.AIParsingException
 import io.mockk.coEvery
 import io.mockk.mockk
 import kotlinx.coroutines.test.runTest

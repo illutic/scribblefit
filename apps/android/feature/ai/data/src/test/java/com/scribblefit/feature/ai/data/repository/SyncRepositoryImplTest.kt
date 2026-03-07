@@ -10,10 +10,10 @@ import com.scribblefit.core.database.dao.WorkoutLogDao
 import com.scribblefit.core.database.model.ExerciseDictionaryEntity
 import com.scribblefit.core.database.model.SyncQueueEntity
 import com.scribblefit.core.database.model.SyncStatus as EntitySyncStatus
-import com.scribblefit.feature.ai.domain.model.ParsedExercise
-import com.scribblefit.feature.ai.domain.model.ParsedSet
-import com.scribblefit.feature.ai.domain.model.ParsedWorkout
-import com.scribblefit.feature.ai.domain.model.SyncStatus
+import com.scribblefit.core.ai.model.ParsedExercise
+import com.scribblefit.core.ai.model.ParsedSet
+import com.scribblefit.core.ai.model.ParsedWorkout
+import com.scribblefit.core.ai.model.SyncStatus
 import io.mockk.*
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf

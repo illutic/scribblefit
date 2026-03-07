@@ -7,6 +7,7 @@ android {
 }
 
 dependencies {
-    implementation(project(":core:designsystem"))
+    implementation(project(":feature:canvas:domain"))
     implementation(project(":feature:ai:domain"))
+    implementation(project(":core:designsystem"))
 }
