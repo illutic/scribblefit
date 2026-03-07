@@ -1,9 +1,8 @@
 package com.scribblefit.feature.ai.data.engine
 
 import com.scribblefit.core.database.dao.SystemConfigDao
-import com.scribblefit.feature.ai.domain.engine.LLMEngine
-import com.scribblefit.feature.ai.domain.model.LLMProvider
-import com.scribblefit.feature.ai.domain.model.ParsedWorkout
+import com.scribblefit.feature.ai.domain.engine.*
+import com.scribblefit.feature.ai.domain.model.*
 import kotlinx.coroutines.flow.firstOrNull
 import javax.inject.Inject
 import javax.inject.Named
@@ -14,19 +13,41 @@ class DynamicLLMEngine @Inject constructor(
     @param:Named("proxy") private val proxyEngine: LLMEngine,
     private val localAIEngine: LocalAIEngine,
     private val systemConfigDao: SystemConfigDao
-) : LLMEngine {
+) : LLMEngine, AnalysisEngine {
 
     override suspend fun parseWorkout(rawText: String): Result<ParsedWorkout> {
+        return getActiveEngine().parseWorkout(rawText)
+    }
+
+    override suspend fun generateSuggestion(context: String): Result<AnalysisSuggestion> {
+        return getActiveAnalysisEngine().generateSuggestion(context)
+    }
+
+    override suspend fun generateSummary(period: SummaryPeriod, workoutData: String): Result<AnalysisSummary> {
+        return getActiveAnalysisEngine().generateSummary(period, workoutData)
+    }
+
+    override suspend fun generateExerciseInsight(exerciseName: String, historyData: String): Result<ExerciseInsight> {
+        return getActiveAnalysisEngine().generateExerciseInsight(exerciseName, historyData)
+    }
+
+    private suspend fun getActiveEngine(): LLMEngine {
         val config = systemConfigDao.getConfig().firstOrNull()
         val provider = config?.preferredLlmProvider ?: LLMProvider.PROXY
         
-        val engine = when (provider) {
+        return when (provider) {
             LLMProvider.OPENAI -> openAIEngine
             LLMProvider.GEMINI -> geminiAIEngine
             LLMProvider.LOCAL -> localAIEngine
             LLMProvider.PROXY -> proxyEngine
         }
-        
-        return engine.parseWorkout(rawText)
+    }
+
+    private suspend fun getActiveAnalysisEngine(): AnalysisEngine {
+        val engine = getActiveEngine()
+        return if (engine is AnalysisEngine) engine else {
+            // Fallback or throw if selected engine doesn't support analysis
+            throw IllegalStateException("Selected engine ${engine.javaClass.simpleName} does not support analysis")
+        }
     }
 }

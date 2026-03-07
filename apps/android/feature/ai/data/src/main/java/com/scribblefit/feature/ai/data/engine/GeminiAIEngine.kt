@@ -1,9 +1,8 @@
 package com.scribblefit.feature.ai.data.engine
 
-import com.scribblefit.feature.ai.data.mapper.toDomain
-import com.scribblefit.feature.ai.domain.engine.LLMEngine
-import com.scribblefit.feature.ai.domain.model.AIParsingException
-import com.scribblefit.feature.ai.domain.model.ParsedWorkout
+import com.scribblefit.feature.ai.data.mapper.*
+import com.scribblefit.feature.ai.domain.engine.*
+import com.scribblefit.feature.ai.domain.model.*
 import com.scribblefit.core.network.model.ParsedWorkoutDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -22,23 +21,48 @@ class GeminiAIEngine @Inject constructor(
     private val apiKey: String,
     private val systemPrompt: String,
     private val json: Json
-) : LLMEngine {
+) : LLMEngine, AnalysisEngine {
 
     private val baseUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:"
     private val logger = LoggerFactory.getLogger(javaClass)
 
     override suspend fun parseWorkout(rawText: String): Result<ParsedWorkout> = runCatching {
+        val content = callGemini(systemPrompt, rawText)
+        try {
+            val parsedWorkoutDto = json.decodeFromString<ParsedWorkoutDto>(content)
+            parsedWorkoutDto.toDomain()
+        } catch (e: Exception) {
+            throw AIParsingException(rawText = rawText, error = "Hallucination: ${e.message}", cause = e)
+        }
+    }
+
+    override suspend fun generateSuggestion(context: String): Result<AnalysisSuggestion> = runCatching {
+        val content = callGemini(AnalysisPrompts.getSuggestionPrompt(context), "Generate suggestion.")
+        json.decodeFromString<SuggestionDto>(content).toDomain()
+    }
+
+    override suspend fun generateSummary(period: SummaryPeriod, workoutData: String): Result<AnalysisSummary> = runCatching {
+        val content = callGemini(AnalysisPrompts.getSummaryPrompt(period.name, workoutData), "Generate summary.")
+        json.decodeFromString<SummaryDto>(content).toDomain(period)
+    }
+
+    override suspend fun generateExerciseInsight(exerciseName: String, historyData: String): Result<ExerciseInsight> = runCatching {
+        val content = callGemini(AnalysisPrompts.getExerciseInsightPrompt(exerciseName, historyData), "Analyze $exerciseName.")
+        json.decodeFromString<ExerciseInsightDto>(content).toDomain(exerciseName)
+    }
+
+    private suspend fun callGemini(prompt: String, userMessage: String): String {
         val response = client.post("${baseUrl}generateContent?key=$apiKey") {
             contentType(ContentType.Application.Json)
             setBody(
                 GeminiRequest(
                     contents = listOf(
                         GeminiContent(
-                            parts = listOf(GeminiPart(text = rawText))
+                            parts = listOf(GeminiPart(text = userMessage))
                         )
                     ),
                     systemInstruction = GeminiSystemInstruction(
-                        parts = listOf(GeminiPart(text = systemPrompt))
+                        parts = listOf(GeminiPart(text = prompt))
                     ),
                     generationConfig = GeminiGenerationConfig(
                         responseMimeType = "application/json"
@@ -47,16 +71,8 @@ class GeminiAIEngine @Inject constructor(
             )
         }.body<GeminiResponse>()
 
-        val content = response.candidates.firstOrNull()?.content?.parts?.firstOrNull()?.text
+        return response.candidates.firstOrNull()?.content?.parts?.firstOrNull()?.text
             ?: throw Exception("Empty response from Gemini")
-
-        try {
-            val parsedWorkoutDto = json.decodeFromString<ParsedWorkoutDto>(content)
-            parsedWorkoutDto.toDomain()
-        } catch (e: Exception) {
-            logger.error("Hallucination detected in Gemini response: $content", e)
-            throw AIParsingException(rawText = rawText, error = "Hallucination: ${e.message}", cause = e)
-        }
     }
 }
 

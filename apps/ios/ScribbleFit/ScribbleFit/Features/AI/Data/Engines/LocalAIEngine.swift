@@ -8,8 +8,9 @@ import FoundationModels
  * Local AI Engine for iOS.
  * Leverages Apple Intelligence via the FoundationModels framework.
  */
-public final class LocalAIEngine: LLMEngine {
+public final class LocalAIEngine: LLMEngine, AnalysisEngine {
     private let systemPrompt: String
+    private let jsonDecoder = JSONDecoder()
     
     public init(systemPrompt: String) {
         self.systemPrompt = systemPrompt
@@ -18,30 +19,77 @@ public final class LocalAIEngine: LLMEngine {
     public func parseWorkout(rawText: String) async throws -> ParsedWorkout {
         #if canImport(FoundationModels)
         if #available(iOS 26.0, *) {
-            // Ensure Apple Intelligence is available
-            guard await isAvailable() else {
-                throw AIParsingError(rawText: rawText, error: "Apple Intelligence not available")
-            }
-            
-            let session = LanguageModelSession {
-                self.systemPrompt
-            }
-            
-            do {
-                // Use Guided Generation for structured output
-                let response = try await session.respond(
-                    to: "Parse this gym note: \(rawText)",
-                    generating: LocalAIWorkoutDTO.self
-                )
-                
-                return response.content.toDomain()
-            } catch {
-                throw AIParsingError(rawText: rawText, error: "Local Hallucination: \(error.localizedDescription)")
-            }
+            let session = LanguageModelSession { self.systemPrompt }
+            let response = try await session.respond(to: "Parse this gym note: \(rawText)", generating: LocalAIWorkoutDTO.self)
+            return response.content.toDomain()
         }
         #endif
-        
-        throw AIParsingError(rawText: rawText, error: "Local AI Engine not supported on this device/OS")
+        throw AIParsingError(rawText: rawText, error: "Local AI Engine not supported")
+    }
+    
+    public func generateSuggestion(context: String) async throws -> AnalysisSuggestion {
+        #if canImport(FoundationModels)
+        if #available(iOS 26.0, *) {
+            let session = LanguageModelSession { AnalysisPrompts.getSuggestionPrompt(context: context) }
+            let response = try await session.respond(to: "Generate suggestion.", generating: AnalysisSuggestion.self)
+            return response.content
+        }
+        #endif
+        throw AIParsingError(rawText: "Suggestion", error: "Local AI Engine not supported")
+    }
+    
+    public func generateSummary(period: SummaryPeriod, workoutData: String) async throws -> AnalysisSummary {
+        #if canImport(FoundationModels)
+        if #available(iOS 26.0, *) {
+            let session = LanguageModelSession { AnalysisPrompts.getSummaryPrompt(period: period.rawValue, data: workoutData) }
+            
+            struct SummaryDTO: Codable {
+                let summary_text: String
+                let highlights: [String]
+                let focus_muscle_groups: [String]
+                let volume_delta: Double
+            }
+            
+            let response = try await session.respond(to: "Generate summary.", generating: SummaryDTO.self)
+            let dto = response.content
+            return AnalysisSummary(
+                period: period,
+                summaryText: dto.summary_text,
+                highlights: dto.highlights,
+                focusMuscleGroups: dto.focus_muscle_groups,
+                volumeDelta: dto.volume_delta,
+                timestamp: Date()
+            )
+        }
+        #endif
+        throw AIParsingError(rawText: "Summary", error: "Local AI Engine not supported")
+    }
+    
+    public func generateExerciseInsight(exerciseName: String, historyData: String) async throws -> ExerciseInsight {
+        #if canImport(FoundationModels)
+        if #available(iOS 26.0, *) {
+            let session = LanguageModelSession { AnalysisPrompts.getExerciseInsightPrompt(name: exerciseName, history: historyData) }
+            
+            struct InsightDTO: Codable {
+                let estimated_1rm: Double
+                let pr_detected: Bool
+                let trend_direction: String
+                let breakdown_text: String
+            }
+            
+            let response = try await session.respond(to: "Analyze \(exerciseName).", generating: InsightDTO.self)
+            let dto = response.content
+            return ExerciseInsight(
+                exerciseId: exerciseName,
+                estimated1RM: dto.estimated_1rm,
+                prDetected: dto.pr_detected,
+                trendDirection: InsightTrend(rawValue: dto.trend_direction.lowercased()) ?? .stable,
+                breakdownText: dto.breakdown_text,
+                timestamp: Date()
+            )
+        }
+        #endif
+        throw AIParsingError(rawText: "Insight", error: "Local AI Engine not supported")
     }
     
     public func isAvailable() async -> Bool {
@@ -53,70 +101,3 @@ public final class LocalAIEngine: LLMEngine {
         return false
     }
 }
-
-// MARK: - Serializable Mapping (Internal to Engine)
-
-#if canImport(FoundationModels)
-@available(iOS 26.0, *)
-@Generable
-struct LocalAIWorkoutDTO {
-    @Guide(description: "ISO8601 date string of the workout")
-    let date: String
-    
-    @Guide(description: "Optional location of the workout")
-    let location: String?
-    
-    @Guide(description: "List of exercises performed")
-    let exercises: [LocalAIExerciseDTO]
-    
-    func toDomain() -> ParsedWorkout {
-        return ParsedWorkout(
-            date: self.date,
-            location: self.location,
-            exercises: self.exercises.map { $0.toDomain() }
-        )
-    }
-}
-
-@available(iOS 26.0, *)
-@Generable
-struct LocalAIExerciseDTO {
-    @Guide(description: "The canonical name of the exercise")
-    let canonicalName: String
-    
-    @Guide(description: "List of sets performed for this exercise")
-    let sets: [LocalAISetDTO]
-    
-    func toDomain() -> ParsedExercise {
-        return ParsedExercise(
-            canonicalName: self.canonicalName,
-            sets: self.sets.map { $0.toDomain() }
-        )
-    }
-}
-
-@available(iOS 26.0, *)
-@Generable
-struct LocalAISetDTO {
-    @Guide(description: "The weight used in lbs or kg")
-    let weight: Double
-    
-    @Guide(description: "Number of repetitions")
-    let reps: Int
-    
-    @Guide(description: "Rate of Perceived Exertion (1-10)")
-    let rpe: Double?
-    
-    @Guide(description: "Any extra notes for this set")
-    let notes: String?
-    
-    func toDomain() -> ParsedSet {
-        return ParsedSet(
-            weight: self.weight,
-            reps: self.reps,
-            rpe: self.rpe,
-            notes: self.notes
-        )
-    }
-}
-#endif

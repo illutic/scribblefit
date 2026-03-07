@@ -168,9 +168,14 @@ public final class ScribbleFitDatabase {
         try? context.save()
     }
     
-    public func getInsight(key: String) -> InsightsCache? {
+    public func getInsightByKey(key: String) -> InsightsCache? {
         let descriptor = FetchDescriptor<InsightsCache>(predicate: #Predicate { $0.key == key })
         return try? context.fetch(descriptor).first
+    }
+    
+    public func clearInsights() {
+        try? context.delete(model: InsightsCache.self)
+        try? context.save()
     }
     
     // MARK: - General

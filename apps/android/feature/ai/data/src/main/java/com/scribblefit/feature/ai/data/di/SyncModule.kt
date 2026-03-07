@@ -1,22 +1,15 @@
 package com.scribblefit.feature.ai.data.di
 
+import com.scribblefit.core.database.dao.InsightsCacheDao
+import com.scribblefit.core.database.dao.SystemConfigDao
 import com.scribblefit.core.network.ScribbleFitApi
-import com.scribblefit.feature.ai.data.engine.GeminiAIEngine
-import com.scribblefit.feature.ai.data.engine.OpenAIEngine
-import com.scribblefit.feature.ai.data.engine.ScribbleFitProxyEngine
-import com.scribblefit.feature.ai.data.engine.LocalAIEngine
-import com.scribblefit.feature.ai.data.repository.SyncRepositoryImpl
-import com.scribblefit.feature.ai.data.repository.ConfigRepositoryImpl
-import com.scribblefit.feature.ai.data.repository.AuthRepositoryImpl
-import com.scribblefit.feature.ai.data.repository.TelemetryRepositoryImpl
+import com.scribblefit.feature.ai.data.engine.*
+import com.scribblefit.feature.ai.data.repository.*
 import com.scribblefit.feature.ai.data.security.SecureKeyStorageImpl
-import com.scribblefit.feature.ai.domain.engine.LLMEngine
-import com.scribblefit.feature.ai.domain.repository.SyncRepository
-import com.scribblefit.feature.ai.domain.repository.ConfigRepository
-import com.scribblefit.feature.ai.domain.repository.AuthRepository
-import com.scribblefit.feature.ai.domain.repository.TelemetryRepository
+import com.scribblefit.feature.ai.domain.engine.*
+import com.scribblefit.feature.ai.domain.repository.*
 import com.scribblefit.feature.ai.domain.security.SecureKeyStorage
-import com.scribblefit.feature.ai.domain.usecase.SyncWorkoutUseCase
+import com.scribblefit.feature.ai.domain.usecase.*
 import com.google.mlkit.genai.prompt.Generation
 import com.google.mlkit.genai.prompt.GenerativeModel
 import dagger.Binds
@@ -54,6 +47,10 @@ abstract class SyncModule {
     @Binds
     @Singleton
     abstract fun bindSecureKeyStorage(impl: SecureKeyStorageImpl): SecureKeyStorage
+
+    @Binds
+    @Singleton
+    abstract fun bindAnalysisRepository(impl: AnalysisRepositoryImpl): AnalysisRepository
 
     companion object {
         private const val SYSTEM_PROMPT = """
@@ -106,23 +103,14 @@ abstract class SyncModule {
 
         @Provides
         @Singleton
-        fun provideLocalAIEngine(
-            generativeModel: GenerativeModel,
-            json: Json
-        ): LocalAIEngine {
-            return LocalAIEngine(generativeModel, json, SYSTEM_PROMPT)
-        }
-
-        @Provides
-        @Singleton
         fun provideLLMEngine(
             @Named("openai") openAIEngine: LLMEngine,
             @Named("gemini") geminiAIEngine: LLMEngine,
             @Named("proxy") proxyEngine: LLMEngine,
             localAIEngine: LocalAIEngine,
-            systemConfigDao: com.scribblefit.core.database.dao.SystemConfigDao
+            systemConfigDao: SystemConfigDao
         ): LLMEngine {
-            return com.scribblefit.feature.ai.data.engine.DynamicLLMEngine(
+            return DynamicLLMEngine(
                 openAIEngine,
                 geminiAIEngine,
                 proxyEngine,
@@ -133,16 +121,31 @@ abstract class SyncModule {
 
         @Provides
         @Singleton
+        fun provideAnalysisEngine(llmEngine: LLMEngine): AnalysisEngine {
+            return llmEngine as AnalysisEngine
+        }
+
+        @Provides
+        @Singleton
         fun provideSyncWorkoutUseCase(
             syncRepository: SyncRepository,
             telemetryRepository: TelemetryRepository,
             engine: LLMEngine,
-            systemConfigDao: com.scribblefit.core.database.dao.SystemConfigDao
+            systemConfigDao: SystemConfigDao
         ): SyncWorkoutUseCase {
             val promptVersion = runBlocking { 
                 systemConfigDao.getConfig().firstOrNull()?.promptVersion ?: "1.0.0"
             }
             return SyncWorkoutUseCase(syncRepository, telemetryRepository, engine, promptVersion)
+        }
+
+        @Provides
+        @Singleton
+        fun provideAnalyzeWorkoutsUseCase(
+            repository: AnalysisRepository,
+            engine: AnalysisEngine
+        ): AnalyzeWorkoutsUseCase {
+            return AnalyzeWorkoutsUseCase(repository, engine)
         }
     }
 }

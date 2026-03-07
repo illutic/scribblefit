@@ -1,10 +1,8 @@
 package com.scribblefit.feature.ai.data.engine
 
-import com.scribblefit.feature.ai.data.mapper.toDomain
-import com.scribblefit.feature.ai.domain.engine.LLMEngine
-import com.scribblefit.feature.ai.domain.model.AIParsingException
-import com.scribblefit.feature.ai.domain.model.ParsedWorkout
-import com.scribblefit.core.network.model.ParseRequest
+import com.scribblefit.feature.ai.data.mapper.*
+import com.scribblefit.feature.ai.domain.engine.*
+import com.scribblefit.feature.ai.domain.model.*
 import com.scribblefit.core.network.model.ParsedWorkoutDto
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
@@ -25,11 +23,36 @@ class OpenAIEngine(
     private val apiKey: String,
     private val systemPrompt: String,
     private val json: Json
-) : LLMEngine {
+) : LLMEngine, AnalysisEngine {
 
     private val logger = LoggerFactory.getLogger(javaClass)
 
     override suspend fun parseWorkout(rawText: String): Result<ParsedWorkout> = runCatching {
+        val content = callOpenAI(systemPrompt, rawText)
+        try {
+            val parsedWorkoutDto = json.decodeFromString<ParsedWorkoutDto>(content)
+            parsedWorkoutDto.toDomain()
+        } catch (e: Exception) {
+            throw AIParsingException(rawText = rawText, error = "Hallucination: ${e.message}", cause = e)
+        }
+    }
+
+    override suspend fun generateSuggestion(context: String): Result<AnalysisSuggestion> = runCatching {
+        val content = callOpenAI(AnalysisPrompts.getSuggestionPrompt(context), "Generate suggestion.")
+        json.decodeFromString<SuggestionDto>(content).toDomain()
+    }
+
+    override suspend fun generateSummary(period: SummaryPeriod, workoutData: String): Result<AnalysisSummary> = runCatching {
+        val content = callOpenAI(AnalysisPrompts.getSummaryPrompt(period.name, workoutData), "Generate summary.")
+        json.decodeFromString<SummaryDto>(content).toDomain(period)
+    }
+
+    override suspend fun generateExerciseInsight(exerciseName: String, historyData: String): Result<ExerciseInsight> = runCatching {
+        val content = callOpenAI(AnalysisPrompts.getExerciseInsightPrompt(exerciseName, historyData), "Analyze $exerciseName.")
+        json.decodeFromString<ExerciseInsightDto>(content).toDomain(exerciseName)
+    }
+
+    private suspend fun callOpenAI(prompt: String, userMessage: String): String {
         val response = client.post("https://api.openai.com/v1/chat/completions") {
             header("Authorization", "Bearer $apiKey")
             contentType(ContentType.Application.Json)
@@ -37,8 +60,8 @@ class OpenAIEngine(
                 OpenAIRequest(
                     model = "gpt-4o-mini",
                     messages = listOf(
-                        OpenAIMessage(role = "system", content = systemPrompt),
-                        OpenAIMessage(role = "user", content = rawText)
+                        OpenAIMessage(role = "system", content = prompt),
+                        OpenAIMessage(role = "user", content = userMessage)
                     ),
                     responseFormat = OpenAIResponseFormat(type = "json_object")
                 )
@@ -51,16 +74,8 @@ class OpenAIEngine(
         }
 
         val openAiResponse = response.body<OpenAIResponse>()
-        val content = openAiResponse.choices.firstOrNull()?.message?.content
+        return openAiResponse.choices.firstOrNull()?.message?.content
             ?: throw Exception("Empty response from OpenAI")
-
-        try {
-            val parsedWorkoutDto = json.decodeFromString<ParsedWorkoutDto>(content)
-            parsedWorkoutDto.toDomain()
-        } catch (e: Exception) {
-            logger.error("Hallucination detected: $content", e)
-            throw AIParsingException(rawText = rawText, error = "Hallucination: ${e.message}", cause = e)
-        }
     }
 }
 
