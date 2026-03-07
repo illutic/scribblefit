@@ -1,18 +1,13 @@
 package com.scribblefit.feature.canvas.ui
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.scribblefit.feature.canvas.ui.components.*
+import com.scribblefit.core.designsystem.theme.tokens.ScribbleFitSpacing
 
 @Composable
 fun CanvasScreen(
@@ -21,80 +16,45 @@ fun CanvasScreen(
     val text by viewModel.scribbleText.collectAsState()
     val isSyncing by viewModel.isSyncing.collectAsState()
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color.White)
-            .padding(24.dp),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .padding(horizontal = ScribbleFitSpacing.ScreenPadding)
     ) {
-        Spacer(modifier = Modifier.height(80.dp))
-        
-        Text(
-            text = "Scribble.",
-            style = TextStyle(
-                fontSize = 32.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFF101010)
-            ),
-            modifier = Modifier.align(Alignment.Start)
-        )
-        
-        Spacer(modifier = Modifier.height(48.dp))
-
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.Start
         ) {
-            if (text.isEmpty()) {
-                Text(
-                    text = "Bench 135x5, 135x5...",
-                    style = TextStyle(
-                        fontSize = 20.sp,
-                        color = Color.LightGray
-                    )
-                )
-            }
+            CanvasHeader(userName = "George")
             
-            BasicTextField(
-                value = text,
-                onValueChange = viewModel::onTextChange,
-                textStyle = TextStyle(
-                    fontSize = 20.sp,
-                    color = Color(0xFF101010),
-                    lineHeight = 28.sp
-                ),
-                modifier = Modifier.fillMaxSize()
+            Spacer(modifier = Modifier.height(ScribbleFitSpacing.XL))
+
+            ContextualInsightCard(
+                text = "You hit chest on Thursday.\nReady for a Pull day? 💪"
+            )
+
+            Spacer(modifier = Modifier.height(ScribbleFitSpacing.XL))
+
+            QuickActionPills(
+                pills = listOf("Repeat last Pull Day", "Log 5k Southsea run", "Rest Day")
+            )
+
+            // Feed area
+            Spacer(modifier = Modifier.weight(1f))
+        }
+
+        // Fixed Input area at the bottom
+        Column(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = ScribbleFitSpacing.Medium)
+        ) {
+            ScribbleInputPill(
+                text = text,
+                onTextChange = viewModel::onTextChange,
+                onSubmit = viewModel::submitScribble,
+                isSyncing = isSyncing
             )
         }
-
-        Button(
-            onClick = viewModel::submitScribble,
-            enabled = text.isNotBlank() && !isSyncing,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFF101010),
-                contentColor = Color.White,
-                disabledContainerColor = Color.LightGray
-            ),
-            shape = MaterialTheme.shapes.medium,
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(56.dp)
-        ) {
-            if (isSyncing) {
-                CircularProgressIndicator(
-                    color = Color.White,
-                    modifier = Modifier.size(24.dp)
-                )
-            } else {
-                Text(
-                    text = "Log Workout",
-                    style = TextStyle(fontSize = 16.sp, fontWeight = FontWeight.Medium)
-                )
-            }
-        }
-        
-        Spacer(modifier = Modifier.height(24.dp))
     }
 }
