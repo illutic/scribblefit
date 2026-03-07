@@ -17,17 +17,13 @@ import com.scribblefit.feature.canvas.ui.components.*
 fun CanvasScreen(
     viewModel: CanvasViewModel = hiltViewModel()
 ) {
-    val text by viewModel.scribbleText.collectAsState()
-    val isSyncing by viewModel.isSyncing.collectAsState()
-    val feedItems by viewModel.feedItems.collectAsState()
     val uiState by viewModel.uiState.collectAsState()
-    
     val listState = rememberLazyListState()
 
     // Auto-scroll to bottom when new items arrive
-    LaunchedEffect(feedItems.size) {
-        if (feedItems.isNotEmpty()) {
-            listState.animateScrollToItem(feedItems.size - 1)
+    LaunchedEffect(uiState.feedItems.size) {
+        if (uiState.feedItems.isNotEmpty()) {
+            listState.animateScrollToItem(uiState.feedItems.size - 1)
         }
     }
 
@@ -42,10 +38,10 @@ fun CanvasScreen(
                     .imePadding() // Lift with keyboard
             ) {
                 ScribbleInputPill(
-                    text = text,
+                    text = uiState.scribbleText,
                     onTextChange = viewModel::onTextChange,
                     onSubmit = viewModel::submitScribble,
-                    isSyncing = isSyncing
+                    isSyncing = uiState.isSyncing
                 )
             }
         }
@@ -69,7 +65,7 @@ fun CanvasScreen(
                 contentPadding = PaddingValues(vertical = ScribbleFitSpacing.Medium)
             ) {
                 // If feed is empty and we have a suggestion, show the suggestion first
-                if (feedItems.isEmpty() && uiState.homeSuggestion != null) {
+                if (uiState.feedItems.isEmpty() && uiState.homeSuggestion != null) {
                     item {
                         ContextualInsightCard(
                             text = uiState.homeSuggestion?.fullText ?: ""
@@ -79,7 +75,7 @@ fun CanvasScreen(
                 }
 
                 items(
-                    items = feedItems,
+                    items = uiState.feedItems,
                     key = { it.id }
                 ) { item ->
                     FeedItemRow(
@@ -89,7 +85,7 @@ fun CanvasScreen(
                 }
                 
                 // Show Quick Actions if feed is empty or very short
-                if (feedItems.size <= 1) {
+                if (uiState.feedItems.size <= 1) {
                     item {
                         Spacer(modifier = Modifier.height(ScribbleFitSpacing.Medium))
                         QuickActionPills(

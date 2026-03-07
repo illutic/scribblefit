@@ -2,10 +2,11 @@ import SwiftUI
 
 struct CanvasHeader: View {
     let userName: String
+    let greeting: String
     
     var body: some View {
         HStack {
-            Text("EVENING, \(userName.uppercased())")
+            Text("\(greeting), \(userName.uppercased())")
                 .font(ScribbleFitFont.labelMedium().bold())
                 .kerning(0.8)
                 .foregroundColor(ScribbleFitColor.primaryText)
@@ -18,13 +19,21 @@ struct CanvasHeader: View {
 }
 
 struct QuickActionPills: View {
-    let pills: [String]
+    let actions: [QuickActionType]
+    let onActionClick: (QuickActionType) -> Void
     
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 12) {
-                ForEach(pills, id: \.self) { pill in
-                    ScribbleFitPill(pill, action: { })
+                ForEach(actions, id: \.self) { action in
+                    let label = switch action {
+                    case .repeatLast: "Repeat last workout"
+                    case .restDay: "Rest Day"
+                    case .run5k: "Log 5k Run"
+                    }
+                    ScribbleFitPill(label) {
+                        onActionClick(action)
+                    }
                 }
             }
         }
@@ -98,7 +107,7 @@ struct FeedItemRow: View {
     }
 }
 
-private struct PromptBubble: View {
+struct PromptBubble: View {
     let item: PromptItem
     
     var body: some View {
@@ -110,7 +119,7 @@ private struct PromptBubble: View {
     }
 }
 
-private struct ScribbleBubble: View {
+struct ScribbleBubble: View {
     let item: ScribbleItem
     let onRetry: (String) -> Void
     
@@ -142,7 +151,7 @@ private struct ScribbleBubble: View {
     }
 }
 
-private struct ConfirmationCard: View {
+struct ConfirmationCard: View {
     let item: ConfirmationItem
     
     var body: some View {
@@ -189,7 +198,7 @@ private struct ConfirmationCard: View {
     }
 }
 
-private struct InsightBubble: View {
+struct InsightBubble: View {
     let item: InsightItem
     
     var body: some View {

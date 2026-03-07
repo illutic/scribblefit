@@ -12,29 +12,50 @@ public struct CanvasView: View {
             ScribbleFitColor.background.ignoresSafeArea()
             
             VStack(alignment: .leading, spacing: 0) {
-                CanvasHeader(userName: "George")
-                    .padding(.horizontal, ScribbleFitSpacing.screenPadding)
-                    .padding(.top, 10)
+                CanvasHeader(
+                    userName: viewModel.uiState.userName,
+                    greeting: viewModel.uiState.greeting
+                )
+                .padding(.horizontal, ScribbleFitSpacing.screenPadding)
+                .padding(.top, 10)
                 
                 ScrollViewReader { proxy in
                     ScrollView {
                         VStack(alignment: .leading, spacing: ScribbleFitSpacing.small) {
-                            ForEach(viewModel.feedItems) { item in
-                                FeedItemRow(item: item, onRetry: { _ in })
-                                    .id(item.id)
+                            // If feed is empty and we have a suggestion, show it first
+                            if viewModel.uiState.feedItems.isEmpty, let suggestion = viewModel.uiState.homeSuggestion {
+                                PromptBubble(item: PromptItem(
+                                    id: "initial",
+                                    timestamp: Date(),
+                                    text: suggestion.text,
+                                    emoji: suggestion.emoji,
+                                    type: .pattern
+                                ))
+                                .padding(.bottom, 16)
+                            }
+
+                            ForEach(viewModel.uiState.feedItems) { item in
+                                FeedItemRow(
+                                    item: item,
+                                    onRetry: viewModel.onRetryScribble
+                                )
+                                .id(item.id)
                             }
                             
-                            if viewModel.feedItems.count <= 1 {
-                                QuickActionPills(pills: ["Repeat last Pull Day", "Log 5k Run", "Rest Day"])
-                                    .padding(.top, 16)
+                            if viewModel.uiState.feedItems.count <= 1 {
+                                QuickActionPills(
+                                    actions: viewModel.uiState.quickActions,
+                                    onActionClick: viewModel.onQuickActionClick
+                                )
+                                .padding(.top, 16)
                             }
                         }
                         .padding(.horizontal, ScribbleFitSpacing.screenPadding)
                         .padding(.vertical, ScribbleFitSpacing.medium)
                     }
-                    .onChange(of: viewModel.feedItems.count) { _ in
+                    .onChange(of: viewModel.uiState.feedItems.count) { _ in
                         withAnimation {
-                            proxy.scrollTo(viewModel.feedItems.last?.id, anchor: .bottom)
+                            proxy.scrollTo(viewModel.uiState.feedItems.last?.id, anchor: .bottom)
                         }
                     }
                 }
@@ -43,8 +64,11 @@ public struct CanvasView: View {
                 
                 // Input Pill
                 ScribbleInputArea(
-                    text: $viewModel.scribbleText,
-                    isSyncing: viewModel.isSyncing,
+                    text: Binding(
+                        get: { viewModel.uiState.scribbleText },
+                        set: { viewModel.onTextChange($0) }
+                    ),
+                    isSyncing: viewModel.uiState.isSyncing,
                     onSubmit: viewModel.submitScribble
                 )
                 .padding(.horizontal, ScribbleFitSpacing.screenPadding)

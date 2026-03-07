@@ -3,21 +3,30 @@ import SwiftUI
 import Combine
 
 public struct CanvasUiState: Sendable {
-    public let greeting: String
-    public let userName: String
-    public let quickActions: [QuickActionType]
-    public let homeSuggestion: AnalysisSuggestion?
+    public var greeting: String
+    public var userName: String
+    public var quickActions: [QuickActionType]
+    public var homeSuggestion: AnalysisSuggestion?
+    public var scribbleText: String
+    public var feedItems: [FeedItem]
+    public var isSyncing: Bool
     
     public init(
         greeting: String = "",
         userName: String = "George",
         quickActions: [QuickActionType] = [.repeatLast, .run5k, .restDay],
-        homeSuggestion: AnalysisSuggestion? = nil
+        homeSuggestion: AnalysisSuggestion? = nil,
+        scribbleText: String = "",
+        feedItems: [FeedItem] = [],
+        isSyncing: Bool = false
     ) {
         self.greeting = greeting
         self.userName = userName
         self.quickActions = quickActions
         self.homeSuggestion = homeSuggestion
+        self.scribbleText = scribbleText
+        self.feedItems = feedItems
+        self.isSyncing = isSyncing
     }
 }
 
@@ -28,12 +37,7 @@ public final class CanvasViewModel: ObservableObject {
     private let processScribbleUseCase: ProcessScribbleUseCase
     private let executeQuickActionUseCase: ExecuteQuickActionUseCase
     
-    @Published public var scribbleText: String = ""
-    @Published public var isSyncing: Bool = false
-    @Published public var feedItems: [FeedItem] = []
     @Published public var uiState: CanvasUiState
-    
-    private var cancellables = Set<AnyCancellable>()
     
     public init(
         canvasRepository: CanvasRepository,
@@ -48,57 +52,51 @@ public final class CanvasViewModel: ObservableObject {
         
         self.uiState = CanvasUiState(greeting: Self.getGreeting())
         
-        observeFeed()
-        observeHomeSuggestion()
-    }
-    
-    private func observeFeed() {
-        // In a real app, the repository would provide a stream
-        // For now, we refresh manually or via a timer
         refreshFeed()
-    }
-    
-    private func observeHomeSuggestion() {
-        Task {
-            do {
-                if let suggestion = try await analysisRepository.getHomeSuggestion() {
-                    self.uiState = CanvasUiState(
-                        greeting: self.uiState.greeting,
-                        userName: self.uiState.userName,
-                        quickActions: self.uiState.quickActions,
-                        homeSuggestion: suggestion
-                    )
-                }
-            } catch {
-                print("Failed to fetch home suggestion: \(error)")
-            }
-        }
+        refreshSuggestion()
     }
     
     public func refreshFeed() {
         Task {
             do {
-                self.feedItems = try await canvasRepository.getFeed()
+                let items = try await canvasRepository.getFeed()
+                self.uiState.feedItems = items
             } catch {
                 print("Failed to fetch feed: \(error)")
             }
         }
     }
     
+    private func refreshSuggestion() {
+        Task {
+            do {
+                if let suggestion = try await analysisRepository.getHomeSuggestion() {
+                    self.uiState.homeSuggestion = suggestion
+                }
+            } catch {
+                print("Failed to fetch suggestion: \(error)")
+            }
+        }
+    }
+    
+    public func onTextChange(_ newText: String) {
+        uiState.scribbleText = newText
+    }
+    
     public func submitScribble() {
-        let text = scribbleText.trimmingCharacters(in: .whitespacesAndNewlines)
+        let text = uiState.scribbleText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
         
-        isSyncing = true
+        uiState.isSyncing = true
         Task {
             do {
                 try await processScribbleUseCase.execute(rawText: text)
-                scribbleText = ""
-                self.feedItems = try await canvasRepository.getFeed()
+                uiState.scribbleText = ""
+                await refreshFeed()
             } catch {
                 print("Failed to process scribble: \(error)")
             }
-            isSyncing = false
+            uiState.isSyncing = false
         }
     }
     
@@ -106,7 +104,7 @@ public final class CanvasViewModel: ObservableObject {
         Task {
             do {
                 try await executeQuickActionUseCase.execute(actionType: actionType)
-                self.feedItems = try await canvasRepository.getFeed()
+                await refreshFeed()
             } catch {
                 print("Failed to execute quick action: \(error)")
             }
@@ -117,7 +115,7 @@ public final class CanvasViewModel: ObservableObject {
         Task {
             do {
                 try await canvasRepository.retryScribble(id: id)
-                self.feedItems = try await canvasRepository.getFeed()
+                await refreshFeed()
             } catch {
                 print("Failed to retry scribble: \(error)")
             }

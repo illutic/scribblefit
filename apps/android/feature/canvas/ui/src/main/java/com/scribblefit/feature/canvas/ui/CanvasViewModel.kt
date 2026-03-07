@@ -17,13 +17,16 @@ import javax.inject.Inject
 
 data class CanvasUiState(
     val greeting: String = "",
-    val userName: String = "George", // Placeholder, could be from a UserProfileRepository
+    val userName: String = "George",
     val quickActions: List<QuickActionType> = listOf(
         QuickActionType.REPEAT_LAST,
         QuickActionType.RUN_5K,
         QuickActionType.REST_DAY
     ),
-    val homeSuggestion: AnalysisSuggestion? = null
+    val homeSuggestion: AnalysisSuggestion? = null,
+    val scribbleText: String = "",
+    val feedItems: List<FeedItem> = emptyList(),
+    val isSyncing: Boolean = false
 )
 
 @HiltViewModel
@@ -34,45 +37,35 @@ class CanvasViewModel @Inject constructor(
     private val executeQuickActionUseCase: ExecuteQuickActionUseCase
 ) : ViewModel() {
 
-    private val _scribbleText = MutableStateFlow("")
-    val scribbleText: StateFlow<String> = _scribbleText
-
-    val feedItems: StateFlow<List<FeedItem>> = canvasRepository.getFeed()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
+    private val _internalState = MutableStateFlow(CanvasUiState(greeting = getGreeting()))
+    
+    val uiState: StateFlow<CanvasUiState> = combine(
+        _internalState,
+        canvasRepository.getFeed(),
+        analysisRepository.getHomeSuggestion()
+    ) { state, feed, suggestion ->
+        state.copy(
+            feedItems = feed,
+            homeSuggestion = suggestion
         )
-
-    private val _isSyncing = MutableStateFlow(false)
-    val isSyncing: StateFlow<Boolean> = _isSyncing
-
-    val uiState: StateFlow<CanvasUiState> = analysisRepository.getHomeSuggestion()
-        .map { suggestion ->
-            CanvasUiState(
-                greeting = getGreeting(),
-                homeSuggestion = suggestion
-            )
-        }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = CanvasUiState(greeting = getGreeting())
-        )
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = _internalState.value
+    )
 
     fun onTextChange(newText: String) {
-        _scribbleText.value = newText
+        _internalState.update { it.copy(scribbleText = newText) }
     }
 
     fun submitScribble() {
-        val text = _scribbleText.value
+        val text = _internalState.value.scribbleText
         if (text.isBlank()) return
 
         viewModelScope.launch {
-            _isSyncing.value = true
+            _internalState.update { it.copy(isSyncing = true) }
             processScribbleUseCase(text)
-            _scribbleText.value = ""
-            _isSyncing.value = false
+            _internalState.update { it.copy(isSyncing = false, scribbleText = "") }
         }
     }
 
