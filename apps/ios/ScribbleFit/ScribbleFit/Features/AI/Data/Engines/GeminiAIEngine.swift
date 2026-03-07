@@ -34,8 +34,14 @@ public final class GeminiAIEngine: LLMEngine, AnalysisEngine {
         struct SummaryDTO: Codable {
             let summary_text: String
             let highlights: [String]
-            let focus_muscle_groups: [String]
+            let muscle_distribution: [MuscleStatDTO]
+            let focus_area: String
             let volume_delta: Double
+        }
+        
+        struct MuscleStatDTO: Codable {
+            let muscle_group: String
+            let volume_percentage: Double
         }
         
         let dto = try jsonDecoder.decode(SummaryDTO.self, from: contentData)
@@ -43,7 +49,8 @@ public final class GeminiAIEngine: LLMEngine, AnalysisEngine {
             period: period,
             summaryText: dto.summary_text,
             highlights: dto.highlights,
-            focusMuscleGroups: dto.focus_muscle_groups,
+            muscleDistribution: dto.muscle_distribution.map { MuscleGroupStat(muscleGroup: $0.muscle_group, volumePercentage: $0.volume_percentage) },
+            focusArea: dto.focus_area,
             volumeDelta: dto.volume_delta,
             timestamp: Date()
         )
@@ -88,12 +95,12 @@ public final class GeminiAIEngine: LLMEngine, AnalysisEngine {
         let (data, response) = try await client.data(for: request)
         
         if let httpResponse = response as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
-            throw NetworkError.serverError(httpResponse.statusCode)
+            throw NSError(domain: "GeminiAIEngine", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "Server error"])
         }
         
         let geminiResponse = try JSONDecoder().decode(GeminiResponse.self, from: data)
         guard let content = geminiResponse.candidates.first?.content.parts.first?.text else {
-            throw NetworkError.noData
+            throw NSError(domain: "GeminiAIEngine", code: 0, userInfo: [NSLocalizedDescriptionKey: "No data"])
         }
         
         return content

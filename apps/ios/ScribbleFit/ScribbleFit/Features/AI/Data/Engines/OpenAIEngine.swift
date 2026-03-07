@@ -31,16 +31,17 @@ public final class OpenAIEngine: LLMEngine, AnalysisEngine {
         let content = try await callOpenAI(prompt: prompt, userMessage: "Generate summary.")
         let contentData = content.data(using: .utf8)!
         
-        // Define a simple DTO locally for summary response mapping if needed, 
-        // but here AnalysisSummary is already Codable.
-        // Note: Field names in JSON must match exactly or use CodingKeys.
-        // To be safe, we'd use a DTO if the LLM output names differ (like summary_text).
-        
         struct SummaryDTO: Codable {
             let summary_text: String
             let highlights: [String]
-            let focus_muscle_groups: [String]
+            let muscle_distribution: [MuscleStatDTO]
+            let focus_area: String
             let volume_delta: Double
+        }
+        
+        struct MuscleStatDTO: Codable {
+            let muscle_group: String
+            let volume_percentage: Double
         }
         
         let dto = try jsonDecoder.decode(SummaryDTO.self, from: contentData)
@@ -48,7 +49,8 @@ public final class OpenAIEngine: LLMEngine, AnalysisEngine {
             period: period,
             summaryText: dto.summary_text,
             highlights: dto.highlights,
-            focusMuscleGroups: dto.focus_muscle_groups,
+            muscleDistribution: dto.muscle_distribution.map { MuscleGroupStat(muscleGroup: $0.muscle_group, volumePercentage: $0.volume_percentage) },
+            focusArea: dto.focus_area,
             volumeDelta: dto.volume_delta,
             timestamp: Date()
         )
@@ -68,7 +70,7 @@ public final class OpenAIEngine: LLMEngine, AnalysisEngine {
         
         let dto = try jsonDecoder.decode(InsightDTO.self, from: contentData)
         return ExerciseInsight(
-            exerciseId: exerciseName, // Caller should normalize this
+            exerciseId: exerciseName,
             estimated1RM: dto.estimated_1rm,
             prDetected: dto.pr_detected,
             trendDirection: InsightTrend(rawValue: dto.trend_direction.lowercased()) ?? .stable,
@@ -98,13 +100,13 @@ public final class OpenAIEngine: LLMEngine, AnalysisEngine {
         let (data, response) = try await session.data(for: request)
         
         if let httpResponse = response as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
-            throw NetworkError.serverError(httpResponse.statusCode)
+            throw NSError(domain: "OpenAIEngine", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "Server error"])
         }
         
         let openAIResponse = try JSONDecoder().decode(OpenAIResponse.self, from: data)
         
         guard let content = openAIResponse.choices.first?.message.content else {
-            throw NetworkError.noData
+            throw NSError(domain: "OpenAIEngine", code: 0, userInfo: [NSLocalizedDescriptionKey: "No data"])
         }
         
         return content

@@ -13,17 +13,14 @@ public struct MainView: View {
     public var body: some View {
         TabView {
             CanvasView(viewModel: CanvasViewModel(syncRepository: syncRepository))
-                .tabItem {
-                    Label("Canvas", systemImage: "pencil.and.outline")
-                }
+            .tabItem {
+                Label("Workout", systemImage: "dumbbell.fill")
+            }
             
-            LedgerView(viewModel: LedgerViewModel(ledgerRepository: ledgerRepository))
-                .tabItem {
-                    Label("Ledger", systemImage: "list.bullet")
-                }
+            Text("Analytics").tabItem { Label("Analytics", systemImage: "chart.bar.fill") }
+            Text("Exercises").tabItem { Label("Exercises", systemImage: "list.bullet") }
+            Text("Profile").tabItem { Label("Profile", systemImage: "person.fill") }
         }
-        .accentColor(Color(hex: "101010"))
-        // SwiftUI doesn't easily support pure white tab bars without extra setup, 
-        // but this aligns with the minimalist mandate.
+        .accentColor(ScribbleFitColor.primaryText)
     }
 }

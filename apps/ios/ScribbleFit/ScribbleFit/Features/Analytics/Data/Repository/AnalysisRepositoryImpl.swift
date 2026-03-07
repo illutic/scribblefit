@@ -14,7 +14,7 @@ public final class AnalysisRepositoryImpl: AnalysisRepository {
     }
     
     public func getHomeSuggestion() async throws -> AnalysisSuggestion? {
-        guard let jsonData = database.getInsightByKey(KEY_HOME_SUGGESTION)?.jsonData.data(using: .utf8) else {
+        guard let jsonData = database.getInsightByKey(key: KEY_HOME_SUGGESTION)?.jsonData.data(using: .utf8) else {
             return nil
         }
         return try jsonDecoder.decode(AnalysisSuggestion.self, from: jsonData)
@@ -22,7 +22,7 @@ public final class AnalysisRepositoryImpl: AnalysisRepository {
     
     public func getSummary(period: SummaryPeriod) async throws -> AnalysisSummary? {
         let key = "\(KEY_SUMMARY_PREFIX)_\(period.rawValue)"
-        guard let jsonData = database.getInsightByKey(key)?.jsonData.data(using: .utf8) else {
+        guard let jsonData = database.getInsightByKey(key: key)?.jsonData.data(using: .utf8) else {
             return nil
         }
         return try jsonDecoder.decode(AnalysisSummary.self, from: jsonData)
@@ -30,7 +30,7 @@ public final class AnalysisRepositoryImpl: AnalysisRepository {
     
     public func getExerciseInsight(exerciseId: String) async throws -> ExerciseInsight? {
         let key = "\(KEY_EXERCISE_PREFIX)_\(exerciseId)"
-        guard let jsonData = database.getInsightByKey(key)?.jsonData.data(using: .utf8) else {
+        guard let jsonData = database.getInsightByKey(key: key)?.jsonData.data(using: .utf8) else {
             return nil
         }
         return try jsonDecoder.decode(ExerciseInsight.self, from: jsonData)

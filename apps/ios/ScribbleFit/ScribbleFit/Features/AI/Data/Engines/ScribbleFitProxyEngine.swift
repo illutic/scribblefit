@@ -14,8 +14,7 @@ public final class ScribbleFitProxyEngine: LLMEngine, AnalysisEngine {
     public func parseWorkout(rawText: String) async throws -> ParsedWorkout {
         let token = try await secureKeyStorage.getAuthToken()
         let request = ParseRequest(rawText: rawText, prompt: systemPrompt)
-        let dto = try await networkClient.parseProxy(request: request, token: token)
-        return dto.toDomain()
+        return try await networkClient.parseProxy(request: request, token: token)
     }
     
     public func generateSuggestion(context: String) async throws -> AnalysisSuggestion {

@@ -28,7 +28,7 @@ public enum FeedItem: Sendable, Identifiable {
     }
 }
 
-public struct PromptItem: Sendable, Identifiable {
+public struct PromptItem: Codable, Sendable, Identifiable {
     public let id: String
     public let timestamp: Date
     public let text: String
@@ -36,21 +36,21 @@ public struct PromptItem: Sendable, Identifiable {
     public let type: SuggestionType
 }
 
-public struct ScribbleItem: Sendable, Identifiable {
+public struct ScribbleItem: Codable, Sendable, Identifiable {
     public let id: String
     public let timestamp: Date
     public let rawText: String
     public let status: ScribbleStatus
 }
 
-public struct ConfirmationItem: Sendable, Identifiable {
+public struct ConfirmationItem: Codable, Sendable, Identifiable {
     public let id: String
     public let timestamp: Date
     public let workout: ParsedWorkout
     public let scribbleId: String
 }
 
-public struct InsightItem: Sendable, Identifiable {
+public struct InsightItem: Codable, Sendable, Identifiable {
     public let id: String
     public let timestamp: Date
     public let text: String

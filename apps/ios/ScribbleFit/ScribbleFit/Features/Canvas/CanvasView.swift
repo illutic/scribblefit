@@ -8,7 +8,7 @@ public struct CanvasView: View {
     }
     
     public var body: some View {
-        TabView {
+        
             // Workout Tab (Home)
             ZStack {
                 VStack(alignment: .leading, spacing: 0) {
@@ -42,14 +42,5 @@ public struct CanvasView: View {
                 }
             }
             .background(ScribbleFitColor.background)
-            .tabItem {
-                Label("Workout", systemImage: "dumbbell.fill")
-            }
-            
-            Text("Analytics").tabItem { Label("Analytics", systemImage: "chart.bar.fill") }
-            Text("Exercises").tabItem { Label("Exercises", systemImage: "list.bullet") }
-            Text("Profile").tabItem { Label("Profile", systemImage: "person.fill") }
-        }
-        .accentColor(ScribbleFitColor.primaryText)
     }
 }

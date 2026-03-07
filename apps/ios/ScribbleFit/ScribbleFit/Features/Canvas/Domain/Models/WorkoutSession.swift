@@ -3,7 +3,7 @@ import Foundation
 /**
  * Represents a transient workout session before it's committed to the ledger.
  */
-public struct WorkoutSession: Sendable, Identifiable {
+public struct WorkoutSession: Codable, Sendable, Identifiable {
     public let id: String
     public let startTime: Date
     public let lastActivityTime: Date
@@ -17,7 +17,7 @@ public struct WorkoutSession: Sendable, Identifiable {
     }
 }
 
-public struct SessionExercise: Sendable {
+public struct SessionExercise: Codable, Sendable {
     public let canonicalName: String
     public let sets: [SessionSet]
     
@@ -27,7 +27,7 @@ public struct SessionExercise: Sendable {
     }
 }
 
-public struct SessionSet: Sendable {
+public struct SessionSet: Codable, Sendable {
     public let weight: Double
     public let reps: Int
     public let rpe: Double?

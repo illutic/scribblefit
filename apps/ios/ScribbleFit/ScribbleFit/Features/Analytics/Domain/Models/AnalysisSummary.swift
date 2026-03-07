@@ -1,6 +1,6 @@
 import Foundation
 
-public struct AnalysisSummary: Sendable {
+public struct AnalysisSummary: Codable, Sendable {
     public let period: SummaryPeriod
     public let summaryText: String
     public let highlights: [String]
@@ -28,7 +28,7 @@ public struct AnalysisSummary: Sendable {
     }
 }
 
-public struct MuscleGroupStat: Sendable {
+public struct MuscleGroupStat: Codable, Sendable {
     public let muscleGroup: String
     public let volumePercentage: Double
     
