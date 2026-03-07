@@ -15,4 +15,10 @@ dependencies {
     implementation(project(":core:database"))
 
     implementation(libs.hilt.android)
+    implementation(libs.room.ktx)
+    implementation(libs.coroutines.core)
+
+    testImplementation(libs.junit)
+    testImplementation(libs.mockk)
+    testImplementation(libs.coroutines.test)
 }

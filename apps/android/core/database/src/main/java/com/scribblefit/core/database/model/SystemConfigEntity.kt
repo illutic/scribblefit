@@ -8,7 +8,7 @@ import com.scribblefit.feature.ai.domain.model.LLMProvider
 @Entity(tableName = "System_Config")
 data class SystemConfigEntity(
     @PrimaryKey
-    val id: String = "config", // Singleton-like entry
+    val id: String = "config",
     @ColumnInfo(name = "prompt_version")
     val promptVersion: String,
     @ColumnInfo(name = "prompt_text")
@@ -17,6 +17,12 @@ data class SystemConfigEntity(
     val exerciseVersion: String = "0.0.0",
     @ColumnInfo(name = "preferred_llm_provider")
     val preferredLlmProvider: LLMProvider = LLMProvider.PROXY,
+    @ColumnInfo(name = "parsing_mode")
+    val parsingMode: String = "CLOUD", // CLOUD, PERSONAL
+    @ColumnInfo(name = "weight_unit")
+    val weightUnit: String = "LBS", // LBS, KG
+    @ColumnInfo(name = "theme_preference")
+    val themePreference: String = "SYSTEM", // LIGHT, DARK, SYSTEM
     @ColumnInfo(name = "updated_at")
     val updatedAt: Long
 )
