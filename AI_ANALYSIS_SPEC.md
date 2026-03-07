@@ -18,21 +18,22 @@ The AI Analysis engine is the "brain" of ScribbleFit. While the AI Parser handle
     *   *Example:* "You haven't hit Legs in 6 days. Leg Day suggested. 🍗"
 
 ### B. Time-Series Summaries (Insights Screen)
-*   **Objective:** Provide a human-readable high-level overview of progress for a specific window (Week, Month, Year).
+*   **Objective:** Provide a human-readable high-level overview of progress for a specific window (Day, Week, Month, Year).
 *   **Metrics Analyzed:**
     *   **Volume Change:** Delta % compared to the previous period.
     *   **Consistency:** Workouts per week vs. goal.
-    *   **Focus Area:** Which muscle groups dominated the period (using `Exercise_Dictionary` mappings).
-*   **Output:** An AI-generated summary bubble.
-    *   *Example:* "Strong month. You've trained 14 days, and your total volume is up 12%. Back and Biceps were your focus area."
+    *   **Muscle Group Distribution:** Statistical breakdown of volume per muscle group (e.g., Chest: 30%, Back: 25%).
+    *   **Focus Area:** Identification of the primary movement pattern or muscle group dominant in the period.
+*   **Output:** An AI-generated summary bubble and structured statistical data.
 
 ### C. Exercise Intelligence (Deep-Dive)
-*   **Objective:** Deep analysis of a specific movement to identify plateaus or breakthroughs.
+*   **Objective:** Deep analysis of a specific movement to identify plateaus or breakthroughs and show historical context.
 *   **Metrics Analyzed:**
     *   **Estimated 1RM Trends:** Using the Brzycki or Epley formula on top sets.
     *   **Volume-Load Curve:** Tracking intensity over time.
     *   **PR Detection:** Automatic identification of "All-Time High" weight or reps.
-*   **Output:** Insight labels and trend data for the Progress Visualizer.
+    *   **Historical Timeline:** A formatted list of all past instances of this exercise with top sets.
+*   **Output:** Insight labels, trend data, and complete exercise history.
 
 ---
 
