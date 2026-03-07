@@ -1,5 +1,6 @@
 package com.scribblefit.core.navigation
 
+import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
 
@@ -12,6 +13,7 @@ sealed interface Screen : NavKey {
 }
 
 interface Navigator {
+    val backStack: NavBackStack<Screen>
     fun navigateTo(screen: Screen)
     fun goBack()
     fun switchToTab(screen: Screen)

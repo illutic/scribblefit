@@ -4,6 +4,8 @@ import android.provider.Settings
 import android.content.Context
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.scribblefit.core.navigation.Navigator
+import com.scribblefit.core.navigation.Screen
 import com.scribblefit.feature.ai.domain.engine.AuthRepository
 import com.scribblefit.feature.ai.domain.engine.ConfigRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -17,15 +19,22 @@ import javax.inject.Inject
 class MainViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
     private val authRepository: AuthRepository,
-    private val configRepository: ConfigRepository
+    private val configRepository: ConfigRepository,
+    private val navigator: Navigator
 ) : ViewModel() {
-
     private val _isInitialized = MutableStateFlow(false)
     val isInitialized: StateFlow<Boolean> = _isInitialized
+    val backStack = navigator.backStack
 
     init {
         initializeApplication()
     }
+
+    fun navigateTo(screen: Screen) = navigator.navigateTo(screen)
+
+    fun navigateTab(screen: Screen) = navigator.switchToTab(screen)
+
+    fun goBack() = navigator.goBack()
 
     private fun initializeApplication() {
         viewModelScope.launch {

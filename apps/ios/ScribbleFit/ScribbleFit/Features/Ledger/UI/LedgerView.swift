@@ -11,11 +11,6 @@ public struct LedgerView: View {
         VStack(alignment: .leading, spacing: 24) {
             Spacer().frame(height: 60)
             
-            Text("Ledger.")
-                .font(.system(size: 32, weight: .bold))
-                .foregroundColor(Color(hex: "101010"))
-                .padding(.horizontal, 24)
-            
             if viewModel.history.isEmpty {
                 Spacer()
                 HStack {
@@ -37,7 +32,6 @@ public struct LedgerView: View {
                 }
             }
         }
-        .background(Color.white)
         .onAppear {
             viewModel.fetchHistory()
         }

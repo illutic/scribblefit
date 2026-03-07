@@ -7,9 +7,8 @@ import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
-class NavigatorImpl @Inject constructor(
-    private val backStack: NavBackStack<Screen>
-) : Navigator {
+class NavigatorImpl @Inject constructor() : Navigator {
+    override val backStack: NavBackStack<Screen> = NavBackStack(Screen.Canvas)
 
     override fun navigateTo(screen: Screen) {
         backStack.add(screen)
@@ -17,7 +16,7 @@ class NavigatorImpl @Inject constructor(
 
     override fun goBack() {
         if (backStack.size > 1) {
-            backStack.removeLast()
+            backStack.removeAt(backStack.lastIndex)
         }
     }
 

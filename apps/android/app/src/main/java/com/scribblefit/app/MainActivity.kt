@@ -3,21 +3,37 @@ package com.scribblefit.app
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.Create
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.Icon
+import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation3.runtime.NavBackStack
 import androidx.navigation3.runtime.NavEntry
-import androidx.navigation3.runtime.rememberNavBackStack
 import androidx.navigation3.ui.NavDisplay
 import com.scribblefit.core.designsystem.theme.ScribbleFitTheme
 import com.scribblefit.core.navigation.Screen
@@ -29,20 +45,22 @@ import dagger.hilt.android.AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
+
         setContent {
             val mainViewModel: MainViewModel = viewModel()
             val isInitialized by mainViewModel.isInitialized.collectAsState()
 
             ScribbleFitTheme {
-                Surface(
-                    modifier = Modifier.fillMaxSize(),
-                    color = MaterialTheme.colorScheme.background
-                ) {
-                    if (isInitialized) {
-                        MainScreen()
-                    } else {
-                        SplashScreen()
-                    }
+                if (isInitialized) {
+                    MainScreen(
+                        backStack = mainViewModel.backStack,
+                        onNavigateTo = mainViewModel::navigateTo,
+                        onTabNavigate = mainViewModel::navigateTab,
+                        onBack = mainViewModel::goBack
+                    )
+                } else {
+                    SplashScreen()
                 }
             }
         }
@@ -50,9 +68,12 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun MainScreen() {
-    val backStack = rememberNavBackStack(elements = arrayOf(Screen.Canvas as Screen))
-
+fun MainScreen(
+    backStack: NavBackStack<Screen>,
+    onNavigateTo: (Screen) -> Unit,
+    onTabNavigate: (Screen) -> Unit,
+    onBack: () -> Unit
+) {
     Scaffold(
         bottomBar = {
             NavigationBar(
@@ -60,13 +81,10 @@ fun MainScreen() {
                 tonalElevation = 0.dp
             ) {
                 val currentScreen = backStack.last()
-                
+
                 NavigationBarItem(
                     selected = currentScreen is Screen.Canvas,
-                    onClick = { 
-                        backStack.clear()
-                        backStack.add(Screen.Canvas) 
-                    },
+                    onClick = { onTabNavigate(Screen.Canvas) },
                     icon = { Icon(Icons.Default.Create, contentDescription = "Workout") },
                     label = { Text("Workout") },
                     colors = NavigationBarItemDefaults.colors(
@@ -78,10 +96,7 @@ fun MainScreen() {
                 )
                 NavigationBarItem(
                     selected = currentScreen is Screen.Analytics,
-                    onClick = { 
-                        backStack.clear()
-                        backStack.add(Screen.Analytics) 
-                    },
+                    onClick = { onTabNavigate(Screen.Analytics) },
                     icon = { Icon(Icons.Default.PlayArrow, contentDescription = "Analytics") },
                     label = { Text("Analytics") },
                     colors = NavigationBarItemDefaults.colors(
@@ -93,11 +108,13 @@ fun MainScreen() {
                 )
                 NavigationBarItem(
                     selected = currentScreen is Screen.Exercises,
-                    onClick = { 
-                        backStack.clear()
-                        backStack.add(Screen.Exercises) 
+                    onClick = { onTabNavigate(Screen.Exercises) },
+                    icon = {
+                        Icon(
+                            Icons.AutoMirrored.Filled.List,
+                            contentDescription = "Exercises"
+                        )
                     },
-                    icon = { Icon(Icons.AutoMirrored.Filled.List, contentDescription = "Exercises") },
                     label = { Text("Exercises") },
                     colors = NavigationBarItemDefaults.colors(
                         selectedIconColor = MaterialTheme.colorScheme.primary,
@@ -108,10 +125,7 @@ fun MainScreen() {
                 )
                 NavigationBarItem(
                     selected = currentScreen is Screen.Profile,
-                    onClick = { 
-                        backStack.clear()
-                        backStack.add(Screen.Profile) 
-                    },
+                    onClick = { onTabNavigate(Screen.Profile) },
                     icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
                     label = { Text("Profile") },
                     colors = NavigationBarItemDefaults.colors(
@@ -133,7 +147,6 @@ fun MainScreen() {
                     is Screen.Analytics -> NavEntry(key) { AnalyticsPlaceholder() }
                     is Screen.Exercises -> NavEntry(key) { LedgerScreen() }
                     is Screen.Profile -> NavEntry(key) { ProfilePlaceholder() }
-                    else -> error("Unknown screen: $key")
                 }
             }
         )
