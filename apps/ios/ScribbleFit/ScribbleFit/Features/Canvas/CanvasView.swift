@@ -2,6 +2,7 @@ import SwiftUI
 
 public struct CanvasView: View {
     @StateObject private var viewModel: CanvasViewModel
+    @EnvironmentObject private var navManager: NavigationManager
     
     public init(viewModel: CanvasViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
@@ -14,7 +15,8 @@ public struct CanvasView: View {
             VStack(alignment: .leading, spacing: 0) {
                 CanvasHeader(
                     userName: viewModel.uiState.userName,
-                    greeting: viewModel.uiState.greeting
+                    greeting: viewModel.uiState.greeting,
+                    onMenuClick: { navManager.navigate(to: AppDestination.settings, in: .workout) }
                 )
                 .padding(.horizontal, ScribbleFitSpacing.screenPadding)
                 .padding(.top, 10)
@@ -69,7 +71,9 @@ public struct CanvasView: View {
                         set: { viewModel.onTextChange($0) }
                     ),
                     isSyncing: viewModel.uiState.isSyncing,
-                    onSubmit: viewModel.submitScribble
+                    isRecording: viewModel.uiState.isRecording,
+                    onSubmit: viewModel.submitScribble,
+                    onMicClick: viewModel.onMicClick
                 )
                 .padding(.horizontal, ScribbleFitSpacing.screenPadding)
                 .padding(.bottom, 8)

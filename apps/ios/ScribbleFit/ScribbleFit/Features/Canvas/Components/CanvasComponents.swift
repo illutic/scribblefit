@@ -3,6 +3,7 @@ import SwiftUI
 struct CanvasHeader: View {
     let userName: String
     let greeting: String
+    let onMenuClick: () -> Void
     
     var body: some View {
         HStack {
@@ -11,9 +12,11 @@ struct CanvasHeader: View {
                 .kerning(0.8)
                 .foregroundColor(ScribbleFitColor.primaryText)
             Spacer()
-            Image(systemName: "line.3.horizontal")
-                .font(.system(size: 20, weight: .medium))
-                .foregroundColor(ScribbleFitColor.primaryText)
+            Button(action: onMenuClick) {
+                Image(systemName: "line.3.horizontal")
+                    .font(.system(size: 20, weight: .medium))
+                    .foregroundColor(ScribbleFitColor.primaryText)
+            }
         }
     }
 }
@@ -43,12 +46,14 @@ struct QuickActionPills: View {
 struct ScribbleInputArea: View {
     @Binding var text: String
     let isSyncing: Bool
+    let isRecording: Bool
     let onSubmit: () -> Void
+    let onMicClick: () -> Void
     
     var body: some View {
         ScribbleFitTextField(
             text: $text,
-            placeholder: "Message ScribbleFit...",
+            placeholder: isRecording ? "Listening..." : "Message ScribbleFit...",
             trailingIcon: AnyView(
                 Group {
                     if !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
@@ -64,10 +69,20 @@ struct ScribbleInputArea: View {
                         }
                         .disabled(isSyncing)
                     } else {
-                        Button(action: { /* Mic action */ }) {
-                            Image(systemName: "mic.fill")
-                                .font(.system(size: 20))
-                                .foregroundColor(ScribbleFitColor.primaryText)
+                        Button(action: onMicClick) {
+                            ZStack {
+                                if isRecording {
+                                    Circle()
+                                        .stroke(ScribbleFitColor.primaryText.opacity(0.3), lineWidth: 2)
+                                        .frame(width: 40, height: 40)
+                                        .scaleEffect(isRecording ? 1.2 : 1.0)
+                                        .opacity(isRecording ? 0 : 1)
+                                        .animation(.easeInOut(duration: 1).repeatForever(autoreverses: false), value: isRecording)
+                                }
+                                
+                                Text(isRecording ? "⏹️" : "🎙️")
+                                    .font(.system(size: 20))
+                            }
                         }
                     }
                 }

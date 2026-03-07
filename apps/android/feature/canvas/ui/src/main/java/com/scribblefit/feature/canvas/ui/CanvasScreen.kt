@@ -41,7 +41,9 @@ fun CanvasScreen(
                     text = uiState.scribbleText,
                     onTextChange = viewModel::onTextChange,
                     onSubmit = viewModel::submitScribble,
-                    isSyncing = uiState.isSyncing
+                    onMicClick = viewModel::onMicClick,
+                    isSyncing = uiState.isSyncing,
+                    isRecording = uiState.isRecording
                 )
             }
         }
@@ -54,7 +56,8 @@ fun CanvasScreen(
         ) {
             CanvasHeader(
                 userName = uiState.userName,
-                greeting = uiState.greeting
+                greeting = uiState.greeting,
+                onMenuClick = viewModel::onMenuClick
             )
             
             LazyColumn(

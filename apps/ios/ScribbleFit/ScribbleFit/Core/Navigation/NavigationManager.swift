@@ -28,6 +28,10 @@ public enum AppTab: String, CaseIterable, Identifiable {
     }
 }
 
+public enum AppDestination: Hashable {
+    case settings
+}
+
 @MainActor
 public final class NavigationManager: ObservableObject {
     @Published public var activeTab: AppTab = .workout

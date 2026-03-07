@@ -10,6 +10,7 @@ public struct CanvasUiState: Sendable {
     public var scribbleText: String
     public var feedItems: [FeedItem]
     public var isSyncing: Bool
+    public var isRecording: Bool
     
     public init(
         greeting: String = "",
@@ -18,7 +19,8 @@ public struct CanvasUiState: Sendable {
         homeSuggestion: AnalysisSuggestion? = nil,
         scribbleText: String = "",
         feedItems: [FeedItem] = [],
-        isSyncing: Bool = false
+        isSyncing: Bool = false,
+        isRecording: Bool = false
     ) {
         self.greeting = greeting
         self.userName = userName
@@ -27,6 +29,7 @@ public struct CanvasUiState: Sendable {
         self.scribbleText = scribbleText
         self.feedItems = feedItems
         self.isSyncing = isSyncing
+        self.isRecording = isRecording
     }
 }
 
@@ -92,7 +95,7 @@ public final class CanvasViewModel: ObservableObject {
             do {
                 try await processScribbleUseCase.execute(rawText: text)
                 uiState.scribbleText = ""
-                await refreshFeed()
+                refreshFeed()
             } catch {
                 print("Failed to process scribble: \(error)")
             }
@@ -104,7 +107,7 @@ public final class CanvasViewModel: ObservableObject {
         Task {
             do {
                 try await executeQuickActionUseCase.execute(actionType: actionType)
-                await refreshFeed()
+                refreshFeed()
             } catch {
                 print("Failed to execute quick action: \(error)")
             }
@@ -115,11 +118,28 @@ public final class CanvasViewModel: ObservableObject {
         Task {
             do {
                 try await canvasRepository.retryScribble(id: id)
-                await refreshFeed()
+                refreshFeed()
             } catch {
                 print("Failed to retry scribble: \(error)")
             }
         }
+    }
+
+    public func onMicClick() {
+        if uiState.isRecording {
+            stopRecording()
+        } else {
+            startRecording()
+        }
+    }
+
+    private func startRecording() {
+        uiState.isRecording = true
+    }
+
+    private func stopRecording() {
+        uiState.isRecording = false
+        onTextChange("Simulated voice input...")
     }
     
     private static func getGreeting() -> String {

@@ -147,9 +147,17 @@ fun MainScreen(
                     is Screen.Analytics -> NavEntry(key) { AnalyticsPlaceholder() }
                     is Screen.Exercises -> NavEntry(key) { LedgerScreen() }
                     is Screen.Profile -> NavEntry(key) { ProfilePlaceholder() }
+                    is Screen.Settings -> NavEntry(key) { SettingsPlaceholder() }
                 }
             }
         )
+    }
+}
+
+@Composable
+fun SettingsPlaceholder() {
+    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+        Text("Settings", style = MaterialTheme.typography.headlineMedium)
     }
 }
 

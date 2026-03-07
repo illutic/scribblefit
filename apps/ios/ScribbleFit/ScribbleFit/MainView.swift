@@ -32,6 +32,14 @@ public struct MainView: View {
                 ))
                 .navigationTitle(AppTab.workout.title)
                 .navigationBarTitleDisplayMode(.inline)
+                .navigationDestination(for: AppDestination.self) { destination in
+                    switch destination {
+                    case .settings:
+                        Text("Settings")
+                            .font(ScribbleFitFont.headlineMedium())
+                            .foregroundColor(ScribbleFitColor.primaryText)
+                    }
+                }
             }
             .tabItem {
                 Label(AppTab.workout.title, systemImage: AppTab.workout.icon)

@@ -9,6 +9,8 @@ import com.scribblefit.feature.canvas.domain.repository.CanvasRepository
 import com.scribblefit.feature.canvas.domain.usecase.ExecuteQuickActionUseCase
 import com.scribblefit.feature.canvas.domain.usecase.ProcessScribbleUseCase
 import com.scribblefit.feature.canvas.domain.usecase.QuickActionType
+import com.scribblefit.core.navigation.Navigator
+import com.scribblefit.core.navigation.Screen
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -26,7 +28,8 @@ data class CanvasUiState(
     val homeSuggestion: AnalysisSuggestion? = null,
     val scribbleText: String = "",
     val feedItems: List<FeedItem> = emptyList(),
-    val isSyncing: Boolean = false
+    val isSyncing: Boolean = false,
+    val isRecording: Boolean = false
 )
 
 @HiltViewModel
@@ -34,7 +37,8 @@ class CanvasViewModel @Inject constructor(
     private val canvasRepository: CanvasRepository,
     private val analysisRepository: AnalysisRepository,
     private val processScribbleUseCase: ProcessScribbleUseCase,
-    private val executeQuickActionUseCase: ExecuteQuickActionUseCase
+    private val executeQuickActionUseCase: ExecuteQuickActionUseCase,
+    private val navigator: Navigator
 ) : ViewModel() {
 
     private val _internalState = MutableStateFlow(CanvasUiState(greeting = getGreeting()))
@@ -79,6 +83,28 @@ class CanvasViewModel @Inject constructor(
         viewModelScope.launch {
             canvasRepository.retryScribble(id)
         }
+    }
+
+    fun onMenuClick() {
+        navigator.navigateTo(Screen.Settings)
+    }
+
+    fun onMicClick() {
+        if (_internalState.value.isRecording) {
+            stopRecording()
+        } else {
+            startRecording()
+        }
+    }
+
+    private fun startRecording() {
+        _internalState.update { it.copy(isRecording = true) }
+        // Simulated voice capture delay and result
+    }
+
+    private fun stopRecording() {
+        _internalState.update { it.copy(isRecording = false) }
+        onTextChange("Simulated voice input...")
     }
 
     private fun getGreeting(): String {

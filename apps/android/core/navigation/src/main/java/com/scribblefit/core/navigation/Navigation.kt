@@ -10,6 +10,7 @@ sealed interface Screen : NavKey {
     @Serializable data object Analytics : Screen
     @Serializable data object Exercises : Screen
     @Serializable data object Profile : Screen
+    @Serializable data object Settings : Screen
 }
 
 interface Navigator {

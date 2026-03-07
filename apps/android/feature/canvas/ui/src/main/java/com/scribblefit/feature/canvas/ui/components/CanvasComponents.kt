@@ -1,6 +1,7 @@
 package com.scribblefit.feature.canvas.ui.components
 
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.*
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyRow
@@ -9,9 +10,10 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -26,7 +28,11 @@ import com.scribblefit.feature.canvas.domain.model.ScribbleStatus
 import com.scribblefit.feature.canvas.domain.usecase.QuickActionType
 
 @Composable
-fun CanvasHeader(userName: String, greeting: String) {
+fun CanvasHeader(
+    userName: String, 
+    greeting: String,
+    onMenuClick: () -> Unit
+) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -42,11 +48,13 @@ fun CanvasHeader(userName: String, greeting: String) {
                 color = MaterialTheme.colorScheme.onBackground
             )
         )
-        Icon(
-            imageVector = Icons.Default.Menu,
-            contentDescription = "Menu",
-            tint = MaterialTheme.colorScheme.onBackground
-        )
+        IconButton(onClick = onMenuClick) {
+            Icon(
+                imageVector = Icons.Default.Menu,
+                contentDescription = "Menu",
+                tint = MaterialTheme.colorScheme.onBackground
+            )
+        }
     }
 }
 
@@ -222,15 +230,28 @@ fun ScribbleInputPill(
     text: String,
     onTextChange: (String) -> Unit,
     onSubmit: () -> Unit,
-    isSyncing: Boolean
+    onMicClick: () -> Unit,
+    isSyncing: Boolean,
+    isRecording: Boolean
 ) {
+    val infiniteTransition = rememberInfiniteTransition(label = "pulse")
+    val scale by infiniteTransition.animateFloat(
+        initialValue = 1f,
+        targetValue = if (isRecording) 1.2f else 1f,
+        animationSpec = infiniteRepeatable(
+            animation = tween(500, easing = LinearEasing),
+            repeatMode = RepeatMode.Reverse
+        ),
+        label = "scale"
+    )
+
     ScribbleFitTextField(
         value = text,
         onValueChange = onTextChange,
-        placeholder = "Message ScribbleFit...",
+        placeholder = if (isRecording) "Listening..." else "Message ScribbleFit...",
         modifier = Modifier.fillMaxWidth(),
         trailingIcon = {
-            Box {
+            Box(contentAlignment = Alignment.Center) {
                 if (text.isNotBlank()) {
                     IconButton(
                         onClick = onSubmit,
@@ -253,10 +274,15 @@ fun ScribbleInputPill(
                     }
                 } else {
                     IconButton(
-                        onClick = { /* Mic action */ },
-                        modifier = Modifier.size(32.dp)
+                        onClick = onMicClick,
+                        modifier = Modifier
+                            .size(32.dp)
+                            .scale(scale)
                     ) {
-                        Text("🎙️", style = MaterialTheme.typography.titleMedium)
+                        Text(
+                            text = if (isRecording) "⏹️" else "🎙️", 
+                            style = MaterialTheme.typography.titleMedium
+                        )
                     }
                 }
             }
