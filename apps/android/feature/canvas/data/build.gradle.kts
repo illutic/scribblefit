@@ -13,6 +13,8 @@ dependencies {
     implementation(project(":feature:ai:domain"))
     implementation(project(":feature:ai:data"))
     implementation(project(":feature:ledger"))
+    implementation(project(":feature:analytics:domain"))
+    implementation(project(":feature:analytics:data"))
     implementation(project(":core:database"))
 
     implementation(libs.hilt.android)

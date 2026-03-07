@@ -39,6 +39,8 @@ import com.scribblefit.core.designsystem.theme.ScribbleFitTheme
 import com.scribblefit.core.navigation.Screen
 import com.scribblefit.feature.canvas.ui.CanvasScreen
 import com.scribblefit.feature.ledger.ui.LedgerScreen
+import com.scribblefit.feature.profile.ui.ProfileScreen
+import com.scribblefit.feature.profile.ui.SettingsScreen
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -124,7 +126,7 @@ fun MainScreen(
                     )
                 )
                 NavigationBarItem(
-                    selected = currentScreen is Screen.Profile,
+                    selected = currentScreen is Screen.Profile || currentScreen is Screen.Settings,
                     onClick = { onTabNavigate(Screen.Profile) },
                     icon = { Icon(Icons.Default.Person, contentDescription = "Profile") },
                     label = { Text("Profile") },
@@ -146,8 +148,8 @@ fun MainScreen(
                     is Screen.Canvas -> NavEntry(key) { CanvasScreen() }
                     is Screen.Analytics -> NavEntry(key) { AnalyticsPlaceholder() }
                     is Screen.Exercises -> NavEntry(key) { LedgerScreen() }
-                    is Screen.Profile -> NavEntry(key) { ProfilePlaceholder() }
-                    is Screen.Settings -> NavEntry(key) { SettingsPlaceholder() }
+                    is Screen.Profile -> NavEntry(key) { ProfileScreen() }
+                    is Screen.Settings -> NavEntry(key) { SettingsScreen() }
                 }
             }
         )
@@ -155,23 +157,9 @@ fun MainScreen(
 }
 
 @Composable
-fun SettingsPlaceholder() {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text("Settings", style = MaterialTheme.typography.headlineMedium)
-    }
-}
-
-@Composable
 fun AnalyticsPlaceholder() {
     Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
         Text("Analytics Dashboard", style = MaterialTheme.typography.headlineMedium)
-    }
-}
-
-@Composable
-fun ProfilePlaceholder() {
-    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-        Text("User Profile", style = MaterialTheme.typography.headlineMedium)
     }
 }
 

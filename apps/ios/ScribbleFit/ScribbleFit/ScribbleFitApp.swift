@@ -12,6 +12,9 @@ struct ScribbleFitApp: App {
     private let configRepository: ConfigRepository
     private let analysisRepository: AnalysisRepository
     private let canvasRepository: CanvasRepository
+    private let userRepository: UserRepository
+    private let settingsRepository: SettingsRepository
+    private let secureKeyStorage: SecureKeyStorage
     private let database: ScribbleFitDatabase
     
     init() {
@@ -20,6 +23,7 @@ struct ScribbleFitApp: App {
         let network = ScribbleFitNetworkClient.shared
         let database = ScribbleFitDatabase.shared
         self.database = database
+        self.secureKeyStorage = keychain
         
         let syncRepo = SyncRepositoryImpl(database: database)
         let ledgerRepo = LedgerRepositoryImpl(database: database)
@@ -27,6 +31,8 @@ struct ScribbleFitApp: App {
         let configRepo = ConfigRepositoryImpl(networkClient: network, database: database)
         let analysisRepo = AnalysisRepositoryImpl(database: database)
         let canvasRepo = CanvasRepositoryImpl(database: database)
+        let userRepo = UserRepositoryImpl(ledgerRepository: ledgerRepo)
+        let settingsRepo = SettingsRepositoryImpl(database: database)
         
         self.syncRepository = syncRepo
         self.ledgerRepository = ledgerRepo
@@ -34,6 +40,8 @@ struct ScribbleFitApp: App {
         self.configRepository = configRepo
         self.analysisRepository = analysisRepo
         self.canvasRepository = canvasRepo
+        self.userRepository = userRepo
+        self.settingsRepository = settingsRepo
         
         _appViewModel = StateObject(wrappedValue: AppViewModel(
             authRepository: authRepo,
@@ -48,6 +56,9 @@ struct ScribbleFitApp: App {
                     MainView(
                         canvasRepository: canvasRepository,
                         analysisRepository: analysisRepository,
+                        userRepository: userRepository,
+                        settingsRepository: settingsRepository,
+                        secureKeyStorage: secureKeyStorage,
                         processScribbleUseCase: ProcessScribbleUseCase(canvasRepository: canvasRepository),
                         executeQuickActionUseCase: ExecuteQuickActionUseCase(canvasRepository: canvasRepository),
                         confirmWorkoutUseCase: ConfirmWorkoutUseCase(sessionRepository: WorkoutSessionRepositoryImpl(database: database), ledgerRepository: ledgerRepository)

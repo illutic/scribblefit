@@ -1,6 +1,7 @@
 import Foundation
 import SwiftData
 
+@MainActor
 public final class SettingsRepositoryImpl: SettingsRepository {
     private let database: ScribbleFitDatabase
     
@@ -9,7 +10,7 @@ public final class SettingsRepositoryImpl: SettingsRepository {
     }
     
     public func getSettings() async throws -> AppSettings {
-        let config = database.getSystemConfig()
+        let config = database.getConfig()
         
         return AppSettings(
             parsingMode: ParsingMode(rawValue: config?.parsingMode ?? "managed") ?? .managed,
@@ -29,7 +30,7 @@ public final class SettingsRepositoryImpl: SettingsRepository {
             themePreference: settings.themePreference.rawValue,
             updatedAt: Date()
         )
-        database.upsertSystemConfig(config)
+        database.upsertConfig(config)
     }
     
     public func clearAllData() async throws {

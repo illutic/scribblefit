@@ -3,8 +3,14 @@ import SwiftUI
 public struct MainView: View {
     @StateObject private var navManager = NavigationManager()
     
+    // Repositories
     private let canvasRepository: CanvasRepository
     private let analysisRepository: AnalysisRepository
+    private let userRepository: UserRepository
+    private let settingsRepository: SettingsRepository
+    private let secureKeyStorage: SecureKeyStorage
+    
+    // Use Cases
     private let processScribbleUseCase: ProcessScribbleUseCase
     private let executeQuickActionUseCase: ExecuteQuickActionUseCase
     private let confirmWorkoutUseCase: ConfirmWorkoutUseCase
@@ -12,12 +18,18 @@ public struct MainView: View {
     public init(
         canvasRepository: CanvasRepository,
         analysisRepository: AnalysisRepository,
+        userRepository: UserRepository,
+        settingsRepository: SettingsRepository,
+        secureKeyStorage: SecureKeyStorage,
         processScribbleUseCase: ProcessScribbleUseCase,
         executeQuickActionUseCase: ExecuteQuickActionUseCase,
         confirmWorkoutUseCase: ConfirmWorkoutUseCase
     ) {
         self.canvasRepository = canvasRepository
         self.analysisRepository = analysisRepository
+        self.userRepository = userRepository
+        self.settingsRepository = settingsRepository
+        self.secureKeyStorage = secureKeyStorage
         self.processScribbleUseCase = processScribbleUseCase
         self.executeQuickActionUseCase = executeQuickActionUseCase
         self.confirmWorkoutUseCase = confirmWorkoutUseCase
@@ -39,9 +51,11 @@ public struct MainView: View {
                 .navigationDestination(for: AppDestination.self) { destination in
                     switch destination {
                     case .settings:
-                        Text("Settings")
-                            .font(ScribbleFitFont.headlineMedium())
-                            .foregroundColor(ScribbleFitColor.primaryText)
+                        SettingsView(viewModel: SettingsViewModel(
+                            settingsRepository: settingsRepository,
+                            secureKeyStorage: secureKeyStorage,
+                            navManager: navManager
+                        ))
                     }
                 }
             }
@@ -74,9 +88,22 @@ public struct MainView: View {
             
             // Profile Tab
             NavigationStack(path: $navManager.profilePath) {
-                ProfileView()
-                    .navigationTitle(AppTab.profile.title)
-                    .navigationBarTitleDisplayMode(.inline)
+                ProfileView(viewModel: ProfileViewModel(
+                    userRepository: userRepository,
+                    navManager: navManager
+                ))
+                .navigationTitle(AppTab.profile.title)
+                .navigationBarTitleDisplayMode(.inline)
+                .navigationDestination(for: AppDestination.self) { destination in
+                    switch destination {
+                    case .settings:
+                        SettingsView(viewModel: SettingsViewModel(
+                            settingsRepository: settingsRepository,
+                            secureKeyStorage: secureKeyStorage,
+                            navManager: navManager
+                        ))
+                    }
+                }
             }
             .tabItem {
                 Label(AppTab.profile.title, systemImage: AppTab.profile.icon)

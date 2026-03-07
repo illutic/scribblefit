@@ -43,6 +43,7 @@
             <option value="$PROJECT_DIR$/apps/android/feature/profile" />
             <option value="$PROJECT_DIR$/apps/android/feature/profile/data" />
             <option value="$PROJECT_DIR$/apps/android/feature/profile/domain" />
+            <option value="$PROJECT_DIR$/apps/android/feature/profile/ui" />
           </set>
         </option>
       </GradleProjectSettings>
