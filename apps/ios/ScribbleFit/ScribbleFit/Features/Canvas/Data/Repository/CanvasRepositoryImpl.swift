@@ -14,7 +14,23 @@ public final class CanvasRepositoryImpl: CanvasRepository {
     }
     
     public func getFeed() async throws -> [FeedItem] {
-        return database.getCanvasFeed().compactMap { entity in
+        var entities = database.getCanvasFeed()
+        
+        if entities.isEmpty {
+            // Seed with an initial prompt if empty
+            let id = UUID().uuidString
+            let now = Date()
+            let prompt = PromptItem(id: id, timestamp: now, text: "Ready for a Push day?", emoji: "💪", type: .pattern)
+            let data = try jsonEncoder.encode(prompt)
+            if let jsonString = String(data: data, encoding: .utf8) {
+                let entity = CanvasFeed(id: id, itemType: "PROMPT", jsonData: jsonString, createdAt: now)
+                database.upsertCanvasFeedItem(entity)
+                // Manually add to entities list to avoid immediate re-fetch loop
+                entities = [entity]
+            }
+        }
+        
+        return entities.compactMap { entity in
             guard let data = entity.jsonData.data(using: .utf8) else { return nil }
             
             switch entity.itemType {
@@ -24,6 +40,12 @@ public final class CanvasRepositoryImpl: CanvasRepository {
             case "PROMPT":
                 let dto = try? jsonDecoder.decode(PromptItem.self, from: data)
                 return dto.map { .prompt($0) }
+            case "CONFIRMATION":
+                let dto = try? jsonDecoder.decode(ConfirmationItem.self, from: data)
+                return dto.map { .confirmation($0) }
+            case "INSIGHT":
+                let dto = try? jsonDecoder.decode(InsightItem.self, from: data)
+                return dto.map { .insight($0) }
             default: return nil
             }
         }
@@ -51,7 +73,11 @@ public final class CanvasRepositoryImpl: CanvasRepository {
     }
     
     public func addConfirmation(item: ConfirmationItem) async throws {
-        // Implementation for confirmation cards
+        let data = try jsonEncoder.encode(item)
+        if let jsonString = String(data: data, encoding: .utf8) {
+            let entity = CanvasFeed(id: item.id, itemType: "CONFIRMATION", jsonData: jsonString, createdAt: item.timestamp)
+            database.upsertCanvasFeedItem(entity)
+        }
     }
     
     public func clearFeed() async throws {

@@ -11,8 +11,6 @@ public final class CanvasViewModel: ObservableObject {
     @Published public var isSyncing: Bool = false
     @Published public var feedItems: [FeedItem] = []
     
-    private var cancellables = Set<AnyCancellable>()
-    
     public init(
         canvasRepository: CanvasRepository,
         processScribbleUseCase: ProcessScribbleUseCase
@@ -20,14 +18,11 @@ public final class CanvasViewModel: ObservableObject {
         self.canvasRepository = canvasRepository
         self.processScribbleUseCase = processScribbleUseCase
         
-        observeFeed()
+        refreshFeed()
     }
     
-    private func observeFeed() {
+    public func refreshFeed() {
         Task {
-            // Using Task to poll or observe the repository
-            // In a real SwiftData app, we'd use @Query or a PassthroughSubject
-            // For now, let's just do an initial fetch
             do {
                 self.feedItems = try await canvasRepository.getFeed()
             } catch {
@@ -37,7 +32,7 @@ public final class CanvasViewModel: ObservableObject {
     }
     
     public func submitScribble() {
-        let text = scribbleText
+        let text = scribbleText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
         
         isSyncing = true
@@ -45,7 +40,7 @@ public final class CanvasViewModel: ObservableObject {
             do {
                 try await processScribbleUseCase.execute(rawText: text)
                 scribbleText = ""
-                // Refresh feed after adding
+                // Refresh feed immediately after adding
                 self.feedItems = try await canvasRepository.getFeed()
             } catch {
                 print("Failed to process scribble: \(error)")
