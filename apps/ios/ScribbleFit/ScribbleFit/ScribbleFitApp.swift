@@ -30,6 +30,32 @@ struct ScribbleFitApp: App {
         let authRepo = AuthRepositoryImpl(networkClient: network, secureKeyStorage: keychain)
         let configRepo = ConfigRepositoryImpl(networkClient: network, database: database)
         let analysisRepo = AnalysisRepositoryImpl(database: database)
+        let telemetryRepo = TelemetryRepositoryImpl(networkClient: network)
+        
+        // AI Engines
+        let openAIEngine = OpenAIEngine(secureKeyStorage: keychain, configRepository: configRepo)
+        let geminiAIEngine = GeminiAIEngine(secureKeyStorage: keychain, configRepository: configRepo)
+        let proxyEngine = ScribbleFitProxyEngine(networkClient: network, secureKeyStorage: keychain, configRepository: configRepo)
+        let localAIEngine = LocalAIEngine(configRepository: configRepo)
+        
+        let dynamicEngine = DynamicLLMEngine(
+            openAIEngine: openAIEngine,
+            geminiAIEngine: geminiAIEngine,
+            proxyEngine: proxyEngine,
+            localAIEngine: localAIEngine,
+            configRepository: configRepo
+        )
+        
+        let syncWorkoutUseCase = SyncWorkoutUseCase(
+            syncRepository: syncRepo,
+            telemetryRepository: telemetryRepo,
+            engine: dynamicEngine,
+            configRepository: configRepo
+        )
+        
+        // Wire up circular dependency lazily
+        syncRepo.setSyncWorkoutUseCase(syncWorkoutUseCase)
+        
         let canvasRepo = CanvasRepositoryImpl(database: database)
         let userRepo = UserRepositoryImpl(ledgerRepository: ledgerRepo)
         let settingsRepo = SettingsRepositoryImpl(database: database)

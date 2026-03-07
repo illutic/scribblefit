@@ -9,25 +9,49 @@ import FoundationModels
  * Leverages Apple Intelligence via the FoundationModels framework.
  */
 public final class LocalAIEngine: LLMEngine, AnalysisEngine {
-    private let systemPrompt: String
+    private let configRepository: ConfigRepository
     private let jsonDecoder = JSONDecoder()
     
-    public init(systemPrompt: String) {
-        self.systemPrompt = systemPrompt
+    public init(configRepository: ConfigRepository) {
+        self.configRepository = configRepository
     }
     
-    public func parseWorkout(rawText: String) async throws -> ParsedWorkout {
-        #if canImport(FoundationModels)
-        if #available(iOS 26.0, *) {
-            let session = LanguageModelSession { self.systemPrompt }
-            let response = try await session.respond(to: "Parse this gym note: \(rawText)")
-            if let data = response.content.data(using: .utf8) {
-                let dto = try jsonDecoder.decode(AIWorkoutDTO.self, from: data)
-                return dto.toDomain()
+    public func parseWorkout(rawText: String) async -> ParsedWorkoutResult {
+        let startTime = Date()
+        do {
+            #if canImport(FoundationModels)
+            if #available(iOS 26.0, *) {
+                let config = await configRepository.getConfig()
+                let systemPrompt = config?.promptText ?? ScribbleFitProxyEngine.defaultPrompt
+                
+                let session = LanguageModelSession { systemPrompt }
+                let response = try await session.respond(to: "Parse this gym note: \(rawText)")
+                let duration = Int64(Date().timeIntervalSince(startTime) * 1000)
+                
+                if let data = response.content.data(using: .utf8) {
+                    let dto = try jsonDecoder.decode(AIWorkoutDTO.self, from: data)
+                    return ParsedWorkoutResult(
+                        workout: dto.toDomain(),
+                        rawText = rawText,
+                        status: .success,
+                        modelUsed: "apple-intelligence-local",
+                        processingTimeMs: duration
+                    )
+                }
             }
+            #endif
+            throw NSError(domain: "LocalAIEngine", code: 0, userInfo: [NSLocalizedDescriptionKey: "Local AI Engine not supported"])
+        } catch {
+            let duration = Int64(Date().timeIntervalSince(startTime) * 1000)
+            return ParsedWorkoutResult(
+                workout = nil,
+                rawText = rawText,
+                status: .failure,
+                modelUsed: "apple-intelligence-local",
+                processingTimeMs: duration,
+                error: error.localizedDescription
+            )
         }
-        #endif
-        throw NSError(domain: "LocalAIEngine", code: 0, userInfo: [NSLocalizedDescriptionKey: "Local AI Engine not supported"])
     }
     
     public func generateSuggestion(context: String) async throws -> AnalysisSuggestion {

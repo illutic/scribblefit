@@ -4,54 +4,42 @@ import Foundation
 public final class SyncWorkoutUseCase {
     private let syncRepository: SyncRepository
     private let telemetryRepository: TelemetryRepository
-    private let secureKeyStorage: SecureKeyStorage
-    private let openAIEngine: LLMEngine
-    private let proxyEngine: LLMEngine
-    private let promptVersion: String
+    private let engine: LLMEngine
+    private let configRepository: ConfigRepository
     
     public init(
         syncRepository: SyncRepository,
         telemetryRepository: TelemetryRepository,
-        secureKeyStorage: SecureKeyStorage,
-        openAIEngine: LLMEngine,
-        proxyEngine: LLMEngine,
-        promptVersion: String
+        engine: LLMEngine,
+        configRepository: ConfigRepository
     ) {
         self.syncRepository = syncRepository
         self.telemetryRepository = telemetryRepository
-        self.secureKeyStorage = secureKeyStorage
-        self.openAIEngine = openAIEngine
-        self.proxyEngine = proxyEngine
-        self.promptVersion = promptVersion
+        self.engine = engine
+        self.configRepository = configRepository
     }
     
     public func execute() async throws {
+        let config = await configRepository.getConfig()
+        let promptVersion = config?.promptVersion ?? "1.0.0"
+        
         let pendingItems = try await syncRepository.getPendingSyncItems()
         
         for item in pendingItems {
             try await syncRepository.updateSyncStatus(id: item.id, status: .processing)
             
-            // Priority 1: Personal API Key (BYOK)
-            let apiKey = try await secureKeyStorage.getApiKey()
-            let engine = (apiKey != nil) ? openAIEngine : proxyEngine
+            let result = await engine.parseWorkout(rawText: item.rawText)
             
-            do {
-                let workout = try await engine.parseWorkout(rawText: item.rawText)
+            if result.status == .success, let workout = result.workout {
                 try await syncRepository.saveParsedWorkout(syncItemId: item.id, workout: workout)
-            } catch {
+            } else {
                 try await syncRepository.updateSyncStatus(id: item.id, status: .failed)
-                
-                let errorMessage: String = if let parsingError = error as? AIParsingError {
-                    parsingError.error
-                } else {
-                    error.localizedDescription
-                }
                 
                 // Report to telemetry
                 let telemetryData = TelemetryData(
                     rawText: item.rawText,
                     promptVersion: promptVersion,
-                    errorMessage: errorMessage
+                    errorMessage: result.error ?? "Unknown error during parsing"
                 )
                 try? await telemetryRepository.reportError(data: telemetryData)
             }

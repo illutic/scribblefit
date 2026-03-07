@@ -1,8 +1,7 @@
 import Foundation
 import SwiftData
 
-@MainActor
-public final class ConfigRepositoryImpl: ConfigRepository {
+public final class ConfigRepositoryImpl: ConfigRepository, @unchecked Sendable {
     private let networkClient: ScribbleFitNetworkClient
     private let database: ScribbleFitDatabase
     
@@ -11,9 +10,21 @@ public final class ConfigRepositoryImpl: ConfigRepository {
         self.database = database
     }
     
+    public func getConfig() async -> SystemConfig? {
+        await MainActor.run {
+            database.getConfig()
+        }
+    }
+    
+    public func updateConfig(_ config: SystemConfig) async {
+        await MainActor.run {
+            database.upsertConfig(config)
+        }
+    }
+    
     public func syncMetadata() async throws {
         let metadata = try await networkClient.getMetadata()
-        let currentConfig = database.getConfig()
+        let currentConfig = await getConfig()
         
         if currentConfig == nil || currentConfig?.promptVersion != metadata.promptVersion {
             let promptConfig = try await networkClient.getPromptConfig()
@@ -24,13 +35,13 @@ public final class ConfigRepositoryImpl: ConfigRepository {
                 exerciseVersion: metadata.exerciseVersion,
                 updatedAt: Date()
             )
-            database.upsertConfig(newConfig)
+            await updateConfig(newConfig)
         }
     }
     
     public func syncExercises() async throws {
         let metadata = try await networkClient.getMetadata()
-        let currentConfig = database.getConfig()
+        let currentConfig = await getConfig()
         
         if currentConfig == nil || currentConfig?.exerciseVersion != metadata.exerciseVersion {
             let response = try await networkClient.getExercises()
@@ -42,23 +53,26 @@ public final class ConfigRepositoryImpl: ConfigRepository {
                     aliases: dto.aliases
                 )
             }
-            database.deleteAllExercises()
-            database.upsertExercises(entities)
             
-            // Update exercise version in config
-            if let config = currentConfig {
-                config.exerciseVersion = metadata.exerciseVersion
-                config.updatedAt = Date()
-                database.upsertConfig(config)
-            } else {
-                let newConfig = SystemConfig(
-                    id: "config",
-                    promptVersion: "0.0.0",
-                    promptText: "",
-                    exerciseVersion: metadata.exerciseVersion,
-                    updatedAt: Date()
-                )
-                database.upsertConfig(newConfig)
+            await MainActor.run {
+                database.deleteAllExercises()
+                database.upsertExercises(entities)
+                
+                // Update exercise version in config
+                if let config = currentConfig {
+                    config.exerciseVersion = metadata.exerciseVersion
+                    config.updatedAt = Date()
+                    database.upsertConfig(config)
+                } else {
+                    let newConfig = SystemConfig(
+                        id: "config",
+                        promptVersion: "0.0.0",
+                        promptText: "",
+                        exerciseVersion: metadata.exerciseVersion,
+                        updatedAt: Date()
+                    )
+                    database.upsertConfig(newConfig)
+                }
             }
         }
     }

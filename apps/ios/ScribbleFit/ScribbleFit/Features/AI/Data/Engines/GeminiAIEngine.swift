@@ -1,34 +1,68 @@
 import Foundation
 
-public final class GeminiAIEngine: LLMEngine, AnalysisEngine {
-    private let client: URLSession
-    private let apiKey: String
-    private let systemPrompt: String
+public final class GeminiAIEngine: LLMEngine, AnalysisEngine, @unchecked Sendable {
+    private let session: URLSession
+    private let secureKeyStorage: SecureKeyStorage
+    private let configRepository: ConfigRepository
     private let jsonDecoder = JSONDecoder()
     
-    private let baseUrl = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:"
+    private let apiBase = "https://generativelanguage.googleapis.com/v1beta"
+    private var activeModelPath: String?
+    private let lock = NSLock()
     
-    public init(apiKey: String, systemPrompt: String, client: URLSession = .shared) {
-        self.apiKey = apiKey
-        self.systemPrompt = systemPrompt
-        self.client = client
+    public init(
+        secureKeyStorage: SecureKeyStorage,
+        configRepository: ConfigRepository,
+        session: URLSession = .shared
+    ) {
+        self.secureKeyStorage = secureKeyStorage
+        self.configRepository = configRepository
+        self.session = session
     }
     
-    public func parseWorkout(rawText: String) async throws -> ParsedWorkout {
-        let content = try await callGemini(prompt: systemPrompt, userMessage: rawText)
-        let contentData = content.data(using: .utf8)!
-        let dto = try jsonDecoder.decode(AIWorkoutDTO.self, from: contentData)
-        return dto.toDomain()
+    public func parseWorkout(rawText: String) async -> ParsedWorkoutResult {
+        let startTime = Date()
+        do {
+            let apiKey = try await secureKeyStorage.getApiKey() ?? ""
+            let config = await configRepository.getConfig()
+            let systemPrompt = config?.promptText ?? ScribbleFitProxyEngine.defaultPrompt
+            
+            let content = try await callGemini(apiKey: apiKey, prompt: systemPrompt, userMessage: "\(rawText)\n\nOutput in JSON format.")
+            let duration = Int64(Date().timeIntervalSince(startTime) * 1000)
+            
+            let contentData = content.data(using: .utf8)!
+            let dto = try jsonDecoder.decode(AIWorkoutDTO.self, from: contentData)
+            
+            return ParsedWorkoutResult(
+                workout: dto.toDomain(),
+                rawText: rawText,
+                status: .success,
+                modelUsed: activeModelPath ?? "gemini-flash",
+                processingTimeMs: duration
+            )
+        } catch {
+            let duration = Int64(Date().timeIntervalSince(startTime) * 1000)
+            return ParsedWorkoutResult(
+                workout: nil,
+                rawText: rawText,
+                status: .failure,
+                modelUsed: activeModelPath ?? "gemini-flash",
+                processingTimeMs: duration,
+                error: error.localizedDescription
+            )
+        }
     }
     
     public func generateSuggestion(context: String) async throws -> AnalysisSuggestion {
-        let content = try await callGemini(prompt: AnalysisPrompts.getSuggestionPrompt(context: context), userMessage: "Generate suggestion.")
+        let apiKey = try await secureKeyStorage.getApiKey() ?? ""
+        let content = try await callGemini(apiKey: apiKey, prompt: AnalysisPrompts.getSuggestionPrompt(context: context), userMessage: "Generate suggestion in JSON format.")
         let contentData = content.data(using: .utf8)!
         return try jsonDecoder.decode(AnalysisSuggestion.self, from: contentData)
     }
     
     public func generateSummary(period: SummaryPeriod, workoutData: String) async throws -> AnalysisSummary {
-        let content = try await callGemini(prompt: AnalysisPrompts.getSummaryPrompt(period: period.rawValue, data: workoutData), userMessage: "Generate summary.")
+        let apiKey = try await secureKeyStorage.getApiKey() ?? ""
+        let content = try await callGemini(apiKey: apiKey, prompt: AnalysisPrompts.getSummaryPrompt(period: period.rawValue, data: workoutData), userMessage: "Generate summary in JSON format.")
         let contentData = content.data(using: .utf8)!
         
         struct SummaryDTO: Codable {
@@ -57,7 +91,8 @@ public final class GeminiAIEngine: LLMEngine, AnalysisEngine {
     }
     
     public func generateExerciseInsight(exerciseName: String, historyData: String) async throws -> ExerciseInsight {
-        let content = try await callGemini(prompt: AnalysisPrompts.getExerciseInsightPrompt(name: exerciseName, history: historyData), userMessage: "Analyze \(exerciseName).")
+        let apiKey = try await secureKeyStorage.getApiKey() ?? ""
+        let content = try await callGemini(apiKey: apiKey, prompt: AnalysisPrompts.getExerciseInsightPrompt(name: exerciseName, history: historyData), userMessage: "Analyze \(exerciseName) in JSON format.")
         let contentData = content.data(using: .utf8)!
         
         struct InsightDTO: Codable {
@@ -78,48 +113,83 @@ public final class GeminiAIEngine: LLMEngine, AnalysisEngine {
         )
     }
     
-    private func callGemini(prompt: String, userMessage: String) async throws -> String {
-        let url = URL(string: "\(baseUrl)generateContent?key=\(apiKey)")!
+    private func getOrDiscoverModel(apiKey: String) async throws -> String {
+        lock.lock()
+        if let path = activeModelPath {
+            lock.unlock()
+            return path
+        }
+        lock.unlock()
+        
+        let url = URL(string: "\(apiBase)/models?key=\(apiKey)")!
+        let (data, _) = try await session.data(from: url)
+        let response = try JSONDecoder().decode(GeminiModelListResponse.self, from: data)
+        
+        let model = response.models
+            .filter { $0.supportedGenerationMethods.contains("generateContent") }
+            .filter { $0.name.contains("flash") }
+            .sorted { $0.name > $1.name }
+            .first
+        
+        let path = model?.name ?? "models/gemini-1.5-flash"
+        
+        lock.lock()
+        activeModelPath = path
+        lock.unlock()
+        
+        return path
+    }
+    
+    private func callGemini(apiKey: String, prompt: String, userMessage: String) async throws -> String {
+        let modelPath = try await getOrDiscoverModel(apiKey: apiKey)
+        let url = URL(string: "\(apiBase)/\(modelPath):generateContent?key=\(apiKey)")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
+        let fullUserMessage = "\(prompt)\n\n\(userMessage)"
+        
         let geminiRequest = GeminiRequest(
-            contents: [GeminiContent(parts: [GeminiPart(text: userMessage)])],
-            systemInstruction: GeminiSystemInstruction(parts: [GeminiPart(text: prompt)]),
+            contents: [GeminiContent(role: "user", parts: [GeminiPart(text: fullUserMessage)])],
             generationConfig: GeminiGenerationConfig(responseMimeType: "application/json")
         )
         
         request.httpBody = try JSONEncoder().encode(geminiRequest)
         
-        let (data, response) = try await client.data(for: request)
+        let (data, response) = try await session.data(for: request)
         
         if let httpResponse = response as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
-            throw NSError(domain: "GeminiAIEngine", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "Server error"])
+            let errorBody = String(data: data, encoding: .utf8) ?? "Unknown error"
+            throw NSError(domain: "GeminiAIEngine", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "Server error: \(errorBody)"])
         }
         
         let geminiResponse = try JSONDecoder().decode(GeminiResponse.self, from: data)
         guard let content = geminiResponse.candidates.first?.content.parts.first?.text else {
-            throw NSError(domain: "GeminiAIEngine", code: 0, userInfo: [NSLocalizedDescriptionKey: "No data"])
+            throw NSError(domain: "GeminiAIEngine", code: 0, userInfo: [NSLocalizedDescriptionKey: "No data from Gemini (\(modelPath))"])
         }
         
         return content
     }
 }
 
-// MARK: - Gemini DTOs (Internal)
+// MARK: - Gemini DTOs
+
+private struct GeminiModelListResponse: Codable {
+    let models: [GeminiModelInfo]
+}
+
+private struct GeminiModelInfo: Codable {
+    let name: String
+    let supportedGenerationMethods: [String]
+}
 
 private struct GeminiRequest: Codable {
     let contents: [GeminiContent]
-    let systemInstruction: GeminiSystemInstruction
     let generationConfig: GeminiGenerationConfig
 }
 
 private struct GeminiContent: Codable {
-    let parts: [GeminiPart]
-}
-
-private struct GeminiSystemInstruction: Codable {
+    let role: String
     let parts: [GeminiPart]
 }
 
@@ -129,6 +199,10 @@ private struct GeminiPart: Codable {
 
 private struct GeminiGenerationConfig: Codable {
     let responseMimeType: String
+    
+    enum CodingKeys: String, CodingKey {
+        case responseMimeType = "response_mime_type"
+    }
 }
 
 private struct GeminiResponse: Codable {

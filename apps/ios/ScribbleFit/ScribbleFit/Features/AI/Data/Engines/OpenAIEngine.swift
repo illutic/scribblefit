@@ -1,35 +1,81 @@
 import Foundation
 
 public final class OpenAIEngine: LLMEngine, AnalysisEngine {
-    private let apiKey: String
-    private let systemPrompt: String
+    private let secureKeyStorage: SecureKeyStorage
+    private let configRepository: ConfigRepository
     private let session: URLSession
     private let jsonDecoder = JSONDecoder()
     
-    public init(apiKey: String, systemPrompt: String, session: URLSession = .shared) {
-        self.apiKey = apiKey
-        self.systemPrompt = systemPrompt
+    public init(
+        secureKeyStorage: SecureKeyStorage,
+        configRepository: ConfigRepository,
+        session: URLSession = .shared
+    ) {
+        self.secureKeyStorage = secureKeyStorage
+        self.configRepository = configRepository
         self.session = session
     }
     
-    public func parseWorkout(rawText: String) async throws -> ParsedWorkout {
-        let content = try await callOpenAI(prompt: systemPrompt, userMessage: rawText)
-        let contentData = content.data(using: .utf8)!
-        let serializableWorkout = try jsonDecoder.decode(AIWorkoutDTO.self, from: contentData)
-        return serializableWorkout.toDomain()
+    public func parseWorkout(rawText: String) async -> ParsedWorkoutResult {
+        let startTime = Date()
+        do {
+            let apiKey = try await secureKeyStorage.getApiKey() ?? ""
+            let config = await configRepository.getConfig()
+            let instructions = config?.promptText ?? ScribbleFitProxyEngine.defaultPrompt
+            
+            let response = try await callOpenAIResponse(apiKey: apiKey, instructions: instructions, userMessage: rawText)
+            let duration = Int64(Date().timeIntervalSince(startTime) * 1000)
+            
+            guard let content = response.output.first(where: { $0.type == "message" })?.content?.first(where: { $0.type == "text" })?.text else {
+                throw NSError(domain: "OpenAIEngine", code: 0, userInfo: [NSLocalizedDescriptionKey: "Empty response"])
+            }
+            
+            let reasoning = response.output.first(where: { $0.type == "reasoning" })?.content?.first(where: { $0.type == "text" })?.text
+            
+            let contentData = content.data(using: .utf8)!
+            let serializableWorkout = try jsonDecoder.decode(AIWorkoutDTO.self, from: contentData)
+            
+            return ParsedWorkoutResult(
+                workout: serializableWorkout.toDomain(),
+                rawText = rawText,
+                status: .success,
+                modelUsed: "gpt-4o-mini",
+                processingTimeMs: duration,
+                reasoning: reasoning
+            )
+        } catch {
+            let duration = Int64(Date().timeIntervalSince(startTime) * 1000)
+            return ParsedWorkoutResult(
+                workout: nil,
+                rawText: rawText,
+                status: .failure,
+                modelUsed: "gpt-4o-mini",
+                processingTimeMs: duration,
+                error: error.localizedDescription
+            )
+        }
     }
     
     public func generateSuggestion(context: String) async throws -> AnalysisSuggestion {
+        let apiKey = try await secureKeyStorage.getApiKey() ?? ""
         let prompt = AnalysisPrompts.getSuggestionPrompt(context: context)
-        let content = try await callOpenAI(prompt: prompt, userMessage: "Generate suggestion.")
-        let contentData = content.data(using: .utf8)!
-        return try jsonDecoder.decode(AnalysisSuggestion.self, from: contentData)
+        let response = try await callOpenAIResponse(apiKey: apiKey, instructions: prompt, userMessage: "Generate suggestion in JSON format.")
+        
+        guard let content = response.output.first(where: { $0.type == "message" })?.content?.first(where: { $0.type == "text" })?.text else {
+            throw NSError(domain: "OpenAIEngine", code: 0, userInfo: [NSLocalizedDescriptionKey: "Empty response"])
+        }
+        
+        return try jsonDecoder.decode(AnalysisSuggestion.self, from: content.data(using: .utf8)!)
     }
     
     public func generateSummary(period: SummaryPeriod, workoutData: String) async throws -> AnalysisSummary {
+        let apiKey = try await secureKeyStorage.getApiKey() ?? ""
         let prompt = AnalysisPrompts.getSummaryPrompt(period: period.rawValue, data: workoutData)
-        let content = try await callOpenAI(prompt: prompt, userMessage: "Generate summary.")
-        let contentData = content.data(using: .utf8)!
+        let response = try await callOpenAIResponse(apiKey: apiKey, instructions: prompt, userMessage: "Generate summary in JSON format.")
+        
+        guard let content = response.output.first(where: { $0.type == "message" })?.content?.first(where: { $0.type == "text" })?.text else {
+            throw NSError(domain: "OpenAIEngine", code: 0, userInfo: [NSLocalizedDescriptionKey: "Empty response"])
+        }
         
         struct SummaryDTO: Codable {
             let summary_text: String
@@ -44,7 +90,7 @@ public final class OpenAIEngine: LLMEngine, AnalysisEngine {
             let volume_percentage: Double
         }
         
-        let dto = try jsonDecoder.decode(SummaryDTO.self, from: contentData)
+        let dto = try jsonDecoder.decode(SummaryDTO.self, from: content.data(using: .utf8)!)
         return AnalysisSummary(
             period: period,
             summaryText: dto.summary_text,
@@ -57,9 +103,13 @@ public final class OpenAIEngine: LLMEngine, AnalysisEngine {
     }
     
     public func generateExerciseInsight(exerciseName: String, historyData: String) async throws -> ExerciseInsight {
+        let apiKey = try await secureKeyStorage.getApiKey() ?? ""
         let prompt = AnalysisPrompts.getExerciseInsightPrompt(name: exerciseName, history: historyData)
-        let content = try await callOpenAI(prompt: prompt, userMessage: "Analyze \(exerciseName).")
-        let contentData = content.data(using: .utf8)!
+        let response = try await callOpenAIResponse(apiKey: apiKey, instructions: prompt, userMessage: "Analyze \(exerciseName) in JSON format.")
+        
+        guard let content = response.output.first(where: { $0.type == "message" })?.content?.first(where: { $0.type == "text" })?.text else {
+            throw NSError(domain: "OpenAIEngine", code: 0, userInfo: [NSLocalizedDescriptionKey: "Empty response"])
+        }
         
         struct InsightDTO: Codable {
             let estimated_1rm: Double
@@ -68,7 +118,7 @@ public final class OpenAIEngine: LLMEngine, AnalysisEngine {
             let breakdown_text: String
         }
         
-        let dto = try jsonDecoder.decode(InsightDTO.self, from: contentData)
+        let dto = try jsonDecoder.decode(InsightDTO.self, from: content.data(using: .utf8)!)
         return ExerciseInsight(
             exerciseId: exerciseName,
             estimated1RM: dto.estimated_1rm,
@@ -79,20 +129,18 @@ public final class OpenAIEngine: LLMEngine, AnalysisEngine {
         )
     }
     
-    private func callOpenAI(prompt: String, userMessage: String) async throws -> String {
-        let url = URL(string: "https://api.openai.com/v1/chat/completions")!
+    private func callOpenAIResponse(apiKey: String, instructions: String, userMessage: String) async throws -> OpenAIResponse {
+        let url = URL(string: "https://api.openai.com/v1/responses")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         
-        let openAIRequest = OpenAIRequest(
+        let openAIRequest = OpenAIResponseRequest(
             model: "gpt-4o-mini",
-            messages: [
-                OpenAIMessage(role: "system", content: prompt),
-                OpenAIMessage(role: "user", content: userMessage)
-            ],
-            responseFormat: OpenAIResponseFormat(type: "json_object")
+            input: .string("\(userMessage)\n\nOutput in JSON format."),
+            instructions: instructions,
+            text: .init(format: .init(type: "json_object"))
         )
         
         request.httpBody = try JSONEncoder().encode(openAIRequest)
@@ -100,45 +148,59 @@ public final class OpenAIEngine: LLMEngine, AnalysisEngine {
         let (data, response) = try await session.data(for: request)
         
         if let httpResponse = response as? HTTPURLResponse, !(200...299).contains(httpResponse.statusCode) {
-            throw NSError(domain: "OpenAIEngine", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "Server error"])
+            let errorBody = String(data: data, encoding: .utf8) ?? "Unknown error"
+            throw NSError(domain: "OpenAIEngine", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: "Server error: \(errorBody)"])
         }
         
-        let openAIResponse = try JSONDecoder().decode(OpenAIResponse.self, from: data)
-        
-        guard let content = openAIResponse.choices.first?.message.content else {
-            throw NSError(domain: "OpenAIEngine", code: 0, userInfo: [NSLocalizedDescriptionKey: "No data"])
-        }
-        
-        return content
+        return try jsonDecoder.decode(OpenAIResponse.self, from: data)
     }
 }
 
-// MARK: - OpenAI DTOs (Internal)
+// MARK: - OpenAI Responses API DTOs
 
-private struct OpenAIRequest: Codable {
+private struct OpenAIResponseRequest: Codable {
     let model: String
-    let messages: [OpenAIMessage]
-    let responseFormat: OpenAIResponseFormat
+    let input: OpenAIInput
+    let instructions: String
+    let text: OpenAITextConfig
+}
+
+private enum OpenAIInput: Codable {
+    case string(String)
     
-    enum CodingKeys: String, CodingKey {
-        case model, messages
-        case responseFormat = "response_format"
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        switch self {
+        case .string(let s): try container.encode(s)
+        }
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        self = .string(try container.decode(String.self))
     }
 }
 
-private struct OpenAIMessage: Codable {
-    let role: String
-    let content: String
+private struct OpenAITextConfig: Codable {
+    let format: OpenAIFormatConfig
 }
 
-private struct OpenAIResponseFormat: Codable {
+private struct OpenAIFormatConfig: Codable {
     let type: String
 }
 
 private struct OpenAIResponse: Codable {
-    let choices: [OpenAIChoice]
+    let id: String?
+    let output: [OpenAIOutputItem]
 }
 
-private struct OpenAIChoice: Codable {
-    let message: OpenAIMessage
+private struct OpenAIOutputItem: Codable {
+    let id: String?
+    let type: String?
+    let content: [OpenAIContentPart]?
+}
+
+private struct OpenAIContentPart: Codable {
+    let type: String
+    let text: String
 }

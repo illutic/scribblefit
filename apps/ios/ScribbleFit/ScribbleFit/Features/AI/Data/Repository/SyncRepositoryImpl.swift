@@ -8,9 +8,15 @@ import BackgroundTasks
 @MainActor
 public final class SyncRepositoryImpl: SyncRepository {
     private let database: ScribbleFitDatabase
+    private var syncWorkoutUseCase: SyncWorkoutUseCase?
     
     public init(database: ScribbleFitDatabase = .shared) {
         self.database = database
+    }
+    
+    // Lazy injection to avoid circular dependency if any
+    public func setSyncWorkoutUseCase(_ useCase: SyncWorkoutUseCase) {
+        self.syncWorkoutUseCase = useCase
     }
     
     public func getPendingSyncItems() async throws -> [AISyncItem] {
@@ -43,12 +49,12 @@ public final class SyncRepositoryImpl: SyncRepository {
     }
     
     private func triggerImmediateSync() {
-        // Trigger a background task or use a simple Task for immediate processing
-        // On iOS, we often use a combination of BackgroundTasks and immediate execution
         Task {
-            // In a real implementation, this would call the SyncWorkoutUseCase
-            // Or notify a background coordinator
-            print("Sync triggered for new scribble")
+            do {
+                try await syncWorkoutUseCase?.execute()
+            } catch {
+                print("Error executing sync: \(error)")
+            }
         }
     }
 }

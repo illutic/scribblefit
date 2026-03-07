@@ -8,5 +8,5 @@ public enum LLMProvider: String, Codable, Sendable {
 }
 
 public protocol LLMEngine: Sendable {
-    func parseWorkout(rawText: String) async throws -> ParsedWorkout
+    func parseWorkout(rawText: String) async -> ParsedWorkoutResult
 }
