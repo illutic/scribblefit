@@ -10,6 +10,7 @@ struct ScribbleFitApp: App {
     private let ledgerRepository: LedgerRepository
     private let authRepository: AuthRepository
     private let configRepository: ConfigRepository
+    private let analysisRepository: AnalysisRepository
     
     init() {
         // In a real app, we'd use a proper DI container
@@ -21,11 +22,13 @@ struct ScribbleFitApp: App {
         let ledgerRepo = LedgerRepositoryImpl(database: database)
         let authRepo = AuthRepositoryImpl(networkClient: network, secureKeyStorage: keychain)
         let configRepo = ConfigRepositoryImpl(networkClient: network, database: database)
+        let analysisRepo = AnalysisRepositoryImpl(database: database)
         
         self.syncRepository = syncRepo
         self.ledgerRepository = ledgerRepo
         self.authRepository = authRepo
         self.configRepository = configRepo
+        self.analysisRepository = analysisRepo
         
         _appViewModel = StateObject(wrappedValue: AppViewModel(
             authRepository: authRepo,
