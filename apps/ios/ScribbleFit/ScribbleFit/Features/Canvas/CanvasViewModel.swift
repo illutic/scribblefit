@@ -60,6 +60,53 @@ public final class CanvasViewModel: ObservableObject {
         
         refreshFeed()
         refreshSuggestion()
+        
+        Task {
+            if try await canvasRepository.getFeed().isEmpty {
+                await seedTestData()
+            }
+        }
+    }
+    
+    private func seedTestData() async {
+        let now = Date()
+        
+        // 1. Initial AI Prompt
+        try? await canvasRepository.addScribble(rawText: "Ready for a Push day? 💪")
+        
+        // 2. A completed scribble
+        let scribbleId = UUID().uuidString
+        try? await canvasRepository.addScribble(rawText: "Bench 135x5, 135x5")
+        
+        // 3. A confirmation card
+        try? await canvasRepository.addConfirmation(item: ConfirmationItem(
+            id: UUID().uuidString,
+            timestamp: now.addingTimeInterval(1),
+            workout: ParsedWorkout(
+                date: "2024-05-20",
+                location: "Home Gym",
+                exercises: [
+                    ParsedExercise(
+                        canonicalName: "Bench Press",
+                        sets: [
+                            ParsedSet(weight: 135.0, reps: 5),
+                            ParsedSet(weight: 135.0, reps: 5)
+                        ]
+                    )
+                ]
+            ),
+            scribbleId: scribbleId
+        ))
+        
+        // 4. An insight
+        try? await canvasRepository.addInsight(item: InsightItem(
+            id: UUID().uuidString,
+            timestamp: now.addingTimeInterval(2),
+            text: "New Volume PR on Bench! 🔥",
+            emoji: "🏆"
+        ))
+        
+        refreshFeed()
     }
     
     public func refreshFeed() {
@@ -139,7 +186,6 @@ public final class CanvasViewModel: ObservableObject {
                     emoji: "✅"
                 ))
                 try await canvasRepository.removeFeedItem(id: confirmation.id)
-                try await canvasRepository.removeFeedItem(id: confirmation.scribbleId)
                 refreshFeed()
             } catch {
                 print("Failed to confirm workout: \(error)")
