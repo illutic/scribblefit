@@ -71,14 +71,11 @@ public final class CanvasViewModel: ObservableObject {
     private func seedTestData() async {
         let now = Date()
         
-        // 1. Initial AI Prompt
         try? await canvasRepository.addScribble(rawText: "Ready for a Push day? 💪")
         
-        // 2. A completed scribble
         let scribbleId = UUID().uuidString
         try? await canvasRepository.addScribble(rawText: "Bench 135x5, 135x5")
         
-        // 3. A confirmation card
         try? await canvasRepository.addConfirmation(item: ConfirmationItem(
             id: UUID().uuidString,
             timestamp: now.addingTimeInterval(1),
@@ -98,7 +95,6 @@ public final class CanvasViewModel: ObservableObject {
             scribbleId: scribbleId
         ))
         
-        // 4. An insight
         try? await canvasRepository.addInsight(item: InsightItem(
             id: UUID().uuidString,
             timestamp: now.addingTimeInterval(2),
@@ -189,25 +185,6 @@ public final class CanvasViewModel: ObservableObject {
                 refreshFeed()
             } catch {
                 print("Failed to confirm workout: \(error)")
-            }
-        }
-    }
-
-    public func onEditClick(confirmation: ConfirmationItem) {
-        if let scribble = uiState.feedItems.compactMap({ item -> ScribbleItem? in
-            if case .scribble(let s) = item, s.id == confirmation.scribbleId { return s }
-            return nil
-        }).first {
-            uiState.scribbleText = scribble.rawText
-        }
-        
-        Task {
-            do {
-                try await canvasRepository.removeFeedItem(id: confirmation.id)
-                try await canvasRepository.removeFeedItem(id: confirmation.scribbleId)
-                refreshFeed()
-            } catch {
-                print("Failed to remove items for edit: \(error)")
             }
         }
     }

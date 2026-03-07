@@ -73,8 +73,7 @@ fun ContextualInsightCard(text: String) {
 fun FeedItemRow(
     item: FeedItem,
     onRetry: (String) -> Unit = {},
-    onConfirmClick: (FeedItem.Confirmation) -> Unit = {},
-    onEditClick: (FeedItem.Confirmation) -> Unit = {}
+    onConfirmClick: (FeedItem.Confirmation) -> Unit = {}
 ) {
     Box(
         modifier = Modifier
@@ -88,7 +87,7 @@ fun FeedItemRow(
         when (item) {
             is FeedItem.Prompt -> PromptBubble(item)
             is FeedItem.Scribble -> ScribbleBubble(item, onRetry)
-            is FeedItem.Confirmation -> ConfirmationCard(item, onConfirmClick, onEditClick)
+            is FeedItem.Confirmation -> ConfirmationCard(item, onConfirmClick)
             is FeedItem.Insight -> InsightBubble(item)
         }
     }
@@ -161,8 +160,7 @@ private fun ScribbleBubble(
 @Composable
 private fun ConfirmationCard(
     item: FeedItem.Confirmation,
-    onConfirmClick: (FeedItem.Confirmation) -> Unit,
-    onEditClick: (FeedItem.Confirmation) -> Unit
+    onConfirmClick: (FeedItem.Confirmation) -> Unit
 ) {
     ScribbleFitCard(
         modifier = Modifier.fillMaxWidth(0.9f),
@@ -185,10 +183,6 @@ private fun ConfirmationCard(
                 text = "Confirm", 
                 onClick = { onConfirmClick(item) }, 
                 containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
-            )
-            ScribbleFitPill(
-                text = "Edit", 
-                onClick = { onEditClick(item) }
             )
         }
     }
@@ -250,7 +244,11 @@ fun ScribbleInputPill(
     val infiniteTransition = rememberInfiniteTransition(label = "pulse")
     val scale by infiniteTransition.animateFloat(
         initialValue = 1f,
-        targetValue = if (isRecording) 1.2f else 1f,
+        targetValue = if (isRecording) {
+            1.2f
+        } else {
+            1f
+        },
         animationSpec = infiniteRepeatable(
             animation = tween(500, easing = LinearEasing),
             repeatMode = RepeatMode.Reverse

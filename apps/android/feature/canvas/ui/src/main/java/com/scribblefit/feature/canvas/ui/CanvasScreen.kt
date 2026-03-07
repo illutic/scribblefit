@@ -84,8 +84,7 @@ fun CanvasScreen(
                     FeedItemRow(
                         item = item,
                         onRetry = viewModel::onRetryScribble,
-                        onConfirmClick = viewModel::onConfirmClick,
-                        onEditClick = viewModel::onEditClick
+                        onConfirmClick = viewModel::onConfirmClick
                     )
                 }
                 
