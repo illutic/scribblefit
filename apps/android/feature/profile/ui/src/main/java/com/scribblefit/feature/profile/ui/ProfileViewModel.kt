@@ -21,21 +21,10 @@ data class ProfileUiState(
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
-    private val userRepository: UserRepository,
-    private val navigator: com.scribblefit.core.navigation.Navigator
+    private val userRepository: UserRepository
 ) : ViewModel() {
 
     val uiState: StateFlow<ProfileUiState> = userRepository.getUserStats()
-        .map { stats ->
-            ProfileUiState(stats = stats, isLoading = false)
-        }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(FLOW_TIMEOUT_MS),
-            initialValue = ProfileUiState()
-        )
-
-    fun onSettingsClick() {
-        navigator.navigateTo(com.scribblefit.core.navigation.Screen.Settings)
-    }
+        .map { stats -> ProfileUiState(stats = stats, isLoading = false) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(FLOW_TIMEOUT_MS), ProfileUiState())
 }

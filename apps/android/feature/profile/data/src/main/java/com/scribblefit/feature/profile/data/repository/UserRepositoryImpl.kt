@@ -13,14 +13,13 @@ class UserRepositoryImpl @Inject constructor(
     private val ledgerRepository: LedgerRepository
 ) : UserRepository {
 
-    override fun getUserStats(): Flow<UserStats> {
-        return ledgerRepository.getWorkoutHistory().map { history ->
+    override fun getUserStats(): Flow<UserStats> =
+        ledgerRepository.getWorkoutHistory().map { history ->
             UserStats(
                 totalWorkouts = history.size,
                 lifetimeVolume = history.sumOf { it.totalVolume },
-                prCount = 0, // Logic for PR calculation would go here
-                joinDate = history.minByOrNull { it.date }?.date ?: System.currentTimeMillis()
+                prCount = 0,
+                joinDate = history.minOfOrNull { it.date } ?: System.currentTimeMillis()
             )
         }
-    }
 }

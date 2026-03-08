@@ -1,8 +1,8 @@
 package com.scribblefit.feature.profile.data.repository
 
-import com.scribblefit.core.database.ScribbleFitDatabase
-import com.scribblefit.feature.ai.domain.engine.ConfigRepository
-import com.scribblefit.feature.ai.domain.model.DEFAULT_PROMPT
+import com.scribblefit.core.database.dao.SystemConfigDao
+import com.scribblefit.core.database.entity.SystemConfigEntity
+import com.scribblefit.feature.ai.domain.model.LLMProvider
 import com.scribblefit.feature.ai.domain.model.SystemConfig
 import com.scribblefit.feature.profile.domain.model.AppSettings
 import com.scribblefit.feature.profile.domain.model.ParsingMode
@@ -10,54 +10,48 @@ import com.scribblefit.feature.profile.domain.model.ThemePreference
 import com.scribblefit.feature.profile.domain.model.WeightUnit
 import com.scribblefit.feature.profile.domain.repository.SettingsRepository
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 import javax.inject.Singleton
 
 @Singleton
 class SettingsRepositoryImpl @Inject constructor(
-    private val configRepository: ConfigRepository,
-    private val database: ScribbleFitDatabase
+    private val systemConfigDao: SystemConfigDao
 ) : SettingsRepository {
 
-    override fun getSettings(): Flow<AppSettings> {
-        return configRepository.getConfig().map { config ->
-            AppSettings(
-                parsingMode = ParsingMode.valueOf(config?.parsingMode ?: "CLOUD"),
-                aiProvider = config?.preferredLlmProvider
-                    ?: com.scribblefit.feature.ai.domain.model.LLMProvider.PROXY,
-                weightUnit = WeightUnit.valueOf(config?.weightUnit ?: "LBS"),
-                themePreference = ThemePreference.valueOf(config?.themePreference ?: "SYSTEM"),
-                selectedModel = config?.preferredModel ?: ""
-            )
+    override fun getSettings(): Flow<AppSettings> =
+        systemConfigDao.observe().map { entity ->
+            entity?.toAppSettings() ?: AppSettings()
         }
-    }
 
     override suspend fun updateSettings(settings: AppSettings) {
-        val currentConfig = configRepository.getConfig().first()
-        val newConfig = (currentConfig ?: SystemConfig(
-            promptVersion = "1.0.0",
-            promptText = DEFAULT_PROMPT,
-            exerciseVersion = "0.0.0",
-            preferredLlmProvider = settings.aiProvider,
+        val existing = systemConfigDao.get()
+        val entity = SystemConfigEntity(
+            id = "config",
+            promptVersion = existing?.promptVersion ?: "1.0.0",
+            promptText = existing?.promptText ?: SystemConfig.defaultPrompt,
+            exerciseVersion = existing?.exerciseVersion ?: "0.0.0",
+            preferredLlmProvider = settings.aiProvider.rawValue,
             preferredModel = settings.selectedModel,
-            parsingMode = settings.parsingMode.name,
-            weightUnit = settings.weightUnit.name,
-            themePreference = settings.themePreference.name,
-            updatedAt = System.currentTimeMillis()
-        )).copy(
-            preferredLlmProvider = settings.aiProvider,
-            preferredModel = settings.selectedModel,
-            parsingMode = settings.parsingMode.name,
-            weightUnit = settings.weightUnit.name,
-            themePreference = settings.themePreference.name,
+            parsingMode = settings.parsingMode.name.lowercase(),
+            weightUnit = settings.weightUnit.name.lowercase(),
+            themePreference = settings.themePreference.name.lowercase(),
             updatedAt = System.currentTimeMillis()
         )
-        configRepository.updateConfig(newConfig)
+        systemConfigDao.upsert(entity)
     }
 
     override suspend fun clearAllData() {
-        database.clearAllTables()
+        systemConfigDao.deleteAll()
     }
+
+    private fun SystemConfigEntity.toAppSettings(): AppSettings = AppSettings(
+        parsingMode = if (parsingMode == "personal") ParsingMode.PERSONAL else ParsingMode.CLOUD,
+        aiProvider = LLMProvider.entries.find { it.rawValue == preferredLlmProvider } ?: LLMProvider.PROXY,
+        weightUnit = if (weightUnit == "kg") WeightUnit.KG else WeightUnit.LBS,
+        themePreference = ThemePreference.entries.find {
+            it.name.equals(themePreference, ignoreCase = true)
+        } ?: ThemePreference.SYSTEM,
+        selectedModel = preferredModel
+    )
 }

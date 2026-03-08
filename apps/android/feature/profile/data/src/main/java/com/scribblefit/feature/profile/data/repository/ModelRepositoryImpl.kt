@@ -1,69 +1,50 @@
 package com.scribblefit.feature.profile.data.repository
 
-import androidx.annotation.OptIn
 import com.scribblefit.feature.ai.domain.model.LLMProvider
 import com.scribblefit.feature.profile.domain.repository.ModelRepository
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.header
-import kotlinx.serialization.InternalSerializationApi
+import io.ktor.http.HttpHeaders
 import kotlinx.serialization.Serializable
 import javax.inject.Inject
-import javax.inject.Named
 import javax.inject.Singleton
+
+private const val OPENAI_MODELS_URL = "https://api.openai.com/v1/models"
+private const val GEMINI_MODELS_URL = "https://generativelanguage.googleapis.com/v1beta/models"
 
 @Singleton
 class ModelRepositoryImpl @Inject constructor(
-    @Named("base") private val client: HttpClient
+    private val httpClient: HttpClient
 ) : ModelRepository {
 
-    override suspend fun fetchModels(provider: LLMProvider, apiKey: String): List<String> {
-        return when (provider) {
+    override suspend fun fetchModels(provider: LLMProvider, apiKey: String): List<String> =
+        when (provider) {
             LLMProvider.OPENAI -> fetchOpenAIModels(apiKey)
             LLMProvider.GEMINI -> fetchGeminiModels(apiKey)
             else -> emptyList()
         }
-    }
 
-    private suspend fun fetchOpenAIModels(apiKey: String): List<String> {
-        @Serializable
-        @OptIn(InternalSerializationApi::class)
-        data class ModelItem(val id: String)
-
-        @Serializable
-        @OptIn(InternalSerializationApi::class)
-        data class ModelList(val data: List<ModelItem>)
-
-        val response = client.get("https://api.openai.com/v1/models") {
-            header("Authorization", "Bearer $apiKey")
-        }.body<ModelList>()
-
-        return response.data
+    private suspend fun fetchOpenAIModels(apiKey: String): List<String> = runCatching {
+        @Serializable data class ModelData(val id: String)
+        @Serializable data class ModelsResponse(val data: List<ModelData>)
+        val response = httpClient.get(OPENAI_MODELS_URL) {
+            header(HttpHeaders.Authorization, "Bearer $apiKey")
+        }
+        response.body<ModelsResponse>().data
             .map { it.id }
-            .filter { it.startsWith("gpt-") || it.startsWith("o1") || it.startsWith("o3") }
+            .filter { id -> id.startsWith("gpt-") || id.startsWith("o1") || id.startsWith("o3") }
             .sorted()
-    }
+    }.getOrDefault(emptyList())
 
-    private suspend fun fetchGeminiModels(apiKey: String): List<String> {
-        @Serializable
-        @OptIn(InternalSerializationApi::class)
-        data class ModelItem(
-            val name: String,
-            val supportedGenerationMethods: List<String> = emptyList()
-        )
-
-        @Serializable
-        @OptIn(InternalSerializationApi::class)
-        data class ModelList(val models: List<ModelItem>)
-
-        val response =
-            client.get("https://generativelanguage.googleapis.com/v1beta/models?key=$apiKey")
-                .body<ModelList>()
-
-        return response.models
+    private suspend fun fetchGeminiModels(apiKey: String): List<String> = runCatching {
+        @Serializable data class GeminiModel(val name: String, val supportedGenerationMethods: List<String>)
+        @Serializable data class GeminiModelsResponse(val models: List<GeminiModel>)
+        val response = httpClient.get("$GEMINI_MODELS_URL?key=$apiKey")
+        response.body<GeminiModelsResponse>().models
             .filter { it.supportedGenerationMethods.contains("generateContent") }
-            .map { it.name }
+            .map { it.name.removePrefix("models/") }
             .sorted()
-    }
+    }.getOrDefault(emptyList())
 }

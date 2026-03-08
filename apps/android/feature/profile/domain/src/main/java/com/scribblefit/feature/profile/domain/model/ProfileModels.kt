@@ -1,5 +1,7 @@
 package com.scribblefit.feature.profile.domain.model
 
+import com.scribblefit.feature.ai.domain.model.LLMProvider
+
 data class UserStats(
     val totalWorkouts: Int,
     val lifetimeVolume: Double,
@@ -8,10 +10,10 @@ data class UserStats(
 )
 
 data class AppSettings(
-    val parsingMode: ParsingMode,
-    val aiProvider: com.scribblefit.feature.ai.domain.model.LLMProvider,
-    val weightUnit: WeightUnit,
-    val themePreference: ThemePreference,
+    val parsingMode: ParsingMode = ParsingMode.CLOUD,
+    val aiProvider: LLMProvider = LLMProvider.PROXY,
+    val weightUnit: WeightUnit = WeightUnit.LBS,
+    val themePreference: ThemePreference = ThemePreference.SYSTEM,
     val selectedModel: String = ""
 )
 
