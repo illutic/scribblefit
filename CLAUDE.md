@@ -43,6 +43,7 @@ The project structure is planned to be scaffolded into `apps/` and `api/` direct
 - **Assume Offline:** Always read/write to the local database first.
 - **Native Performance:** Avoid web-views or cross-platform wrappers.
 - **Sync Logic:** All AI parsing must happen through the background sync queue to ensure offline resilience.
+- **Bite-sized Changes:** All code changes must be scoped to a single concern (one feature, one bug fix, one refactor). Never bundle unrelated changes. Each PR/commit should be independently reviewable in under 10 minutes.
 
 ## 🗂️ Key Documentation
 - `specs/` Specifications folder for all feature specs
