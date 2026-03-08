@@ -11,7 +11,8 @@ data class AppSettings(
     val parsingMode: ParsingMode,
     val aiProvider: com.scribblefit.feature.ai.domain.model.LLMProvider,
     val weightUnit: WeightUnit,
-    val themePreference: ThemePreference
+    val themePreference: ThemePreference,
+    val selectedModel: String = ""
 )
 
 enum class ParsingMode { CLOUD, PERSONAL }

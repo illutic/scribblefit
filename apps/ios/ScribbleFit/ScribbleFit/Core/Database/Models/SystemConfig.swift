@@ -8,17 +8,19 @@ public final class SystemConfig: @unchecked Sendable {
     public var promptText: String
     public var exerciseVersion: String
     public var preferredLlmProvider: String
+    public var preferredModel: String
     public var parsingMode: String
     public var weightUnit: String
     public var themePreference: String
     public var updatedAt: Date
-    
+
     public init(
         id: String = "config",
         promptVersion: String,
         promptText: String,
         exerciseVersion: String = "0.0.0",
         preferredLlmProvider: String = "proxy",
+        preferredModel: String = "",
         parsingMode: String = "managed",
         weightUnit: String = "lbs",
         themePreference: String = "system",
@@ -29,6 +31,7 @@ public final class SystemConfig: @unchecked Sendable {
         self.promptText = promptText
         self.exerciseVersion = exerciseVersion
         self.preferredLlmProvider = preferredLlmProvider
+        self.preferredModel = preferredModel
         self.parsingMode = parsingMode
         self.weightUnit = weightUnit
         self.themePreference = themePreference

@@ -151,24 +151,29 @@ public actor GeminiAIEngine: LLMEngine, AnalysisEngine {
     }
     
     private func getOrDiscoverModel(apiKey: String) async throws -> String {
+        // If user has explicitly selected a model, use it
+        let config = await configRepository.getConfig()
+        if let selected = config?.preferredModel, !selected.isEmpty {
+            activeModelPath = selected
+            return selected
+        }
+
         if let path = activeModelPath {
             return path
         }
-        
+
         let url = URL(string: "\(apiBase)/models?key=\(apiKey)")!
         let (data, _) = try await session.data(from: url)
         let response = try JSONDecoder().decode(GeminiModelListResponse.self, from: data)
-        
+
         let model = response.models
             .filter { $0.supportedGenerationMethods.contains("generateContent") }
             .filter { $0.name.localizedCaseInsensitiveContains("flash") }
             .sorted { $0.name > $1.name }
             .first
-        
+
         let path = model?.name ?? "models/gemini-1.5-flash"
-        
         activeModelPath = path
-        
         return path
     }
     

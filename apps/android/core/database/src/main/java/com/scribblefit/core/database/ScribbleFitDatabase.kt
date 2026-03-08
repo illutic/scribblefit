@@ -15,7 +15,7 @@ import com.scribblefit.core.database.model.*
         SystemConfigEntity::class,
         InsightsCacheEntity::class
     ],
-    version = 1,
+    version = 2,
     exportSchema = true
 )
 @TypeConverters(Converters::class)

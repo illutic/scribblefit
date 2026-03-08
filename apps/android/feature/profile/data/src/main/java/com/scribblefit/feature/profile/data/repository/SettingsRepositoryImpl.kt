@@ -24,7 +24,8 @@ class SettingsRepositoryImpl @Inject constructor(
                 parsingMode = ParsingMode.valueOf(config?.parsingMode ?: "CLOUD"),
                 aiProvider = config?.preferredLlmProvider ?: com.scribblefit.feature.ai.domain.model.LLMProvider.PROXY,
                 weightUnit = WeightUnit.valueOf(config?.weightUnit ?: "LBS"),
-                themePreference = ThemePreference.valueOf(config?.themePreference ?: "SYSTEM")
+                themePreference = ThemePreference.valueOf(config?.themePreference ?: "SYSTEM"),
+                selectedModel = config?.preferredModel ?: ""
             )
         }
     }
@@ -36,12 +37,14 @@ class SettingsRepositoryImpl @Inject constructor(
             promptText = DEFAULT_PROMPT,
             exerciseVersion = "0.0.0",
             preferredLlmProvider = settings.aiProvider,
+            preferredModel = settings.selectedModel,
             parsingMode = settings.parsingMode.name,
             weightUnit = settings.weightUnit.name,
             themePreference = settings.themePreference.name,
             updatedAt = System.currentTimeMillis()
         )).copy(
             preferredLlmProvider = settings.aiProvider,
+            preferredModel = settings.selectedModel,
             parsingMode = settings.parsingMode.name,
             weightUnit = settings.weightUnit.name,
             themePreference = settings.themePreference.name,

@@ -1,6 +1,5 @@
 package com.scribblefit.feature.profile.ui
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -52,46 +51,63 @@ fun SettingsScreen(
         ) {
             // AI Engine Section
             SectionHeader("AI ENGINE")
-            
-            PreferenceItem("Parsing Mode") {
-                SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                    SegmentedButton(
-                        selected = uiState.settings.parsingMode == ParsingMode.CLOUD,
-                        onClick = { viewModel.updateParsingMode(ParsingMode.CLOUD) },
-                        shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2)
-                    ) { Text("Cloud") }
-                    SegmentedButton(
-                        selected = uiState.settings.parsingMode == ParsingMode.PERSONAL,
-                        onClick = { viewModel.updateParsingMode(ParsingMode.PERSONAL) },
-                        shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2)
-                    ) { Text("BYOK") }
-                }
+
+            PreferenceItem("Provider") {
+                ProviderDropdown(
+                    selected = uiState.settings.aiProvider,
+                    onSelect = viewModel::updateProvider
+                )
             }
 
-            if (uiState.settings.parsingMode == ParsingMode.PERSONAL) {
+            val provider = uiState.settings.aiProvider
+            if (provider == LLMProvider.OPENAI || provider == LLMProvider.GEMINI) {
                 Spacer(modifier = Modifier.height(ScribbleFitSpacing.Medium))
-                Text(text = "API Key", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    text = "API Key",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
                 Spacer(modifier = Modifier.height(4.dp))
                 ScribbleFitTextField(
                     value = uiState.apiKey,
                     onValueChange = viewModel::updateApiKey,
-                    placeholder = "sk-...",
+                    placeholder = if (provider == LLMProvider.OPENAI) "sk-..." else "AIza...",
                     modifier = Modifier.fillMaxWidth()
                 )
-                
+
                 Spacer(modifier = Modifier.height(ScribbleFitSpacing.Medium))
-                PreferenceItem("AI Provider") {
-                    SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-                        SegmentedButton(
-                            selected = uiState.settings.aiProvider == LLMProvider.OPENAI,
-                            onClick = { viewModel.updateProvider(LLMProvider.OPENAI) },
-                            shape = SegmentedButtonDefaults.itemShape(index = 0, count = 2)
-                        ) { Text("OpenAI") }
-                        SegmentedButton(
-                            selected = uiState.settings.aiProvider == LLMProvider.GEMINI,
-                            onClick = { viewModel.updateProvider(LLMProvider.GEMINI) },
-                            shape = SegmentedButtonDefaults.itemShape(index = 1, count = 2)
-                        ) { Text("Gemini") }
+                PreferenceItem("Model") {
+                    when {
+                        uiState.isLoadingModels -> {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                                Spacer(modifier = Modifier.width(8.dp))
+                                Text("Loading models...", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                            }
+                        }
+                        uiState.availableModels.isEmpty() -> {
+                            TextButton(
+                                onClick = viewModel::fetchModels,
+                                contentPadding = PaddingValues(0.dp)
+                            ) {
+                                Text(
+                                    text = when {
+                                        uiState.apiKey.isEmpty() -> "Enter API key to load models"
+                                        uiState.modelLoadError != null -> uiState.modelLoadError!!
+                                        else -> "Tap to load models"
+                                    },
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = if (uiState.modelLoadError != null) Color(0xFFFF3B30) else MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
+                        else -> {
+                            ModelDropdown(
+                                selected = uiState.settings.selectedModel.ifEmpty { uiState.availableModels.firstOrNull() ?: "" },
+                                models = uiState.availableModels,
+                                onSelect = viewModel::updateModel
+                            )
+                        }
                     }
                 }
             }
@@ -100,7 +116,7 @@ fun SettingsScreen(
 
             // Preferences Section
             SectionHeader("PREFERENCES")
-            
+
             PreferenceItem("Weight Units") {
                 SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
                     SegmentedButton(
@@ -133,8 +149,75 @@ fun SettingsScreen(
                     textAlign = androidx.compose.ui.text.style.TextAlign.Start
                 )
             }
-            
+
             Spacer(modifier = Modifier.height(ScribbleFitSpacing.Huge))
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ProviderDropdown(
+    selected: LLMProvider,
+    onSelect: (LLMProvider) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+    val options = listOf(
+        LLMProvider.PROXY to "ScribbleFit AI",
+        LLMProvider.OPENAI to "OpenAI",
+        LLMProvider.GEMINI to "Gemini",
+        LLMProvider.LOCAL to "Local"
+    )
+
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
+        OutlinedTextField(
+            value = options.first { it.first == selected }.second,
+            onValueChange = {},
+            readOnly = true,
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier = Modifier
+                .menuAnchor()
+                .fillMaxWidth(),
+            colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors()
+        )
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            options.forEach { (provider, label) ->
+                DropdownMenuItem(
+                    text = { Text(label) },
+                    onClick = { onSelect(provider); expanded = false }
+                )
+            }
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun ModelDropdown(
+    selected: String,
+    models: List<String>,
+    onSelect: (String) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+
+    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
+        OutlinedTextField(
+            value = selected,
+            onValueChange = {},
+            readOnly = true,
+            trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+            modifier = Modifier
+                .menuAnchor()
+                .fillMaxWidth(),
+            colors = ExposedDropdownMenuDefaults.outlinedTextFieldColors()
+        )
+        ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+            models.forEach { model ->
+                DropdownMenuItem(
+                    text = { Text(model) },
+                    onClick = { onSelect(model); expanded = false }
+                )
+            }
         }
     }
 }

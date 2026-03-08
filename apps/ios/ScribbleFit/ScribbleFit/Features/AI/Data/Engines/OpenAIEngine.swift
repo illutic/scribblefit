@@ -22,34 +22,37 @@ public final class OpenAIEngine: LLMEngine, AnalysisEngine {
             let apiKey = try await secureKeyStorage.getApiKey() ?? ""
             let config = await configRepository.getConfig()
             let instructions = config?.promptText ?? ScribbleFitProxyEngine.defaultPrompt
-            
-            let response = try await callOpenAIResponse(apiKey: apiKey, instructions: instructions, userMessage: rawText)
+            let modelName = (config?.preferredModel.isEmpty == false) ? config!.preferredModel : "gpt-4o-mini"
+
+            let response = try await callOpenAIResponse(apiKey: apiKey, instructions: instructions, userMessage: rawText, model: modelName)
             let duration = Int64(Date().timeIntervalSince(startTime) * 1000)
-            
+
             guard let content = response.output.first(where: { $0.type == "message" })?.content?.first(where: { $0.type == "text" })?.text else {
                 throw NSError(domain: "OpenAIEngine", code: 0, userInfo: [NSLocalizedDescriptionKey: "Empty response"])
             }
-            
+
             let reasoning = response.output.first(where: { $0.type == "reasoning" })?.content?.first(where: { $0.type == "text" })?.text
-            
+
             let contentData = content.data(using: .utf8)!
             let serializableWorkout = try jsonDecoder.decode(AIWorkoutDTO.self, from: contentData)
-            
+
             return ParsedWorkoutResult(
                 workout: serializableWorkout.toDomain(),
                 rawText: rawText,
                 status: .success,
-                modelUsed: "gpt-4o-mini",
+                modelUsed: modelName,
                 processingTimeMs: duration,
                 reasoning: reasoning
             )
         } catch {
             let duration = Int64(Date().timeIntervalSince(startTime) * 1000)
+            let config = await configRepository.getConfig()
+            let modelName = (config?.preferredModel.isEmpty == false) ? config!.preferredModel : "gpt-4o-mini"
             return ParsedWorkoutResult(
                 workout: nil,
                 rawText: rawText,
                 status: .failure,
-                modelUsed: "gpt-4o-mini",
+                modelUsed: modelName,
                 processingTimeMs: duration,
                 error: error.localizedDescription
             )
@@ -129,15 +132,15 @@ public final class OpenAIEngine: LLMEngine, AnalysisEngine {
         )
     }
     
-    private func callOpenAIResponse(apiKey: String, instructions: String, userMessage: String) async throws -> OpenAIResponse {
+    private func callOpenAIResponse(apiKey: String, instructions: String, userMessage: String, model: String = "gpt-4o-mini") async throws -> OpenAIResponse {
         let url = URL(string: "https://api.openai.com/v1/responses")!
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
         request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-        
+
         let openAIRequest = OpenAIResponseRequest(
-            model: "gpt-4o-mini",
+            model: model,
             input: .string("\(userMessage)\n\nOutput in JSON format."),
             instructions: instructions,
             text: .init(format: .init(type: "json_object"))

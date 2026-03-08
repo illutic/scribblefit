@@ -24,7 +24,7 @@ object DatabaseModule {
             context,
             ScribbleFitDatabase::class.java,
             "scribblefit-database"
-        ).build()
+        ).fallbackToDestructiveMigration().build()
     }
 
     @Provides

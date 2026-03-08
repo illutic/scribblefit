@@ -17,12 +17,14 @@ data class SystemConfigEntity(
     val exerciseVersion: String = "0.0.0",
     @ColumnInfo(name = "preferred_llm_provider")
     val preferredLlmProvider: LLMProvider = LLMProvider.PROXY,
+    @ColumnInfo(name = "preferred_model", defaultValue = "")
+    val preferredModel: String = "",
     @ColumnInfo(name = "parsing_mode")
-    val parsingMode: String = "CLOUD", // CLOUD, PERSONAL
+    val parsingMode: String = "CLOUD",
     @ColumnInfo(name = "weight_unit")
-    val weightUnit: String = "LBS", // LBS, KG
+    val weightUnit: String = "LBS",
     @ColumnInfo(name = "theme_preference")
-    val themePreference: String = "SYSTEM", // LIGHT, DARK, SYSTEM
+    val themePreference: String = "SYSTEM",
     @ColumnInfo(name = "updated_at")
     val updatedAt: Long
 )

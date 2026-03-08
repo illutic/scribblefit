@@ -5,7 +5,7 @@ public struct UserStats: Sendable {
     public let lifetimeVolume: Double
     public let prCount: Int
     public let joinDate: Date
-    
+
     public init(totalWorkouts: Int, lifetimeVolume: Double, prCount: Int, joinDate: Date) {
         self.totalWorkouts = totalWorkouts
         self.lifetimeVolume = lifetimeVolume
@@ -19,12 +19,20 @@ public struct AppSettings: Sendable {
     public let aiProvider: LLMProvider
     public let weightUnit: WeightUnit
     public let themePreference: ThemePreference
-    
-    public init(parsingMode: ParsingMode, aiProvider: LLMProvider, weightUnit: WeightUnit, themePreference: ThemePreference) {
+    public let selectedModel: String?
+
+    public init(
+        parsingMode: ParsingMode,
+        aiProvider: LLMProvider,
+        weightUnit: WeightUnit,
+        themePreference: ThemePreference,
+        selectedModel: String? = nil
+    ) {
         self.parsingMode = parsingMode
         self.aiProvider = aiProvider
         self.weightUnit = weightUnit
         self.themePreference = themePreference
+        self.selectedModel = selectedModel
     }
 }
 

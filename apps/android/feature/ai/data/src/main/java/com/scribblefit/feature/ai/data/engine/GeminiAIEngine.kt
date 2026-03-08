@@ -96,6 +96,13 @@ class GeminiAIEngine @Inject constructor(
     }
 
     private suspend fun getOrDiscoverModel(apiKey: String): String {
+        // If user has explicitly selected a model, use it
+        val configuredModel = configRepository.getConfig().first()?.preferredModel
+        if (!configuredModel.isNullOrEmpty()) {
+            activeModelPath = configuredModel
+            return configuredModel
+        }
+
         modelMutex.withLock {
             if (activeModelPath != null) return activeModelPath!!
             

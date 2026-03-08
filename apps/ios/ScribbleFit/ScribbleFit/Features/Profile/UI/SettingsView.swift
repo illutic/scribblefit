@@ -2,63 +2,115 @@ import SwiftUI
 
 public struct SettingsView: View {
     @StateObject private var viewModel: SettingsViewModel
-    
+
     public init(viewModel: SettingsViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
     }
-    
+
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 32) {
                 // AI Engine
                 VStack(alignment: .leading, spacing: 16) {
                     SectionHeader("AI ENGINE")
-                    
-                    PreferenceItem(label: "Parsing Mode") {
-                        Picker("", selection: Binding(
-                            get: { viewModel.uiState.settings.parsingMode },
-                            set: { viewModel.updateParsingMode($0) }
-                        )) {
-                            Text("Cloud").tag(ParsingMode.managed)
-                            Text("BYOK").tag(ParsingMode.byok)
+
+                    PreferenceItem(label: "Provider") {
+                        Menu {
+                            Button("ScribbleFit AI") { viewModel.updateProvider(.proxy) }
+                            Button("OpenAI") { viewModel.updateProvider(.openai) }
+                            Button("Gemini") { viewModel.updateProvider(.gemini) }
+                            Button("Local") { viewModel.updateProvider(.local) }
+                        } label: {
+                            HStack {
+                                Text(providerLabel(viewModel.uiState.settings.aiProvider))
+                                    .font(ScribbleFitFont.bodyMedium())
+                                    .foregroundColor(ScribbleFitColor.primaryText)
+                                Spacer()
+                                Image(systemName: "chevron.up.chevron.down")
+                                    .font(.system(size: 12))
+                                    .foregroundColor(ScribbleFitColor.secondaryText)
+                            }
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 10)
+                            .background(ScribbleFitColor.secondaryBackground)
+                            .cornerRadius(ScribbleFitShape.medium)
                         }
-                        .pickerStyle(.segmented)
                     }
-                    
-                    if viewModel.uiState.settings.parsingMode == .byok {
+
+                    let provider = viewModel.uiState.settings.aiProvider
+                    if provider == .openai || provider == .gemini {
                         VStack(alignment: .leading, spacing: 8) {
                             Text("API Key")
                                 .font(ScribbleFitFont.labelMedium())
                                 .foregroundColor(ScribbleFitColor.secondaryText)
-                            
+
                             ScribbleFitTextField(
                                 text: Binding(
                                     get: { viewModel.uiState.apiKey },
                                     set: { viewModel.updateApiKey($0) }
                                 ),
-                                placeholder: "sk-..."
+                                placeholder: provider == .openai ? "sk-..." : "AIza..."
                             )
                         }
-                        
-                        PreferenceItem(label: "AI Provider") {
+
+                        PreferenceItem(label: "Model") {
+                            if viewModel.uiState.isLoadingModels {
+                                HStack {
+                                    ProgressView().controlSize(.small)
+                                    Text("Loading models...")
+                                        .font(ScribbleFitFont.bodyMedium())
+                                        .foregroundColor(ScribbleFitColor.secondaryText)
+                                }
+                            } else if viewModel.uiState.availableModels.isEmpty {
+                                Button(action: { Task { await viewModel.fetchModels() } }) {
+                                    Text(viewModel.uiState.apiKey.isEmpty ? "Enter API key to load models" : (viewModel.uiState.modelLoadError ?? "Tap to load models"))
+                                        .font(ScribbleFitFont.bodyMedium())
+                                        .foregroundColor(viewModel.uiState.modelLoadError != nil ? .red : ScribbleFitColor.secondaryText)
+                                }
+                            } else {
+                                Menu {
+                                    ForEach(viewModel.uiState.availableModels, id: \.self) { model in
+                                        Button(model) { viewModel.updateModel(model) }
+                                    }
+                                } label: {
+                                    HStack {
+                                        Text(viewModel.uiState.settings.selectedModel ?? viewModel.uiState.availableModels.first ?? "Select model")
+                                            .font(ScribbleFitFont.bodyMedium())
+                                            .foregroundColor(ScribbleFitColor.primaryText)
+                                        Spacer()
+                                        Image(systemName: "chevron.up.chevron.down")
+                                            .font(.system(size: 12))
+                                            .foregroundColor(ScribbleFitColor.secondaryText)
+                                    }
+                                    .padding(.horizontal, 12)
+                                    .padding(.vertical, 10)
+                                    .background(ScribbleFitColor.secondaryBackground)
+                                    .cornerRadius(ScribbleFitShape.medium)
+                                }
+                            }
+                        }
+                    }
+
+                    if provider == .proxy || provider == .local {
+                        PreferenceItem(label: "Parsing Mode") {
                             Picker("", selection: Binding(
-                                get: { viewModel.uiState.settings.aiProvider },
-                                set: { viewModel.updateProvider($0) }
+                                get: { viewModel.uiState.settings.parsingMode },
+                                set: { viewModel.updateParsingMode($0) }
                             )) {
-                                Text("OpenAI").tag(LLMProvider.openai)
-                                Text("Gemini").tag(LLMProvider.gemini)
+                                Text("Cloud").tag(ParsingMode.managed)
+                                Text("BYOK").tag(ParsingMode.byok)
                             }
                             .pickerStyle(.segmented)
                         }
                     }
                 }
-                
+
                 Divider().background(ScribbleFitColor.divider)
-                
+
                 // Preferences
                 VStack(alignment: .leading, spacing: 16) {
                     SectionHeader("PREFERENCES")
-                    
+
                     PreferenceItem(label: "Weight Units") {
                         Picker("", selection: Binding(
                             get: { viewModel.uiState.settings.weightUnit },
@@ -69,7 +121,7 @@ public struct SettingsView: View {
                         }
                         .pickerStyle(.segmented)
                     }
-                    
+
                     PreferenceItem(label: "Appearance") {
                         Picker("", selection: Binding(
                             get: { viewModel.uiState.settings.themePreference },
@@ -82,11 +134,11 @@ public struct SettingsView: View {
                         .pickerStyle(.segmented)
                     }
                 }
-                
+
                 // Danger Zone
                 VStack(alignment: .leading, spacing: 16) {
                     SectionHeader("DANGER ZONE", color: Color.red)
-                    
+
                     Button(action: viewModel.onClearDataClick) {
                         Text("Clear All Data")
                             .font(ScribbleFitFont.bodyLarge().bold())
@@ -94,7 +146,7 @@ public struct SettingsView: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
                 }
-                
+
                 Spacer()
             }
             .padding(.horizontal, ScribbleFitSpacing.screenPadding)
@@ -104,14 +156,23 @@ public struct SettingsView: View {
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.inline)
     }
-    
+
+    private func providerLabel(_ provider: LLMProvider) -> String {
+        switch provider {
+        case .proxy: return "ScribbleFit AI"
+        case .openai: return "OpenAI"
+        case .gemini: return "Gemini"
+        case .local: return "Local"
+        }
+    }
+
     private func SectionHeader(_ title: String, color: Color = ScribbleFitColor.secondaryText) -> some View {
         Text(title)
             .font(ScribbleFitFont.labelMedium().bold())
             .kerning(0.8)
             .foregroundColor(color)
     }
-    
+
     private func PreferenceItem<Content: View>(label: String, @ViewBuilder content: () -> Content) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(label)

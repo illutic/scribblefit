@@ -41,13 +41,14 @@ class OpenAIEngine(
 
     override suspend fun parseWorkout(rawText: String): ParsedWorkoutResult {
         val startTime = System.currentTimeMillis()
+        val model = configRepository.getConfig().first()?.preferredModel?.takeIf { it.isNotEmpty() } ?: "gpt-4o-mini"
         return try {
             val apiKey = secureKeyStorage.getApiKey() ?: ""
             val systemPrompt = configRepository.getConfig().first()?.promptText ?: error("Prompt is empty. Configuration is not set.")
-            
-            val response = callOpenAIResponse(apiKey, systemPrompt, rawText)
+
+            val response = callOpenAIResponse(apiKey, systemPrompt, rawText, model)
             val duration = System.currentTimeMillis() - startTime
-            
+
             val content = response.output
                 .filter { it.type == "message" }
                 .firstNotNullOfOrNull { item ->
@@ -62,12 +63,12 @@ class OpenAIEngine(
 
             val parsedWorkoutDto = json.decodeFromString<ParsedWorkoutDto>(content)
             val workout = parsedWorkoutDto.toDomain()
-            
+
             ParsedWorkoutResult(
                 workout = workout,
                 rawText = rawText,
                 status = ParsingStatus.SUCCESS,
-                modelUsed = "gpt-4o-mini",
+                modelUsed = model,
                 processingTimeMs = duration,
                 reasoning = reasoning
             )
@@ -77,7 +78,7 @@ class OpenAIEngine(
                 workout = null,
                 rawText = rawText,
                 status = ParsingStatus.FAILURE,
-                modelUsed = "gpt-4o-mini",
+                modelUsed = model,
                 processingTimeMs = duration,
                 error = e.message ?: "Unknown error"
             )
@@ -139,14 +140,15 @@ class OpenAIEngine(
     private suspend fun callOpenAIResponse(
         apiKey: String,
         instructions: String,
-        userMessage: String
+        userMessage: String,
+        model: String = "gpt-4o-mini"
     ): OpenAIResponse {
         val response = client.post("https://api.openai.com/v1/responses") {
             header("Authorization", "Bearer $apiKey")
             contentType(ContentType.Application.Json)
             setBody(
                 OpenAIResponseRequest(
-                    model = "gpt-4o-mini",
+                    model = model,
                     input = JsonPrimitive("$userMessage\n\nOutput in JSON format."),
                     instructions = instructions,
                     text = OpenAITextConfig(

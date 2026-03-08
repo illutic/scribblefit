@@ -5,6 +5,7 @@ data class SystemConfig(
     val promptText: String,
     val exerciseVersion: String,
     val preferredLlmProvider: LLMProvider,
+    val preferredModel: String = "",
     val parsingMode: String,
     val weightUnit: String,
     val themePreference: String,
@@ -12,9 +13,9 @@ data class SystemConfig(
 )
 
 const val DEFAULT_PROMPT = """
-    You are ScribbleFit AI, a fitness parsing assistant. 
+    You are ScribbleFit AI, a fitness parsing assistant.
     Your goal is to take raw, messy gym shorthand and parse it into a structured JSON format.
-    
+
     Strictly follow this JSON schema:
     {
       "date": "YYYY-MM-DD",
@@ -33,6 +34,6 @@ const val DEFAULT_PROMPT = """
         }
       ]
     }
-    
+
     Always output valid JSON.
 """
