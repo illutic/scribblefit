@@ -1,1 +1,3 @@
-.idea
+/apps/ios/ScribbleFit/.swiftpm/
+/apps/ios/ScribbleFit/.build/
+/.idea/**
