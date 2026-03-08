@@ -1,8 +1,6 @@
 package com.scribblefit.feature.ai.data.repository
 
-import com.scribblefit.core.database.dao.ExerciseDictionaryDao
 import com.scribblefit.core.database.dao.SystemConfigDao
-import com.scribblefit.core.database.model.ExerciseDictionaryEntity
 import com.scribblefit.core.database.model.SystemConfigEntity
 import com.scribblefit.core.network.ScribbleFitApi
 import com.scribblefit.feature.ai.data.mapper.toDomain
@@ -18,8 +16,7 @@ import javax.inject.Singleton
 @Singleton
 class ConfigRepositoryImpl @Inject constructor(
     private val api: ScribbleFitApi,
-    private val systemConfigDao: SystemConfigDao,
-    private val exerciseDictionaryDao: ExerciseDictionaryDao
+    private val systemConfigDao: SystemConfigDao
 ) : ConfigRepository {
 
     override fun getConfig(): Flow<SystemConfig?> {
@@ -49,33 +46,4 @@ class ConfigRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun syncExercises(): Result<Unit> = runCatching {
-        val metadata = api.getMetadata()
-        val currentConfig = systemConfigDao.getConfig().firstOrNull()
-
-        if (currentConfig == null || currentConfig.exerciseVersion != metadata.exerciseVersion) {
-            val response = api.getExercises()
-            val entities = response.exercises.map { dto ->
-                ExerciseDictionaryEntity(
-                    id = dto.id,
-                    canonicalName = dto.canonicalName,
-                    muscleGroup = dto.muscleGroup,
-                    aliases = dto.aliases
-                )
-            }
-            exerciseDictionaryDao.deleteAll()
-            exerciseDictionaryDao.upsertExercises(entities)
-
-            // Update exercise version in config
-            val updatedConfig = (currentConfig ?: SystemConfigEntity(
-                promptVersion = "0.0.0",
-                promptText = "",
-                updatedAt = System.currentTimeMillis()
-            )).copy(
-                exerciseVersion = metadata.exerciseVersion,
-                updatedAt = System.currentTimeMillis()
-            )
-            systemConfigDao.upsertConfig(updatedConfig)
-        }
-    }
 }

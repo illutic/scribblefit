@@ -7,5 +7,4 @@ interface ConfigRepository {
     fun getConfig(): Flow<SystemConfig?>
     suspend fun updateConfig(config: SystemConfig)
     suspend fun syncMetadata(): Result<Unit>
-    suspend fun syncExercises(): Result<Unit>
 }

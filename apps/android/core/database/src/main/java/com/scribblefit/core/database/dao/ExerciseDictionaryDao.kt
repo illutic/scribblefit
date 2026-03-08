@@ -2,6 +2,8 @@ package com.scribblefit.core.database.dao
 
 import androidx.room.Dao
 import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Upsert
 import com.scribblefit.core.database.model.ExerciseDictionaryEntity
@@ -14,6 +16,9 @@ interface ExerciseDictionaryDao {
 
     @Upsert
     suspend fun upsertExercises(exercises: List<ExerciseDictionaryEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertExercisesIfAbsent(exercises: List<ExerciseDictionaryEntity>)
 
     @Delete
     suspend fun deleteExercise(exercise: ExerciseDictionaryEntity)

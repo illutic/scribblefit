@@ -47,6 +47,16 @@ public final class LedgerRepositoryImpl: LedgerRepository {
     }
 
     public func logWorkout(_ workout: WorkoutHistory) async throws {
+        let exercises = workout.exercises.map { exercise in
+            ExerciseDictionary(
+                id: exercise.canonicalName,
+                canonicalName: exercise.canonicalName,
+                muscleGroup: "",
+                aliases: []
+            )
+        }
+        await database.insertExercisesIfAbsent(exercises)
+
         let log = WorkoutLog(
             id: workout.id,
             date: workout.date,
@@ -54,7 +64,7 @@ public final class LedgerRepositoryImpl: LedgerRepository {
             totalVolume: workout.totalVolume
         )
         await database.upsertWorkoutLog(log)
-        
+
         let sets = workout.exercises.flatMap { exercise in
             exercise.sets.map { set in
                 WorkoutSet(

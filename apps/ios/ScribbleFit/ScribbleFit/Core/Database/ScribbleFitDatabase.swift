@@ -106,7 +106,18 @@ public final class ScribbleFitDatabase {
     }
     
     // MARK: - ExerciseDictionary
-    
+
+    public func insertExercisesIfAbsent(_ exercises: [ExerciseDictionary]) async {
+        for exercise in exercises {
+            let id = exercise.id
+            let descriptor = FetchDescriptor<ExerciseDictionary>(predicate: #Predicate { $0.id == id })
+            if (try? context.fetch(descriptor).first) == nil {
+                context.insert(exercise)
+            }
+        }
+        try? context.save()
+    }
+
     public func upsertExercises(_ exercises: [ExerciseDictionary]) async {
         for exercise in exercises {
             context.insert(exercise)

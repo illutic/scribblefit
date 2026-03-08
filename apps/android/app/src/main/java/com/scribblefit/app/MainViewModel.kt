@@ -48,9 +48,8 @@ class MainViewModel @Inject constructor(
                 authRepository.login(deviceId)
             }
 
-            // 3. Sync Metadata & Exercises
+            // 3. Sync Metadata (prompt config)
             configRepository.syncMetadata()
-            configRepository.syncExercises()
 
             _isInitialized.value = true
         }

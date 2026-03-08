@@ -27,9 +27,8 @@ public final class AppViewModel: ObservableObject {
                     try await authRepository.login(deviceId: deviceId)
                 }
                 
-                // 3. Sync Metadata & Exercises
+                // 3. Sync Metadata (prompt config)
                 try await configRepository.syncMetadata()
-                try await configRepository.syncExercises()
             } catch {
                 print("Initialization error: \(error)")
             }

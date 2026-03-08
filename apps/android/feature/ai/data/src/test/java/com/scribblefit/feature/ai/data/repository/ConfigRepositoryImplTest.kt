@@ -1,12 +1,9 @@
 package com.scribblefit.feature.ai.data.repository
 
-import com.scribblefit.core.database.dao.ExerciseDictionaryDao
 import com.scribblefit.core.database.dao.SystemConfigDao
 import com.scribblefit.core.database.model.SystemConfigEntity
 import com.scribblefit.core.network.ScribbleFitApi
 import com.scribblefit.core.network.model.ConfigResponse
-import com.scribblefit.core.network.model.ExerciseDto
-import com.scribblefit.core.network.model.ExerciseResponse
 import com.scribblefit.core.network.model.MetadataResponse
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -22,15 +19,13 @@ class ConfigRepositoryImplTest {
 
     private lateinit var api: ScribbleFitApi
     private lateinit var systemConfigDao: SystemConfigDao
-    private lateinit var exerciseDictionaryDao: ExerciseDictionaryDao
     private lateinit var repository: ConfigRepositoryImpl
 
     @Before
     fun setup() {
         api = mockk()
         systemConfigDao = mockk(relaxed = true)
-        exerciseDictionaryDao = mockk(relaxed = true)
-        repository = ConfigRepositoryImpl(api, systemConfigDao, exerciseDictionaryDao)
+        repository = ConfigRepositoryImpl(api, systemConfigDao)
     }
 
     @Test
@@ -75,37 +70,5 @@ class ConfigRepositoryImplTest {
         assertTrue(result.isSuccess)
         coVerify(exactly = 0) { api.getPromptConfig() }
         coVerify(exactly = 0) { systemConfigDao.upsertConfig(any()) }
-    }
-
-    @Test
-    fun `syncExercises updates exercises when versions differ`() = runTest {
-        // Given
-        val metadata = MetadataResponse("ok", "1.0.0", "1.0.0", "1.1.0")
-        val currentConfig = SystemConfigEntity(
-            promptVersion = "1.0.0",
-            promptText = "prompt",
-            exerciseVersion = "1.0.0",
-            updatedAt = 0L
-        )
-        val exerciseResponse = ExerciseResponse(
-            listOf(
-                ExerciseDto("1", "Bench", "Chest", listOf("bench press"))
-            )
-        )
-
-        coEvery { api.getMetadata() } returns metadata
-        every { systemConfigDao.getConfig() } returns flowOf(currentConfig)
-        coEvery { api.getExercises() } returns exerciseResponse
-
-        // When
-        val result = repository.syncExercises()
-
-        // Then
-        assertTrue(result.isSuccess)
-        coVerify { exerciseDictionaryDao.deleteAll() }
-        coVerify { exerciseDictionaryDao.upsertExercises(any()) }
-        coVerify {
-            systemConfigDao.upsertConfig(match { it.exerciseVersion == "1.1.0" })
-        }
     }
 }

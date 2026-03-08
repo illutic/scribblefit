@@ -3,6 +3,7 @@ package com.scribblefit.feature.ledger.data.repository
 import com.scribblefit.core.database.dao.ExerciseDictionaryDao
 import com.scribblefit.core.database.dao.SetDao
 import com.scribblefit.core.database.dao.WorkoutLogDao
+import com.scribblefit.core.database.model.ExerciseDictionaryEntity
 import com.scribblefit.core.database.model.SetEntity
 import com.scribblefit.core.database.model.WorkoutLogEntity
 import com.scribblefit.feature.ledger.domain.model.ExerciseHistory
@@ -61,6 +62,16 @@ class LedgerRepositoryImpl @Inject constructor(
                 totalVolume = workout.totalVolume
             )
         )
+
+        val exerciseEntities = workout.exercises.map { exercise ->
+            ExerciseDictionaryEntity(
+                id = exercise.canonicalName,
+                canonicalName = exercise.canonicalName,
+                muscleGroup = "",
+                aliases = emptyList()
+            )
+        }
+        exerciseDictionaryDao.insertExercisesIfAbsent(exerciseEntities)
 
         val setEntities = workout.exercises.flatMap { exercise ->
             exercise.sets.map { set ->
