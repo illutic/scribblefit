@@ -15,30 +15,22 @@ public struct UserStats: Sendable {
 }
 
 public struct AppSettings: Sendable {
-    public let parsingMode: ParsingMode
     public let aiProvider: LLMProvider
     public let weightUnit: WeightUnit
     public let themePreference: ThemePreference
     public let selectedModel: String?
 
     public init(
-        parsingMode: ParsingMode,
         aiProvider: LLMProvider,
         weightUnit: WeightUnit,
         themePreference: ThemePreference,
         selectedModel: String? = nil
     ) {
-        self.parsingMode = parsingMode
         self.aiProvider = aiProvider
         self.weightUnit = weightUnit
         self.themePreference = themePreference
         self.selectedModel = selectedModel
     }
-}
-
-public enum ParsingMode: String, Codable, Sendable {
-    case managed = "managed"
-    case byok = "byok"
 }
 
 public enum WeightUnit: String, Codable, Sendable {

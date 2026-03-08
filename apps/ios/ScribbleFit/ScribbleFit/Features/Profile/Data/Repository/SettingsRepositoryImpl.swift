@@ -18,7 +18,6 @@ public final class SettingsRepositoryImpl: SettingsRepository {
         let config = await database.getConfig()
 
         return AppSettings(
-            parsingMode: ParsingMode(rawValue: config?.parsingMode ?? "managed") ?? .managed,
             aiProvider: LLMProvider(rawValue: config?.preferredLlmProvider ?? "proxy") ?? .proxy,
             weightUnit: WeightUnit(rawValue: config?.weightUnit ?? "lbs") ?? .lbs,
             themePreference: ThemePreference(rawValue: config?.themePreference ?? "system") ?? .system,
@@ -27,13 +26,13 @@ public final class SettingsRepositoryImpl: SettingsRepository {
     }
 
     public func updateSettings(_ settings: AppSettings) async throws {
-        let promptConfig = await database.getConfig()
+        let existing = await database.getConfig()
         let config = SystemConfig(
-            promptVersion: "1.0.0",
-            promptText: promptConfig?.promptText ?? ScribbleFitProxyEngine.defaultPrompt,
+            promptVersion: existing?.promptVersion ?? "1.0.0",
+            promptText: existing?.promptText ?? "",
             preferredLlmProvider: settings.aiProvider.rawValue,
             preferredModel: settings.selectedModel ?? "",
-            parsingMode: settings.parsingMode.rawValue,
+            parsingMode: existing?.parsingMode ?? "managed",
             weightUnit: settings.weightUnit.rawValue,
             themePreference: settings.themePreference.rawValue,
             updatedAt: Date()

@@ -41,12 +41,6 @@ public final class SettingsViewModel: ObservableObject {
         }
     }
 
-    public func updateParsingMode(_ mode: ParsingMode) {
-        updateSettings { current in
-            AppSettings(parsingMode: mode, aiProvider: current.aiProvider, weightUnit: current.weightUnit, themePreference: current.themePreference, selectedModel: current.selectedModel)
-        }
-    }
-
     public func updateApiKey(_ key: String) {
         uiState.apiKey = key
         Task {
@@ -62,7 +56,7 @@ public final class SettingsViewModel: ObservableObject {
 
     public func updateProvider(_ provider: LLMProvider) {
         updateSettings { current in
-            AppSettings(parsingMode: current.parsingMode, aiProvider: provider, weightUnit: current.weightUnit, themePreference: current.themePreference, selectedModel: nil)
+            AppSettings(aiProvider: provider, weightUnit: current.weightUnit, themePreference: current.themePreference, selectedModel: nil)
         }
         uiState.availableModels = []
         if (provider == .openai || provider == .gemini) && !uiState.apiKey.isEmpty {
@@ -72,19 +66,19 @@ public final class SettingsViewModel: ObservableObject {
 
     public func updateModel(_ model: String) {
         updateSettings { current in
-            AppSettings(parsingMode: current.parsingMode, aiProvider: current.aiProvider, weightUnit: current.weightUnit, themePreference: current.themePreference, selectedModel: model)
+            AppSettings(aiProvider: current.aiProvider, weightUnit: current.weightUnit, themePreference: current.themePreference, selectedModel: model)
         }
     }
 
     public func updateWeightUnit(_ unit: WeightUnit) {
         updateSettings { current in
-            AppSettings(parsingMode: current.parsingMode, aiProvider: current.aiProvider, weightUnit: unit, themePreference: current.themePreference, selectedModel: current.selectedModel)
+            AppSettings(aiProvider: current.aiProvider, weightUnit: unit, themePreference: current.themePreference, selectedModel: current.selectedModel)
         }
     }
 
     public func updateTheme(_ theme: ThemePreference) {
         updateSettings { current in
-            AppSettings(parsingMode: current.parsingMode, aiProvider: current.aiProvider, weightUnit: current.weightUnit, themePreference: theme, selectedModel: current.selectedModel)
+            AppSettings(aiProvider: current.aiProvider, weightUnit: current.weightUnit, themePreference: theme, selectedModel: current.selectedModel)
         }
     }
 
@@ -129,7 +123,7 @@ public final class SettingsViewModel: ObservableObject {
 }
 
 public struct SettingsUiState {
-    public var settings: AppSettings = AppSettings(parsingMode: .managed, aiProvider: .proxy, weightUnit: .lbs, themePreference: .system)
+    public var settings: AppSettings = AppSettings(aiProvider: .proxy, weightUnit: .lbs, themePreference: .system)
     public var apiKey: String = ""
     public var isLoading: Bool = true
     public var availableModels: [String] = []

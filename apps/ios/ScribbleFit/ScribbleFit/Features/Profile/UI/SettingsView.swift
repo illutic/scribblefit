@@ -91,18 +91,7 @@ public struct SettingsView: View {
                         }
                     }
 
-                    if provider == .proxy || provider == .local {
-                        PreferenceItem(label: "Parsing Mode") {
-                            Picker("", selection: Binding(
-                                get: { viewModel.uiState.settings.parsingMode },
-                                set: { viewModel.updateParsingMode($0) }
-                            )) {
-                                Text("Cloud").tag(ParsingMode.managed)
-                                Text("BYOK").tag(ParsingMode.byok)
-                            }
-                            .pickerStyle(.segmented)
-                        }
-                    }
+
                 }
 
                 Divider().background(ScribbleFitColor.divider)
