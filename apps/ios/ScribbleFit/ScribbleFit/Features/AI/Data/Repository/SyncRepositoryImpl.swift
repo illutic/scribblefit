@@ -80,10 +80,12 @@ public final class SyncRepositoryImpl: SyncRepository {
     
     private func triggerImmediateSync() {
         Task {
-            do {
-                try await syncWorkoutUseCase?.execute()
-            } catch {
-                print("Error executing sync: \(error)")
+            await MainActor.run {
+                do {
+                    try await syncWorkoutUseCase?.execute()
+                } catch {
+                    print("Error executing sync: \(error)")
+                }
             }
         }
     }
