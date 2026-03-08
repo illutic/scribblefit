@@ -71,7 +71,15 @@ class MainActivity : ComponentActivity() {
                         startDestination = Screen.Canvas.route,
                         modifier = Modifier.padding(innerPadding)
                     ) {
-                        composable(Screen.Canvas.route) { CanvasScreen() }
+                        composable(Screen.Canvas.route) {
+                            CanvasScreen(onSettingsTap = {
+                                navController.navigate(Screen.Settings.route) {
+                                    popUpTo(Screen.Canvas.route) { saveState = true }
+                                    launchSingleTop = true
+                                    restoreState = true
+                                }
+                            })
+                        }
                         composable(Screen.Ledger.route) { LedgerScreen() }
                         composable(Screen.Settings.route) { ProfileScreen() }
                     }
