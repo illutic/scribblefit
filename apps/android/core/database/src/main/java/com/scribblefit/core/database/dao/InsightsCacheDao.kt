@@ -1,22 +1,19 @@
 package com.scribblefit.core.database.dao
 
 import androidx.room.Dao
-import androidx.room.Delete
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.Upsert
-import com.scribblefit.core.database.model.InsightsCacheEntity
+import com.scribblefit.core.database.entity.InsightsCacheEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface InsightsCacheDao {
-    @Upsert
-    suspend fun upsertInsight(insight: InsightsCacheEntity)
+    @Query("SELECT * FROM Insights_Cache WHERE `key` = :key LIMIT 1")
+    fun getByKey(key: String): Flow<InsightsCacheEntity?>
 
-    @Delete
-    suspend fun deleteInsight(insight: InsightsCacheEntity)
-
-    @Query("SELECT * FROM Insights_Cache WHERE `key` = :key")
-    fun getInsightByKey(key: String): Flow<InsightsCacheEntity?>
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun upsert(cache: InsightsCacheEntity)
 
     @Query("DELETE FROM Insights_Cache")
     suspend fun deleteAll()

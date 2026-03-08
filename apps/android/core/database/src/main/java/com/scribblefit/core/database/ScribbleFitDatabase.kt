@@ -3,18 +3,21 @@ package com.scribblefit.core.database
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
+import com.scribblefit.core.database.converter.StringListConverter
 import com.scribblefit.core.database.dao.ExerciseDictionaryDao
 import com.scribblefit.core.database.dao.InsightsCacheDao
 import com.scribblefit.core.database.dao.SetDao
 import com.scribblefit.core.database.dao.SyncQueueDao
 import com.scribblefit.core.database.dao.SystemConfigDao
 import com.scribblefit.core.database.dao.WorkoutLogDao
-import com.scribblefit.core.database.model.ExerciseDictionaryEntity
-import com.scribblefit.core.database.model.InsightsCacheEntity
-import com.scribblefit.core.database.model.SetEntity
-import com.scribblefit.core.database.model.SyncQueueEntity
-import com.scribblefit.core.database.model.SystemConfigEntity
-import com.scribblefit.core.database.model.WorkoutLogEntity
+import com.scribblefit.core.database.entity.ExerciseDictionaryEntity
+import com.scribblefit.core.database.entity.InsightsCacheEntity
+import com.scribblefit.core.database.entity.SetEntity
+import com.scribblefit.core.database.entity.SyncQueueEntity
+import com.scribblefit.core.database.entity.SystemConfigEntity
+import com.scribblefit.core.database.entity.WorkoutLogEntity
+
+private const val DATABASE_VERSION = 1
 
 @Database(
     entities = [
@@ -25,10 +28,10 @@ import com.scribblefit.core.database.model.WorkoutLogEntity
         SystemConfigEntity::class,
         InsightsCacheEntity::class
     ],
-    version = 2,
+    version = DATABASE_VERSION,
     exportSchema = true
 )
-@TypeConverters(Converters::class)
+@TypeConverters(StringListConverter::class)
 abstract class ScribbleFitDatabase : RoomDatabase() {
     abstract fun syncQueueDao(): SyncQueueDao
     abstract fun workoutLogDao(): WorkoutLogDao

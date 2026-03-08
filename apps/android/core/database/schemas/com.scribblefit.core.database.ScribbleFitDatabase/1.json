@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "9a2a40e9b9195657f668f2daf765017e",
+    "identityHash": "6e8a1d8897a17f28a14de95522927191",
     "entities": [
       {
         "tableName": "Sync_Queue",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `item_type` TEXT NOT NULL, `raw_text` TEXT NOT NULL, `status` TEXT NOT NULL, `created_at` INTEGER NOT NULL, `parsed_json` TEXT, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `type` TEXT NOT NULL, `raw_text` TEXT NOT NULL, `status` TEXT NOT NULL, `created_at` INTEGER NOT NULL, `parsed_json` TEXT, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -16,7 +16,7 @@
           },
           {
             "fieldPath": "type",
-            "columnName": "item_type",
+            "columnName": "type",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -219,7 +219,7 @@
       },
       {
         "tableName": "System_Config",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `prompt_version` TEXT NOT NULL, `prompt_text` TEXT NOT NULL, `exercise_version` TEXT NOT NULL, `preferred_llm_provider` TEXT NOT NULL, `parsing_mode` TEXT NOT NULL, `weight_unit` TEXT NOT NULL, `theme_preference` TEXT NOT NULL, `updated_at` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `prompt_version` TEXT NOT NULL, `prompt_text` TEXT NOT NULL, `exercise_version` TEXT NOT NULL, `preferred_llm_provider` TEXT NOT NULL, `preferred_model` TEXT NOT NULL, `parsing_mode` TEXT NOT NULL, `weight_unit` TEXT NOT NULL, `theme_preference` TEXT NOT NULL, `updated_at` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -248,6 +248,12 @@
           {
             "fieldPath": "preferredLlmProvider",
             "columnName": "preferred_llm_provider",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "preferredModel",
+            "columnName": "preferred_model",
             "affinity": "TEXT",
             "notNull": true
           },
@@ -316,7 +322,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '9a2a40e9b9195657f668f2daf765017e')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '6e8a1d8897a17f28a14de95522927191')"
     ]
   }
 }
