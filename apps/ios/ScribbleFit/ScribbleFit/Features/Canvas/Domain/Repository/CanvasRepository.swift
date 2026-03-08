@@ -1,10 +1,11 @@
 import Foundation
+import Combine
 
 public protocol CanvasRepository: Sendable {
     /**
      * Observes the conversational feed for the current active session.
      */
-    func getFeed() async throws -> [FeedItem]
+    func getFeed() -> AnyPublisher<[FeedItem], Never>
 
     /**
      * Adds a raw user entry to the persistent sync queue and feed.

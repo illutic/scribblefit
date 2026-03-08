@@ -11,7 +11,7 @@ public struct CanvasUiState: Sendable {
     public var feedItems: [FeedItem]
     public var isSyncing: Bool
     public var isRecording: Bool
-    
+
     public init(
         greeting: String = "",
         userName: String = "George",
@@ -36,138 +36,84 @@ public struct CanvasUiState: Sendable {
 @MainActor
 public final class CanvasViewModel: ObservableObject {
     private let canvasRepository: CanvasRepository
-    private let analysisRepository: AnalysisRepository
     private let processScribbleUseCase: ProcessScribbleUseCase
     private let executeQuickActionUseCase: ExecuteQuickActionUseCase
     private let confirmWorkoutUseCase: ConfirmWorkoutUseCase
-    
-    @Published public var uiState: CanvasUiState
-    
+    private let listenForSyncItemsUseCase: ListenForSyncItemsUseCase
+
+    private let _internalState: CurrentValueSubject<CanvasUiState, Never>
+    @Published public private(set) var uiState: CanvasUiState
+
     public init(
         canvasRepository: CanvasRepository,
         analysisRepository: AnalysisRepository,
         processScribbleUseCase: ProcessScribbleUseCase,
         executeQuickActionUseCase: ExecuteQuickActionUseCase,
-        confirmWorkoutUseCase: ConfirmWorkoutUseCase
+        confirmWorkoutUseCase: ConfirmWorkoutUseCase,
+        listenForSyncItemsUseCase: ListenForSyncItemsUseCase
     ) {
         self.canvasRepository = canvasRepository
-        self.analysisRepository = analysisRepository
         self.processScribbleUseCase = processScribbleUseCase
         self.executeQuickActionUseCase = executeQuickActionUseCase
         self.confirmWorkoutUseCase = confirmWorkoutUseCase
-        
-        self.uiState = CanvasUiState(greeting: Self.getGreeting())
-        
-        refreshFeed()
-        refreshSuggestion()
-        
+        self.listenForSyncItemsUseCase = listenForSyncItemsUseCase
+
+        let initial = CanvasUiState(greeting: Self.getGreeting())
+        self._internalState = CurrentValueSubject(initial)
+        self.uiState = initial
+
+        Publishers.CombineLatest3(
+            _internalState,
+            canvasRepository.getFeed(),
+            analysisRepository.getHomeSuggestion()
+        )
+        .map { state, feed, suggestion in
+            var updated = state
+            updated.feedItems = feed
+            updated.homeSuggestion = suggestion
+            return updated
+        }
+        .receive(on: RunLoop.main)
+        .assign(to: &$uiState)
+
         Task {
-            if try await canvasRepository.getFeed().isEmpty {
-                await seedTestData()
-            }
+            await listenForSyncItemsUseCase.execute()
         }
     }
-    
-    private func seedTestData() async {
-        let now = Date()
-        
-        try? await canvasRepository.addScribble(rawText: "Ready for a Push day? 💪")
-        
-        let scribbleId = UUID().uuidString
-        try? await canvasRepository.addScribble(rawText: "Bench 135x5, 135x5")
-        
-        try? await canvasRepository.addConfirmation(item: ConfirmationItem(
-            id: UUID().uuidString,
-            timestamp: now.addingTimeInterval(1),
-            workout: ParsedWorkout(
-                date: "2024-05-20",
-                location: "Home Gym",
-                exercises: [
-                    ParsedExercise(
-                        canonicalName: "Bench Press",
-                        sets: [
-                            ParsedSet(weight: 135.0, reps: 5),
-                            ParsedSet(weight: 135.0, reps: 5)
-                        ]
-                    )
-                ]
-            ),
-            scribbleId: scribbleId
-        ))
-        
-        try? await canvasRepository.addInsight(item: InsightItem(
-            id: UUID().uuidString,
-            timestamp: now.addingTimeInterval(2),
-            text: "New Volume PR on Bench! 🔥",
-            emoji: "🏆"
-        ))
-        
-        refreshFeed()
-    }
-    
-    public func refreshFeed() {
-        Task {
-            do {
-                let items = try await canvasRepository.getFeed()
-                self.uiState.feedItems = items
-            } catch {
-                print("Failed to fetch feed: \(error)")
-            }
-        }
-    }
-    
-    private func refreshSuggestion() {
-        Task {
-            do {
-                if let suggestion = try await analysisRepository.getHomeSuggestion() {
-                    self.uiState.homeSuggestion = suggestion
-                }
-            } catch {
-                print("Failed to fetch suggestion: \(error)")
-            }
-        }
-    }
-    
+
     public func onTextChange(_ newText: String) {
-        uiState.scribbleText = newText
+        var state = _internalState.value
+        state.scribbleText = newText
+        _internalState.send(state)
     }
-    
+
     public func submitScribble() {
-        let text = uiState.scribbleText.trimmingCharacters(in: .whitespacesAndNewlines)
+        let text = _internalState.value.scribbleText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
-        
-        uiState.isSyncing = true
+
         Task {
-            do {
-                try await processScribbleUseCase.execute(rawText: text)
-                uiState.scribbleText = ""
-                refreshFeed()
-            } catch {
-                print("Failed to process scribble: \(error)")
-            }
-            uiState.isSyncing = false
+            var state = _internalState.value
+            state.isSyncing = true
+            _internalState.send(state)
+
+            try? await processScribbleUseCase.execute(rawText: text)
+
+            state = _internalState.value
+            state.isSyncing = false
+            state.scribbleText = ""
+            _internalState.send(state)
         }
     }
-    
+
     public func onQuickActionClick(_ actionType: QuickActionType) {
         Task {
-            do {
-                try await executeQuickActionUseCase.execute(actionType: actionType)
-                refreshFeed()
-            } catch {
-                print("Failed to execute quick action: \(error)")
-            }
+            try? await executeQuickActionUseCase.execute(actionType: actionType)
         }
     }
-    
+
     public func onRetryScribble(id: String) {
         Task {
-            do {
-                try await canvasRepository.retryScribble(id: id)
-                refreshFeed()
-            } catch {
-                print("Failed to retry scribble: \(error)")
-            }
+            try? await canvasRepository.retryScribble(id: id)
         }
     }
 
@@ -182,7 +128,6 @@ public final class CanvasViewModel: ObservableObject {
                     emoji: "✅"
                 ))
                 try await canvasRepository.removeFeedItem(id: confirmation.id)
-                refreshFeed()
             } catch {
                 print("Failed to confirm workout: \(error)")
             }
@@ -190,7 +135,7 @@ public final class CanvasViewModel: ObservableObject {
     }
 
     public func onMicClick() {
-        if uiState.isRecording {
+        if _internalState.value.isRecording {
             stopRecording()
         } else {
             startRecording()
@@ -198,14 +143,18 @@ public final class CanvasViewModel: ObservableObject {
     }
 
     private func startRecording() {
-        uiState.isRecording = true
+        var state = _internalState.value
+        state.isRecording = true
+        _internalState.send(state)
     }
 
     private func stopRecording() {
-        uiState.isRecording = false
+        var state = _internalState.value
+        state.isRecording = false
+        _internalState.send(state)
         onTextChange("Bench 135x5, 135x5")
     }
-    
+
     private static func getGreeting() -> String {
         let hour = Calendar.current.component(.hour, from: Date())
         switch hour {

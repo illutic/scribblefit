@@ -14,7 +14,8 @@ public struct MainView: View {
     private let processScribbleUseCase: ProcessScribbleUseCase
     private let executeQuickActionUseCase: ExecuteQuickActionUseCase
     private let confirmWorkoutUseCase: ConfirmWorkoutUseCase
-    
+    private let listenForSyncItemsUseCase: ListenForSyncItemsUseCase
+
     public init(
         canvasRepository: CanvasRepository,
         analysisRepository: AnalysisRepository,
@@ -23,7 +24,8 @@ public struct MainView: View {
         secureKeyStorage: SecureKeyStorage,
         processScribbleUseCase: ProcessScribbleUseCase,
         executeQuickActionUseCase: ExecuteQuickActionUseCase,
-        confirmWorkoutUseCase: ConfirmWorkoutUseCase
+        confirmWorkoutUseCase: ConfirmWorkoutUseCase,
+        listenForSyncItemsUseCase: ListenForSyncItemsUseCase
     ) {
         self.canvasRepository = canvasRepository
         self.analysisRepository = analysisRepository
@@ -33,6 +35,7 @@ public struct MainView: View {
         self.processScribbleUseCase = processScribbleUseCase
         self.executeQuickActionUseCase = executeQuickActionUseCase
         self.confirmWorkoutUseCase = confirmWorkoutUseCase
+        self.listenForSyncItemsUseCase = listenForSyncItemsUseCase
     }
     
     public var body: some View {
@@ -44,7 +47,8 @@ public struct MainView: View {
                     analysisRepository: analysisRepository,
                     processScribbleUseCase: processScribbleUseCase,
                     executeQuickActionUseCase: executeQuickActionUseCase,
-                    confirmWorkoutUseCase: confirmWorkoutUseCase
+                    confirmWorkoutUseCase: confirmWorkoutUseCase,
+                    listenForSyncItemsUseCase: listenForSyncItemsUseCase
                 ))
                 .navigationTitle(AppTab.workout.title)
                 .navigationBarTitleDisplayMode(.inline)

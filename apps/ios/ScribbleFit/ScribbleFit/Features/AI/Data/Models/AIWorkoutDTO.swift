@@ -19,6 +19,11 @@ struct AIExerciseDTO: Codable {
     let canonicalName: String
     let sets: [AISetDTO]
     
+    enum CodingKeys: String, CodingKey {
+        case canonicalName = "canonical_name"
+        case sets
+    }
+    
     func toDomain() -> ParsedExercise {
         return ParsedExercise(
             canonicalName: self.canonicalName,

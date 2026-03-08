@@ -1,4 +1,5 @@
 import Foundation
+import Combine
 import SwiftData
 
 /**
@@ -8,17 +9,28 @@ public final class AnalysisRepositoryImpl: AnalysisRepository {
     private let database: ScribbleFitDatabase
     private let jsonDecoder = JSONDecoder()
     private let jsonEncoder = JSONEncoder()
-    
+
+    private let suggestionSubject = CurrentValueSubject<AnalysisSuggestion?, Never>(nil)
+
     public init(database: ScribbleFitDatabase) {
         self.database = database
+        Task { [weak self] in
+            guard let self else { return }
+            let suggestion = try? await self.fetchSuggestion()
+            self.suggestionSubject.send(suggestion)
+        }
     }
-    
+
     @MainActor
     public convenience init() {
         self.init(database: .shared)
     }
-    
-    public func getHomeSuggestion() async throws -> AnalysisSuggestion? {
+
+    public func getHomeSuggestion() -> AnyPublisher<AnalysisSuggestion?, Never> {
+        suggestionSubject.eraseToAnyPublisher()
+    }
+
+    private func fetchSuggestion() async throws -> AnalysisSuggestion? {
         guard let jsonData = await database.getInsightByKey(key: KEY_HOME_SUGGESTION)?.jsonData.data(using: .utf8) else {
             return nil
         }
@@ -51,6 +63,7 @@ public final class AnalysisRepositoryImpl: AnalysisRepository {
             )
             await database.upsertInsight(entity)
         }
+        suggestionSubject.send(suggestion)
     }
     
     public func saveSummary(_ summary: AnalysisSummary) async throws {

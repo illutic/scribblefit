@@ -1,10 +1,14 @@
 import Foundation
 
-public final class GeminiAIEngine: LLMEngine, AnalysisEngine, @unchecked Sendable {
+/**
+ * iOS implementation of GeminiAIEngine aligned with Android's.
+ */
+public actor GeminiAIEngine: LLMEngine, AnalysisEngine {
     private let session: URLSession
     private let secureKeyStorage: SecureKeyStorage
     private let configRepository: ConfigRepository
     private let jsonDecoder = JSONDecoder()
+    private let jsonEncoder = JSONEncoder()
     
     private let apiBase = "https://generativelanguage.googleapis.com/v1beta"
     private var activeModelPath: String?
@@ -22,9 +26,12 @@ public final class GeminiAIEngine: LLMEngine, AnalysisEngine, @unchecked Sendabl
     public func parseWorkout(rawText: String) async -> ParsedWorkoutResult {
         let startTime = Date()
         do {
-            let apiKey = try await secureKeyStorage.getApiKey() ?? ""
+            guard let apiKey = try await secureKeyStorage.getApiKey(), !apiKey.isEmpty else {
+                 throw NSError(domain: "GeminiAIEngine", code: 0, userInfo: [NSLocalizedDescriptionKey: "API key is missing"])
+            }
+
             let config = await configRepository.getConfig()
-            let systemPrompt = config?.promptText ?? ScribbleFitProxyEngine.defaultPrompt
+            let systemPrompt = await (config?.promptText.isEmpty == false) ? config!.promptText : ScribbleFitProxyEngine.defaultPrompt
             
             let content = try await callGemini(apiKey: apiKey, prompt: systemPrompt, userMessage: "\(rawText)\n\nOutput in JSON format.")
             let duration = Int64(Date().timeIntervalSince(startTime) * 1000)
@@ -32,7 +39,7 @@ public final class GeminiAIEngine: LLMEngine, AnalysisEngine, @unchecked Sendabl
             let contentData = content.data(using: .utf8)!
             let dto = try jsonDecoder.decode(AIWorkoutDTO.self, from: contentData)
             
-            return ParsedWorkoutResult(
+            return await ParsedWorkoutResult(
                 workout: dto.toDomain(),
                 rawText: rawText,
                 status: .success,
@@ -41,7 +48,7 @@ public final class GeminiAIEngine: LLMEngine, AnalysisEngine, @unchecked Sendabl
             )
         } catch {
             let duration = Int64(Date().timeIntervalSince(startTime) * 1000)
-            return ParsedWorkoutResult(
+            return await ParsedWorkoutResult(
                 workout: nil,
                 rawText: rawText,
                 status: .failure,
@@ -53,14 +60,31 @@ public final class GeminiAIEngine: LLMEngine, AnalysisEngine, @unchecked Sendabl
     }
     
     public func generateSuggestion(context: String) async throws -> AnalysisSuggestion {
-        let apiKey = try await secureKeyStorage.getApiKey() ?? ""
+        guard let apiKey = try await secureKeyStorage.getApiKey(), !apiKey.isEmpty else {
+            throw NSError(domain: "GeminiAIEngine", code: 0, userInfo: [NSLocalizedDescriptionKey: "API key is missing"])
+        }
         let content = try await callGemini(apiKey: apiKey, prompt: AnalysisPrompts.getSuggestionPrompt(context: context), userMessage: "Generate suggestion in JSON format.")
         let contentData = content.data(using: .utf8)!
-        return try jsonDecoder.decode(AnalysisSuggestion.self, from: contentData)
+        
+        struct SuggestionDTO: Codable {
+            let text: String
+            let emoji: String
+            let type: String
+        }
+        
+        let dto = try jsonDecoder.decode(SuggestionDTO.self, from: contentData)
+        return await AnalysisSuggestion(
+            text: dto.text,
+            emoji: dto.emoji,
+            type: SuggestionType(rawValue: dto.type.lowercased()) ?? .pattern,
+            timestamp: Date()
+        )
     }
     
     public func generateSummary(period: SummaryPeriod, workoutData: String) async throws -> AnalysisSummary {
-        let apiKey = try await secureKeyStorage.getApiKey() ?? ""
+        guard let apiKey = try await secureKeyStorage.getApiKey(), !apiKey.isEmpty else {
+            throw NSError(domain: "GeminiAIEngine", code: 0, userInfo: [NSLocalizedDescriptionKey: "API key is missing"])
+        }
         let content = try await callGemini(apiKey: apiKey, prompt: AnalysisPrompts.getSummaryPrompt(period: period.rawValue, data: workoutData), userMessage: "Generate summary in JSON format.")
         let contentData = content.data(using: .utf8)!
         
@@ -70,11 +94,19 @@ public final class GeminiAIEngine: LLMEngine, AnalysisEngine, @unchecked Sendabl
             let muscle_distribution: [MuscleStatDTO]
             let focus_area: String
             let volume_delta: Double
+            
+            enum CodingKeys: String, CodingKey {
+                case summary_text, highlights, muscle_distribution, focus_area, volume_delta
+            }
         }
         
         struct MuscleStatDTO: Codable {
             let muscle_group: String
             let volume_percentage: Double
+            
+            enum CodingKeys: String, CodingKey {
+                case muscle_group, volume_percentage
+            }
         }
         
         let dto = try jsonDecoder.decode(SummaryDTO.self, from: contentData)
@@ -90,7 +122,9 @@ public final class GeminiAIEngine: LLMEngine, AnalysisEngine, @unchecked Sendabl
     }
     
     public func generateExerciseInsight(exerciseName: String, historyData: String) async throws -> ExerciseInsight {
-        let apiKey = try await secureKeyStorage.getApiKey() ?? ""
+        guard let apiKey = try await secureKeyStorage.getApiKey(), !apiKey.isEmpty else {
+            throw NSError(domain: "GeminiAIEngine", code: 0, userInfo: [NSLocalizedDescriptionKey: "API key is missing"])
+        }
         let content = try await callGemini(apiKey: apiKey, prompt: AnalysisPrompts.getExerciseInsightPrompt(name: exerciseName, history: historyData), userMessage: "Analyze \(exerciseName) in JSON format.")
         let contentData = content.data(using: .utf8)!
         
@@ -99,10 +133,14 @@ public final class GeminiAIEngine: LLMEngine, AnalysisEngine, @unchecked Sendabl
             let pr_detected: Bool
             let trend_direction: String
             let breakdown_text: String
+            
+            enum CodingKeys: String, CodingKey {
+                case estimated_1rm, pr_detected, trend_direction, breakdown_text
+            }
         }
         
         let dto = try jsonDecoder.decode(InsightDTO.self, from: contentData)
-        return ExerciseInsight(
+        return await ExerciseInsight(
             exerciseId: exerciseName,
             estimated1RM: dto.estimated_1rm,
             prDetected: dto.pr_detected,
@@ -123,7 +161,7 @@ public final class GeminiAIEngine: LLMEngine, AnalysisEngine, @unchecked Sendabl
         
         let model = response.models
             .filter { $0.supportedGenerationMethods.contains("generateContent") }
-            .filter { $0.name.contains("flash") }
+            .filter { $0.name.localizedCaseInsensitiveContains("flash") }
             .sorted { $0.name > $1.name }
             .first
         
@@ -148,7 +186,7 @@ public final class GeminiAIEngine: LLMEngine, AnalysisEngine, @unchecked Sendabl
             generationConfig: GeminiGenerationConfig(responseMimeType: "application/json")
         )
         
-        request.httpBody = try JSONEncoder().encode(geminiRequest)
+        request.httpBody = try jsonEncoder.encode(geminiRequest)
         
         let (data, response) = try await session.data(for: request)
         
@@ -159,7 +197,7 @@ public final class GeminiAIEngine: LLMEngine, AnalysisEngine, @unchecked Sendabl
         
         let geminiResponse = try JSONDecoder().decode(GeminiResponse.self, from: data)
         guard let content = geminiResponse.candidates.first?.content.parts.first?.text else {
-            throw NSError(domain: "GeminiAIEngine", code: 0, userInfo: [NSLocalizedDescriptionKey: "No data from Gemini (\(modelPath))"])
+            throw NSError(domain: "GeminiAIEngine", code: 0, userInfo: [NSLocalizedDescriptionKey: "Empty response from Gemini (\(activeModelPath ?? modelPath))"])
         }
         
         return content
@@ -195,7 +233,7 @@ private struct GeminiGenerationConfig: Codable {
     let responseMimeType: String
     
     enum CodingKeys: String, CodingKey {
-        case responseMimeType = "response_mime_type"
+        case responseMimeType = "responseMimeType"
     }
 }
 

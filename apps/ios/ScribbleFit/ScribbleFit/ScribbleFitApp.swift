@@ -52,10 +52,10 @@ struct ScribbleFitApp: App {
             engine: dynamicEngine,
             configRepository: configRepo
         )
-        
+
         // Wire up circular dependency lazily
         syncRepo.setSyncWorkoutUseCase(syncWorkoutUseCase)
-        
+
         let canvasRepo = CanvasRepositoryImpl(syncRepository: syncRepo)
         let userRepo = UserRepositoryImpl(ledgerRepository: ledgerRepo)
         let settingsRepo = SettingsRepositoryImpl(database: database)
@@ -87,7 +87,8 @@ struct ScribbleFitApp: App {
                         secureKeyStorage: secureKeyStorage,
                         processScribbleUseCase: ProcessScribbleUseCase(canvasRepository: canvasRepository),
                         executeQuickActionUseCase: ExecuteQuickActionUseCase(canvasRepository: canvasRepository),
-                        confirmWorkoutUseCase: ConfirmWorkoutUseCase(sessionRepository: WorkoutSessionRepositoryImpl(database: database), ledgerRepository: ledgerRepository)
+                        confirmWorkoutUseCase: ConfirmWorkoutUseCase(sessionRepository: WorkoutSessionRepositoryImpl(database: database), ledgerRepository: ledgerRepository),
+                        listenForSyncItemsUseCase: ListenForSyncItemsUseCase(syncRepository: syncRepository)
                     )
                 } else {
                     SplashScreenView()

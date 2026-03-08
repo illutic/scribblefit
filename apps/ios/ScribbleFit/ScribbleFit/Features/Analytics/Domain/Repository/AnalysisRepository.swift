@@ -1,8 +1,9 @@
 import Foundation
+import Combine
 
 public protocol AnalysisRepository: Sendable {
     // Read cached insights
-    func getHomeSuggestion() async throws -> AnalysisSuggestion?
+    func getHomeSuggestion() -> AnyPublisher<AnalysisSuggestion?, Never>
     func getSummary(period: SummaryPeriod) async throws -> AnalysisSummary?
     func getExerciseInsight(exerciseId: String) async throws -> ExerciseInsight?
 

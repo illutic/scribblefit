@@ -65,7 +65,6 @@ class SyncRepositoryImpl @Inject constructor(
             createdAt = System.currentTimeMillis()
         )
         syncQueueDao.upsertSyncItem(syncItem)
-        triggerImmediateSync()
     }
 
     override suspend fun saveFeedItem(id: String, type: String, jsonData: String, status: SyncStatus) {
@@ -84,7 +83,7 @@ class SyncRepositoryImpl @Inject constructor(
         syncQueueDao.deleteById(id)
     }
 
-    private fun triggerImmediateSync() {
+    override suspend fun syncWorkouts() {
         val constraints = Constraints.Builder()
             .setRequiredNetworkType(NetworkType.CONNECTED)
             .build()

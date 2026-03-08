@@ -1,4 +1,5 @@
 import Foundation
+import Combine
 import SwiftData
 
 /**
@@ -7,29 +8,47 @@ import SwiftData
 public final class SyncRepositoryImpl: SyncRepository {
     private let database: ScribbleFitDatabase
     private var syncWorkoutUseCase: SyncWorkoutUseCase?
-    
+
+    private let allItemsSubject = CurrentValueSubject<[AISyncItem], Never>([])
+
     public init(database: ScribbleFitDatabase) {
         self.database = database
+        Task { [weak self] in
+            await self?.refreshAllItemsSubject()
+        }
     }
-    
+
     @MainActor
     public convenience init() {
         self.init(database: .shared)
     }
-    
-    // Lazy injection to avoid circular dependency if any
+
+    // Lazy injection to avoid circular dependency
     public func setSyncWorkoutUseCase(_ useCase: SyncWorkoutUseCase) {
         self.syncWorkoutUseCase = useCase
     }
-    
+
+    public func observeAllSyncItems() -> AnyPublisher<[AISyncItem], Never> {
+        allItemsSubject.eraseToAnyPublisher()
+    }
+
+    public func syncWorkouts() async throws {
+        try await syncWorkoutUseCase?.execute()
+    }
+
+    private func refreshAllItemsSubject() async {
+        let items = await database.getAllSyncItems().map { $0.toDomain() }
+        allItemsSubject.send(items)
+    }
+
     public func getPendingSyncItems() async throws -> [AISyncItem] {
         await database.getSyncItems(status: .pending).map { $0.toDomain() }
     }
-    
+
     public func getAllSyncItems() async throws -> [AISyncItem] {
         await database.getAllSyncItems().map { $0.toDomain() }
     }
-    
+
     public func updateSyncStatus(id: String, status: AISyncStatus) async throws {
         let dbStatus: ScribbleFit.SyncStatus = switch status {
         case .pending: .pending
@@ -38,12 +57,14 @@ public final class SyncRepositoryImpl: SyncRepository {
         case .failed: .failed
         }
         await database.updateSyncStatus(id: id, status: dbStatus)
+        await refreshAllItemsSubject()
     }
-    
+
     public func saveParsedWorkout(syncItemId: String, workout: ParsedWorkout) async throws {
         await database.saveParsedWorkout(syncItemId: syncItemId, workout: workout)
+        await refreshAllItemsSubject()
     }
-    
+
     public func enqueueScribble(id: String, rawText: String) async throws {
         let syncItem = SyncQueue(
             id: id,
@@ -53,9 +74,9 @@ public final class SyncRepositoryImpl: SyncRepository {
             createdAt: Date()
         )
         await database.upsertSyncItem(syncItem)
-        triggerImmediateSync()
+        await refreshAllItemsSubject()
     }
-    
+
     public func saveFeedItem(id: String, itemType: String, jsonData: String, status: AISyncStatus) async throws {
         let dbStatus: ScribbleFit.SyncStatus = switch status {
         case .pending: .pending
@@ -63,7 +84,6 @@ public final class SyncRepositoryImpl: SyncRepository {
         case .completed: .completed
         case .failed: .failed
         }
-        
         let syncItem = SyncQueue(
             id: id,
             itemType: itemType,
@@ -72,22 +92,12 @@ public final class SyncRepositoryImpl: SyncRepository {
             createdAt: Date()
         )
         await database.upsertSyncItem(syncItem)
+        await refreshAllItemsSubject()
     }
-    
+
     public func deleteSyncItem(id: String) async throws {
         await database.deleteSyncItem(id: id)
-    }
-    
-    private func triggerImmediateSync() {
-        Task {
-            await MainActor.run {
-                do {
-                    try await syncWorkoutUseCase?.execute()
-                } catch {
-                    print("Error executing sync: \(error)")
-                }
-            }
-        }
+        await refreshAllItemsSubject()
     }
 }
 
@@ -100,7 +110,6 @@ private extension SyncQueue {
         case .completed: .completed
         case .failed: .failed
         }
-        
         return AISyncItem(
             id: self.id,
             itemType: self.itemType,

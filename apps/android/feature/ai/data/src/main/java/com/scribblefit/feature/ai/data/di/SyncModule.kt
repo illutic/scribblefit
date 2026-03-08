@@ -127,5 +127,13 @@ abstract class SyncModule {
         ): SyncWorkoutUseCase {
             return SyncWorkoutUseCase(syncRepository, telemetryRepository, engine, configRepository)
         }
+
+        @Provides
+        @Singleton
+        fun provideListenForSyncItemsUseCase(
+            syncRepository: SyncRepository
+        ): ListenForSyncItemsUseCase {
+            return ListenForSyncItemsUseCase(syncRepository)
+        }
     }
 }

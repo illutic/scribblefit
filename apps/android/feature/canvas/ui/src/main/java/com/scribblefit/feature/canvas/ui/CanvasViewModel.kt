@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.scribblefit.core.navigation.Navigator
 import com.scribblefit.core.navigation.Screen
 import com.scribblefit.feature.ai.domain.model.AnalysisSuggestion
+import com.scribblefit.feature.ai.domain.usecase.ListenForSyncItemsUseCase
 import com.scribblefit.feature.analytics.domain.repository.AnalysisRepository
 import com.scribblefit.feature.canvas.domain.model.FeedItem
 import com.scribblefit.feature.canvas.domain.repository.CanvasRepository
@@ -46,6 +47,7 @@ class CanvasViewModel @Inject constructor(
     private val processScribbleUseCase: ProcessScribbleUseCase,
     private val executeQuickActionUseCase: ExecuteQuickActionUseCase,
     private val confirmWorkoutUseCase: ConfirmWorkoutUseCase,
+    private val listenForSyncItemsUseCase: ListenForSyncItemsUseCase,
     private val navigator: Navigator
 ) : ViewModel() {
 
@@ -137,6 +139,12 @@ class CanvasViewModel @Inject constructor(
             in 12..16 -> "AFTERNOON"
             in 17..20 -> "EVENING"
             else -> "NIGHT"
+        }
+    }
+
+    init {
+        viewModelScope.launch {
+            listenForSyncItemsUseCase()
         }
     }
 }
