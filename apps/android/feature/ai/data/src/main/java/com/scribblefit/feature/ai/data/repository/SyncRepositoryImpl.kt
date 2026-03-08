@@ -1,47 +1,35 @@
 package com.scribblefit.feature.ai.data.repository
 
-import android.content.Context
-import androidx.work.BackoffPolicy
-import androidx.work.Constraints
-import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
 import com.scribblefit.core.database.dao.SyncQueueDao
-import com.scribblefit.core.database.model.SyncQueueEntity
+import com.scribblefit.core.database.entity.EntitySyncStatus
+import com.scribblefit.core.database.entity.SyncQueueEntity
 import com.scribblefit.feature.ai.data.worker.SyncWorker
 import com.scribblefit.feature.ai.domain.engine.SyncRepository
 import com.scribblefit.feature.ai.domain.model.ParsedWorkout
 import com.scribblefit.feature.ai.domain.model.SyncItem
 import com.scribblefit.feature.ai.domain.model.SyncStatus
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.json.Json
-import java.time.Duration
 import javax.inject.Inject
 import javax.inject.Singleton
-import com.scribblefit.core.database.model.SyncStatus as EntitySyncStatus
 
 @Singleton
 class SyncRepositoryImpl @Inject constructor(
-    @ApplicationContext private val context: Context,
     private val syncQueueDao: SyncQueueDao,
-    private val json: Json,
+    private val workManager: WorkManager,
+    private val json: Json
 ) : SyncRepository {
 
-    internal var workManagerProvider: () -> WorkManager = { WorkManager.getInstance(context) }
-
-    override fun getPendingSyncItems(): Flow<List<SyncItem>> {
-        return syncQueueDao.getSyncItemsByStatus(EntitySyncStatus.PENDING).map { entities ->
-            entities.map { it.toDomain(json) }
+    override fun getPendingSyncItems(): Flow<List<SyncItem>> =
+        syncQueueDao.observeAll().map { entities ->
+            entities.filter { it.status == EntitySyncStatus.PENDING }.map { it.toDomain() }
         }
-    }
 
-    override fun getAllSyncItems(): Flow<List<SyncItem>> {
-        return syncQueueDao.getAllSyncItems().map { entities ->
-            entities.map { it.toDomain(json) }
-        }
-    }
+    override fun getAllSyncItems(): Flow<List<SyncItem>> =
+        syncQueueDao.observeAll().map { entities -> entities.map { it.toDomain() } }
 
     override suspend fun updateSyncStatus(id: String, status: SyncStatus) {
         syncQueueDao.updateStatus(id, status.toEntity())
@@ -53,31 +41,25 @@ class SyncRepositoryImpl @Inject constructor(
     }
 
     override suspend fun enqueueScribble(id: String, rawText: String) {
-        val syncItem = SyncQueueEntity(
+        val entity = SyncQueueEntity(
             id = id,
             type = "SCRIBBLE",
             rawText = rawText,
             status = EntitySyncStatus.PENDING,
             createdAt = System.currentTimeMillis()
         )
-        syncQueueDao.upsertSyncItem(syncItem)
+        syncQueueDao.insert(entity)
     }
 
-    override suspend fun saveFeedItem(
-        id: String,
-        type: String,
-        jsonData: String,
-        status: SyncStatus
-    ) {
+    override suspend fun saveFeedItem(id: String, type: String, jsonData: String, status: SyncStatus) {
         val entity = SyncQueueEntity(
             id = id,
             type = type,
-            parsedJson = jsonData,
             status = status.toEntity(),
             createdAt = System.currentTimeMillis(),
-            rawText = ""
+            parsedJson = jsonData
         )
-        syncQueueDao.upsertSyncItem(entity)
+        syncQueueDao.insert(entity)
     }
 
     override suspend fun deleteSyncItem(id: String) {
@@ -85,47 +67,36 @@ class SyncRepositoryImpl @Inject constructor(
     }
 
     override suspend fun syncWorkouts() {
-        val constraints = Constraints.Builder()
-            .setRequiredNetworkType(NetworkType.CONNECTED)
-            .build()
-
-        val syncRequest = OneTimeWorkRequestBuilder<SyncWorker>()
-            .setConstraints(constraints)
-            .setBackoffCriteria(
-                BackoffPolicy.EXPONENTIAL,
-                Duration.ofMinutes(1)
-            )
-            .build()
-
-        workManagerProvider().enqueue(syncRequest)
+        val request = OneTimeWorkRequestBuilder<SyncWorker>().build()
+        workManager.enqueue(request)
     }
-}
 
-private fun SyncQueueEntity.toDomain(json: Json): SyncItem {
-    val parsedWorkout = parsedJson?.let {
-        runCatching { json.decodeFromString<ParsedWorkout>(it) }.getOrNull()
+    private fun SyncQueueEntity.toDomain(): SyncItem {
+        val parsedResult = if (status == EntitySyncStatus.COMPLETED && parsedJson != null) {
+            runCatching { json.decodeFromString<ParsedWorkout>(parsedJson!!) }.getOrNull()
+        } else null
+        return SyncItem(
+            id = id,
+            type = type,
+            rawText = rawText.ifEmpty { null },
+            status = status.toDomain(),
+            createdAt = createdAt,
+            jsonData = parsedJson,
+            parsedResult = parsedResult
+        )
     }
-    return SyncItem(
-        id = id,
-        type = type,
-        rawText = rawText,
-        status = status.toDomain(),
-        createdAt = createdAt,
-        jsonData = parsedJson,
-        parsedResult = parsedWorkout
-    )
-}
 
-private fun EntitySyncStatus.toDomain(): SyncStatus = when (this) {
-    EntitySyncStatus.PENDING -> SyncStatus.PENDING
-    EntitySyncStatus.PROCESSING -> SyncStatus.PROCESSING
-    EntitySyncStatus.COMPLETED -> SyncStatus.COMPLETED
-    EntitySyncStatus.FAILED -> SyncStatus.FAILED
-}
+    private fun EntitySyncStatus.toDomain(): SyncStatus = when (this) {
+        EntitySyncStatus.PENDING -> SyncStatus.PENDING
+        EntitySyncStatus.PROCESSING -> SyncStatus.PROCESSING
+        EntitySyncStatus.COMPLETED -> SyncStatus.COMPLETED
+        EntitySyncStatus.FAILED -> SyncStatus.FAILED
+    }
 
-private fun SyncStatus.toEntity(): EntitySyncStatus = when (this) {
-    SyncStatus.PENDING -> EntitySyncStatus.PENDING
-    SyncStatus.PROCESSING -> EntitySyncStatus.PROCESSING
-    SyncStatus.COMPLETED -> EntitySyncStatus.COMPLETED
-    SyncStatus.FAILED -> EntitySyncStatus.FAILED
+    private fun SyncStatus.toEntity(): EntitySyncStatus = when (this) {
+        SyncStatus.PENDING -> EntitySyncStatus.PENDING
+        SyncStatus.PROCESSING -> EntitySyncStatus.PROCESSING
+        SyncStatus.COMPLETED -> EntitySyncStatus.COMPLETED
+        SyncStatus.FAILED -> EntitySyncStatus.FAILED
+    }
 }

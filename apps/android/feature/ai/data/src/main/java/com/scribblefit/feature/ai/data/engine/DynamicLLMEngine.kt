@@ -10,71 +10,36 @@ import com.scribblefit.feature.ai.domain.model.LLMProvider
 import com.scribblefit.feature.ai.domain.model.ParsedWorkoutResult
 import com.scribblefit.feature.ai.domain.model.SummaryPeriod
 import kotlinx.coroutines.flow.first
-import javax.inject.Inject
 import javax.inject.Named
 
-class DynamicLLMEngine @Inject constructor(
-    @param:Named("openai") private val openAIEngine: LLMEngine,
-    @param:Named("gemini") private val geminiAIEngine: LLMEngine,
-    @param:Named("proxy") private val proxyEngine: LLMEngine,
-    private val localAIEngine: LocalAIEngine,
+class DynamicLLMEngine(
+    @Named("openai") private val openAIEngine: LLMEngine,
+    @Named("gemini") private val geminiEngine: LLMEngine,
+    private val localEngine: LocalAIEngine,
     private val configRepository: ConfigRepository
 ) : LLMEngine, AnalysisEngine {
 
-    override suspend fun parseWorkout(rawText: String): ParsedWorkoutResult {
+    private suspend fun activeEngine(): LLMEngine {
         val config = configRepository.getConfig().first()
-        val preferredProvider = config?.preferredLlmProvider ?: LLMProvider.PROXY
-        val engine = getEngine(preferredProvider)
-        val result = engine.parseWorkout(rawText)
-        return result
-    }
-
-    private fun getEngine(preferred: LLMProvider): LLMEngine {
-        return when (preferred) {
+        return when (config?.preferredLlmProvider) {
             LLMProvider.OPENAI -> openAIEngine
-            LLMProvider.GEMINI -> geminiAIEngine
-            LLMProvider.PROXY -> proxyEngine
-            LLMProvider.LOCAL -> localAIEngine
+            LLMProvider.LOCAL -> localEngine
+            else -> geminiEngine
         }
     }
 
-    override suspend fun generateSuggestion(context: String): Result<AnalysisSuggestion> {
-        val config = configRepository.getConfig().first()
-        val preferredProvider = config?.preferredLlmProvider ?: LLMProvider.PROXY
-        val engine =
-            getEngine(preferredProvider) as? AnalysisEngine ?: error("Analysis Engine not found")
-        val result = engine.generateSuggestion(context)
-        if (result.isSuccess) return result
-        val lastError = result.exceptionOrNull()
-        return Result.failure(lastError ?: Exception("All analysis engines failed"))
-    }
+    override suspend fun parseWorkout(rawText: String): ParsedWorkoutResult =
+        activeEngine().parseWorkout(rawText)
 
-    override suspend fun generateSummary(
-        period: SummaryPeriod,
-        workoutData: String
-    ): Result<AnalysisSummary> {
-        val config = configRepository.getConfig().first()
-        val preferredProvider = config?.preferredLlmProvider ?: LLMProvider.PROXY
-        val engine =
-            getEngine(preferredProvider) as? AnalysisEngine ?: error("Analysis Engine not found")
+    override suspend fun generateSuggestion(context: String): Result<AnalysisSuggestion> =
+        (activeEngine() as? AnalysisEngine)?.generateSuggestion(context)
+            ?: Result.failure(IllegalStateException("Active engine does not support analysis"))
 
-        val result = engine.generateSummary(period, workoutData)
-        if (result.isSuccess) return result
-        val lastError = result.exceptionOrNull()
-        return Result.failure(lastError ?: Exception("All analysis engines failed"))
-    }
+    override suspend fun generateSummary(period: SummaryPeriod, workoutData: String): Result<AnalysisSummary> =
+        (activeEngine() as? AnalysisEngine)?.generateSummary(period, workoutData)
+            ?: Result.failure(IllegalStateException("Active engine does not support analysis"))
 
-    override suspend fun generateExerciseInsight(
-        exerciseName: String,
-        historyData: String
-    ): Result<ExerciseInsight> {
-        val config = configRepository.getConfig().first()
-        val preferredProvider = config?.preferredLlmProvider ?: LLMProvider.PROXY
-        val engine = getEngine(preferredProvider) as? AnalysisEngine ?: error("No Analysis Engine")
-        val result = engine.generateExerciseInsight(exerciseName, historyData)
-        if (result.isSuccess) return result
-        val lastError = result.exceptionOrNull()
-        return Result.failure(lastError ?: Exception("All analysis engines failed"))
-    }
-
+    override suspend fun generateExerciseInsight(exerciseName: String, historyData: String): Result<ExerciseInsight> =
+        (activeEngine() as? AnalysisEngine)?.generateExerciseInsight(exerciseName, historyData)
+            ?: Result.failure(IllegalStateException("Active engine does not support analysis"))
 }

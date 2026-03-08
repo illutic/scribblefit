@@ -11,24 +11,14 @@ import dagger.assisted.AssistedInject
 @HiltWorker
 class SyncWorker @AssistedInject constructor(
     @Assisted context: Context,
-    @Assisted workerParams: WorkerParameters,
+    @Assisted params: WorkerParameters,
     private val syncWorkoutUseCase: SyncWorkoutUseCase
-) : CoroutineWorker(context, workerParams) {
+) : CoroutineWorker(context, params) {
 
-    override suspend fun doWork(): Result = runCatching {
+    override suspend fun doWork(): Result = try {
         syncWorkoutUseCase()
-    }.fold(
-        onSuccess = { Result.success() },
-        onFailure = {
-            if (runAttemptCount < MAX_RETRIES) {
-                Result.retry()
-            } else {
-                Result.failure()
-            }
-        }
-    )
-
-    companion object {
-        private const val MAX_RETRIES = 3
+        Result.success()
+    } catch (e: Exception) {
+        Result.retry()
     }
 }
