@@ -11,13 +11,7 @@ interface SyncRepository {
     suspend fun updateSyncStatus(id: String, status: SyncStatus)
     suspend fun saveParsedWorkout(syncItemId: String, workout: ParsedWorkout)
     suspend fun enqueueScribble(id: String, rawText: String)
+    suspend fun saveFeedItem(id: String, type: String, jsonData: String, status: SyncStatus)
     suspend fun deleteSyncItem(id: String)
-    suspend fun saveFeedItem(
-        id: String,
-        type: String,
-        jsonData: String,
-        status: SyncStatus = SyncStatus.COMPLETED
-    )
-
     suspend fun syncWorkouts()
 }

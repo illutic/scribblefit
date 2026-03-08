@@ -1,5 +1,6 @@
 package com.scribblefit.feature.ai.domain.model
 
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 
 @Serializable
@@ -11,7 +12,8 @@ data class ParsedWorkout(
 
 @Serializable
 data class ParsedExercise(
-    val canonicalName: String,
+    @SerialName("canonical_name") val canonicalName: String,
+    @SerialName("muscle_group") val muscleGroup: String,
     val sets: List<ParsedSet>
 )
 

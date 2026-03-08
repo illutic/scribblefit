@@ -1,5 +1,8 @@
 package com.scribblefit.feature.ai.domain.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class AnalysisSuggestion(
     val text: String,
     val emoji: String,
@@ -9,6 +12,5 @@ data class AnalysisSuggestion(
     val fullText: String get() = "$text $emoji"
 }
 
-enum class SuggestionType {
-    RECOVERY, PATTERN, MILESTONE, REST
-}
+@Serializable
+enum class SuggestionType { RECOVERY, PATTERN, MILESTONE, REST }

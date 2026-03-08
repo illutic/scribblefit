@@ -3,37 +3,24 @@ package com.scribblefit.feature.ai.domain.model
 data class SystemConfig(
     val promptVersion: String,
     val promptText: String,
-    val exerciseVersion: String,
-    val preferredLlmProvider: LLMProvider,
+    val exerciseVersion: String = "0.0.0",
+    val preferredLlmProvider: LLMProvider = LLMProvider.PROXY,
     val preferredModel: String = "",
-    val parsingMode: String,
-    val weightUnit: String,
-    val themePreference: String,
+    val parsingMode: String = "managed",
+    val weightUnit: String = "lbs",
+    val themePreference: String = "system",
     val updatedAt: Long
-)
-
-const val DEFAULT_PROMPT = """
-    You are ScribbleFit AI, a fitness parsing assistant.
-    Your goal is to take raw, messy gym shorthand and parse it into a structured JSON format.
-
-    Strictly follow this JSON schema:
-    {
-      "date": "YYYY-MM-DD",
-      "location": "String or null",
-      "exercises": [
-        {
-          "canonical_name": "String",
-          "sets": [
-            {
-              "weight": number,
-              "reps": integer,
-              "rpe": number or null,
-              "notes": "String or null"
-            }
-          ]
-        }
-      ]
+) {
+    companion object {
+        val defaultPrompt: String = """
+            You are ScribbleFit AI, a fitness parsing assistant.
+            Parse raw gym shorthand into this JSON schema:
+            {"date":"YYYY-MM-DD","location":"String or null","exercises":[{"canonical_name":"String","muscle_group":"String","sets":[{"weight":number,"reps":integer,"rpe":number|null,"notes":"String|null"}]}]}
+            Output ONLY valid JSON. No markdown, no extra text.
+        """.trimIndent()
     }
+}
 
-    Always output valid JSON.
-"""
+enum class LLMProvider(val rawValue: String) {
+    OPENAI("openai"), GEMINI("gemini"), LOCAL("local"), PROXY("proxy")
+}
