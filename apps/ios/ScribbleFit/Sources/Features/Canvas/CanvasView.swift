@@ -2,38 +2,72 @@ import SwiftUI
 
 public struct CanvasView: View {
     @ObservedObject private var viewModel: CanvasViewModel
+    let onSettingsTap: () -> Void
 
-    public init(viewModel: CanvasViewModel) {
+    public init(viewModel: CanvasViewModel, onSettingsTap: @escaping () -> Void = {}) {
         self.viewModel = viewModel
+        self.onSettingsTap = onSettingsTap
+    }
+
+    // Groups feed by calendar day, newest date at top, items within a day ascending
+    private var groupedFeed: [(label: String, items: [FeedItem])] {
+        let calendar = Calendar.current
+        let today = calendar.startOfDay(for: Date())
+
+        let grouped = Dictionary(grouping: viewModel.uiState.feedItems) { item in
+            calendar.startOfDay(for: item.timestamp)
+        }
+
+        return grouped
+            .sorted { $0.key > $1.key }
+            .map { (date, items) in
+                let label = dateLabel(date, today: today, calendar: calendar)
+                let sorted = items.sorted { $0.timestamp < $1.timestamp }
+                return (label: label, items: sorted)
+            }
+    }
+
+    private func dateLabel(_ date: Date, today: Date, calendar: Calendar) -> String {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMMM d"
+        let dayStr = formatter.string(from: date)
+        if calendar.isDate(date, inSameDayAs: today) {
+            return "Today, \(dayStr)"
+        } else if let yesterday = calendar.date(byAdding: .day, value: -1, to: today),
+                  calendar.isDate(date, inSameDayAs: yesterday) {
+            return "Yesterday, \(dayStr)"
+        } else {
+            return dayStr
+        }
     }
 
     public var body: some View {
-        VStack(alignment: .leading, spacing: 0) {
-            Text("\(viewModel.uiState.greeting), \(viewModel.uiState.userName)")
-                .font(.system(size: 28, weight: .bold))
-                .foregroundStyle(ScribbleFitColor.richBlack)
-                .padding(.horizontal, ScribbleFitSpacing.screenPadding)
-                .padding(.top, ScribbleFitSpacing.large)
-                .padding(.bottom, ScribbleFitSpacing.medium)
+        VStack(spacing: 0) {
+            topNavBar
 
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: ScribbleFitSpacing.small) {
-                    ForEach(viewModel.uiState.quickActions, id: \.self) { action in
-                        ScribbleFitPill(action.rawValue)
-                            .onTapGesture { viewModel.onQuickActionClick(action) }
+            if viewModel.uiState.feedItems.isEmpty {
+                EmptyFeedView()
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                ScrollView {
+                    LazyVStack(alignment: .leading, spacing: 0) {
+                        ForEach(groupedFeed, id: \.label) { group in
+                            Text(group.label)
+                                .font(.system(size: 12, weight: .regular))
+                                .foregroundStyle(ScribbleFitColor.midGray)
+                                .padding(.horizontal, ScribbleFitSpacing.medium)
+                                .padding(.top, ScribbleFitSpacing.large)
+                                .padding(.bottom, ScribbleFitSpacing.small)
+
+                            ForEach(group.items) { item in
+                                feedItemRow(item)
+                                    .padding(.horizontal, ScribbleFitSpacing.medium)
+                                    .padding(.bottom, ScribbleFitSpacing.medium)
+                            }
+                        }
                     }
                 }
-                .padding(.horizontal, ScribbleFitSpacing.screenPadding)
-            }
-            .padding(.bottom, ScribbleFitSpacing.medium)
-
-            ScrollView {
-                LazyVStack(alignment: .leading, spacing: ScribbleFitSpacing.small) {
-                    ForEach(viewModel.uiState.feedItems) { item in
-                        FeedItemView(item: item, onConfirm: viewModel.onConfirmClick)
-                    }
-                }
-                .padding(.horizontal, ScribbleFitSpacing.screenPadding)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
 
             ScribbleInputBar(
@@ -41,57 +75,46 @@ public struct CanvasView: View {
                     get: { viewModel.uiState.scribbleText },
                     set: { viewModel.onTextChange($0) }
                 ),
+                isSyncing: viewModel.uiState.isSyncing,
                 onSubmit: viewModel.submitScribble
             )
-            .padding(ScribbleFitSpacing.screenPadding)
+            .padding(.horizontal, ScribbleFitSpacing.medium)
+            .padding(.top, ScribbleFitSpacing.small)
+            .padding(.bottom, ScribbleFitSpacing.medium)
         }
         .background(ScribbleFitColor.background)
     }
-}
 
-private struct FeedItemView: View {
-    let item: FeedItem
-    let onConfirm: (ConfirmationItem) -> Void
+    private var topNavBar: some View {
+        HStack {
+            Text("ScribbleFit")
+                .font(.system(size: 28, weight: .semibold))
+                .foregroundStyle(ScribbleFitColor.richBlack)
+            Spacer()
+            Button(action: onSettingsTap) {
+                Image(systemName: "gearshape")
+                    .font(.system(size: 20, weight: .regular))
+                    .foregroundStyle(ScribbleFitColor.richBlack)
+                    .frame(width: 36, height: 36)
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(.horizontal, ScribbleFitSpacing.medium)
+        .padding(.top, 16)
+        .padding(.bottom, 12)
+    }
 
-    var body: some View {
+    @ViewBuilder
+    private func feedItemRow(_ item: FeedItem) -> some View {
         switch item {
         case .scribble(let s):
-            HStack { Spacer(); ScribbleFitCard { Text(s.rawText).foregroundStyle(ScribbleFitColor.richBlack) } }
+            ScribbleCard(item: s, onRetry: viewModel.onRetryScribble)
         case .confirmation(let c):
-            ScribbleFitCard {
-                HStack {
-                    Text("Parsed: \(c.workout.exercises.count) exercises")
-                        .foregroundStyle(ScribbleFitColor.richBlack)
-                    Spacer()
-                    ScribbleFitPill("Confirm").onTapGesture { onConfirm(c) }
-                }
-            }
+            ConfirmationCard(confirmation: c, onConfirm: viewModel.onConfirmClick)
         case .prompt(let p):
-            Text("\(p.emoji) \(p.text)").foregroundStyle(ScribbleFitColor.midGray).font(.subheadline)
+            PromptCard(emoji: p.emoji, text: p.text)
         case .insight(let i):
-            Text("\(i.emoji) \(i.text)").foregroundStyle(ScribbleFitColor.midGray).font(.subheadline)
-        }
-    }
-}
-
-private struct ScribbleInputBar: View {
-    @Binding var text: String
-    let onSubmit: () -> Void
-
-    var body: some View {
-        HStack(spacing: ScribbleFitSpacing.small) {
-            TextField("Log workout... e.g. Bench 135x5x3", text: $text)
-                .padding(ScribbleFitSpacing.medium)
-                .background(ScribbleFitColor.softGray)
-                .clipShape(RoundedRectangle(cornerRadius: ScribbleFitCornerRadius.medium))
-                .onSubmit(onSubmit)
-            if !text.isEmpty {
-                Button(action: onSubmit) {
-                    Image(systemName: "arrow.up.circle.fill")
-                        .font(.system(size: 28))
-                        .foregroundStyle(ScribbleFitColor.richBlack)
-                }
-            }
+            PromptCard(emoji: i.emoji, text: i.text)
         }
     }
 }

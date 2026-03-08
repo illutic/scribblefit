@@ -53,7 +53,7 @@ struct MainView: View {
 
     var body: some View {
         TabView(selection: $navManager.selectedTab) {
-            CanvasView(viewModel: canvasViewModel)
+            CanvasView(viewModel: canvasViewModel, onSettingsTap: { navManager.selectedTab = .profile })
                 .tabItem { Label("Home", systemImage: "house") }
                 .tag(AppTab.workout)
 
