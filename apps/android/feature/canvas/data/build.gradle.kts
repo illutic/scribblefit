@@ -9,14 +9,10 @@ android {
 }
 
 dependencies {
-    implementation(project(":feature:canvas:domain"))
-    implementation(project(":feature:ai:domain"))
-    implementation(project(":feature:ai:data"))
-    implementation(project(":feature:ledger"))
-    implementation(project(":feature:analytics:domain"))
-    implementation(project(":feature:analytics:data"))
     implementation(project(":core:database"))
-
-    implementation(libs.hilt.android)
+    implementation(project(":feature:ai:domain"))
+    implementation(project(":feature:canvas:domain"))
+    implementation(project(":feature:ledger"))
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.coroutines.core)
 }

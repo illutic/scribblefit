@@ -3,15 +3,13 @@ plugins {
 }
 
 android {
-    namespace = "com.scribblefit.feature.canvas"
+    namespace = "com.scribblefit.feature.canvas.ui"
 }
 
 dependencies {
+    implementation(project(":feature:ai:domain"))
     implementation(project(":feature:canvas:domain"))
     implementation(project(":feature:canvas:data"))
-    implementation(project(":feature:analytics:domain"))
-    implementation(project(":core:navigation"))
-    implementation(project(":feature:ai:domain"))
-    implementation(project(":feature:ai:data"))
-    implementation(project(":core:designsystem"))
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.hilt.navigation.compose)
 }

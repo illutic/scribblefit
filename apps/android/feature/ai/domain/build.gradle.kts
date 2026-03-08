@@ -9,7 +9,5 @@ android {
 
 dependencies {
     implementation(libs.kotlinx.serialization.json)
-    testImplementation(libs.junit)
-    testImplementation(libs.mockk)
-    testImplementation(libs.coroutines.test)
+    implementation(libs.coroutines.core)
 }

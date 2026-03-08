@@ -9,19 +9,16 @@ android {
 }
 
 dependencies {
-    implementation(project(":feature:profile:domain"))
-    implementation(project(":feature:ai:domain"))
-    implementation(project(":feature:ai:data"))
-    implementation(project(":feature:ledger"))
     implementation(project(":core:database"))
     implementation(project(":core:network"))
-
-    implementation(libs.hilt.android)
-    implementation(libs.room.ktx)
-    implementation(libs.coroutines.core)
+    implementation(project(":feature:ai:domain"))
+    implementation(project(":feature:profile:domain"))
+    implementation(project(":feature:ledger"))
     implementation(libs.kotlinx.serialization.json)
-
-    testImplementation(libs.junit)
-    testImplementation(libs.mockk)
-    testImplementation(libs.coroutines.test)
+    implementation(libs.ktor.client.core)
+    implementation(libs.ktor.client.okhttp)
+    implementation(libs.ktor.client.content.negotiation)
+    implementation(libs.ktor.serialization.kotlinx.json)
+    implementation(libs.security.crypto)
+    implementation(libs.coroutines.core)
 }

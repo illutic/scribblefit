@@ -9,12 +9,9 @@ android {
 }
 
 dependencies {
-    implementation(project(":feature:analytics:domain"))
-    implementation(project(":feature:ai:domain"))
-    implementation(project(":feature:ai:data"))
     implementation(project(":core:database"))
-
-    implementation(libs.hilt.android)
-    implementation(libs.coroutines.core)
+    implementation(project(":feature:ai:domain"))
+    implementation(project(":feature:analytics:domain"))
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.coroutines.core)
 }

@@ -1,5 +1,6 @@
 plugins {
     id("scribblefit.android.feature")
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -8,5 +9,7 @@ android {
 
 dependencies {
     implementation(project(":feature:ai:domain"))
-    implementation(project(":core:designsystem"))
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.hilt.navigation.compose)
 }

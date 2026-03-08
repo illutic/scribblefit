@@ -1,6 +1,5 @@
 plugins {
-    id("scribblefit.android.library.compose")
-    id("scribblefit.android.hilt")
+    id("scribblefit.android.feature")
 }
 
 android {
@@ -8,12 +7,9 @@ android {
 }
 
 dependencies {
-    implementation(project(":feature:profile:domain"))
     implementation(project(":feature:ai:domain"))
-    implementation(project(":feature:ledger"))
-    implementation(project(":core:designsystem"))
-    implementation(project(":core:navigation"))
-
-    implementation(libs.hilt.android)
+    implementation(project(":feature:profile:domain"))
+    implementation(project(":feature:profile:data"))
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.hilt.navigation.compose)
 }
