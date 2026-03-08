@@ -10,6 +10,8 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
+private const val FLOW_TIMEOUT_MS = 5_000L
+
 @HiltViewModel
 class LedgerViewModel @Inject constructor(
     private val ledgerRepository: LedgerRepository
@@ -18,7 +20,7 @@ class LedgerViewModel @Inject constructor(
     val workoutHistory: StateFlow<List<WorkoutHistory>> = ledgerRepository.getWorkoutHistory()
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
+            started = SharingStarted.WhileSubscribed(FLOW_TIMEOUT_MS),
             initialValue = emptyList()
         )
 }

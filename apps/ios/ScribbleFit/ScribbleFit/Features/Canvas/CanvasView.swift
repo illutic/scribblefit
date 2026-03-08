@@ -55,7 +55,7 @@ public struct CanvasView: View {
                         .padding(.horizontal, ScribbleFitSpacing.screenPadding)
                         .padding(.vertical, ScribbleFitSpacing.medium)
                     }
-                    .onChange(of: viewModel.uiState.feedItems.count) { _ in
+                    .onChange(of: viewModel.uiState.feedItems.count) { _, _ in
                         withAnimation {
                             proxy.scrollTo(viewModel.uiState.feedItems.last?.id, anchor: .bottom)
                         }

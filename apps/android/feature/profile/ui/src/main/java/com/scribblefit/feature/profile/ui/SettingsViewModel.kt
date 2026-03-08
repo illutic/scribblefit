@@ -4,13 +4,23 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.scribblefit.feature.ai.domain.model.LLMProvider
 import com.scribblefit.feature.ai.domain.security.SecureKeyStorage
-import com.scribblefit.feature.profile.domain.model.*
+import com.scribblefit.feature.profile.domain.model.AppSettings
+import com.scribblefit.feature.profile.domain.model.ParsingMode
+import com.scribblefit.feature.profile.domain.model.ThemePreference
+import com.scribblefit.feature.profile.domain.model.WeightUnit
 import com.scribblefit.feature.profile.domain.repository.ModelRepository
 import com.scribblefit.feature.profile.domain.repository.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+
+private const val FLOW_TIMEOUT_MS = 5_000L
 
 data class SettingsUiState(
     val settings: AppSettings = AppSettings(
@@ -56,7 +66,7 @@ class SettingsViewModel @Inject constructor(
         )
     }.stateIn(
         scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
+        started = SharingStarted.WhileSubscribed(FLOW_TIMEOUT_MS),
         initialValue = SettingsUiState()
     )
 

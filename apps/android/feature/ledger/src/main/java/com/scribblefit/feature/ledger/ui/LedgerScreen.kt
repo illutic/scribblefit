@@ -1,10 +1,20 @@
 package com.scribblefit.feature.ledger.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.*
+import androidx.compose.material3.Divider
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -16,9 +26,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.scribblefit.core.designsystem.theme.tokens.ScribbleFitColors
 import com.scribblefit.feature.ledger.domain.model.WorkoutHistory
 import java.text.SimpleDateFormat
-import java.util.*
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun LedgerScreen(
@@ -39,7 +51,7 @@ fun LedgerScreen(
             style = TextStyle(
                 fontSize = 32.sp,
                 fontWeight = FontWeight.Bold,
-                color = Color(0xFF101010)
+                color = ScribbleFitColors.RichBlack
             )
         )
         
@@ -92,7 +104,7 @@ fun WorkoutItem(workout: WorkoutHistory) {
                 style = TextStyle(
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFF101010)
+                    color = ScribbleFitColors.RichBlack
                 )
             )
         }
@@ -112,7 +124,7 @@ fun WorkoutItem(workout: WorkoutHistory) {
             Spacer(modifier = Modifier.height(12.dp))
         }
         
-        Divider(color = Color(0xFFF7F7F8), thickness = 1.dp, modifier = Modifier.padding(top = 16.dp))
+        Divider(color = ScribbleFitColors.SoftGray, thickness = 1.dp, modifier = Modifier.padding(top = 16.dp))
     }
 }
 
@@ -124,7 +136,7 @@ fun ExerciseSection(exercise: com.scribblefit.feature.ledger.domain.model.Exerci
             style = TextStyle(
                 fontSize = 18.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = Color(0xFF101010)
+                color = ScribbleFitColors.RichBlack
             )
         )
         
@@ -136,7 +148,7 @@ fun ExerciseSection(exercise: com.scribblefit.feature.ledger.domain.model.Exerci
                     text = "SET ${index + 1}:  ${set.weight.toInt()} x ${set.reps}",
                     style = TextStyle(
                         fontSize = 14.sp,
-                        color = Color(0xFF101010),
+                        color = ScribbleFitColors.RichBlack,
                         fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace
                     )
                 )

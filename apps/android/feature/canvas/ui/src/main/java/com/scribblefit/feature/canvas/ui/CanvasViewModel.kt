@@ -25,6 +25,8 @@ import java.util.Calendar
 import java.util.UUID
 import javax.inject.Inject
 
+private const val FLOW_TIMEOUT_MS = 5_000L
+
 data class CanvasUiState(
     val greeting: String = "",
     val userName: String = "George",
@@ -64,7 +66,7 @@ class CanvasViewModel @Inject constructor(
         )
     }.stateIn(
         scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5000),
+        started = SharingStarted.WhileSubscribed(FLOW_TIMEOUT_MS),
         initialValue = _internalState.value
     )
 

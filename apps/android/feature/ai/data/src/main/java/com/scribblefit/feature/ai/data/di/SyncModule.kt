@@ -2,11 +2,19 @@ package com.scribblefit.feature.ai.data.di
 
 import com.scribblefit.core.database.dao.SystemConfigDao
 import com.scribblefit.core.network.ScribbleFitApi
-import com.scribblefit.feature.ai.data.engine.*
-import com.scribblefit.feature.ai.data.repository.*
+import com.scribblefit.feature.ai.data.engine.DynamicLLMEngine
+import com.scribblefit.feature.ai.data.engine.GeminiAIEngine
+import com.scribblefit.feature.ai.data.engine.LocalAIEngine
+import com.scribblefit.feature.ai.data.engine.OpenAIEngine
+import com.scribblefit.feature.ai.data.engine.ScribbleFitProxyEngine
+import com.scribblefit.feature.ai.data.repository.AuthRepositoryImpl
+import com.scribblefit.feature.ai.data.repository.ConfigRepositoryImpl
+import com.scribblefit.feature.ai.data.repository.SyncRepositoryImpl
+import com.scribblefit.feature.ai.data.repository.TelemetryRepositoryImpl
 import com.scribblefit.feature.ai.data.security.SecureKeyStorageImpl
 import com.scribblefit.feature.ai.domain.security.SecureKeyStorage
-import com.scribblefit.feature.ai.domain.usecase.*
+import com.scribblefit.feature.ai.domain.usecase.ListenForSyncItemsUseCase
+import com.scribblefit.feature.ai.domain.usecase.SyncWorkoutUseCase
 import com.google.mlkit.genai.prompt.Generation
 import com.google.mlkit.genai.prompt.GenerativeModel
 import com.scribblefit.feature.ai.domain.engine.AnalysisEngine
@@ -22,8 +30,6 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import io.ktor.client.HttpClient
 import kotlinx.serialization.json.Json
-import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.flow.firstOrNull
 import javax.inject.Named
 import javax.inject.Singleton
 

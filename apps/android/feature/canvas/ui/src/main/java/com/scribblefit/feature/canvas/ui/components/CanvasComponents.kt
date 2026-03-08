@@ -1,16 +1,36 @@
 package com.scribblefit.feature.canvas.ui.components
 
 import androidx.compose.animation.animateContentSize
-import androidx.compose.animation.core.*
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
@@ -27,6 +47,13 @@ import com.scribblefit.core.designsystem.theme.tokens.ScribbleFitSpacing
 import com.scribblefit.feature.canvas.domain.model.FeedItem
 import com.scribblefit.feature.canvas.domain.model.ScribbleStatus
 import com.scribblefit.feature.canvas.domain.usecase.QuickActionType
+
+private val ErrorBackground = Color(0xFFFEE2E2)
+private val ErrorText = Color(0xFF991B1B)
+private const val PendingAlpha = 0.5f
+private const val PromptMaxWidthFraction = 0.85f
+private const val ConfirmationMaxWidthFraction = 0.9f
+private const val PulseAnimationDurationMs = 500
 
 @Composable
 fun CanvasHeader(
@@ -96,7 +123,7 @@ fun FeedItemRow(
 
 @Composable
 private fun PromptBubble(item: FeedItem.Prompt) {
-    Column(modifier = Modifier.fillMaxWidth(0.85f)) {
+    Column(modifier = Modifier.fillMaxWidth(PromptMaxWidthFraction)) {
         Text(
             text = "${item.text} ${item.emoji}",
             style = MaterialTheme.typography.headlineSmall.copy(
@@ -113,12 +140,12 @@ private fun ScribbleBubble(
     onRetry: (String) -> Unit
 ) {
     val backgroundColor = when (item.status) {
-        ScribbleStatus.FAILED -> Color(0xFFFEE2E2)
+        ScribbleStatus.FAILED -> ErrorBackground
         else -> MaterialTheme.colorScheme.surfaceVariant
     }
 
     val alpha = when (item.status) {
-        ScribbleStatus.PENDING, ScribbleStatus.PROCESSING -> 0.5f
+        ScribbleStatus.PENDING, ScribbleStatus.PROCESSING -> PendingAlpha
         else -> 1f
     }
 
@@ -135,7 +162,7 @@ private fun ScribbleBubble(
                 Text(
                     text = item.rawText,
                     style = MaterialTheme.typography.bodyLarge.copy(
-                        color = if (item.status == ScribbleStatus.FAILED) Color(0xFF991B1B) else MaterialTheme.colorScheme.onSurface
+                        color = if (item.status == ScribbleStatus.FAILED) ErrorText else MaterialTheme.colorScheme.onSurface
                     )
                 )
                 
@@ -154,7 +181,7 @@ private fun ScribbleBubble(
             Text(
                 text = "Failed to parse. Tap to retry.",
                 style = MaterialTheme.typography.labelSmall,
-                color = Color(0xFF991B1B),
+                color = ErrorText,
                 modifier = Modifier
                     .padding(top = 4.dp)
                     .clickable { onRetry(item.id) }
@@ -169,7 +196,7 @@ private fun ConfirmationCard(
     onConfirmClick: (FeedItem.Confirmation) -> Unit
 ) {
     ScribbleFitCard(
-        modifier = Modifier.fillMaxWidth(0.9f),
+        modifier = Modifier.fillMaxWidth(ConfirmationMaxWidthFraction),
         containerColor = MaterialTheme.colorScheme.surface
     ) {
         item.workout.exercises.forEachIndexed { index, exercise ->
@@ -260,7 +287,7 @@ fun ScribbleInputPill(
             1f
         },
         animationSpec = infiniteRepeatable(
-            animation = tween(500, easing = LinearEasing),
+            animation = tween(PulseAnimationDurationMs, easing = LinearEasing),
             repeatMode = RepeatMode.Reverse
         ),
         label = "scale"

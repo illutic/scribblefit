@@ -2,7 +2,7 @@ import Foundation
 import SwiftData
 
 @Model
-public final class SystemConfig: @unchecked Sendable {
+public final class SystemConfig {
     @Attribute(.unique) public var id: String
     public var promptVersion: String
     public var promptText: String

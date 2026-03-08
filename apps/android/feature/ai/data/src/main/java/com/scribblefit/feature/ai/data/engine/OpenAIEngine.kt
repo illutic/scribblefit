@@ -30,7 +30,8 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 
-import com.scribblefit.feature.ai.domain.model.*
+import com.scribblefit.feature.ai.domain.model.ParsedWorkoutResult
+import com.scribblefit.feature.ai.domain.model.ParsingStatus
 
 class OpenAIEngine(
     private val client: HttpClient,
@@ -166,18 +167,6 @@ class OpenAIEngine(
         return response.body<OpenAIResponse>()
     }
 
-    // Deprecated but keeping signature for now if needed internally
-    private suspend fun callOpenAI(
-        apiKey: String,
-        instructions: String,
-        userMessage: String
-    ): String {
-        return callOpenAIResponse(apiKey, instructions, userMessage).output
-            .filter { it.type == "message" }
-            .firstNotNullOfOrNull { item ->
-                item.content?.firstOrNull { it.type == "text" }?.text
-            } ?: throw Exception("Empty response from OpenAI Responses API")
-    }
 }
 
 @Serializable

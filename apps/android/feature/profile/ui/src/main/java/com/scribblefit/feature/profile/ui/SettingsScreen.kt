@@ -1,12 +1,45 @@
 package com.scribblefit.feature.profile.ui
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Divider
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenu
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -17,7 +50,12 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.scribblefit.feature.ai.domain.model.LLMProvider
 import com.scribblefit.core.designsystem.component.ScribbleFitTextField
 import com.scribblefit.core.designsystem.theme.tokens.ScribbleFitSpacing
-import com.scribblefit.feature.profile.domain.model.*
+import com.scribblefit.feature.profile.domain.model.AppSettings
+import com.scribblefit.feature.profile.domain.model.ParsingMode
+import com.scribblefit.feature.profile.domain.model.ThemePreference
+import com.scribblefit.feature.profile.domain.model.WeightUnit
+
+private val DangerRed = Color(0xFFFF3B30)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -97,7 +135,7 @@ fun SettingsScreen(
                                         else -> "Tap to load models"
                                     },
                                     style = MaterialTheme.typography.bodyMedium,
-                                    color = if (uiState.modelLoadError != null) Color(0xFFFF3B30) else MaterialTheme.colorScheme.onSurfaceVariant
+                                    color = if (uiState.modelLoadError != null) DangerRed else MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                         }
@@ -135,10 +173,10 @@ fun SettingsScreen(
             Spacer(modifier = Modifier.height(ScribbleFitSpacing.Large))
 
             // Danger Zone
-            SectionHeader("DANGER ZONE", color = Color(0xFFFF3B30))
+            SectionHeader("DANGER ZONE", color = DangerRed)
             TextButton(
                 onClick = viewModel::onClearDataClick,
-                colors = ButtonDefaults.textButtonColors(contentColor = Color(0xFFFF3B30)),
+                colors = ButtonDefaults.textButtonColors(contentColor = DangerRed),
                 modifier = Modifier.fillMaxWidth(),
                 contentPadding = PaddingValues(0.dp)
             ) {

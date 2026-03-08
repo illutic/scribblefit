@@ -5,8 +5,13 @@ import androidx.lifecycle.viewModelScope
 import com.scribblefit.feature.profile.domain.model.UserStats
 import com.scribblefit.feature.profile.domain.repository.UserRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
+
+private const val FLOW_TIMEOUT_MS = 5_000L
 
 data class ProfileUiState(
     val userName: String = "George",
@@ -26,7 +31,7 @@ class ProfileViewModel @Inject constructor(
         }
         .stateIn(
             scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
+            started = SharingStarted.WhileSubscribed(FLOW_TIMEOUT_MS),
             initialValue = ProfileUiState()
         )
 
