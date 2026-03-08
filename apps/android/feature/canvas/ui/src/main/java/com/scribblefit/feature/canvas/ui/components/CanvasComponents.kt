@@ -172,22 +172,26 @@ private fun ConfirmationCard(
         modifier = Modifier.fillMaxWidth(0.9f),
         containerColor = MaterialTheme.colorScheme.surface
     ) {
-        Text(
-            text = item.workout.exercises.firstOrNull()?.canonicalName ?: "Workout Logged",
-            style = MaterialTheme.typography.titleMedium,
-            color = MaterialTheme.colorScheme.primary
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        Text(
-            text = "${item.workout.exercises.sumOf { it.sets.size }} sets completed.",
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurfaceVariant
-        )
+        item.workout.exercises.forEachIndexed { index, exercise ->
+            if (index > 0) Spacer(modifier = Modifier.height(8.dp))
+            Text(
+                text = exercise.canonicalName,
+                style = MaterialTheme.typography.titleSmall,
+                color = MaterialTheme.colorScheme.primary
+            )
+            Text(
+                text = exercise.sets.joinToString("  ") { set ->
+                    if (set.weight > 0) "${set.weight.toInt()}×${set.reps}" else "×${set.reps}"
+                },
+                style = MaterialTheme.typography.bodySmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant
+            )
+        }
         Spacer(modifier = Modifier.height(12.dp))
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             ScribbleFitPill(
-                text = "Confirm", 
-                onClick = { onConfirmClick(item) }, 
+                text = "Confirm",
+                onClick = { onConfirmClick(item) },
                 containerColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.1f)
             )
         }

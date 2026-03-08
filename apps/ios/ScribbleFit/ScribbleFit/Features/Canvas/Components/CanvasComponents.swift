@@ -170,18 +170,24 @@ struct ScribbleBubble: View {
 struct ConfirmationCard: View {
     let item: ConfirmationItem
     let onConfirmClick: (ConfirmationItem) -> Void
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(item.workout.exercises.first?.canonicalName ?? "Workout Logged")
-                    .font(ScribbleFitFont.titleMedium())
-                    .foregroundColor(ScribbleFitColor.primaryText)
-                Text("\(item.workout.exercises.flatMap { $0.sets }.count) sets completed.")
-                    .font(ScribbleFitFont.bodyMedium())
-                    .foregroundColor(ScribbleFitColor.secondaryText)
+            VStack(alignment: .leading, spacing: 8) {
+                ForEach(Array(item.workout.exercises.enumerated()), id: \.offset) { _, exercise in
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(exercise.canonicalName)
+                            .font(ScribbleFitFont.titleSmall())
+                            .foregroundColor(ScribbleFitColor.primaryText)
+                        Text(exercise.sets.map { set in
+                            set.weight > 0 ? "\(Int(set.weight))×\(set.reps)" : "×\(set.reps)"
+                        }.joined(separator: "  "))
+                            .font(ScribbleFitFont.bodyMedium())
+                            .foregroundColor(ScribbleFitColor.secondaryText)
+                    }
+                }
             }
-            
+
             HStack(spacing: 8) {
                 Button(action: { onConfirmClick(item) }) {
                     Text("Confirm")
