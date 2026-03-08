@@ -50,6 +50,17 @@ The project structure is planned to be scaffolded into `apps/` and `api/` direct
 - **Native Performance:** Avoid web-views or cross-platform wrappers.
 - **Sync Logic:** All AI parsing must happen through the background sync queue to ensure offline resilience.
 
+## 📏 Linting & Quality Standards
+- **Detekt Adherence:** Rigorously follow Detekt rules to ensure code maintainability.
+    - **Complexity:** Avoid `CyclomaticComplexMethod` (maintain < 15) and `LongMethod` (< 60 lines).
+    - **Naming:** Follow standard Kotlin naming conventions; avoid hungarian notation or redundant prefixes.
+- **Jetpack Compose Best Practices:**
+    - **Function Naming:** Composable functions must be PascalCase and start with a Noun (e.g., `CanvasFeed`).
+    - **Modifier Usage:** Every Composable that emits a layout should accept a `Modifier` as its first optional parameter and apply it to its root element.
+    - **State Hoisting:** Prefer stateless Composables with state hoisted to a caller or ViewModel.
+    - **Performance:** Avoid excessive parameters (> 10) and ensure heavy computations are wrapped in `remember` or moved to the ViewModel.
+    - **Layout Stability:** Use `Stable` or `Immutable` annotations for UI models where necessary to minimize unnecessary recompositions.
+
 ## 🗂️ Key Documentation
 - `README.md`: Project overview and agent instructions.
 - `ARCHITECTURE_SPEC.md`: Detailed local storage, background worker, and API specifications.

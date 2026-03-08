@@ -1,6 +1,5 @@
 package com.scribblefit.core.database
 
-import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import androidx.room.TypeConverters
@@ -14,9 +13,7 @@ import com.scribblefit.core.database.model.*
         SetEntity::class,
         ExerciseDictionaryEntity::class,
         SystemConfigEntity::class,
-        InsightsCacheEntity::class,
-        CanvasFeedEntity::class,
-        ActiveSessionEntity::class
+        InsightsCacheEntity::class
     ],
     version = 1,
     exportSchema = true
@@ -29,6 +26,4 @@ abstract class ScribbleFitDatabase : RoomDatabase() {
     abstract fun exerciseDictionaryDao(): ExerciseDictionaryDao
     abstract fun systemConfigDao(): SystemConfigDao
     abstract fun insightsCacheDao(): InsightsCacheDao
-    abstract fun canvasFeedDao(): CanvasFeedDao
-    abstract fun activeSessionDao(): ActiveSessionDao
 }

@@ -19,6 +19,7 @@ class SyncWorkoutUseCaseTest {
     private lateinit var syncRepository: SyncRepository
     private lateinit var telemetryRepository: TelemetryRepository
     private lateinit var engine: LLMEngine
+    private lateinit var configRepository: com.scribblefit.feature.ai.domain.engine.ConfigRepository
     private lateinit var useCase: SyncWorkoutUseCase
     private val promptVersion = "1.0.0"
 
@@ -26,19 +27,25 @@ class SyncWorkoutUseCaseTest {
     fun setup() {
         syncRepository = mockk(relaxed = true)
         telemetryRepository = mockk(relaxed = true)
+        configRepository = mockk(relaxed = true)
         engine = mockk()
-        useCase = SyncWorkoutUseCase(syncRepository, telemetryRepository, engine, promptVersion)
+        
+        coEvery { configRepository.getConfig() } returns flowOf(mockk {
+            every { promptVersion } returns this@SyncWorkoutUseCaseTest.promptVersion
+        })
+        
+        useCase = SyncWorkoutUseCase(syncRepository, telemetryRepository, engine, configRepository)
     }
 
     @Test
     fun `when sync is invoked, it processes all pending items`() = runTest {
         // Given
         val items = listOf(
-            SyncItem("1", "Bench 135x5", SyncStatus.PENDING, 0L),
-            SyncItem("2", "Squat 225x5", SyncStatus.PENDING, 0L)
+            SyncItem("1", "SCRIBBLE", "Bench 135x5", SyncStatus.PENDING, 0L),
+            SyncItem("2", "SCRIBBLE", "Squat 225x5", SyncStatus.PENDING, 0L)
         )
         coEvery { syncRepository.getPendingSyncItems() } returns flowOf(items)
-        coEvery { engine.parseWorkout(any()) } returns Result.success(mockk())
+        coEvery { engine.parseWorkout(any()) } returns ParsingResult(ParsingStatus.SUCCESS, mockk())
 
         // When
         useCase()
@@ -53,15 +60,13 @@ class SyncWorkoutUseCaseTest {
     }
 
     @Test
-    fun `when engine fails with AIParsingException, it reports hallucination to telemetry`() = runTest {
+    fun `when engine fails, it reports error to telemetry`() = runTest {
         // Given
         val rawText = "Bench 135x5"
-        val items = listOf(SyncItem("1", rawText, SyncStatus.PENDING, 0L))
-        val hallucinationError = "JSON is malformed"
+        val items = listOf(SyncItem("1", "SCRIBBLE", rawText, SyncStatus.PENDING, 0L))
+        val errorMsg = "JSON is malformed"
         coEvery { syncRepository.getPendingSyncItems() } returns flowOf(items)
-        coEvery { engine.parseWorkout(any()) } returns Result.failure(
-            AIParsingException(rawText, hallucinationError)
-        )
+        coEvery { engine.parseWorkout(any()) } returns ParsingResult(ParsingStatus.FAILED, error = errorMsg)
 
         // When
         useCase()
@@ -69,7 +74,7 @@ class SyncWorkoutUseCaseTest {
         // Then
         coVerify { 
             telemetryRepository.reportError(match { 
-                it.rawText == rawText && it.errorMessage == hallucinationError 
+                it.rawText == rawText && it.errorMessage == errorMsg 
             }) 
         }
     }
@@ -77,9 +82,9 @@ class SyncWorkoutUseCaseTest {
     @Test
     fun `when engine fails with general error, it updates status to FAILED`() = runTest {
         // Given
-        val items = listOf(SyncItem("1", "Bench 135x5", SyncStatus.PENDING, 0L))
+        val items = listOf(SyncItem("1", "SCRIBBLE", "Bench 135x5", SyncStatus.PENDING, 0L))
         coEvery { syncRepository.getPendingSyncItems() } returns flowOf(items)
-        coEvery { engine.parseWorkout(any()) } returns Result.failure(Exception("AI Error"))
+        coEvery { engine.parseWorkout(any()) } returns ParsingResult(ParsingStatus.FAILED, error = "AI Error")
 
         // When
         useCase()

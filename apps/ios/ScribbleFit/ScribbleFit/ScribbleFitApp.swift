@@ -56,7 +56,7 @@ struct ScribbleFitApp: App {
         // Wire up circular dependency lazily
         syncRepo.setSyncWorkoutUseCase(syncWorkoutUseCase)
         
-        let canvasRepo = CanvasRepositoryImpl(database: database)
+        let canvasRepo = CanvasRepositoryImpl(syncRepository: syncRepo)
         let userRepo = UserRepositoryImpl(ledgerRepository: ledgerRepo)
         let settingsRepo = SettingsRepositoryImpl(database: database)
         

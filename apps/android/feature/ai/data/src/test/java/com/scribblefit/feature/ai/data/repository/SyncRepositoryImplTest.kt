@@ -3,11 +3,7 @@ package com.scribblefit.feature.ai.data.repository
 import android.content.Context
 import androidx.work.WorkManager
 import androidx.work.WorkRequest
-import com.scribblefit.core.database.dao.ExerciseDictionaryDao
-import com.scribblefit.core.database.dao.SetDao
 import com.scribblefit.core.database.dao.SyncQueueDao
-import com.scribblefit.core.database.dao.WorkoutLogDao
-import com.scribblefit.core.database.model.ExerciseDictionaryEntity
 import com.scribblefit.core.database.model.SyncQueueEntity
 import com.scribblefit.core.database.model.SyncStatus as EntitySyncStatus
 import com.scribblefit.feature.ai.domain.model.ParsedExercise
@@ -21,7 +17,6 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
-import java.time.Instant
 
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.encodeToString
@@ -30,9 +25,6 @@ class SyncRepositoryImplTest {
 
     private lateinit var context: Context
     private lateinit var syncQueueDao: SyncQueueDao
-    private lateinit var workoutLogDao: WorkoutLogDao
-    private lateinit var setDao: SetDao
-    private lateinit var exerciseDictionaryDao: ExerciseDictionaryDao
     private lateinit var workManager: WorkManager
     private lateinit var json: Json
     private lateinit var repository: SyncRepositoryImpl
@@ -44,18 +36,16 @@ class SyncRepositoryImplTest {
         json = Json { ignoreUnknownKeys = true }
         
         syncQueueDao = mockk(relaxed = true)
-        workoutLogDao = mockk(relaxed = true)
-        setDao = mockk(relaxed = true)
-        exerciseDictionaryDao = mockk(relaxed = true)
         
-        repository = SyncRepositoryImpl(context, syncQueueDao, workoutLogDao, setDao, exerciseDictionaryDao, json) { workManager }
+        repository = SyncRepositoryImpl(context, syncQueueDao, json)
+        repository.workManagerProvider = { workManager }
     }
 
     @Test
     fun `getPendingSyncItems maps entities to domain`() = runTest {
         // Given
         val entities = listOf(
-            SyncQueueEntity("1", "raw", EntitySyncStatus.PENDING, 123L)
+            SyncQueueEntity("1", "SCRIBBLE", "raw", EntitySyncStatus.PENDING, 123L)
         )
         every { syncQueueDao.getSyncItemsByStatus(EntitySyncStatus.PENDING) } returns flowOf(entities)
 
@@ -65,6 +55,7 @@ class SyncRepositoryImplTest {
         // Then
         assertEquals(1, result.size)
         assertEquals("1", result[0].id)
+        assertEquals("SCRIBBLE", result[0].type)
         assertEquals(SyncStatus.PENDING, result[0].status)
     }
 
@@ -98,10 +89,19 @@ class SyncRepositoryImplTest {
     @Test
     fun `enqueueScribble saves item with provided id and triggers workmanager`() = runTest {
         // When
-        repository.enqueueScribble("bench 100x5", "custom-id")
+        repository.enqueueScribble("custom-id", "bench 100x5")
 
         // Then
-        coVerify { syncQueueDao.upsertSyncItem(match { it.id == "custom-id" && it.rawText == "bench 100x5" }) }
+        coVerify { syncQueueDao.upsertSyncItem(match { it.id == "custom-id" && it.rawText == "bench 100x5" && it.type == "SCRIBBLE" }) }
         coVerify { workManager.enqueue(any<WorkRequest>()) }
+    }
+
+    @Test
+    fun `saveFeedItem saves non-scribble item`() = runTest {
+        // When
+        repository.saveFeedItem("prompt-1", "PROMPT", "{\"text\":\"Hello\"}", SyncStatus.COMPLETED)
+
+        // Then
+        coVerify { syncQueueDao.upsertSyncItem(match { it.id == "prompt-1" && it.type == "PROMPT" && it.parsedJson == "{\"text\":\"Hello\"}" }) }
     }
 }

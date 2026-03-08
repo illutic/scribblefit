@@ -57,13 +57,4 @@ object DatabaseModule {
         database: ScribbleFitDatabase
     ): InsightsCacheDao = database.insightsCacheDao()
 
-    @Provides
-    fun providesCanvasFeedDao(
-        database: ScribbleFitDatabase
-    ): CanvasFeedDao = database.canvasFeedDao()
-
-    @Provides
-    fun providesActiveSessionDao(
-        database: ScribbleFitDatabase
-    ): ActiveSessionDao = database.activeSessionDao()
 }

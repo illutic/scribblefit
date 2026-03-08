@@ -1,6 +1,5 @@
 import Foundation
 import SwiftData
-import BackgroundTasks
 
 /**
  * iOS implementation of SyncRepository using ScribbleFitDatabase (SwiftData).
@@ -23,6 +22,10 @@ public final class SyncRepositoryImpl: SyncRepository {
         return database.getSyncItems(status: .pending).map { $0.toDomain() }
     }
     
+    public func getAllSyncItems() async throws -> [AISyncItem] {
+        return database.getAllSyncItems().map { $0.toDomain() }
+    }
+    
     public func updateSyncStatus(id: String, status: AISyncStatus) async throws {
         let dbStatus: ScribbleFit.SyncStatus = switch status {
         case .pending: .pending
@@ -37,15 +40,38 @@ public final class SyncRepositoryImpl: SyncRepository {
         database.saveParsedWorkout(syncItemId: syncItemId, workout: workout)
     }
     
-    public func enqueueScribble(rawText: String) async throws {
+    public func enqueueScribble(id: String, rawText: String) async throws {
         let syncItem = SyncQueue(
-            id: UUID().uuidString,
+            id: id,
+            itemType: "SCRIBBLE",
             rawText: rawText,
             status: .pending,
             createdAt: Date()
         )
         database.upsertSyncItem(syncItem)
         triggerImmediateSync()
+    }
+    
+    public func saveFeedItem(id: String, itemType: String, jsonData: String, status: AISyncStatus) async throws {
+        let dbStatus: ScribbleFit.SyncStatus = switch status {
+        case .pending: .pending
+        case .processing: .processing
+        case .completed: .completed
+        case .failed: .failed
+        }
+        
+        let syncItem = SyncQueue(
+            id: id,
+            itemType: itemType,
+            status: dbStatus,
+            jsonData: jsonData,
+            createdAt: Date()
+        )
+        database.upsertSyncItem(syncItem)
+    }
+    
+    public func deleteSyncItem(id: String) async throws {
+        database.deleteSyncItem(id: id)
     }
     
     private func triggerImmediateSync() {
@@ -71,8 +97,10 @@ private extension SyncQueue {
         
         return AISyncItem(
             id: self.id,
+            itemType: self.itemType,
             rawText: self.rawText,
             status: domainStatus,
+            jsonData: self.jsonData,
             createdAt: self.createdAt
         )
     }

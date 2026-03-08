@@ -12,6 +12,8 @@ enum class SyncStatus {
 data class SyncQueueEntity(
     @PrimaryKey
     val id: String,
+    @ColumnInfo(name = "item_type")
+    val type: String, // SCRIBBLE, PROMPT, CONFIRMATION, INSIGHT
     @ColumnInfo(name = "raw_text")
     val rawText: String,
     val status: SyncStatus,

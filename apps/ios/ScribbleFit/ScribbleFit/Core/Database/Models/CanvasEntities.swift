@@ -2,24 +2,6 @@ import Foundation
 import SwiftData
 
 /**
- * Persists the state of the Intelligent Canvas feed to allow recovery after app kill.
- */
-@Model
-public final class CanvasFeed {
-    @Attribute(.unique) public var id: String
-    public var itemType: String
-    public var jsonData: String
-    public var createdAt: Date
-    
-    public init(id: String, itemType: String, jsonData: String, createdAt: Date) {
-        self.id = id
-        self.itemType = itemType
-        self.jsonData = jsonData
-        self.createdAt = createdAt
-    }
-}
-
-/**
  * Persists the current uncommitted workout session.
  */
 @Model

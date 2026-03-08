@@ -149,6 +149,21 @@ public final class ScribbleFitDatabase {
         return (try? context.fetch(descriptor)) ?? []
     }
     
+    public func getAllSyncItems() -> [SyncQueue] {
+        let descriptor = FetchDescriptor<SyncQueue>(
+            sortBy: [SortDescriptor(\.createdAt)]
+        )
+        return (try? context.fetch(descriptor)) ?? []
+    }
+    
+    public func deleteSyncItem(id: String) {
+        let descriptor = FetchDescriptor<SyncQueue>(predicate: #Predicate { $0.id == id })
+        if let item = try? context.fetch(descriptor).first {
+            context.delete(item)
+            try? context.save()
+        }
+    }
+    
     public func updateSyncStatus(id: String, status: SyncStatus) {
         if let item = (try? context.fetch(FetchDescriptor<SyncQueue>(predicate: #Predicate { $0.id == id })) )?.first {
             item.syncStatus = status
@@ -182,31 +197,6 @@ public final class ScribbleFitDatabase {
     
     public func clearInsights() {
         try? context.delete(model: InsightsCache.self)
-        try? context.save()
-    }
-    
-    // MARK: - CanvasFeed
-    
-    public func upsertCanvasFeedItem(_ item: CanvasFeed) {
-        context.insert(item)
-        try? context.save()
-    }
-    
-    public func getCanvasFeed() -> [CanvasFeed] {
-        let descriptor = FetchDescriptor<CanvasFeed>(sortBy: [SortDescriptor(\.createdAt)])
-        return (try? context.fetch(descriptor)) ?? []
-    }
-    
-    public func removeCanvasFeedItem(id: String) {
-        let descriptor = FetchDescriptor<CanvasFeed>(predicate: #Predicate { $0.id == id })
-        if let item = try? context.fetch(descriptor).first {
-            context.delete(item)
-            try? context.save()
-        }
-    }
-    
-    public func clearCanvasFeed() {
-        try? context.delete(model: CanvasFeed.self)
         try? context.save()
     }
     

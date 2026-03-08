@@ -15,7 +15,6 @@ public final class DatabaseContainer {
             ExerciseDictionary.self,
             SystemConfig.self,
             InsightsCache.self,
-            CanvasFeed.self,
             ActiveSession.self
         ])
         let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)

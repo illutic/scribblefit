@@ -1,9 +1,7 @@
 package com.scribblefit.feature.canvas.data.di
 
 import com.scribblefit.feature.canvas.data.repository.CanvasRepositoryImpl
-import com.scribblefit.feature.canvas.data.repository.WorkoutSessionRepositoryImpl
 import com.scribblefit.feature.canvas.domain.repository.CanvasRepository
-import com.scribblefit.feature.canvas.domain.repository.WorkoutSessionRepository
 import com.scribblefit.feature.canvas.domain.usecase.ConfirmWorkoutUseCase
 import com.scribblefit.feature.canvas.domain.usecase.ExecuteQuickActionUseCase
 import com.scribblefit.feature.canvas.domain.usecase.ProcessScribbleUseCase
@@ -23,10 +21,6 @@ abstract class CanvasModule {
     @Singleton
     abstract fun bindCanvasRepository(impl: CanvasRepositoryImpl): CanvasRepository
 
-    @Binds
-    @Singleton
-    abstract fun bindWorkoutSessionRepository(impl: WorkoutSessionRepositoryImpl): WorkoutSessionRepository
-
     companion object {
         @Provides
         @Singleton
@@ -43,10 +37,9 @@ abstract class CanvasModule {
         @Provides
         @Singleton
         fun provideConfirmWorkoutUseCase(
-            sessionRepository: WorkoutSessionRepository,
             ledgerRepository: LedgerRepository
         ): ConfirmWorkoutUseCase {
-            return ConfirmWorkoutUseCase(sessionRepository, ledgerRepository)
+            return ConfirmWorkoutUseCase(ledgerRepository)
         }
     }
 }

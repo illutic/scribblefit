@@ -1,16 +1,13 @@
 package com.scribblefit.feature.canvas.data.repository
 
-import com.scribblefit.core.database.dao.CanvasFeedDao
-import com.scribblefit.core.database.model.CanvasFeedEntity
 import com.scribblefit.feature.ai.domain.engine.SyncRepository
-import com.scribblefit.feature.ai.domain.model.ParsedWorkout
 import com.scribblefit.feature.ai.domain.model.SuggestionType
 import com.scribblefit.feature.ai.domain.model.SyncStatus
 import com.scribblefit.feature.canvas.data.mapper.*
 import com.scribblefit.feature.canvas.domain.model.*
 import com.scribblefit.feature.canvas.domain.repository.CanvasRepository
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.serialization.json.Json
 import java.util.UUID
 import javax.inject.Inject
@@ -18,20 +15,41 @@ import javax.inject.Singleton
 
 @Singleton
 class CanvasRepositoryImpl @Inject constructor(
-    private val canvasFeedDao: CanvasFeedDao,
     private val syncRepository: SyncRepository,
     private val json: Json
 ) : CanvasRepository {
 
     override fun getFeed(): Flow<List<FeedItem>> {
-        return combine(
-            canvasFeedDao.getFeed(),
-            syncRepository.getAllSyncItems()
-        ) { feedEntities, syncItems ->
-            val feedItems = feedEntities.mapNotNull { entity ->
-                when (entity.type) {
+        return syncRepository.getAllSyncItems().map { items ->
+            items.mapNotNull { item ->
+                when (item.type) {
+                    "SCRIBBLE" -> {
+                        if (item.status == SyncStatus.COMPLETED && item.parsedResult != null) {
+                            FeedItem.Confirmation(
+                                id = item.id,
+                                timestamp = item.createdAt,
+                                workout = item.parsedResult!!,
+                                scribbleId = item.id
+                            )
+                        } else {
+                            FeedItem.Scribble(
+                                id = item.id,
+                                timestamp = item.createdAt,
+                                rawText = item.rawText ?: "",
+                                status = when (item.status) {
+                                    SyncStatus.PENDING -> ScribbleStatus.PENDING
+                                    SyncStatus.PROCESSING -> ScribbleStatus.PROCESSING
+                                    SyncStatus.FAILED -> ScribbleStatus.FAILED
+                                    SyncStatus.COMPLETED -> ScribbleStatus.COMPLETED
+                                }
+                            )
+                        }
+                    }
+
                     "PROMPT" -> {
-                        val dto = json.decodeFromString<FeedItemDto.Prompt>(entity.jsonData)
+                        val dto = item.jsonData?.let {
+                            runCatching { json.decodeFromString<FeedItemDto.Prompt>(it) }.getOrNull()
+                        } ?: return@mapNotNull null
                         FeedItem.Prompt(
                             dto.id,
                             dto.timestamp,
@@ -42,53 +60,34 @@ class CanvasRepositoryImpl @Inject constructor(
                     }
 
                     "CONFIRMATION" -> {
-                        val dto = json.decodeFromString<FeedItemDto.Confirmation>(entity.jsonData)
+                        // This handles manual confirmations not linked to a scribble
+                        val dto = item.jsonData?.let {
+                            runCatching { json.decodeFromString<FeedItemDto.Confirmation>(it) }.getOrNull()
+                        } ?: return@mapNotNull null
+                        
                         FeedItem.Confirmation(
                             dto.id,
                             dto.timestamp,
-                            ParsedWorkout("2024-05-20", null, emptyList()),
+                            item.parsedResult ?: return@mapNotNull null,
                             dto.scribbleId
                         )
                     }
 
                     "INSIGHT" -> {
-                        val dto = json.decodeFromString<FeedItemDto.Insight>(entity.jsonData)
+                        val dto = item.jsonData?.let {
+                            runCatching { json.decodeFromString<FeedItemDto.Insight>(it) }.getOrNull()
+                        } ?: return@mapNotNull null
                         FeedItem.Insight(dto.id, dto.timestamp, dto.text, dto.emoji)
                     }
 
                     else -> null
                 }
-            }
-
-            val syncFeedItems = syncItems.map { item ->
-                if (item.status == SyncStatus.COMPLETED && item.parsedResult != null) {
-                    FeedItem.Confirmation(
-                        id = item.id,
-                        timestamp = item.createdAt,
-                        workout = item.parsedResult!!,
-                        scribbleId = item.id
-                    )
-                } else {
-                    FeedItem.Scribble(
-                        id = item.id,
-                        timestamp = item.createdAt,
-                        rawText = item.rawText,
-                        status = when (item.status) {
-                            SyncStatus.PENDING -> ScribbleStatus.PENDING
-                            SyncStatus.PROCESSING -> ScribbleStatus.PROCESSING
-                            SyncStatus.FAILED -> ScribbleStatus.FAILED
-                            SyncStatus.COMPLETED -> ScribbleStatus.COMPLETED
-                        }
-                    )
-                }
-            }
-
-            (feedItems + syncFeedItems).sortedBy { it.timestamp }
+            }.sortedBy { it.timestamp }
         }
     }
 
     override suspend fun addScribble(rawText: String) {
-        syncRepository.enqueueScribble(rawText, UUID.randomUUID().toString())
+        syncRepository.enqueueScribble(UUID.randomUUID().toString(), rawText)
     }
 
     override suspend fun retryScribble(id: String) {
@@ -97,23 +96,29 @@ class CanvasRepositoryImpl @Inject constructor(
 
     override suspend fun addConfirmation(item: FeedItem.Confirmation) {
         val dto = FeedItemDto.Confirmation(item.id, item.timestamp, item.scribbleId)
-        val entity =
-            CanvasFeedEntity(item.id, "CONFIRMATION", json.encodeToString(dto), item.timestamp)
-        canvasFeedDao.upsertFeedItem(entity)
+        syncRepository.saveFeedItem(
+            id = item.id,
+            type = "CONFIRMATION",
+            jsonData = json.encodeToString(dto),
+        )
+        syncRepository.saveParsedWorkout(item.id, item.workout)
     }
 
     override suspend fun addInsight(item: FeedItem.Insight) {
         val dto = FeedItemDto.Insight(item.id, item.timestamp, item.text, item.emoji)
-        val entity = CanvasFeedEntity(item.id, "INSIGHT", json.encodeToString(dto), item.timestamp)
-        canvasFeedDao.upsertFeedItem(entity)
+        syncRepository.saveFeedItem(
+            id = item.id,
+            type = "INSIGHT",
+            jsonData = json.encodeToString(dto)
+        )
     }
 
     override suspend fun removeFeedItem(id: String) {
-        canvasFeedDao.deleteFeedItemById(id)
         syncRepository.deleteSyncItem(id)
     }
 
     override suspend fun clearFeed() {
-        canvasFeedDao.clearFeed()
+        // This might need a new method in SyncRepository if we only want to clear "Feed" items
+        // but for now deleteSyncItem is used.
     }
 }

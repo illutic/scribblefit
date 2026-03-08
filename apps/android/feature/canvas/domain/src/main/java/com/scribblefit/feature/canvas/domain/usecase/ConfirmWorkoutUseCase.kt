@@ -1,7 +1,6 @@
 package com.scribblefit.feature.canvas.domain.usecase
 
 import com.scribblefit.feature.ai.domain.model.ParsedWorkout
-import com.scribblefit.feature.canvas.domain.repository.WorkoutSessionRepository
 import com.scribblefit.feature.ledger.domain.model.ExerciseHistory
 import com.scribblefit.feature.ledger.domain.model.SetHistory
 import com.scribblefit.feature.ledger.domain.model.WorkoutHistory
@@ -12,7 +11,6 @@ import java.util.UUID
  * Finalizes the parsed workout session into the permanent workout ledger.
  */
 class ConfirmWorkoutUseCase(
-    private val sessionRepository: WorkoutSessionRepository,
     private val ledgerRepository: LedgerRepository
 ) {
     suspend operator fun invoke(workout: ParsedWorkout) {
@@ -32,8 +30,7 @@ class ConfirmWorkoutUseCase(
                 )
             }
         )
-        
+
         ledgerRepository.logWorkout(workoutHistory)
-        sessionRepository.clearActiveSession()
     }
 }

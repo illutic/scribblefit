@@ -9,21 +9,28 @@ public enum AISyncStatus: String, Sendable {
 
 public struct AISyncItem: Sendable {
     public let id: String
-    public let rawText: String
+    public let itemType: String
+    public let rawText: String?
     public let status: AISyncStatus
+    public let jsonData: String?
     public let createdAt: Date
     
-    public init(id: String, rawText: String, status: AISyncStatus, createdAt: Date) {
+    public init(id: String, itemType: String, rawText: String?, status: AISyncStatus, jsonData: String?, createdAt: Date) {
         self.id = id
+        self.itemType = itemType
         self.rawText = rawText
         self.status = status
+        self.jsonData = jsonData
         self.createdAt = createdAt
     }
 }
 
 public protocol SyncRepository: Sendable {
     func getPendingSyncItems() async throws -> [AISyncItem]
+    func getAllSyncItems() async throws -> [AISyncItem]
     func updateSyncStatus(id: String, status: AISyncStatus) async throws
     func saveParsedWorkout(syncItemId: String, workout: ParsedWorkout) async throws
-    func enqueueScribble(rawText: String) async throws
+    func enqueueScribble(id: String, rawText: String) async throws
+    func saveFeedItem(id: String, itemType: String, jsonData: String, status: AISyncStatus) async throws
+    func deleteSyncItem(id: String) async throws
 }

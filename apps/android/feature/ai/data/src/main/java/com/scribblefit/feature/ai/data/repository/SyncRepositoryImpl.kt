@@ -56,15 +56,28 @@ class SyncRepositoryImpl @Inject constructor(
         syncQueueDao.updateParsedResult(syncItemId, EntitySyncStatus.COMPLETED, jsonString)
     }
 
-    override suspend fun enqueueScribble(rawText: String, id: String?) {
+    override suspend fun enqueueScribble(id: String, rawText: String) {
         val syncItem = SyncQueueEntity(
-            id = id ?: UUID.randomUUID().toString(),
+            id = id,
+            type = "SCRIBBLE",
             rawText = rawText,
             status = EntitySyncStatus.PENDING,
             createdAt = System.currentTimeMillis()
         )
         syncQueueDao.upsertSyncItem(syncItem)
         triggerImmediateSync()
+    }
+
+    override suspend fun saveFeedItem(id: String, type: String, jsonData: String, status: SyncStatus) {
+        val entity = SyncQueueEntity(
+            id = id,
+            type = type,
+            parsedJson = jsonData,
+            status = status.toEntity(),
+            createdAt = System.currentTimeMillis(),
+            rawText = ""
+        )
+        syncQueueDao.upsertSyncItem(entity)
     }
 
     override suspend fun deleteSyncItem(id: String) {
@@ -94,9 +107,11 @@ private fun SyncQueueEntity.toDomain(json: Json): SyncItem {
     }
     return SyncItem(
         id = id,
+        type = type,
         rawText = rawText,
         status = status.toDomain(),
         createdAt = createdAt,
+        jsonData = parsedJson,
         parsedResult = parsedWorkout
     )
 }

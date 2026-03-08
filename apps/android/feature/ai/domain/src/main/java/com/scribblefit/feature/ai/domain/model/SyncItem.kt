@@ -6,8 +6,10 @@ enum class SyncStatus {
 
 data class SyncItem(
     val id: String,
+    val type: String,
     val rawText: String,
     val status: SyncStatus,
     val createdAt: Long,
+    val jsonData: String? = null,
     val parsedResult: ParsedWorkout? = null
 )
