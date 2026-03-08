@@ -32,7 +32,7 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		60344A982F5B13AC00336125 /* ScribbleFit */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			path = ScribbleFit;
+			path = Sources;
 			sourceTree = "<group>";
 		};
 		60344AA82F5B13AD00336125 /* ScribbleFitTests */ = {
