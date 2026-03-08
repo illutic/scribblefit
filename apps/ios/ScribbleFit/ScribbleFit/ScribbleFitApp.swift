@@ -14,6 +14,7 @@ struct ScribbleFitApp: App {
     private let canvasRepository: CanvasRepository
     private let userRepository: UserRepository
     private let settingsRepository: SettingsRepository
+    private let modelRepository: ModelRepository
     private let secureKeyStorage: SecureKeyStorage
     private let database: ScribbleFitDatabase
     
@@ -59,7 +60,8 @@ struct ScribbleFitApp: App {
         let canvasRepo = CanvasRepositoryImpl(syncRepository: syncRepo)
         let userRepo = UserRepositoryImpl(ledgerRepository: ledgerRepo)
         let settingsRepo = SettingsRepositoryImpl(database: database)
-        
+        let modelRepo = ModelRepositoryImpl()
+
         self.syncRepository = syncRepo
         self.ledgerRepository = ledgerRepo
         self.authRepository = authRepo
@@ -68,7 +70,8 @@ struct ScribbleFitApp: App {
         self.canvasRepository = canvasRepo
         self.userRepository = userRepo
         self.settingsRepository = settingsRepo
-        
+        self.modelRepository = modelRepo
+
         _appViewModel = StateObject(wrappedValue: AppViewModel(
             authRepository: authRepo,
             configRepository: configRepo
@@ -84,6 +87,7 @@ struct ScribbleFitApp: App {
                         analysisRepository: analysisRepository,
                         userRepository: userRepository,
                         settingsRepository: settingsRepository,
+                        modelRepository: modelRepository,
                         secureKeyStorage: secureKeyStorage,
                         processScribbleUseCase: ProcessScribbleUseCase(canvasRepository: canvasRepository),
                         executeQuickActionUseCase: ExecuteQuickActionUseCase(canvasRepository: canvasRepository),

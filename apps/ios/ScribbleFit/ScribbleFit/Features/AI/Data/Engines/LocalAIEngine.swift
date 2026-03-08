@@ -23,13 +23,21 @@ public final class LocalAIEngine: LLMEngine, AnalysisEngine {
             if #available(iOS 26.0, *) {
                 let config = await configRepository.getConfig()
                 let systemPrompt = config?.promptText ?? ScribbleFitProxyEngine.defaultPrompt
-                
+                 
                 let session = LanguageModelSession { systemPrompt }
                 let response = try await session.respond(to: "Parse this gym note: \(rawText)")
                 let duration = Int64(Date().timeIntervalSince(startTime) * 1000)
                 
-                if let data = response.content.data(using: .utf8) {
-                    let dto = try jsonDecoder.decode(AIWorkoutDTO.self, from: data)
+                let cleanString = response.content
+                    .replacingOccurrences(of: "```json", with: "")
+                    .replacingOccurrences(of: "```", with: "")
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+
+                // 2. Convert the sanitized string to Data
+                if let cleanData = cleanString.data(using: .utf8) {
+                    // 3. Decode using the cleanData, not the original data
+                    let dto = try jsonDecoder.decode(AIWorkoutDTO.self, from: cleanData)
+                    
                     return ParsedWorkoutResult(
                         workout: dto.toDomain(),
                         rawText: rawText,

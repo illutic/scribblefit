@@ -67,7 +67,7 @@ public final class ConfigRepositoryImpl: ConfigRepository {
                 let newConfig = SystemConfig(
                     id: "config",
                     promptVersion: "0.0.0",
-                    promptText: "",
+                    promptText: ScribbleFitProxyEngine.defaultPrompt,
                     exerciseVersion: metadata.exerciseVersion,
                     updatedAt: Date()
                 )

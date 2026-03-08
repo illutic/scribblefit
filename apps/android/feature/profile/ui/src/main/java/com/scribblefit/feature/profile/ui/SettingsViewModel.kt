@@ -5,17 +5,12 @@ import androidx.lifecycle.viewModelScope
 import com.scribblefit.feature.ai.domain.model.LLMProvider
 import com.scribblefit.feature.ai.domain.security.SecureKeyStorage
 import com.scribblefit.feature.profile.domain.model.*
+import com.scribblefit.feature.profile.domain.repository.ModelRepository
 import com.scribblefit.feature.profile.domain.repository.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import io.ktor.client.HttpClient
-import io.ktor.client.call.body
-import io.ktor.client.request.get
-import io.ktor.client.request.header
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-import kotlinx.serialization.Serializable
 import javax.inject.Inject
-import javax.inject.Named
 
 data class SettingsUiState(
     val settings: AppSettings = AppSettings(
@@ -34,9 +29,9 @@ data class SettingsUiState(
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository,
+    private val modelRepository: ModelRepository,
     private val secureKeyStorage: SecureKeyStorage,
-    private val navigator: com.scribblefit.core.navigation.Navigator,
-    @Named("base") private val httpClient: HttpClient
+    private val navigator: com.scribblefit.core.navigation.Navigator
 ) : ViewModel() {
 
     private val _apiKey = MutableStateFlow("")
@@ -135,13 +130,8 @@ class SettingsViewModel @Inject constructor(
         _isLoadingModels.value = true
         _modelLoadError.value = null
         try {
-            val models = when (provider) {
-                LLMProvider.OPENAI -> fetchOpenAIModels(apiKey)
-                LLMProvider.GEMINI -> fetchGeminiModels(apiKey)
-                else -> emptyList()
-            }
+            val models = modelRepository.fetchModels(provider, apiKey)
             _availableModels.value = models
-            // Auto-select first if no model set
             if (uiState.value.settings.selectedModel.isEmpty() && models.isNotEmpty()) {
                 updateModel(models.first())
             }
@@ -149,40 +139,6 @@ class SettingsViewModel @Inject constructor(
             _modelLoadError.value = "Failed to load models"
         }
         _isLoadingModels.value = false
-    }
-
-    private suspend fun fetchOpenAIModels(apiKey: String): List<String> {
-        @Serializable
-        data class ModelItem(val id: String)
-        @Serializable
-        data class ModelList(val data: List<ModelItem>)
-
-        val response = httpClient.get("https://api.openai.com/v1/models") {
-            header("Authorization", "Bearer $apiKey")
-        }.body<ModelList>()
-
-        return response.data
-            .map { it.id }
-            .filter { it.startsWith("gpt-") || it.startsWith("o1") || it.startsWith("o3") }
-            .sorted()
-    }
-
-    private suspend fun fetchGeminiModels(apiKey: String): List<String> {
-        @Serializable
-        data class ModelItem(
-            val name: String,
-            val supportedGenerationMethods: List<String> = emptyList()
-        )
-        @Serializable
-        data class ModelList(val models: List<ModelItem>)
-
-        val response = httpClient.get("https://generativelanguage.googleapis.com/v1beta/models?key=$apiKey")
-            .body<ModelList>()
-
-        return response.models
-            .filter { it.supportedGenerationMethods.contains("generateContent") }
-            .map { it.name }
-            .sorted()
     }
 
     private fun updateSettings(transform: (AppSettings) -> AppSettings) {

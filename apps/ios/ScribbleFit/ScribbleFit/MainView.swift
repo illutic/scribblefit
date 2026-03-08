@@ -8,6 +8,7 @@ public struct MainView: View {
     private let analysisRepository: AnalysisRepository
     private let userRepository: UserRepository
     private let settingsRepository: SettingsRepository
+    private let modelRepository: ModelRepository
     private let secureKeyStorage: SecureKeyStorage
     
     // Use Cases
@@ -21,6 +22,7 @@ public struct MainView: View {
         analysisRepository: AnalysisRepository,
         userRepository: UserRepository,
         settingsRepository: SettingsRepository,
+        modelRepository: ModelRepository,
         secureKeyStorage: SecureKeyStorage,
         processScribbleUseCase: ProcessScribbleUseCase,
         executeQuickActionUseCase: ExecuteQuickActionUseCase,
@@ -31,6 +33,7 @@ public struct MainView: View {
         self.analysisRepository = analysisRepository
         self.userRepository = userRepository
         self.settingsRepository = settingsRepository
+        self.modelRepository = modelRepository
         self.secureKeyStorage = secureKeyStorage
         self.processScribbleUseCase = processScribbleUseCase
         self.executeQuickActionUseCase = executeQuickActionUseCase
@@ -57,6 +60,7 @@ public struct MainView: View {
                     case .settings:
                         SettingsView(viewModel: SettingsViewModel(
                             settingsRepository: settingsRepository,
+                            modelRepository: modelRepository,
                             secureKeyStorage: secureKeyStorage,
                             navManager: navManager
                         ))
@@ -103,6 +107,7 @@ public struct MainView: View {
                     case .settings:
                         SettingsView(viewModel: SettingsViewModel(
                             settingsRepository: settingsRepository,
+                            modelRepository: modelRepository,
                             secureKeyStorage: secureKeyStorage,
                             navManager: navManager
                         ))

@@ -1,7 +1,9 @@
 package com.scribblefit.feature.profile.data.di
 
+import com.scribblefit.feature.profile.data.repository.ModelRepositoryImpl
 import com.scribblefit.feature.profile.data.repository.SettingsRepositoryImpl
 import com.scribblefit.feature.profile.data.repository.UserRepositoryImpl
+import com.scribblefit.feature.profile.domain.repository.ModelRepository
 import com.scribblefit.feature.profile.domain.repository.SettingsRepository
 import com.scribblefit.feature.profile.domain.repository.UserRepository
 import com.scribblefit.feature.profile.domain.usecase.GetUserStatsUseCase
@@ -23,6 +25,10 @@ abstract class ProfileModule {
     @Binds
     @Singleton
     abstract fun bindSettingsRepository(impl: SettingsRepositoryImpl): SettingsRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindModelRepository(impl: ModelRepositoryImpl): ModelRepository
 
     companion object {
         @Provides

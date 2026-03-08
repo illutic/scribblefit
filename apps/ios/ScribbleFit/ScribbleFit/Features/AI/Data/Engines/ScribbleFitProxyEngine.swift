@@ -81,6 +81,6 @@ public final class ScribbleFitProxyEngine: LLMEngine, AnalysisEngine {
           ]
         }
         
-        Always output valid JSON.
+        Always output a clean valid JSON code. Do not include any other information. Do NOT use any characters that may break the json format.
     """
 }

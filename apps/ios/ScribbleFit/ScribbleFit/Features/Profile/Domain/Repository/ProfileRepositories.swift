@@ -9,3 +9,7 @@ public protocol SettingsRepository: Sendable {
     func updateSettings(_ settings: AppSettings) async throws
     func clearAllData() async throws
 }
+
+public protocol ModelRepository: Sendable {
+    func fetchModels(for provider: LLMProvider, apiKey: String) async throws -> [String]
+}

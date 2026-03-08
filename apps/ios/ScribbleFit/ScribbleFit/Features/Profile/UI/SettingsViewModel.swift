@@ -5,13 +5,20 @@ import Combine
 @MainActor
 public final class SettingsViewModel: ObservableObject {
     private let settingsRepository: SettingsRepository
+    private let modelRepository: ModelRepository
     private let secureKeyStorage: SecureKeyStorage
     private let navManager: NavigationManager
 
     @Published public var uiState = SettingsUiState()
 
-    public init(settingsRepository: SettingsRepository, secureKeyStorage: SecureKeyStorage, navManager: NavigationManager) {
+    public init(
+        settingsRepository: SettingsRepository,
+        modelRepository: ModelRepository,
+        secureKeyStorage: SecureKeyStorage,
+        navManager: NavigationManager
+    ) {
         self.settingsRepository = settingsRepository
+        self.modelRepository = modelRepository
         self.secureKeyStorage = secureKeyStorage
         self.navManager = navManager
 
@@ -91,7 +98,7 @@ public final class SettingsViewModel: ObservableObject {
         }
     }
 
-    func fetchModels() async {
+    public func fetchModels() async {
         let provider = uiState.settings.aiProvider
         let apiKey = uiState.apiKey
         guard !apiKey.isEmpty, provider == .openai || provider == .gemini else { return }
@@ -100,9 +107,8 @@ public final class SettingsViewModel: ObservableObject {
         uiState.modelLoadError = nil
 
         do {
-            let models = try await loadModels(for: provider, apiKey: apiKey)
+            let models = try await modelRepository.fetchModels(for: provider, apiKey: apiKey)
             uiState.availableModels = models
-            // Auto-select first if no model set
             if uiState.settings.selectedModel == nil, let first = models.first {
                 updateModel(first)
             }
@@ -110,57 +116,6 @@ public final class SettingsViewModel: ObservableObject {
             uiState.modelLoadError = "Failed to load models"
         }
         uiState.isLoadingModels = false
-    }
-
-    private func loadModels(for provider: LLMProvider, apiKey: String) async throws -> [String] {
-        switch provider {
-        case .openai:
-            return try await fetchOpenAIModels(apiKey: apiKey)
-        case .gemini:
-            return try await fetchGeminiModels(apiKey: apiKey)
-        default:
-            return []
-        }
-    }
-
-    private func fetchOpenAIModels(apiKey: String) async throws -> [String] {
-        let url = URL(string: "https://api.openai.com/v1/models")!
-        var request = URLRequest(url: url)
-        request.setValue("Bearer \(apiKey)", forHTTPHeaderField: "Authorization")
-
-        let (data, response) = try await URLSession.shared.data(for: request)
-        guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
-            throw URLError(.badServerResponse)
-        }
-
-        struct ModelList: Codable { let data: [ModelItem] }
-        struct ModelItem: Codable { let id: String }
-
-        let list = try JSONDecoder().decode(ModelList.self, from: data)
-        return list.data
-            .map { $0.id }
-            .filter { $0.hasPrefix("gpt-") || $0.hasPrefix("o1") || $0.hasPrefix("o3") }
-            .sorted()
-    }
-
-    private func fetchGeminiModels(apiKey: String) async throws -> [String] {
-        let url = URL(string: "https://generativelanguage.googleapis.com/v1beta/models?key=\(apiKey)")!
-        let (data, response) = try await URLSession.shared.data(from: url)
-        guard let httpResponse = response as? HTTPURLResponse, (200...299).contains(httpResponse.statusCode) else {
-            throw URLError(.badServerResponse)
-        }
-
-        struct ModelList: Codable { let models: [ModelItem] }
-        struct ModelItem: Codable {
-            let name: String
-            let supportedGenerationMethods: [String]
-        }
-
-        let list = try JSONDecoder().decode(ModelList.self, from: data)
-        return list.models
-            .filter { $0.supportedGenerationMethods.contains("generateContent") }
-            .map { $0.name }
-            .sorted()
     }
 
     private func updateSettings(_ transform: @escaping (AppSettings) -> AppSettings) {

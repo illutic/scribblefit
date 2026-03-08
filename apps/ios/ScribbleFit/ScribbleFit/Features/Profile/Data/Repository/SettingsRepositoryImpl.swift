@@ -27,9 +27,10 @@ public final class SettingsRepositoryImpl: SettingsRepository {
     }
 
     public func updateSettings(_ settings: AppSettings) async throws {
+        let promptConfig = await database.getConfig()
         let config = SystemConfig(
             promptVersion: "1.0.0",
-            promptText: "",
+            promptText: promptConfig?.promptText ?? ScribbleFitProxyEngine.defaultPrompt,
             preferredLlmProvider: settings.aiProvider.rawValue,
             preferredModel: settings.selectedModel ?? "",
             parsingMode: settings.parsingMode.rawValue,
