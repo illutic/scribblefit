@@ -1,8 +1,5 @@
 package com.scribblefit.feature.canvas.domain.model
 
-/**
- * Represents a transient workout session before it's committed to the ledger.
- */
 data class WorkoutSession(
     val id: String,
     val startTime: Long,
@@ -18,6 +15,6 @@ data class SessionExercise(
 data class SessionSet(
     val weight: Double,
     val reps: Int,
-    val rpe: Double?,
-    val notes: String?
+    val rpe: Double? = null,
+    val notes: String? = null
 )

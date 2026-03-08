@@ -1,36 +1,52 @@
 package com.scribblefit.feature.canvas.domain.usecase
 
-import com.scribblefit.feature.ai.domain.model.ParsedWorkout
+import com.scribblefit.feature.canvas.domain.model.FeedItem
+import com.scribblefit.feature.canvas.domain.repository.CanvasRepository
+import com.scribblefit.feature.canvas.domain.repository.WorkoutSessionRepository
 import com.scribblefit.feature.ledger.domain.model.ExerciseHistory
 import com.scribblefit.feature.ledger.domain.model.SetHistory
 import com.scribblefit.feature.ledger.domain.model.WorkoutHistory
 import com.scribblefit.feature.ledger.domain.repository.LedgerRepository
-import java.util.UUID
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
-/**
- * Finalizes the parsed workout session into the permanent workout ledger.
- */
+private val IsoFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+
 class ConfirmWorkoutUseCase(
+    private val canvasRepository: CanvasRepository,
+    private val sessionRepository: WorkoutSessionRepository,
     private val ledgerRepository: LedgerRepository
 ) {
-    suspend operator fun invoke(workout: ParsedWorkout) {
-        val workoutHistory = WorkoutHistory(
-            id = UUID.randomUUID().toString(),
-            date = System.currentTimeMillis(),
+    suspend fun execute(confirmation: FeedItem.Confirmation) {
+        val workout = confirmation.workout
+        val dateEpoch = runCatching {
+            LocalDate.parse(workout.date, IsoFormatter)
+                .atStartOfDay(ZoneId.systemDefault())
+                .toInstant()
+                .toEpochMilli()
+        }.getOrDefault(System.currentTimeMillis())
+
+        val totalVolume = workout.exercises.sumOf { ex ->
+            ex.sets.sumOf { s -> s.weight * s.reps }
+        }
+
+        val history = WorkoutHistory(
+            id = confirmation.id,
+            date = dateEpoch,
             location = workout.location,
-            totalVolume = workout.exercises.sumOf { exercise ->
-                exercise.sets.sumOf { it.weight * it.reps }
-            },
-            exercises = workout.exercises.map { exercise ->
+            totalVolume = totalVolume,
+            exercises = workout.exercises.map { ex ->
                 ExerciseHistory(
-                    canonicalName = exercise.canonicalName,
-                    sets = exercise.sets.map { set ->
-                        SetHistory(set.weight, set.reps, set.rpe, set.notes)
+                    canonicalName = ex.canonicalName,
+                    sets = ex.sets.map { s ->
+                        SetHistory(weight = s.weight, reps = s.reps, rpe = s.rpe, notes = s.notes)
                     }
                 )
             }
         )
-
-        ledgerRepository.logWorkout(workoutHistory)
+        ledgerRepository.logWorkout(history)
+        sessionRepository.clearActiveSession()
+        canvasRepository.removeFeedItem(confirmation.id)
     }
 }

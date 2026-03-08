@@ -2,11 +2,7 @@ package com.scribblefit.feature.canvas.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.scribblefit.core.navigation.Navigator
-import com.scribblefit.core.navigation.Screen
 import com.scribblefit.feature.ai.domain.model.AnalysisSuggestion
-import com.scribblefit.feature.ai.domain.usecase.ListenForSyncItemsUseCase
-import com.scribblefit.feature.analytics.domain.repository.AnalysisRepository
 import com.scribblefit.feature.canvas.domain.model.FeedItem
 import com.scribblefit.feature.canvas.domain.repository.CanvasRepository
 import com.scribblefit.feature.canvas.domain.usecase.ConfirmWorkoutUseCase
@@ -22,7 +18,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.util.Calendar
-import java.util.UUID
 import javax.inject.Inject
 
 private const val FLOW_TIMEOUT_MS = 5_000L
@@ -30,11 +25,7 @@ private const val FLOW_TIMEOUT_MS = 5_000L
 data class CanvasUiState(
     val greeting: String = "",
     val userName: String = "George",
-    val quickActions: List<QuickActionType> = listOf(
-        QuickActionType.REPEAT_LAST,
-        QuickActionType.RUN_5K,
-        QuickActionType.REST_DAY
-    ),
+    val quickActions: List<QuickActionType> = QuickActionType.entries,
     val homeSuggestion: AnalysisSuggestion? = null,
     val scribbleText: String = "",
     val feedItems: List<FeedItem> = emptyList(),
@@ -44,109 +35,74 @@ data class CanvasUiState(
 
 @HiltViewModel
 class CanvasViewModel @Inject constructor(
-    analysisRepository: AnalysisRepository,
     private val canvasRepository: CanvasRepository,
     private val processScribbleUseCase: ProcessScribbleUseCase,
-    private val executeQuickActionUseCase: ExecuteQuickActionUseCase,
     private val confirmWorkoutUseCase: ConfirmWorkoutUseCase,
-    private val listenForSyncItemsUseCase: ListenForSyncItemsUseCase,
-    private val navigator: Navigator
+    private val executeQuickActionUseCase: ExecuteQuickActionUseCase
 ) : ViewModel() {
 
-    private val _internalState = MutableStateFlow(CanvasUiState(greeting = getGreeting()))
+    private val _scribbleText = MutableStateFlow("")
+    private val _extras = MutableStateFlow(CanvasExtras())
 
     val uiState: StateFlow<CanvasUiState> = combine(
-        _internalState,
         canvasRepository.getFeed(),
-        analysisRepository.getHomeSuggestion()
-    ) { state, feed, suggestion ->
-        state.copy(
-            feedItems = feed,
-            homeSuggestion = suggestion
+        _scribbleText,
+        _extras
+    ) { feedItems, scribbleText, extras ->
+        CanvasUiState(
+            greeting = getGreeting(),
+            scribbleText = scribbleText,
+            feedItems = feedItems,
+            homeSuggestion = extras.homeSuggestion,
+            isRecording = extras.isRecording
         )
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(FLOW_TIMEOUT_MS),
-        initialValue = _internalState.value
-    )
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(FLOW_TIMEOUT_MS), CanvasUiState())
 
     fun onTextChange(newText: String) {
-        _internalState.update { it.copy(scribbleText = newText) }
+        _scribbleText.update { newText }
     }
 
     fun submitScribble() {
-        val text = _internalState.value.scribbleText
+        val text = _scribbleText.value.trim()
         if (text.isBlank()) return
-
         viewModelScope.launch {
-            _internalState.update { it.copy(isSyncing = true) }
-            processScribbleUseCase(text)
-            _internalState.update { it.copy(isSyncing = false, scribbleText = "") }
+            processScribbleUseCase.execute(text)
+            _scribbleText.update { "" }
         }
     }
 
-    fun onQuickActionClick(actionType: QuickActionType) {
-        viewModelScope.launch {
-            executeQuickActionUseCase(actionType)
-        }
+    fun onQuickActionClick(type: QuickActionType) {
+        viewModelScope.launch { executeQuickActionUseCase.execute(type) }
     }
 
     fun onRetryScribble(id: String) {
-        viewModelScope.launch {
-            canvasRepository.retryScribble(id)
-        }
+        viewModelScope.launch { canvasRepository.retryScribble(id) }
     }
 
     fun onConfirmClick(confirmation: FeedItem.Confirmation) {
-        viewModelScope.launch {
-            confirmWorkoutUseCase(confirmation.workout)
-            canvasRepository.addInsight(
-                FeedItem.Insight(
-                    id = UUID.randomUUID().toString(),
-                    timestamp = System.currentTimeMillis(),
-                    text = "Workout saved to ledger!",
-                    emoji = "✅"
-                )
-            )
-            canvasRepository.removeFeedItem(confirmation.id)
-        }
-    }
-
-    fun onMenuClick() {
-
-        navigator.navigateTo(Screen.Settings)
+        viewModelScope.launch { confirmWorkoutUseCase.execute(confirmation) }
     }
 
     fun onMicClick() {
-        if (_internalState.value.isRecording) {
-            stopRecording()
-        } else {
-            startRecording()
-        }
-    }
-
-    private fun startRecording() {
-        _internalState.update { it.copy(isRecording = true) }
-    }
-
-    private fun stopRecording() {
-        _internalState.update { it.copy(isRecording = false) }
-        onTextChange("Bench 135x5, 135x5")
+        _extras.update { it.copy(isRecording = !it.isRecording) }
     }
 
     private fun getGreeting(): String {
         val hour = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
-        return when (hour) {
-            in 0..11 -> "MORNING"
-            in 12..16 -> "AFTERNOON"
-            in 17..20 -> "EVENING"
-            else -> "NIGHT"
+        return when {
+            hour < MORNING_CUTOFF -> "Good morning"
+            hour < AFTERNOON_CUTOFF -> "Good afternoon"
+            else -> "Good evening"
         }
     }
 
-    init {
-        viewModelScope.launch {
-            listenForSyncItemsUseCase()
-        }
+    private data class CanvasExtras(
+        val homeSuggestion: AnalysisSuggestion? = null,
+        val isRecording: Boolean = false
+    )
+
+    companion object {
+        private const val MORNING_CUTOFF = 12
+        private const val AFTERNOON_CUTOFF = 17
     }
 }
