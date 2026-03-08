@@ -14,6 +14,6 @@ interface AnalysisRepository {
     suspend fun saveHomeSuggestion(suggestion: AnalysisSuggestion)
     suspend fun saveSummary(summary: AnalysisSummary)
     suspend fun saveExerciseInsight(insight: ExerciseInsight)
-    
+
     suspend fun clearOldInsights()
 }

@@ -2,10 +2,15 @@ package com.scribblefit.feature.profile.data.repository
 
 import com.scribblefit.core.database.ScribbleFitDatabase
 import com.scribblefit.feature.ai.domain.engine.ConfigRepository
-import com.scribblefit.feature.ai.domain.model.SystemConfig
 import com.scribblefit.feature.ai.domain.model.LLMProvider
-import com.scribblefit.feature.profile.domain.model.*
-import io.mockk.*
+import com.scribblefit.feature.ai.domain.model.SystemConfig
+import com.scribblefit.feature.profile.domain.model.AppSettings
+import com.scribblefit.feature.profile.domain.model.ParsingMode
+import com.scribblefit.feature.profile.domain.model.ThemePreference
+import com.scribblefit.feature.profile.domain.model.WeightUnit
+import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
@@ -66,12 +71,12 @@ class SettingsRepositoryImplTest {
         repository.updateSettings(settings)
 
         // Then
-        coVerify { 
-            configRepository.updateConfig(match { 
-                it.parsingMode == "CLOUD" && 
-                it.preferredLlmProvider == LLMProvider.GEMINI &&
-                it.weightUnit == "LBS"
-            }) 
+        coVerify {
+            configRepository.updateConfig(match {
+                it.parsingMode == "CLOUD" &&
+                        it.preferredLlmProvider == LLMProvider.GEMINI &&
+                        it.weightUnit == "LBS"
+            })
         }
     }
 }

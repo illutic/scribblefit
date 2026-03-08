@@ -1,5 +1,5 @@
 import Foundation
-internal import Combine
+import Combine
 
 /**
  * Listens for changes to all sync items and triggers syncWorkouts() whenever

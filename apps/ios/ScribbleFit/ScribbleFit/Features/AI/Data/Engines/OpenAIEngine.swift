@@ -21,7 +21,7 @@ public final class OpenAIEngine: LLMEngine, AnalysisEngine {
         do {
             let apiKey = try await secureKeyStorage.getApiKey() ?? ""
             let config = await configRepository.getConfig()
-            let instructions = config?.promptText ?? ScribbleFitProxyEngine.defaultPrompt
+            let instructions = config?.promptText ?? SystemConfig.defaultPrompt
             let modelName = (config?.preferredModel.isEmpty == false) ? config!.preferredModel : "gpt-4o-mini"
 
             let response = try await callOpenAIResponse(apiKey: apiKey, instructions: instructions, userMessage: rawText, model: modelName)

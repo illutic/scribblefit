@@ -3,8 +3,9 @@ package com.scribblefit.feature.canvas.data.repository
 import com.scribblefit.feature.ai.domain.engine.SyncRepository
 import com.scribblefit.feature.ai.domain.model.SuggestionType
 import com.scribblefit.feature.ai.domain.model.SyncStatus
-import com.scribblefit.feature.canvas.data.mapper.*
-import com.scribblefit.feature.canvas.domain.model.*
+import com.scribblefit.feature.canvas.data.mapper.FeedItemDto
+import com.scribblefit.feature.canvas.domain.model.FeedItem
+import com.scribblefit.feature.canvas.domain.model.ScribbleStatus
 import com.scribblefit.feature.canvas.domain.repository.CanvasRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -64,7 +65,7 @@ class CanvasRepositoryImpl @Inject constructor(
                         val dto = item.jsonData?.let {
                             runCatching { json.decodeFromString<FeedItemDto.Confirmation>(it) }.getOrNull()
                         } ?: return@mapNotNull null
-                        
+
                         FeedItem.Confirmation(
                             dto.id,
                             dto.timestamp,

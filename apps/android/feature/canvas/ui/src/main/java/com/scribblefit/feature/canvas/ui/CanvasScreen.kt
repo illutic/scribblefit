@@ -1,17 +1,30 @@
 package com.scribblefit.feature.canvas.ui
 
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.scribblefit.core.designsystem.theme.tokens.ScribbleFitSpacing
-import com.scribblefit.feature.canvas.ui.components.*
+import com.scribblefit.feature.canvas.ui.components.CanvasHeader
+import com.scribblefit.feature.canvas.ui.components.ContextualInsightCard
+import com.scribblefit.feature.canvas.ui.components.FeedItemRow
+import com.scribblefit.feature.canvas.ui.components.QuickActionPills
+import com.scribblefit.feature.canvas.ui.components.ScribbleInputPill
 
 @Composable
 fun CanvasScreen(
@@ -59,7 +72,7 @@ fun CanvasScreen(
                 greeting = uiState.greeting,
                 onMenuClick = viewModel::onMenuClick
             )
-            
+
             LazyColumn(
                 state = listState,
                 modifier = Modifier
@@ -87,7 +100,7 @@ fun CanvasScreen(
                         onConfirmClick = viewModel::onConfirmClick
                     )
                 }
-                
+
                 // Show Quick Actions if feed is empty or very short
                 if (uiState.feedItems.size <= 1) {
                     item {

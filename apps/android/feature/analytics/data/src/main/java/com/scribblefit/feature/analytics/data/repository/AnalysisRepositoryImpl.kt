@@ -1,16 +1,20 @@
 package com.scribblefit.feature.analytics.data.repository
 
-import com.scribblefit.feature.analytics.domain.repository.AnalysisRepository
-import com.scribblefit.feature.ai.data.mapper.*
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
-import kotlinx.serialization.json.Json
 import com.scribblefit.core.database.dao.InsightsCacheDao
 import com.scribblefit.core.database.model.InsightsCacheEntity
+import com.scribblefit.feature.ai.data.mapper.ExerciseInsightDto
+import com.scribblefit.feature.ai.data.mapper.SuggestionDto
+import com.scribblefit.feature.ai.data.mapper.SummaryDto
+import com.scribblefit.feature.ai.data.mapper.toDomain
+import com.scribblefit.feature.ai.data.mapper.toDto
 import com.scribblefit.feature.ai.domain.model.AnalysisSuggestion
 import com.scribblefit.feature.ai.domain.model.AnalysisSummary
 import com.scribblefit.feature.ai.domain.model.ExerciseInsight
 import com.scribblefit.feature.ai.domain.model.SummaryPeriod
+import com.scribblefit.feature.analytics.domain.repository.AnalysisRepository
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import kotlinx.serialization.json.Json
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -36,7 +40,9 @@ class AnalysisRepositoryImpl @Inject constructor(
     override fun getExerciseInsight(exerciseId: String): Flow<ExerciseInsight?> {
         val key = "exercise_insight_$exerciseId"
         return insightsCacheDao.getInsightByKey(key).map { entity ->
-            entity?.let { json.decodeFromString<ExerciseInsightDto>(it.jsonData).toDomain(exerciseId) }
+            entity?.let {
+                json.decodeFromString<ExerciseInsightDto>(it.jsonData).toDomain(exerciseId)
+            }
         }
     }
 

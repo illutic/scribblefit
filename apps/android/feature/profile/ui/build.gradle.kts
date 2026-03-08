@@ -13,7 +13,7 @@ dependencies {
     implementation(project(":feature:ledger"))
     implementation(project(":core:designsystem"))
     implementation(project(":core:navigation"))
-    
+
     implementation(libs.hilt.android)
     implementation(libs.hilt.navigation.compose)
 }

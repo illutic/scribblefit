@@ -31,7 +31,7 @@ public actor GeminiAIEngine: LLMEngine, AnalysisEngine {
             }
 
             let config = await configRepository.getConfig()
-            let systemPrompt = await (config?.promptText.isEmpty == false) ? config!.promptText : ScribbleFitProxyEngine.defaultPrompt
+            let systemPrompt = (config?.promptText.isEmpty == false) ? config!.promptText : SystemConfig.defaultPrompt
             
             let content = try await callGemini(apiKey: apiKey, prompt: systemPrompt, userMessage: "\(rawText)\n\nOutput in JSON format.")
             let duration = Int64(Date().timeIntervalSince(startTime) * 1000)

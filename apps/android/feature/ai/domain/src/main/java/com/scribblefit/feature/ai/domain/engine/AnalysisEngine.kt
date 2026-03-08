@@ -28,5 +28,8 @@ interface AnalysisEngine {
      * @param exerciseName The canonical name of the exercise.
      * @param historyData Serialized set history for this exercise.
      */
-    suspend fun generateExerciseInsight(exerciseName: String, historyData: String): Result<ExerciseInsight>
+    suspend fun generateExerciseInsight(
+        exerciseName: String,
+        historyData: String
+    ): Result<ExerciseInsight>
 }

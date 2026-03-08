@@ -20,7 +20,7 @@ public final class ScribbleFitProxyEngine: LLMEngine, AnalysisEngine {
         do {
             let token = try await secureKeyStorage.getAuthToken()
             let config = await configRepository.getConfig()
-            let systemPrompt = config?.promptText ?? ScribbleFitProxyEngine.defaultPrompt
+            let systemPrompt = config?.promptText ?? SystemConfig.defaultPrompt
             
             let request = ParseRequest(rawText: rawText, prompt: systemPrompt)
             let workout = try await networkClient.parseProxy(request: request, token: token)
@@ -57,30 +57,4 @@ public final class ScribbleFitProxyEngine: LLMEngine, AnalysisEngine {
     public func generateExerciseInsight(exerciseName: String, historyData: String) async throws -> ExerciseInsight {
         throw NSError(domain: "ScribbleFitProxyEngine", code: 501, userInfo: [NSLocalizedDescriptionKey: "Proxy analysis not yet supported by backend"])
     }
-    
-    public static let defaultPrompt = """
-        You are ScribbleFit AI, a fitness parsing assistant. 
-        Your goal is to take raw, messy gym shorthand and parse it into a structured JSON format.
-        
-        Strictly follow this JSON schema:
-        {
-          "date": "YYYY-MM-DD",
-          "location": "String or null",
-          "exercises": [
-            {
-              "canonical_name": "String",
-              "sets": [
-                {
-                  "weight": number,
-                  "reps": integer,
-                  "rpe": number or null,
-                  "notes": "String or null"
-                }
-              ]
-            }
-          ]
-        }
-        
-        Always output a clean valid JSON code. Do not include any other information. Do NOT use any characters that may break the json format.
-    """
 }

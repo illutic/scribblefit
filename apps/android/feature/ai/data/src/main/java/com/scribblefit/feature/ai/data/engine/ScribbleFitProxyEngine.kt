@@ -6,18 +6,16 @@ import com.scribblefit.feature.ai.data.mapper.toDomain
 import com.scribblefit.feature.ai.domain.engine.AnalysisEngine
 import com.scribblefit.feature.ai.domain.engine.ConfigRepository
 import com.scribblefit.feature.ai.domain.engine.LLMEngine
-import com.scribblefit.feature.ai.domain.model.AIParsingException
 import com.scribblefit.feature.ai.domain.model.AnalysisSuggestion
 import com.scribblefit.feature.ai.domain.model.AnalysisSummary
 import com.scribblefit.feature.ai.domain.model.ExerciseInsight
-import com.scribblefit.feature.ai.domain.model.ParsedWorkout
+import com.scribblefit.feature.ai.domain.model.ParsedWorkoutResult
+import com.scribblefit.feature.ai.domain.model.ParsingStatus
 import com.scribblefit.feature.ai.domain.model.SummaryPeriod
 import com.scribblefit.feature.ai.domain.security.SecureKeyStorage
 import kotlinx.coroutines.flow.first
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
-
-import com.scribblefit.feature.ai.domain.model.*
 
 class ScribbleFitProxyEngine @Inject constructor(
     private val api: ScribbleFitApi,
@@ -34,11 +32,11 @@ class ScribbleFitProxyEngine @Inject constructor(
             val systemPrompt = configRepository.getConfig().first()?.promptText
                 ?: error("Prompt is empty. Configuration is not set.")
             val request = ParseRequest(rawText = rawText, prompt = systemPrompt)
-            
+
             val parsedWorkoutDto = api.parseProxy(request, token)
             val workout = parsedWorkoutDto.toDomain()
             val duration = System.currentTimeMillis() - startTime
-            
+
             ParsedWorkoutResult(
                 workout = workout,
                 rawText = rawText,

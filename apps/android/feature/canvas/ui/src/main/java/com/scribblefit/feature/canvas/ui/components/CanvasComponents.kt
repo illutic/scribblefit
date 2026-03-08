@@ -57,7 +57,7 @@ private const val PulseAnimationDurationMs = 500
 
 @Composable
 fun CanvasHeader(
-    userName: String, 
+    userName: String,
     greeting: String,
     onMenuClick: () -> Unit
 ) {
@@ -165,7 +165,7 @@ private fun ScribbleBubble(
                         color = if (item.status == ScribbleStatus.FAILED) ErrorText else MaterialTheme.colorScheme.onSurface
                     )
                 )
-                
+
                 if (item.status == ScribbleStatus.PENDING || item.status == ScribbleStatus.PROCESSING) {
                     Spacer(modifier = Modifier.width(8.dp))
                     CircularProgressIndicator(
@@ -176,7 +176,7 @@ private fun ScribbleBubble(
                 }
             }
         }
-        
+
         if (item.status == ScribbleStatus.FAILED) {
             Text(
                 text = "Failed to parse. Tap to retry.",
@@ -328,7 +328,7 @@ fun ScribbleInputPill(
                             .scale(scale)
                     ) {
                         Text(
-                            text = if (isRecording) "⏹️" else "🎙️", 
+                            text = if (isRecording) "⏹️" else "🎙️",
                             style = MaterialTheme.typography.titleMedium
                         )
                     }

@@ -1,9 +1,9 @@
 package com.scribblefit.feature.ai.data.repository
 
+import com.scribblefit.core.ai.model.*
 import com.scribblefit.core.database.dao.InsightsCacheDao
 import com.scribblefit.core.database.model.InsightsCacheEntity
 import com.scribblefit.feature.ai.data.mapper.*
-import com.scribblefit.core.ai.model.*
 import com.scribblefit.feature.ai.domain.model.AnalysisSuggestion
 import com.scribblefit.feature.ai.domain.model.AnalysisSummary
 import com.scribblefit.feature.ai.domain.model.SuggestionType
@@ -33,7 +33,8 @@ class AnalysisRepositoryImplTest {
     fun `getHomeSuggestion decodes JSON from DAO`() = runTest {
         // Given
         val suggestion = AnalysisSuggestion("Rest", "😴", SuggestionType.REST, 1000L)
-        val entity = InsightsCacheEntity("home_suggestion", json.encodeToString(suggestion.toDto()), 1000L)
+        val entity =
+            InsightsCacheEntity("home_suggestion", json.encodeToString(suggestion.toDto()), 1000L)
         coEvery { insightsCacheDao.getInsightByKey("home_suggestion") } returns flowOf(entity)
 
         // When
@@ -52,10 +53,10 @@ class AnalysisRepositoryImplTest {
         repository.saveHomeSuggestion(suggestion)
 
         // Then
-        coVerify { 
-            insightsCacheDao.upsertInsight(match { 
-                it.key == "home_suggestion" && it.jsonData.contains("Push") 
-            }) 
+        coVerify {
+            insightsCacheDao.upsertInsight(match {
+                it.key == "home_suggestion" && it.jsonData.contains("Push")
+            })
         }
     }
 
@@ -64,7 +65,8 @@ class AnalysisRepositoryImplTest {
         // Given
         val summary =
             AnalysisSummary(SummaryPeriod.MONTH, "Good month", emptyList(), emptyList(), 0.0, 1000L)
-        val entity = InsightsCacheEntity("summary_month", json.encodeToString(summary.toDto()), 1000L)
+        val entity =
+            InsightsCacheEntity("summary_month", json.encodeToString(summary.toDto()), 1000L)
         coEvery { insightsCacheDao.getInsightByKey("summary_month") } returns flowOf(entity)
 
         // When

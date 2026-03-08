@@ -1,11 +1,13 @@
 package com.scribblefit.feature.profile.data.repository
 
+import androidx.annotation.OptIn
 import com.scribblefit.feature.ai.domain.model.LLMProvider
 import com.scribblefit.feature.profile.domain.repository.ModelRepository
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
 import io.ktor.client.request.header
+import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.Serializable
 import javax.inject.Inject
 import javax.inject.Named
@@ -26,8 +28,11 @@ class ModelRepositoryImpl @Inject constructor(
 
     private suspend fun fetchOpenAIModels(apiKey: String): List<String> {
         @Serializable
+        @OptIn(InternalSerializationApi::class)
         data class ModelItem(val id: String)
+
         @Serializable
+        @OptIn(InternalSerializationApi::class)
         data class ModelList(val data: List<ModelItem>)
 
         val response = client.get("https://api.openai.com/v1/models") {
@@ -42,15 +47,19 @@ class ModelRepositoryImpl @Inject constructor(
 
     private suspend fun fetchGeminiModels(apiKey: String): List<String> {
         @Serializable
+        @OptIn(InternalSerializationApi::class)
         data class ModelItem(
             val name: String,
             val supportedGenerationMethods: List<String> = emptyList()
         )
+
         @Serializable
+        @OptIn(InternalSerializationApi::class)
         data class ModelList(val models: List<ModelItem>)
 
-        val response = client.get("https://generativelanguage.googleapis.com/v1beta/models?key=$apiKey")
-            .body<ModelList>()
+        val response =
+            client.get("https://generativelanguage.googleapis.com/v1beta/models?key=$apiKey")
+                .body<ModelList>()
 
         return response.models
             .filter { it.supportedGenerationMethods.contains("generateContent") }

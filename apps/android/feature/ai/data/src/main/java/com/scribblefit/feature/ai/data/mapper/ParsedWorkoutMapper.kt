@@ -1,11 +1,11 @@
 package com.scribblefit.feature.ai.data.mapper
 
+import com.scribblefit.core.network.model.ParsedExerciseDto
+import com.scribblefit.core.network.model.ParsedSetDto
+import com.scribblefit.core.network.model.ParsedWorkoutDto
 import com.scribblefit.feature.ai.domain.model.ParsedExercise
 import com.scribblefit.feature.ai.domain.model.ParsedSet
 import com.scribblefit.feature.ai.domain.model.ParsedWorkout
-import com.scribblefit.core.network.model.ParsedWorkoutDto
-import com.scribblefit.core.network.model.ParsedExerciseDto
-import com.scribblefit.core.network.model.ParsedSetDto
 
 fun ParsedWorkoutDto.toDomain(): ParsedWorkout {
     return ParsedWorkout(

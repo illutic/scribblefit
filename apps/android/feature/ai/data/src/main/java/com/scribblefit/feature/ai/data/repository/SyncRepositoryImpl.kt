@@ -6,10 +6,7 @@ import androidx.work.Constraints
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.WorkManager
-import com.scribblefit.core.database.dao.ExerciseDictionaryDao
-import com.scribblefit.core.database.dao.SetDao
 import com.scribblefit.core.database.dao.SyncQueueDao
-import com.scribblefit.core.database.dao.WorkoutLogDao
 import com.scribblefit.core.database.model.SyncQueueEntity
 import com.scribblefit.feature.ai.data.worker.SyncWorker
 import com.scribblefit.feature.ai.domain.engine.SyncRepository
@@ -21,7 +18,6 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import kotlinx.serialization.json.Json
 import java.time.Duration
-import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 import com.scribblefit.core.database.model.SyncStatus as EntitySyncStatus
@@ -67,7 +63,12 @@ class SyncRepositoryImpl @Inject constructor(
         syncQueueDao.upsertSyncItem(syncItem)
     }
 
-    override suspend fun saveFeedItem(id: String, type: String, jsonData: String, status: SyncStatus) {
+    override suspend fun saveFeedItem(
+        id: String,
+        type: String,
+        jsonData: String,
+        status: SyncStatus
+    ) {
         val entity = SyncQueueEntity(
             id = id,
             type = type,

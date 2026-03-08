@@ -37,7 +37,8 @@ class ConfigRepositoryImplTest {
     fun `syncMetadata updates config when versions differ`() = runTest {
         // Given
         val metadata = MetadataResponse("ok", "1.0.0", "1.1.0", "1.0.0")
-        val currentConfig = SystemConfigEntity(promptVersion = "1.0.0", promptText = "old prompt", updatedAt = 0L)
+        val currentConfig =
+            SystemConfigEntity(promptVersion = "1.0.0", promptText = "old prompt", updatedAt = 0L)
         val newPrompt = ConfigResponse("1.1.0", "new prompt")
 
         coEvery { api.getMetadata() } returns metadata
@@ -50,10 +51,10 @@ class ConfigRepositoryImplTest {
         // Then
         assertTrue(result.isSuccess)
         coVerify { api.getPromptConfig() }
-        coVerify { 
-            systemConfigDao.upsertConfig(match { 
+        coVerify {
+            systemConfigDao.upsertConfig(match {
                 it.promptVersion == "1.1.0" && it.promptText == "new prompt"
-            }) 
+            })
         }
     }
 
@@ -61,7 +62,8 @@ class ConfigRepositoryImplTest {
     fun `syncMetadata skips update when versions match`() = runTest {
         // Given
         val metadata = MetadataResponse("ok", "1.0.0", "1.0.0", "1.0.0")
-        val currentConfig = SystemConfigEntity(promptVersion = "1.0.0", promptText = "old prompt", updatedAt = 0L)
+        val currentConfig =
+            SystemConfigEntity(promptVersion = "1.0.0", promptText = "old prompt", updatedAt = 0L)
 
         coEvery { api.getMetadata() } returns metadata
         every { systemConfigDao.getConfig() } returns flowOf(currentConfig)
@@ -79,10 +81,17 @@ class ConfigRepositoryImplTest {
     fun `syncExercises updates exercises when versions differ`() = runTest {
         // Given
         val metadata = MetadataResponse("ok", "1.0.0", "1.0.0", "1.1.0")
-        val currentConfig = SystemConfigEntity(promptVersion = "1.0.0", promptText = "prompt", exerciseVersion = "1.0.0", updatedAt = 0L)
-        val exerciseResponse = ExerciseResponse(listOf(
-            ExerciseDto("1", "Bench", "Chest", listOf("bench press"))
-        ))
+        val currentConfig = SystemConfigEntity(
+            promptVersion = "1.0.0",
+            promptText = "prompt",
+            exerciseVersion = "1.0.0",
+            updatedAt = 0L
+        )
+        val exerciseResponse = ExerciseResponse(
+            listOf(
+                ExerciseDto("1", "Bench", "Chest", listOf("bench press"))
+            )
+        )
 
         coEvery { api.getMetadata() } returns metadata
         every { systemConfigDao.getConfig() } returns flowOf(currentConfig)
@@ -95,8 +104,8 @@ class ConfigRepositoryImplTest {
         assertTrue(result.isSuccess)
         coVerify { exerciseDictionaryDao.deleteAll() }
         coVerify { exerciseDictionaryDao.upsertExercises(any()) }
-        coVerify { 
-            systemConfigDao.upsertConfig(match { it.exerciseVersion == "1.1.0" }) 
+        coVerify {
+            systemConfigDao.upsertConfig(match { it.exerciseVersion == "1.1.0" })
         }
     }
 }

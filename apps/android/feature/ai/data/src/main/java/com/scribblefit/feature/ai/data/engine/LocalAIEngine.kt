@@ -1,27 +1,27 @@
 package com.scribblefit.feature.ai.data.engine
 
-import com.scribblefit.feature.ai.data.mapper.*
-import com.scribblefit.core.network.model.ParsedWorkoutDto
 import com.google.mlkit.genai.common.FeatureStatus
 import com.google.mlkit.genai.prompt.GenerativeModel
 import com.google.mlkit.genai.prompt.TextPart
 import com.google.mlkit.genai.prompt.generateContentRequest
+import com.scribblefit.core.network.model.ParsedWorkoutDto
+import com.scribblefit.feature.ai.data.mapper.ExerciseInsightDto
+import com.scribblefit.feature.ai.data.mapper.SuggestionDto
+import com.scribblefit.feature.ai.data.mapper.SummaryDto
+import com.scribblefit.feature.ai.data.mapper.toDomain
 import com.scribblefit.feature.ai.domain.engine.AnalysisEngine
+import com.scribblefit.feature.ai.domain.engine.ConfigRepository
 import com.scribblefit.feature.ai.domain.engine.LLMEngine
-import com.scribblefit.feature.ai.domain.model.AIParsingException
 import com.scribblefit.feature.ai.domain.model.AnalysisSuggestion
 import com.scribblefit.feature.ai.domain.model.AnalysisSummary
 import com.scribblefit.feature.ai.domain.model.ExerciseInsight
-import com.scribblefit.feature.ai.domain.model.ParsedWorkout
+import com.scribblefit.feature.ai.domain.model.ParsedWorkoutResult
+import com.scribblefit.feature.ai.domain.model.ParsingStatus
 import com.scribblefit.feature.ai.domain.model.SummaryPeriod
+import kotlinx.coroutines.flow.first
 import kotlinx.serialization.json.Json
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
-
-import com.scribblefit.feature.ai.domain.engine.ConfigRepository
-import kotlinx.coroutines.flow.first
-
-import com.scribblefit.feature.ai.domain.model.*
 
 /**
  * Local AI Engine for Android.
@@ -38,13 +38,14 @@ class LocalAIEngine @Inject constructor(
     override suspend fun parseWorkout(rawText: String): ParsedWorkoutResult {
         val startTime = System.currentTimeMillis()
         return try {
-            val systemPrompt = configRepository.getConfig().first()?.promptText ?: error("Prompt is empty. Configuration is not set.")
+            val systemPrompt = configRepository.getConfig().first()?.promptText
+                ?: error("Prompt is empty. Configuration is not set.")
             val content = callLocalAI(systemPrompt, rawText)
             val duration = System.currentTimeMillis() - startTime
-            
+
             val parsedWorkoutDto = json.decodeFromString<ParsedWorkoutDto>(content)
             val workout = parsedWorkoutDto.toDomain()
-            
+
             ParsedWorkoutResult(
                 workout = workout,
                 rawText = rawText,
@@ -65,18 +66,32 @@ class LocalAIEngine @Inject constructor(
         }
     }
 
-    override suspend fun generateSuggestion(context: String): Result<AnalysisSuggestion> = runCatching {
-        val content = callLocalAI(AnalysisPrompts.getSuggestionPrompt(context), "Generate suggestion.")
-        json.decodeFromString<SuggestionDto>(content).toDomain()
-    }
+    override suspend fun generateSuggestion(context: String): Result<AnalysisSuggestion> =
+        runCatching {
+            val content =
+                callLocalAI(AnalysisPrompts.getSuggestionPrompt(context), "Generate suggestion.")
+            json.decodeFromString<SuggestionDto>(content).toDomain()
+        }
 
-    override suspend fun generateSummary(period: SummaryPeriod, workoutData: String): Result<AnalysisSummary> = runCatching {
-        val content = callLocalAI(AnalysisPrompts.getSummaryPrompt(period.name, workoutData), "Generate summary.")
+    override suspend fun generateSummary(
+        period: SummaryPeriod,
+        workoutData: String
+    ): Result<AnalysisSummary> = runCatching {
+        val content = callLocalAI(
+            AnalysisPrompts.getSummaryPrompt(period.name, workoutData),
+            "Generate summary."
+        )
         json.decodeFromString<SummaryDto>(content).toDomain(period)
     }
 
-    override suspend fun generateExerciseInsight(exerciseName: String, historyData: String): Result<ExerciseInsight> = runCatching {
-        val content = callLocalAI(AnalysisPrompts.getExerciseInsightPrompt(exerciseName, historyData), "Analyze $exerciseName.")
+    override suspend fun generateExerciseInsight(
+        exerciseName: String,
+        historyData: String
+    ): Result<ExerciseInsight> = runCatching {
+        val content = callLocalAI(
+            AnalysisPrompts.getExerciseInsightPrompt(exerciseName, historyData),
+            "Analyze $exerciseName."
+        )
         json.decodeFromString<ExerciseInsightDto>(content).toDomain(exerciseName)
     }
 
@@ -88,17 +103,17 @@ class LocalAIEngine @Inject constructor(
 
         val fullPrompt = "$prompt\n\nUser Message:\n$userMessage"
         val request = generateContentRequest(TextPart(fullPrompt)) { }
-        
+
         val response = generativeModel.generateContent(request)
-        val content = response.candidates.firstOrNull()?.text 
+        val content = response.candidates.firstOrNull()?.text
             ?: throw Exception("Empty response from Local Gemini Nano")
-        
+
         return content.trim()
             .removePrefix("```json")
             .removeSuffix("```")
             .trim()
     }
-    
+
     suspend fun isAvailable(): Boolean = runCatching {
         generativeModel.checkStatus() == FeatureStatus.AVAILABLE
     }.getOrDefault(false)

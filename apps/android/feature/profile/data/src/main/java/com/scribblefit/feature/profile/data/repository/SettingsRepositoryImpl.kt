@@ -4,7 +4,10 @@ import com.scribblefit.core.database.ScribbleFitDatabase
 import com.scribblefit.feature.ai.domain.engine.ConfigRepository
 import com.scribblefit.feature.ai.domain.model.DEFAULT_PROMPT
 import com.scribblefit.feature.ai.domain.model.SystemConfig
-import com.scribblefit.feature.profile.domain.model.*
+import com.scribblefit.feature.profile.domain.model.AppSettings
+import com.scribblefit.feature.profile.domain.model.ParsingMode
+import com.scribblefit.feature.profile.domain.model.ThemePreference
+import com.scribblefit.feature.profile.domain.model.WeightUnit
 import com.scribblefit.feature.profile.domain.repository.SettingsRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.first
@@ -22,7 +25,8 @@ class SettingsRepositoryImpl @Inject constructor(
         return configRepository.getConfig().map { config ->
             AppSettings(
                 parsingMode = ParsingMode.valueOf(config?.parsingMode ?: "CLOUD"),
-                aiProvider = config?.preferredLlmProvider ?: com.scribblefit.feature.ai.domain.model.LLMProvider.PROXY,
+                aiProvider = config?.preferredLlmProvider
+                    ?: com.scribblefit.feature.ai.domain.model.LLMProvider.PROXY,
                 weightUnit = WeightUnit.valueOf(config?.weightUnit ?: "LBS"),
                 themePreference = ThemePreference.valueOf(config?.themePreference ?: "SYSTEM"),
                 selectedModel = config?.preferredModel ?: ""

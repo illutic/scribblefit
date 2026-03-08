@@ -1,7 +1,7 @@
 package com.scribblefit.app
 
-import android.provider.Settings
 import android.content.Context
+import android.provider.Settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.scribblefit.core.navigation.Navigator
@@ -39,17 +39,19 @@ class MainViewModel @Inject constructor(
     private fun initializeApplication() {
         viewModelScope.launch {
             // 1. Get/Generate Device ID
-            val deviceId = Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID) ?: "unknown_device"
-            
+            val deviceId =
+                Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
+                    ?: "unknown_device"
+
             // 2. Perform Login/Auth if needed
             if (!authRepository.isLogged()) {
                 authRepository.login(deviceId)
             }
-            
+
             // 3. Sync Metadata & Exercises
             configRepository.syncMetadata()
             configRepository.syncExercises()
-            
+
             _isInitialized.value = true
         }
     }

@@ -62,6 +62,7 @@ public final class SyncRepositoryImpl: SyncRepository {
 
     public func saveParsedWorkout(syncItemId: String, workout: ParsedWorkout) async throws {
         await database.saveParsedWorkout(syncItemId: syncItemId, workout: workout)
+        try? await updateSyncStatus(id: syncItemId, status: .completed)
         await refreshAllItemsSubject()
     }
 

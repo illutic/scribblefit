@@ -39,8 +39,8 @@ class ScribbleFitProxyEngineTest {
         )
 
         coEvery { secureKeyStorage.getAuthToken() } returns token
-        coEvery { 
-            api.parseProxy(ParseRequest(rawText = rawText, prompt = systemPrompt), token) 
+        coEvery {
+            api.parseProxy(ParseRequest(rawText = rawText, prompt = systemPrompt), token)
         } returns expectedDto
 
         val result = engine.parseWorkout(rawText)
@@ -49,7 +49,7 @@ class ScribbleFitProxyEngineTest {
         val workout = result.getOrNull()!!
         assertEquals("2024-03-03", workout.date)
         assertEquals("Home", workout.location)
-        
+
         coVerify { api.parseProxy(any(), token) }
     }
 
@@ -63,6 +63,9 @@ class ScribbleFitProxyEngineTest {
         assertTrue(result.isFailure)
         val exception = result.exceptionOrNull()
         assertTrue(exception is AIParsingException)
-        assertEquals("AI Parsing failed for text: $rawText. Error: Proxy Failure: Network Error", exception?.message)
+        assertEquals(
+            "AI Parsing failed for text: $rawText. Error: Proxy Failure: Network Error",
+            exception?.message
+        )
     }
 }

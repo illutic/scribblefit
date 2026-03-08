@@ -29,10 +29,9 @@ public final class SettingsRepositoryImpl: SettingsRepository {
         let existing = await database.getConfig()
         let config = SystemConfig(
             promptVersion: existing?.promptVersion ?? "1.0.0",
-            promptText: existing?.promptText ?? "",
+            promptText: existing?.promptText ?? SystemConfig.defaultPrompt,
             preferredLlmProvider: settings.aiProvider.rawValue,
             preferredModel: settings.selectedModel ?? "",
-            parsingMode: existing?.parsingMode ?? "managed",
             weightUnit: settings.weightUnit.rawValue,
             themePreference: settings.themePreference.rawValue,
             updatedAt: Date()

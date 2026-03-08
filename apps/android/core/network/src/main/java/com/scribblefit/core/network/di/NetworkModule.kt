@@ -1,5 +1,6 @@
 package com.scribblefit.core.network.di
 
+import android.util.Log
 import com.scribblefit.core.network.NetworkConfig
 import com.scribblefit.core.network.NetworkConfigImpl
 import com.scribblefit.core.network.ScribbleFitApi
@@ -9,7 +10,6 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import android.util.Log
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation

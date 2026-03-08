@@ -6,11 +6,16 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 sealed interface Screen : NavKey {
-    @Serializable data object Canvas : Screen
-    @Serializable data object Analytics : Screen
-    @Serializable data object Exercises : Screen
-    @Serializable data object Profile : Screen
-    @Serializable data object Settings : Screen
+    @Serializable
+    data object Canvas : Screen
+    @Serializable
+    data object Analytics : Screen
+    @Serializable
+    data object Exercises : Screen
+    @Serializable
+    data object Profile : Screen
+    @Serializable
+    data object Settings : Screen
 }
 
 interface Navigator {

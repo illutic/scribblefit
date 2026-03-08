@@ -37,7 +37,10 @@ class OpenAIEngineTest {
                 }
                 """.trimIndent(),
                 status = HttpStatusCode.OK,
-                headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                headers = headersOf(
+                    HttpHeaders.ContentType,
+                    ContentType.Application.Json.toString()
+                )
             )
         }
 
@@ -55,7 +58,7 @@ class OpenAIEngineTest {
         )
 
         val result = engine.parseWorkout("Bench 135x5")
-        
+
         assertTrue("Result should be success, but was $result", result.isSuccess)
         val workout = result.getOrNull()!!
         assertEquals("2024-03-03", workout.date)
@@ -81,7 +84,10 @@ class OpenAIEngineTest {
                 }
                 """.trimIndent(),
                 status = HttpStatusCode.OK,
-                headers = headersOf(HttpHeaders.ContentType, ContentType.Application.Json.toString())
+                headers = headersOf(
+                    HttpHeaders.ContentType,
+                    ContentType.Application.Json.toString()
+                )
             )
         }
 

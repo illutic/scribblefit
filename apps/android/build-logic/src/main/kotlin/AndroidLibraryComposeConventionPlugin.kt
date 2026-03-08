@@ -19,7 +19,7 @@ class AndroidLibraryComposeConventionPlugin : Plugin<Project> {
                 defaultConfig {
                     minSdk = 26
                 }
-                
+
                 buildFeatures {
                     compose = true
                 }

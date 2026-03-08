@@ -7,13 +7,12 @@ import com.scribblefit.feature.ai.domain.model.AnalysisSuggestion
 import com.scribblefit.feature.ai.domain.model.AnalysisSummary
 import com.scribblefit.feature.ai.domain.model.ExerciseInsight
 import com.scribblefit.feature.ai.domain.model.LLMProvider
-import com.scribblefit.feature.ai.domain.model.ParsedWorkout
+import com.scribblefit.feature.ai.domain.model.ParsedWorkoutResult
+import com.scribblefit.feature.ai.domain.model.ParsingStatus
 import com.scribblefit.feature.ai.domain.model.SummaryPeriod
 import kotlinx.coroutines.flow.first
 import javax.inject.Inject
 import javax.inject.Named
-
-import com.scribblefit.feature.ai.domain.model.*
 
 class DynamicLLMEngine @Inject constructor(
     @param:Named("openai") private val openAIEngine: LLMEngine,
@@ -26,11 +25,11 @@ class DynamicLLMEngine @Inject constructor(
     override suspend fun parseWorkout(rawText: String): ParsedWorkoutResult {
         val config = configRepository.getConfig().first()
         val preferredProvider = config?.preferredLlmProvider ?: LLMProvider.PROXY
-        
+
         val engines = getEnginePriorityList(preferredProvider)
-        
+
         var lastResult: ParsedWorkoutResult? = null
-        
+
         for (engine in engines) {
             val result = engine.parseWorkout(rawText)
             if (result.status == ParsingStatus.SUCCESS) {
@@ -39,7 +38,7 @@ class DynamicLLMEngine @Inject constructor(
             lastResult = result
             // If it's a failure, we continue to the next engine in the priority list
         }
-        
+
         return lastResult ?: ParsedWorkoutResult(
             workout = null,
             rawText = rawText,
@@ -62,7 +61,7 @@ class DynamicLLMEngine @Inject constructor(
         val config = configRepository.getConfig().first()
         val preferredProvider = config?.preferredLlmProvider ?: LLMProvider.PROXY
         val engines = getAnalysisEnginePriorityList(preferredProvider)
-        
+
         var lastError: Throwable? = null
         for (engine in engines) {
             val result = engine.generateSuggestion(context)
@@ -72,11 +71,14 @@ class DynamicLLMEngine @Inject constructor(
         return Result.failure(lastError ?: Exception("All analysis engines failed"))
     }
 
-    override suspend fun generateSummary(period: SummaryPeriod, workoutData: String): Result<AnalysisSummary> {
+    override suspend fun generateSummary(
+        period: SummaryPeriod,
+        workoutData: String
+    ): Result<AnalysisSummary> {
         val config = configRepository.getConfig().first()
         val preferredProvider = config?.preferredLlmProvider ?: LLMProvider.PROXY
         val engines = getAnalysisEnginePriorityList(preferredProvider)
-        
+
         var lastError: Throwable? = null
         for (engine in engines) {
             val result = engine.generateSummary(period, workoutData)
@@ -86,11 +88,14 @@ class DynamicLLMEngine @Inject constructor(
         return Result.failure(lastError ?: Exception("All analysis engines failed"))
     }
 
-    override suspend fun generateExerciseInsight(exerciseName: String, historyData: String): Result<ExerciseInsight> {
+    override suspend fun generateExerciseInsight(
+        exerciseName: String,
+        historyData: String
+    ): Result<ExerciseInsight> {
         val config = configRepository.getConfig().first()
         val preferredProvider = config?.preferredLlmProvider ?: LLMProvider.PROXY
         val engines = getAnalysisEnginePriorityList(preferredProvider)
-        
+
         var lastError: Throwable? = null
         for (engine in engines) {
             val result = engine.generateExerciseInsight(exerciseName, historyData)

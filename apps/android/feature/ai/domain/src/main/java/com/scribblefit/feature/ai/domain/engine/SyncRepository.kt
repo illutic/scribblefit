@@ -18,5 +18,6 @@ interface SyncRepository {
         jsonData: String,
         status: SyncStatus = SyncStatus.COMPLETED
     )
+
     suspend fun syncWorkouts()
 }

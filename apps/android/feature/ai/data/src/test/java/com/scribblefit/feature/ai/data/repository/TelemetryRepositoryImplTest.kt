@@ -39,14 +39,14 @@ class TelemetryRepositoryImplTest {
 
         // Then
         assertTrue(result.isSuccess)
-        coVerify { 
-            api.reportError(match { 
+        coVerify {
+            api.reportError(match {
                 it.rawText == data.rawText &&
-                it.promptVersion == data.promptVersion &&
-                it.errorMessage == data.errorMessage &&
-                it.errorCode == data.errorCode &&
-                it.deviceModel == data.deviceModel
-            }) 
+                        it.promptVersion == data.promptVersion &&
+                        it.errorMessage == data.errorMessage &&
+                        it.errorCode == data.errorCode &&
+                        it.deviceModel == data.deviceModel
+            })
         }
     }
 

@@ -18,7 +18,7 @@ class ConvertersTest {
         assertEquals(SyncStatus.PENDING, converters.toSyncStatus("PENDING"))
         assertEquals(SyncStatus.COMPLETED, converters.toSyncStatus("COMPLETED"))
     }
-    
+
     @Test
     fun stringListConverters() {
         val list = listOf("a", "b", "c")

@@ -22,7 +22,7 @@ public final class LocalAIEngine: LLMEngine, AnalysisEngine {
             #if canImport(FoundationModels)
             if #available(iOS 26.0, *) {
                 let config = await configRepository.getConfig()
-                let systemPrompt = config?.promptText ?? ScribbleFitProxyEngine.defaultPrompt
+                let systemPrompt = config?.promptText ?? SystemConfig.defaultPrompt
                  
                 let session = LanguageModelSession { systemPrompt }
                 let response = try await session.respond(to: "Parse this gym note: \(rawText)")

@@ -45,7 +45,7 @@ fun LedgerScreen(
             .padding(horizontal = 24.dp)
     ) {
         Spacer(modifier = Modifier.height(80.dp))
-        
+
         Text(
             text = "Ledger.",
             style = TextStyle(
@@ -54,7 +54,7 @@ fun LedgerScreen(
                 color = ScribbleFitColors.RichBlack
             )
         )
-        
+
         Spacer(modifier = Modifier.height(32.dp))
 
         if (history.isEmpty()) {
@@ -98,7 +98,7 @@ fun WorkoutItem(workout: WorkoutHistory) {
                     letterSpacing = 1.sp
                 )
             )
-            
+
             Text(
                 text = "${workout.totalVolume.toInt()} LBS",
                 style = TextStyle(
@@ -108,7 +108,7 @@ fun WorkoutItem(workout: WorkoutHistory) {
                 )
             )
         }
-        
+
         if (workout.location != null) {
             Text(
                 text = workout.location,
@@ -123,8 +123,12 @@ fun WorkoutItem(workout: WorkoutHistory) {
             ExerciseSection(exercise)
             Spacer(modifier = Modifier.height(12.dp))
         }
-        
-        Divider(color = ScribbleFitColors.SoftGray, thickness = 1.dp, modifier = Modifier.padding(top = 16.dp))
+
+        Divider(
+            color = ScribbleFitColors.SoftGray,
+            thickness = 1.dp,
+            modifier = Modifier.padding(top = 16.dp)
+        )
     }
 }
 
@@ -139,9 +143,9 @@ fun ExerciseSection(exercise: com.scribblefit.feature.ledger.domain.model.Exerci
                 color = ScribbleFitColors.RichBlack
             )
         )
-        
+
         Spacer(modifier = Modifier.height(4.dp))
-        
+
         exercise.sets.forEachIndexed { index, set ->
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(

@@ -20,7 +20,7 @@ class AndroidApplicationComposeConventionPlugin : Plugin<Project> {
                     targetSdk = 35
                     minSdk = 26
                 }
-                
+
                 buildFeatures {
                     compose = true
                 }

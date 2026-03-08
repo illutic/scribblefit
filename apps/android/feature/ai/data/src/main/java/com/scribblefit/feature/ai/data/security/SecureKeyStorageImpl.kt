@@ -1,13 +1,13 @@
 package com.scribblefit.feature.ai.data.security
 
 import android.content.Context
+import androidx.core.content.edit
 import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.scribblefit.feature.ai.domain.security.SecureKeyStorage
 import dagger.hilt.android.qualifiers.ApplicationContext
 import javax.inject.Inject
 import javax.inject.Singleton
-import androidx.core.content.edit
 
 @Singleton
 class SecureKeyStorageImpl @Inject constructor(

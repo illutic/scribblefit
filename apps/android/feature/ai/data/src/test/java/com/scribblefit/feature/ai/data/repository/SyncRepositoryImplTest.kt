@@ -5,21 +5,21 @@ import androidx.work.WorkManager
 import androidx.work.WorkRequest
 import com.scribblefit.core.database.dao.SyncQueueDao
 import com.scribblefit.core.database.model.SyncQueueEntity
-import com.scribblefit.core.database.model.SyncStatus as EntitySyncStatus
 import com.scribblefit.feature.ai.domain.model.ParsedExercise
 import com.scribblefit.feature.ai.domain.model.ParsedSet
 import com.scribblefit.feature.ai.domain.model.ParsedWorkout
 import com.scribblefit.feature.ai.domain.model.SyncStatus
-import io.mockk.*
+import io.mockk.coVerify
+import io.mockk.every
+import io.mockk.mockk
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.runTest
+import kotlinx.serialization.json.Json
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
-
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.encodeToString
+import com.scribblefit.core.database.model.SyncStatus as EntitySyncStatus
 
 class SyncRepositoryImplTest {
 
@@ -34,9 +34,9 @@ class SyncRepositoryImplTest {
         workManager = mockk(relaxed = true)
         context = mockk(relaxed = true)
         json = Json { ignoreUnknownKeys = true }
-        
+
         syncQueueDao = mockk(relaxed = true)
-        
+
         repository = SyncRepositoryImpl(context, syncQueueDao, json)
         repository.workManagerProvider = { workManager }
     }
@@ -47,7 +47,9 @@ class SyncRepositoryImplTest {
         val entities = listOf(
             SyncQueueEntity("1", "SCRIBBLE", "raw", EntitySyncStatus.PENDING, 123L)
         )
-        every { syncQueueDao.getSyncItemsByStatus(EntitySyncStatus.PENDING) } returns flowOf(entities)
+        every { syncQueueDao.getSyncItemsByStatus(EntitySyncStatus.PENDING) } returns flowOf(
+            entities
+        )
 
         // When
         val result = repository.getPendingSyncItems().first()
@@ -81,7 +83,7 @@ class SyncRepositoryImplTest {
 
         // Then
         val expectedJson = json.encodeToString(workout)
-        coVerify { 
+        coVerify {
             syncQueueDao.updateParsedResult(syncItemId, EntitySyncStatus.COMPLETED, expectedJson)
         }
     }

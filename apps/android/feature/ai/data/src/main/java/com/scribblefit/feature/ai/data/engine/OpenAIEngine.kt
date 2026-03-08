@@ -8,11 +8,11 @@ import com.scribblefit.feature.ai.data.mapper.toDomain
 import com.scribblefit.feature.ai.domain.engine.AnalysisEngine
 import com.scribblefit.feature.ai.domain.engine.ConfigRepository
 import com.scribblefit.feature.ai.domain.engine.LLMEngine
-import com.scribblefit.feature.ai.domain.model.AIParsingException
 import com.scribblefit.feature.ai.domain.model.AnalysisSuggestion
 import com.scribblefit.feature.ai.domain.model.AnalysisSummary
 import com.scribblefit.feature.ai.domain.model.ExerciseInsight
-import com.scribblefit.feature.ai.domain.model.ParsedWorkout
+import com.scribblefit.feature.ai.domain.model.ParsedWorkoutResult
+import com.scribblefit.feature.ai.domain.model.ParsingStatus
 import com.scribblefit.feature.ai.domain.model.SummaryPeriod
 import com.scribblefit.feature.ai.domain.security.SecureKeyStorage
 import io.ktor.client.HttpClient
@@ -30,9 +30,6 @@ import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonElement
 import kotlinx.serialization.json.JsonPrimitive
 
-import com.scribblefit.feature.ai.domain.model.ParsedWorkoutResult
-import com.scribblefit.feature.ai.domain.model.ParsingStatus
-
 class OpenAIEngine(
     private val client: HttpClient,
     private val secureKeyStorage: SecureKeyStorage,
@@ -42,10 +39,12 @@ class OpenAIEngine(
 
     override suspend fun parseWorkout(rawText: String): ParsedWorkoutResult {
         val startTime = System.currentTimeMillis()
-        val model = configRepository.getConfig().first()?.preferredModel?.takeIf { it.isNotEmpty() } ?: "gpt-4o-mini"
+        val model = configRepository.getConfig().first()?.preferredModel?.takeIf { it.isNotEmpty() }
+            ?: "gpt-4o-mini"
         return try {
             val apiKey = secureKeyStorage.getApiKey() ?: ""
-            val systemPrompt = configRepository.getConfig().first()?.promptText ?: error("Prompt is empty. Configuration is not set.")
+            val systemPrompt = configRepository.getConfig().first()?.promptText
+                ?: error("Prompt is empty. Configuration is not set.")
 
             val response = callOpenAIResponse(apiKey, systemPrompt, rawText, model)
             val duration = System.currentTimeMillis() - startTime

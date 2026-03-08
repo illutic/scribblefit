@@ -1,6 +1,7 @@
 package com.scribblefit.feature.ai.data.di
 
-import com.scribblefit.core.database.dao.SystemConfigDao
+import com.google.mlkit.genai.prompt.Generation
+import com.google.mlkit.genai.prompt.GenerativeModel
 import com.scribblefit.core.network.ScribbleFitApi
 import com.scribblefit.feature.ai.data.engine.DynamicLLMEngine
 import com.scribblefit.feature.ai.data.engine.GeminiAIEngine
@@ -12,17 +13,15 @@ import com.scribblefit.feature.ai.data.repository.ConfigRepositoryImpl
 import com.scribblefit.feature.ai.data.repository.SyncRepositoryImpl
 import com.scribblefit.feature.ai.data.repository.TelemetryRepositoryImpl
 import com.scribblefit.feature.ai.data.security.SecureKeyStorageImpl
-import com.scribblefit.feature.ai.domain.security.SecureKeyStorage
-import com.scribblefit.feature.ai.domain.usecase.ListenForSyncItemsUseCase
-import com.scribblefit.feature.ai.domain.usecase.SyncWorkoutUseCase
-import com.google.mlkit.genai.prompt.Generation
-import com.google.mlkit.genai.prompt.GenerativeModel
 import com.scribblefit.feature.ai.domain.engine.AnalysisEngine
 import com.scribblefit.feature.ai.domain.engine.AuthRepository
 import com.scribblefit.feature.ai.domain.engine.ConfigRepository
 import com.scribblefit.feature.ai.domain.engine.LLMEngine
 import com.scribblefit.feature.ai.domain.engine.SyncRepository
 import com.scribblefit.feature.ai.domain.engine.TelemetryRepository
+import com.scribblefit.feature.ai.domain.security.SecureKeyStorage
+import com.scribblefit.feature.ai.domain.usecase.ListenForSyncItemsUseCase
+import com.scribblefit.feature.ai.domain.usecase.SyncWorkoutUseCase
 import dagger.Binds
 import dagger.Module
 import dagger.Provides

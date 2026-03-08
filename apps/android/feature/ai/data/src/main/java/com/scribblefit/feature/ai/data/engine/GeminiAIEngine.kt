@@ -1,15 +1,20 @@
 package com.scribblefit.feature.ai.data.engine
 
-import com.scribblefit.feature.ai.data.mapper.*
 import com.scribblefit.core.network.model.ParsedWorkoutDto
+import com.scribblefit.feature.ai.data.mapper.ExerciseInsightDto
+import com.scribblefit.feature.ai.data.mapper.SuggestionDto
+import com.scribblefit.feature.ai.data.mapper.SummaryDto
+import com.scribblefit.feature.ai.data.mapper.toDomain
 import com.scribblefit.feature.ai.domain.engine.AnalysisEngine
+import com.scribblefit.feature.ai.domain.engine.ConfigRepository
 import com.scribblefit.feature.ai.domain.engine.LLMEngine
-import com.scribblefit.feature.ai.domain.model.AIParsingException
 import com.scribblefit.feature.ai.domain.model.AnalysisSuggestion
 import com.scribblefit.feature.ai.domain.model.AnalysisSummary
 import com.scribblefit.feature.ai.domain.model.ExerciseInsight
-import com.scribblefit.feature.ai.domain.model.ParsedWorkout
+import com.scribblefit.feature.ai.domain.model.ParsedWorkoutResult
+import com.scribblefit.feature.ai.domain.model.ParsingStatus
 import com.scribblefit.feature.ai.domain.model.SummaryPeriod
+import com.scribblefit.feature.ai.domain.security.SecureKeyStorage
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.get
@@ -17,20 +22,15 @@ import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import org.slf4j.LoggerFactory
 import javax.inject.Inject
 import javax.inject.Named
-import com.scribblefit.feature.ai.domain.engine.ConfigRepository
-import kotlinx.coroutines.flow.first
-import kotlinx.coroutines.sync.Mutex
-import kotlinx.coroutines.sync.withLock
-
-import com.scribblefit.feature.ai.domain.security.SecureKeyStorage
-
-import com.scribblefit.feature.ai.domain.model.*
 
 class GeminiAIEngine @Inject constructor(
     @param:Named("base") private val client: HttpClient,
@@ -41,7 +41,7 @@ class GeminiAIEngine @Inject constructor(
 
     private val apiBase = "https://generativelanguage.googleapis.com/v1beta"
     private val logger = LoggerFactory.getLogger(javaClass)
-    
+
     private var activeModelPath: String? = null
     private val modelMutex = Mutex()
 
@@ -49,14 +49,15 @@ class GeminiAIEngine @Inject constructor(
         val startTime = System.currentTimeMillis()
         return try {
             val apiKey = secureKeyStorage.getApiKey() ?: ""
-            val systemPrompt = configRepository.getConfig().first()?.promptText ?: error("Prompt is empty. Configuration is not set.")
-            
+            val systemPrompt = configRepository.getConfig().first()?.promptText
+                ?: error("Prompt is empty. Configuration is not set.")
+
             val content = callGemini(apiKey, systemPrompt, "$rawText\n\nOutput in JSON format.")
             val duration = System.currentTimeMillis() - startTime
-            
+
             val parsedWorkoutDto = json.decodeFromString<ParsedWorkoutDto>(content)
             val workout = parsedWorkoutDto.toDomain()
-            
+
             ParsedWorkoutResult(
                 workout = workout,
                 rawText = rawText,
@@ -77,21 +78,40 @@ class GeminiAIEngine @Inject constructor(
         }
     }
 
-    override suspend fun generateSuggestion(context: String): Result<AnalysisSuggestion> = runCatching {
-        val apiKey = secureKeyStorage.getApiKey() ?: ""
-        val content = callGemini(apiKey, AnalysisPrompts.getSuggestionPrompt(context), "Generate suggestion in JSON format.")
-        json.decodeFromString<SuggestionDto>(content).toDomain()
-    }
+    override suspend fun generateSuggestion(context: String): Result<AnalysisSuggestion> =
+        runCatching {
+            val apiKey = secureKeyStorage.getApiKey() ?: ""
+            val content = callGemini(
+                apiKey,
+                AnalysisPrompts.getSuggestionPrompt(context),
+                "Generate suggestion in JSON format."
+            )
+            json.decodeFromString<SuggestionDto>(content).toDomain()
+        }
 
-    override suspend fun generateSummary(period: SummaryPeriod, workoutData: String): Result<AnalysisSummary> = runCatching {
+    override suspend fun generateSummary(
+        period: SummaryPeriod,
+        workoutData: String
+    ): Result<AnalysisSummary> = runCatching {
         val apiKey = secureKeyStorage.getApiKey() ?: ""
-        val content = callGemini(apiKey, AnalysisPrompts.getSummaryPrompt(period.name, workoutData), "Generate summary in JSON format.")
+        val content = callGemini(
+            apiKey,
+            AnalysisPrompts.getSummaryPrompt(period.name, workoutData),
+            "Generate summary in JSON format."
+        )
         json.decodeFromString<SummaryDto>(content).toDomain(period)
     }
 
-    override suspend fun generateExerciseInsight(exerciseName: String, historyData: String): Result<ExerciseInsight> = runCatching {
+    override suspend fun generateExerciseInsight(
+        exerciseName: String,
+        historyData: String
+    ): Result<ExerciseInsight> = runCatching {
         val apiKey = secureKeyStorage.getApiKey() ?: ""
-        val content = callGemini(apiKey, AnalysisPrompts.getExerciseInsightPrompt(exerciseName, historyData), "Analyze $exerciseName in JSON format.")
+        val content = callGemini(
+            apiKey,
+            AnalysisPrompts.getExerciseInsightPrompt(exerciseName, historyData),
+            "Analyze $exerciseName in JSON format."
+        )
         json.decodeFromString<ExerciseInsightDto>(content).toDomain(exerciseName)
     }
 
@@ -105,16 +125,17 @@ class GeminiAIEngine @Inject constructor(
 
         modelMutex.withLock {
             if (activeModelPath != null) return activeModelPath!!
-            
+
             logger.info("Discovering available Gemini models...")
             try {
-                val response = client.get("$apiBase/models?key=$apiKey").body<GeminiModelListResponse>()
+                val response =
+                    client.get("$apiBase/models?key=$apiKey").body<GeminiModelListResponse>()
                 // Find a model that supports generateContent and is a "flash" or "pro" model
                 val model = response.models
                     .filter { it.supportedGenerationMethods.contains("generateContent") }
                     .filter { it.name.contains("flash", ignoreCase = true) }
                     .maxByOrNull { it.name }
-                
+
                 activeModelPath = model?.name ?: "models/gemini-1.5-flash"
                 logger.info("Selected model: $activeModelPath")
                 return activeModelPath!!
@@ -128,7 +149,7 @@ class GeminiAIEngine @Inject constructor(
     private suspend fun callGemini(apiKey: String, prompt: String, userMessage: String): String {
         val modelPath = getOrDiscoverModel(apiKey)
         val fullUserMessage = "$prompt\n\n$userMessage"
-        
+
         val response = client.post("$apiBase/$modelPath:generateContent?key=$apiKey") {
             contentType(ContentType.Application.Json)
             setBody(

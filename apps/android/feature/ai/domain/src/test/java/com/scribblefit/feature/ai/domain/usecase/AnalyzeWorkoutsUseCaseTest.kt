@@ -1,8 +1,8 @@
 package com.scribblefit.feature.ai.domain.usecase
 
-import com.scribblefit.feature.ai.domain.engine.AnalysisEngine
-import com.scribblefit.core.ai.model.*
 import com.scribblefit.core.ai.engine.AnalysisRepository
+import com.scribblefit.core.ai.model.*
+import com.scribblefit.feature.ai.domain.engine.AnalysisEngine
 import com.scribblefit.feature.ai.domain.model.AnalysisSuggestion
 import com.scribblefit.feature.ai.domain.model.AnalysisSummary
 import com.scribblefit.feature.ai.domain.model.ExerciseInsight
@@ -74,15 +74,17 @@ class AnalyzeWorkoutsUseCaseTest {
             "Great progress",
             1000L
         )
-        coEvery { engine.generateExerciseInsight(exerciseName, history) } returns Result.success(insight)
+        coEvery { engine.generateExerciseInsight(exerciseName, history) } returns Result.success(
+            insight
+        )
 
         // When
         useCase.refreshExerciseInsight(exerciseId, exerciseName, history)
 
         // Then
         coVerify(exactly = 1) { engine.generateExerciseInsight(exerciseName, history) }
-        coVerify(exactly = 1) { 
-            repository.saveExerciseInsight(match { it.exerciseId == exerciseId }) 
+        coVerify(exactly = 1) {
+            repository.saveExerciseInsight(match { it.exerciseId == exerciseId })
         }
     }
 }

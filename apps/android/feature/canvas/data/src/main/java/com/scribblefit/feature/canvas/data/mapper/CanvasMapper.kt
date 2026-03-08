@@ -1,18 +1,36 @@
 package com.scribblefit.feature.canvas.data.mapper
 
-import com.scribblefit.feature.canvas.domain.model.*
+import com.scribblefit.feature.canvas.domain.model.SessionExercise
+import com.scribblefit.feature.canvas.domain.model.SessionSet
+import com.scribblefit.feature.canvas.domain.model.WorkoutSession
 import kotlinx.serialization.Serializable
 
 @Serializable
 sealed class FeedItemDto {
     @Serializable
-    data class Prompt(val id: String, val timestamp: Long, val text: String, val emoji: String, val type: String) : FeedItemDto()
+    data class Prompt(
+        val id: String,
+        val timestamp: Long,
+        val text: String,
+        val emoji: String,
+        val type: String
+    ) : FeedItemDto()
+
     @Serializable
-    data class Scribble(val id: String, val timestamp: Long, val rawText: String, val status: String) : FeedItemDto()
+    data class Scribble(
+        val id: String,
+        val timestamp: Long,
+        val rawText: String,
+        val status: String
+    ) : FeedItemDto()
+
     @Serializable
-    data class Confirmation(val id: String, val timestamp: Long, val scribbleId: String) : FeedItemDto() // Workout handled separately
+    data class Confirmation(val id: String, val timestamp: Long, val scribbleId: String) :
+        FeedItemDto() // Workout handled separately
+
     @Serializable
-    data class Insight(val id: String, val timestamp: Long, val text: String, val emoji: String) : FeedItemDto()
+    data class Insight(val id: String, val timestamp: Long, val text: String, val emoji: String) :
+        FeedItemDto()
 }
 
 @Serializable

@@ -20,7 +20,11 @@ class AnalyzeWorkoutsUseCase(
         }
     }
 
-    suspend fun refreshExerciseInsight(exerciseId: String, exerciseName: String, historyData: String) {
+    suspend fun refreshExerciseInsight(
+        exerciseId: String,
+        exerciseName: String,
+        historyData: String
+    ) {
         engine.generateExerciseInsight(exerciseName, historyData).onSuccess {
             repository.saveExerciseInsight(it.copy(exerciseId = exerciseId))
         }

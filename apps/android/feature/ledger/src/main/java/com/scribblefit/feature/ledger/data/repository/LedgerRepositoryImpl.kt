@@ -27,13 +27,15 @@ class LedgerRepositoryImpl @Inject constructor(
         return workoutLogDao.getAllWorkoutLogs().map { logs ->
             logs.map { log ->
                 val sets = setDao.getSetsForWorkout(log.id).first()
-                
+
                 val exercises = sets.groupBy { it.exerciseId }.map { (exerciseId, setEntities) ->
-                    val exerciseName = exerciseDictionaryDao.getExerciseById(exerciseId).first()?.canonicalName ?: exerciseId
-                    
+                    val exerciseName =
+                        exerciseDictionaryDao.getExerciseById(exerciseId).first()?.canonicalName
+                            ?: exerciseId
+
                     ExerciseHistory(
                         canonicalName = exerciseName,
-                        sets = setEntities.map { 
+                        sets = setEntities.map {
                             SetHistory(it.weight, it.reps, it.rpe, it.notes)
                         }
                     )
@@ -59,7 +61,7 @@ class LedgerRepositoryImpl @Inject constructor(
                 totalVolume = workout.totalVolume
             )
         )
-        
+
         val setEntities = workout.exercises.flatMap { exercise ->
             exercise.sets.map { set ->
                 SetEntity(

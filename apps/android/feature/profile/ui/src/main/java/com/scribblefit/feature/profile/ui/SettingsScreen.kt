@@ -19,7 +19,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExposedDropdownMenu
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
@@ -47,12 +46,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.scribblefit.feature.ai.domain.model.LLMProvider
 import com.scribblefit.core.designsystem.component.ScribbleFitTextField
 import com.scribblefit.core.designsystem.theme.tokens.ScribbleFitSpacing
-import com.scribblefit.feature.profile.domain.model.AppSettings
-import com.scribblefit.feature.profile.domain.model.ParsingMode
-import com.scribblefit.feature.profile.domain.model.ThemePreference
+import com.scribblefit.feature.ai.domain.model.LLMProvider
 import com.scribblefit.feature.profile.domain.model.WeightUnit
 
 private val DangerRed = Color(0xFFFF3B30)
@@ -118,11 +114,19 @@ fun SettingsScreen(
                     when {
                         uiState.isLoadingModels -> {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                                CircularProgressIndicator(
+                                    modifier = Modifier.size(16.dp),
+                                    strokeWidth = 2.dp
+                                )
                                 Spacer(modifier = Modifier.width(8.dp))
-                                Text("Loading models...", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Text(
+                                    "Loading models...",
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
                             }
                         }
+
                         uiState.availableModels.isEmpty() -> {
                             TextButton(
                                 onClick = viewModel::fetchModels,
@@ -139,9 +143,12 @@ fun SettingsScreen(
                                 )
                             }
                         }
+
                         else -> {
                             ModelDropdown(
-                                selected = uiState.settings.selectedModel.ifEmpty { uiState.availableModels.firstOrNull() ?: "" },
+                                selected = uiState.settings.selectedModel.ifEmpty {
+                                    uiState.availableModels.firstOrNull() ?: ""
+                                },
                                 models = uiState.availableModels,
                                 onSelect = viewModel::updateModel
                             )
@@ -150,7 +157,10 @@ fun SettingsScreen(
                 }
             }
 
-            Divider(modifier = Modifier.padding(vertical = 24.dp), color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f))
+            Divider(
+                modifier = Modifier.padding(vertical = 24.dp),
+                color = MaterialTheme.colorScheme.outline.copy(alpha = 0.1f)
+            )
 
             // Preferences Section
             SectionHeader("PREFERENCES")
@@ -261,7 +271,10 @@ private fun ModelDropdown(
 }
 
 @Composable
-private fun SectionHeader(title: String, color: Color = MaterialTheme.colorScheme.onSurfaceVariant) {
+private fun SectionHeader(
+    title: String,
+    color: Color = MaterialTheme.colorScheme.onSurfaceVariant
+) {
     Text(
         text = title,
         style = MaterialTheme.typography.labelMedium.copy(
@@ -276,7 +289,11 @@ private fun SectionHeader(title: String, color: Color = MaterialTheme.colorSchem
 @Composable
 private fun PreferenceItem(label: String, content: @Composable () -> Unit) {
     Column {
-        Text(text = label, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onBackground)
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onBackground
+        )
         Spacer(modifier = Modifier.height(8.dp))
         content()
     }

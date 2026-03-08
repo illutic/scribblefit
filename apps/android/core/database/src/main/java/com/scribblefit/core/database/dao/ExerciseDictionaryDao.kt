@@ -24,8 +24,10 @@ interface ExerciseDictionaryDao {
     @Query("SELECT * FROM Exercise_Dictionary ORDER BY canonical_name ASC")
     fun getAllExercises(): Flow<List<ExerciseDictionaryEntity>>
 
-    @Query("SELECT * FROM Exercise_Dictionary WHERE canonical_name LIKE '%' " +
-            "|| :query || '%' OR aliases LIKE '%' || :query || '%'")
+    @Query(
+        "SELECT * FROM Exercise_Dictionary WHERE canonical_name LIKE '%' " +
+                "|| :query || '%' OR aliases LIKE '%' || :query || '%'"
+    )
     fun searchExercises(query: String): Flow<List<ExerciseDictionaryEntity>>
 
     @Query("DELETE FROM Exercise_Dictionary")

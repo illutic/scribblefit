@@ -3,8 +3,8 @@ package com.scribblefit.feature.ai.data.engine
 import com.google.mlkit.genai.common.FeatureStatus
 import com.google.mlkit.genai.prompt.Candidate
 import com.google.mlkit.genai.prompt.GenerateContentRequest
-import com.google.mlkit.genai.prompt.GenerativeModel
 import com.google.mlkit.genai.prompt.GenerateContentResponse
+import com.google.mlkit.genai.prompt.GenerativeModel
 import com.scribblefit.feature.ai.domain.model.AIParsingException
 import io.mockk.coEvery
 import io.mockk.mockk
@@ -23,31 +23,32 @@ class LocalAIEngineTest {
     private val engine = LocalAIEngine(generativeModel, json, systemPrompt)
 
     @Test
-    fun `parseWorkout returns success when Gemini Nano is available and returns valid JSON`() = runTest {
-        val rawText = "Bench 135x5"
-        val mockResponseContent = "{\"date\":\"2024-03-03\",\"exercises\":[]}"
-        
-        val mockCandidate = mockk<Candidate> {
-            coEvery { text } returns mockResponseContent
+    fun `parseWorkout returns success when Gemini Nano is available and returns valid JSON`() =
+        runTest {
+            val rawText = "Bench 135x5"
+            val mockResponseContent = "{\"date\":\"2024-03-03\",\"exercises\":[]}"
+
+            val mockCandidate = mockk<Candidate> {
+                coEvery { text } returns mockResponseContent
+            }
+            val mockResponse = mockk<GenerateContentResponse> {
+                coEvery { candidates } returns listOf(mockCandidate)
+            }
+
+            coEvery { generativeModel.checkStatus() } returns FeatureStatus.AVAILABLE
+            coEvery { generativeModel.generateContent(any<GenerateContentRequest>()) } returns mockResponse
+
+            val result = engine.parseWorkout(rawText)
+
+            assertTrue("Result should be success, but was $result", result.isSuccess)
+            assertEquals("2024-03-03", result.getOrNull()?.date)
         }
-        val mockResponse = mockk<GenerateContentResponse> {
-            coEvery { candidates } returns listOf(mockCandidate)
-        }
-
-        coEvery { generativeModel.checkStatus() } returns FeatureStatus.AVAILABLE
-        coEvery { generativeModel.generateContent(any<GenerateContentRequest>()) } returns mockResponse
-
-        val result = engine.parseWorkout(rawText)
-
-        assertTrue("Result should be success, but was $result", result.isSuccess)
-        assertEquals("2024-03-03", result.getOrNull()?.date)
-    }
 
     @Test
     fun `parseWorkout throws AIParsingException when JSON is invalid`() = runTest {
         val rawText = "Bench 135x5"
         val mockResponseContent = "invalid-json"
-        
+
         val mockCandidate = mockk<Candidate> {
             coEvery { text } returns mockResponseContent
         }
