@@ -39,7 +39,7 @@ final class ScribbleFitDatabaseTests: XCTestCase {
 
     @MainActor
     func testUpsertAndGetWorkoutLog() {
-        let log = WorkoutLog(id: "1", location: "Gym")
+        let log = WorkoutLog(id: "1", date: Date(), location: "Gym", totalVolume: 1000)
         database.upsertWorkoutLog(log)
         
         let fetched = database.getWorkoutLog(id: "1")
@@ -49,8 +49,8 @@ final class ScribbleFitDatabaseTests: XCTestCase {
 
     @MainActor
     func testGetAllWorkoutLogsSorted() {
-        let log1 = WorkoutLog(id: "1", date: Date().addingTimeInterval(-100))
-        let log2 = WorkoutLog(id: "2", date: Date())
+        let log1 = WorkoutLog(id: "1", date: Date().addingTimeInterval(-100), location: "Gym", totalVolume: 1000)
+        let log2 = WorkoutLog(id: "2", date: Date(), location: "Gym", totalVolume: 1000)
         
         database.upsertWorkoutLog(log1)
         database.upsertWorkoutLog(log2)
@@ -96,7 +96,7 @@ final class ScribbleFitDatabaseTests: XCTestCase {
 
     @MainActor
     func testSystemConfigPersistence() {
-        let config = SystemConfig(promptVersion: "1.0.0", promptText: "Test Prompt", exerciseVersion: "1.0.0")
+        let config = SystemConfig(id: "config", promptVersion: "1.0.0", promptText: "Test Prompt", exerciseVersion: "1.0.0", updatedAt: Date())
         database.upsertConfig(config)
         
         let fetched = database.getConfig()
@@ -107,7 +107,7 @@ final class ScribbleFitDatabaseTests: XCTestCase {
     
     @MainActor
     func testSyncQueueOperations() {
-        let item = SyncQueue(id: "1", rawText: "bench 100x5", status: .pending, createdAt: Date())
+        let item = SyncQueue(id: "1", itemType: "SCRIBBLE", rawText: "bench 100x5", status: .pending, createdAt: Date())
         database.upsertSyncItem(item)
         
         var pending = database.getSyncItems(status: .pending)
@@ -119,5 +119,20 @@ final class ScribbleFitDatabaseTests: XCTestCase {
         
         let completed = database.getSyncItems(status: .completed)
         XCTAssertEqual(completed.count, 1)
+        XCTAssertEqual(completed.first?.itemType, "SCRIBBLE")
+    }
+
+    @MainActor
+    func testGetAllSyncItems() {
+        let item1 = SyncQueue(id: "1", itemType: "SCRIBBLE", rawText: "bench 100x5", status: .pending, createdAt: Date().addingTimeInterval(-10))
+        let item2 = SyncQueue(id: "2", itemType: "PROMPT", status: .completed, jsonData: "{}", createdAt: Date())
+        
+        database.upsertSyncItem(item1)
+        database.upsertSyncItem(item2)
+        
+        let all = database.getAllSyncItems()
+        XCTAssertEqual(all.count, 2)
+        XCTAssertEqual(all.first?.id, "1")
+        XCTAssertEqual(all.last?.id, "2")
     }
 }

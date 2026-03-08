@@ -1,25 +1,26 @@
 import Foundation
 import SwiftData
 
-public final class ConfigRepositoryImpl: ConfigRepository, @unchecked Sendable {
+public final class ConfigRepositoryImpl: ConfigRepository {
     private let networkClient: ScribbleFitNetworkClient
     private let database: ScribbleFitDatabase
     
-    public init(networkClient: ScribbleFitNetworkClient = .shared, database: ScribbleFitDatabase = .shared) {
+    public init(networkClient: ScribbleFitNetworkClient, database: ScribbleFitDatabase) {
         self.networkClient = networkClient
         self.database = database
     }
     
+    @MainActor
+    public convenience init() {
+        self.init(networkClient: .shared, database: .shared)
+    }
+    
     public func getConfig() async -> SystemConfig? {
-        await MainActor.run {
-            database.getConfig()
-        }
+        await database.getConfig()
     }
     
     public func updateConfig(_ config: SystemConfig) async {
-        await MainActor.run {
-            database.upsertConfig(config)
-        }
+        await database.upsertConfig(config)
     }
     
     public func syncMetadata() async throws {
@@ -54,26 +55,26 @@ public final class ConfigRepositoryImpl: ConfigRepository, @unchecked Sendable {
                 )
             }
             
-            await MainActor.run {
-                database.deleteAllExercises()
-                database.upsertExercises(entities)
+            await database.deleteAllExercises()
+            await database.upsertExercises(entities)
                 
-                // Update exercise version in config
-                if let config = currentConfig {
-                    config.exerciseVersion = metadata.exerciseVersion
-                    config.updatedAt = Date()
-                    database.upsertConfig(config)
-                } else {
-                    let newConfig = SystemConfig(
-                        id: "config",
-                        promptVersion: "0.0.0",
-                        promptText: "",
-                        exerciseVersion: metadata.exerciseVersion,
-                        updatedAt: Date()
-                    )
-                    database.upsertConfig(newConfig)
-                }
+            // Update exercise version in config
+            if let config = currentConfig {
+                config.exerciseVersion = metadata.exerciseVersion
+                config.updatedAt = Date()
+                await database.upsertConfig(config)
+            } else {
+                let newConfig = SystemConfig(
+                    id: "config",
+                    promptVersion: "0.0.0",
+                    promptText: "",
+                    exerciseVersion: metadata.exerciseVersion,
+                    updatedAt: Date()
+                )
+                await database.upsertConfig(newConfig)
             }
         }
     }
 }
+
+

@@ -4,13 +4,17 @@ import SwiftData
 /**
  * iOS implementation of SyncRepository using ScribbleFitDatabase (SwiftData).
  */
-@MainActor
 public final class SyncRepositoryImpl: SyncRepository {
     private let database: ScribbleFitDatabase
     private var syncWorkoutUseCase: SyncWorkoutUseCase?
     
-    public init(database: ScribbleFitDatabase = .shared) {
+    public init(database: ScribbleFitDatabase) {
         self.database = database
+    }
+    
+    @MainActor
+    public convenience init() {
+        self.init(database: .shared)
     }
     
     // Lazy injection to avoid circular dependency if any
@@ -19,11 +23,11 @@ public final class SyncRepositoryImpl: SyncRepository {
     }
     
     public func getPendingSyncItems() async throws -> [AISyncItem] {
-        return database.getSyncItems(status: .pending).map { $0.toDomain() }
+        await database.getSyncItems(status: .pending).map { $0.toDomain() }
     }
     
     public func getAllSyncItems() async throws -> [AISyncItem] {
-        return database.getAllSyncItems().map { $0.toDomain() }
+        await database.getAllSyncItems().map { $0.toDomain() }
     }
     
     public func updateSyncStatus(id: String, status: AISyncStatus) async throws {
@@ -33,11 +37,11 @@ public final class SyncRepositoryImpl: SyncRepository {
         case .completed: .completed
         case .failed: .failed
         }
-        database.updateSyncStatus(id: id, status: dbStatus)
+        await database.updateSyncStatus(id: id, status: dbStatus)
     }
     
     public func saveParsedWorkout(syncItemId: String, workout: ParsedWorkout) async throws {
-        database.saveParsedWorkout(syncItemId: syncItemId, workout: workout)
+        await database.saveParsedWorkout(syncItemId: syncItemId, workout: workout)
     }
     
     public func enqueueScribble(id: String, rawText: String) async throws {
@@ -48,7 +52,7 @@ public final class SyncRepositoryImpl: SyncRepository {
             status: .pending,
             createdAt: Date()
         )
-        database.upsertSyncItem(syncItem)
+        await database.upsertSyncItem(syncItem)
         triggerImmediateSync()
     }
     
@@ -67,11 +71,11 @@ public final class SyncRepositoryImpl: SyncRepository {
             jsonData: jsonData,
             createdAt: Date()
         )
-        database.upsertSyncItem(syncItem)
+        await database.upsertSyncItem(syncItem)
     }
     
     public func deleteSyncItem(id: String) async throws {
-        database.deleteSyncItem(id: id)
+        await database.deleteSyncItem(id: id)
     }
     
     private func triggerImmediateSync() {

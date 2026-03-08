@@ -8,7 +8,6 @@ public final class GeminiAIEngine: LLMEngine, AnalysisEngine, @unchecked Sendabl
     
     private let apiBase = "https://generativelanguage.googleapis.com/v1beta"
     private var activeModelPath: String?
-    private let lock = NSLock()
     
     public init(
         secureKeyStorage: SecureKeyStorage,
@@ -114,12 +113,9 @@ public final class GeminiAIEngine: LLMEngine, AnalysisEngine, @unchecked Sendabl
     }
     
     private func getOrDiscoverModel(apiKey: String) async throws -> String {
-        lock.lock()
         if let path = activeModelPath {
-            lock.unlock()
             return path
         }
-        lock.unlock()
         
         let url = URL(string: "\(apiBase)/models?key=\(apiKey)")!
         let (data, _) = try await session.data(from: url)
@@ -133,9 +129,7 @@ public final class GeminiAIEngine: LLMEngine, AnalysisEngine, @unchecked Sendabl
         
         let path = model?.name ?? "models/gemini-1.5-flash"
         
-        lock.lock()
         activeModelPath = path
-        lock.unlock()
         
         return path
     }

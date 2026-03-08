@@ -26,9 +26,10 @@ public final class SyncWorkoutUseCase {
         let pendingItems = try await syncRepository.getPendingSyncItems()
         
         for item in pendingItems {
+            guard let rawText = item.rawText else { continue }
             try await syncRepository.updateSyncStatus(id: item.id, status: .processing)
             
-            let result = await engine.parseWorkout(rawText: item.rawText)
+            let result = await engine.parseWorkout(rawText: rawText)
             
             if result.status == .success, let workout = result.workout {
                 try await syncRepository.saveParsedWorkout(syncItemId: item.id, workout: workout)
@@ -37,7 +38,7 @@ public final class SyncWorkoutUseCase {
                 
                 // Report to telemetry
                 let telemetryData = TelemetryData(
-                    rawText: item.rawText,
+                    rawText: rawText,
                     promptVersion: promptVersion,
                     errorMessage: result.error ?? "Unknown error during parsing"
                 )

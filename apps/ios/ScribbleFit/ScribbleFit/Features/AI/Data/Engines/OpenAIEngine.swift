@@ -37,7 +37,7 @@ public final class OpenAIEngine: LLMEngine, AnalysisEngine {
             
             return ParsedWorkoutResult(
                 workout: serializableWorkout.toDomain(),
-                rawText = rawText,
+                rawText: rawText,
                 status: .success,
                 modelUsed: "gpt-4o-mini",
                 processingTimeMs: duration,

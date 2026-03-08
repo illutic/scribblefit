@@ -9,12 +9,17 @@ public final class AnalysisRepositoryImpl: AnalysisRepository {
     private let jsonDecoder = JSONDecoder()
     private let jsonEncoder = JSONEncoder()
     
-    public init(database: ScribbleFitDatabase = .shared) {
+    public init(database: ScribbleFitDatabase) {
         self.database = database
     }
     
+    @MainActor
+    public convenience init() {
+        self.init(database: .shared)
+    }
+    
     public func getHomeSuggestion() async throws -> AnalysisSuggestion? {
-        guard let jsonData = database.getInsightByKey(key: KEY_HOME_SUGGESTION)?.jsonData.data(using: .utf8) else {
+        guard let jsonData = await database.getInsightByKey(key: KEY_HOME_SUGGESTION)?.jsonData.data(using: .utf8) else {
             return nil
         }
         return try jsonDecoder.decode(AnalysisSuggestion.self, from: jsonData)
@@ -22,7 +27,7 @@ public final class AnalysisRepositoryImpl: AnalysisRepository {
     
     public func getSummary(period: SummaryPeriod) async throws -> AnalysisSummary? {
         let key = "\(KEY_SUMMARY_PREFIX)_\(period.rawValue)"
-        guard let jsonData = database.getInsightByKey(key: key)?.jsonData.data(using: .utf8) else {
+        guard let jsonData = await database.getInsightByKey(key: key)?.jsonData.data(using: .utf8) else {
             return nil
         }
         return try jsonDecoder.decode(AnalysisSummary.self, from: jsonData)
@@ -30,7 +35,7 @@ public final class AnalysisRepositoryImpl: AnalysisRepository {
     
     public func getExerciseInsight(exerciseId: String) async throws -> ExerciseInsight? {
         let key = "\(KEY_EXERCISE_PREFIX)_\(exerciseId)"
-        guard let jsonData = database.getInsightByKey(key: key)?.jsonData.data(using: .utf8) else {
+        guard let jsonData = await database.getInsightByKey(key: key)?.jsonData.data(using: .utf8) else {
             return nil
         }
         return try jsonDecoder.decode(ExerciseInsight.self, from: jsonData)
@@ -44,7 +49,7 @@ public final class AnalysisRepositoryImpl: AnalysisRepository {
                 jsonData: jsonString,
                 createdAt: Date()
             )
-            database.upsertInsight(entity)
+            await database.upsertInsight(entity)
         }
     }
     
@@ -57,7 +62,7 @@ public final class AnalysisRepositoryImpl: AnalysisRepository {
                 jsonData: jsonString,
                 createdAt: Date()
             )
-            database.upsertInsight(entity)
+            await database.upsertInsight(entity)
         }
     }
     
@@ -70,12 +75,12 @@ public final class AnalysisRepositoryImpl: AnalysisRepository {
                 jsonData: jsonString,
                 createdAt: Date()
             )
-            database.upsertInsight(entity)
+            await database.upsertInsight(entity)
         }
     }
     
     public func clearOldInsights() async throws {
-        database.clearInsights()
+        await database.clearInsights()
     }
     
     private let KEY_HOME_SUGGESTION = "home_suggestion"

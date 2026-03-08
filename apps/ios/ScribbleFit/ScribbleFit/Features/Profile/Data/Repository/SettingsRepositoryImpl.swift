@@ -5,12 +5,17 @@ import SwiftData
 public final class SettingsRepositoryImpl: SettingsRepository {
     private let database: ScribbleFitDatabase
     
-    public init(database: ScribbleFitDatabase = .shared) {
+    public init(database: ScribbleFitDatabase) {
         self.database = database
     }
     
+    @MainActor
+    public convenience init() {
+        self.init(database: .shared)
+    }
+    
     public func getSettings() async throws -> AppSettings {
-        let config = database.getConfig()
+        let config = await database.getConfig()
         
         return AppSettings(
             parsingMode: ParsingMode(rawValue: config?.parsingMode ?? "managed") ?? .managed,
@@ -30,10 +35,10 @@ public final class SettingsRepositoryImpl: SettingsRepository {
             themePreference: settings.themePreference.rawValue,
             updatedAt: Date()
         )
-        database.upsertConfig(config)
+        await database.upsertConfig(config)
     }
     
     public func clearAllData() async throws {
-        database.deleteAll()
+        await database.deleteAll()
     }
 }

@@ -32,7 +32,7 @@ public final class LocalAIEngine: LLMEngine, AnalysisEngine {
                     let dto = try jsonDecoder.decode(AIWorkoutDTO.self, from: data)
                     return ParsedWorkoutResult(
                         workout: dto.toDomain(),
-                        rawText = rawText,
+                        rawText: rawText,
                         status: .success,
                         modelUsed: "apple-intelligence-local",
                         processingTimeMs: duration
@@ -44,8 +44,8 @@ public final class LocalAIEngine: LLMEngine, AnalysisEngine {
         } catch {
             let duration = Int64(Date().timeIntervalSince(startTime) * 1000)
             return ParsedWorkoutResult(
-                workout = nil,
-                rawText = rawText,
+                workout: nil,
+                rawText: rawText,
                 status: .failure,
                 modelUsed: "apple-intelligence-local",
                 processingTimeMs: duration,

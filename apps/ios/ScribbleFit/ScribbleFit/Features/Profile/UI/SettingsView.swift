@@ -103,14 +103,6 @@ public struct SettingsView: View {
         .background(ScribbleFitColor.background)
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
-                Button(action: viewModel.onBackClick) {
-                    Image(systemName: "chevron.left")
-                        .foregroundColor(ScribbleFitColor.primaryText)
-                }
-            }
-        }
     }
     
     private func SectionHeader(_ title: String, color: Color = ScribbleFitColor.secondaryText) -> some View {

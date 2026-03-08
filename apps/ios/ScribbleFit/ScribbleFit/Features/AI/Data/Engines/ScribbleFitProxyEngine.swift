@@ -28,7 +28,7 @@ public final class ScribbleFitProxyEngine: LLMEngine, AnalysisEngine {
             
             return ParsedWorkoutResult(
                 workout: workout,
-                rawText = rawText,
+                rawText: rawText,
                 status: .success,
                 modelUsed: "proxy-orchestrator",
                 processingTimeMs: duration

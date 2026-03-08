@@ -44,16 +44,19 @@ public final class CanvasRepositoryImpl: CanvasRepository {
                         status: .completed
                     )))
                 } else {
+                    let mappedStatus: ScribbleStatus = {
+                        switch item.status {
+                        case .pending: return .pending
+                        case .processing: return .processing
+                        case .failed: return .failed
+                        case .completed: return .completed
+                        }
+                    }()
                     feedItems.append(.scribble(ScribbleItem(
                         id: item.id,
                         timestamp: item.createdAt,
                         rawText: item.rawText ?? "",
-                        status: switch item.status {
-                        case .pending: .pending
-                        case .processing: .processing
-                        case .failed: .failed
-                        case .completed: .completed
-                        }
+                        status: mappedStatus
                     )))
                 }
             case "PROMPT":
@@ -75,7 +78,7 @@ public final class CanvasRepositoryImpl: CanvasRepository {
             }
         }
         
-        return feedItems.sorted { $0.timestamp < $1.timestamp }
+        return feedItems.sorted { $0.feedTimestamp < $1.feedTimestamp }
     }
     
     public func addScribble(rawText: String) async throws {
@@ -110,7 +113,7 @@ public final class CanvasRepositoryImpl: CanvasRepository {
 }
 
 private extension FeedItem {
-    var timestamp: Date {
+    var feedTimestamp: Date {
         switch self {
         case .prompt(let item): return item.timestamp
         case .scribble(let item): return item.timestamp

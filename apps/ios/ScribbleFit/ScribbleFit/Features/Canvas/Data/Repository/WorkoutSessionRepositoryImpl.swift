@@ -9,12 +9,17 @@ public final class WorkoutSessionRepositoryImpl: WorkoutSessionRepository {
     private let jsonDecoder = JSONDecoder()
     private let jsonEncoder = JSONEncoder()
     
-    public init(database: ScribbleFitDatabase = .shared) {
+    public init(database: ScribbleFitDatabase) {
         self.database = database
     }
     
+    @MainActor
+    public convenience init() {
+        self.init(database: .shared)
+    }
+    
     public func getActiveSession() async throws -> WorkoutSession? {
-        guard let jsonData = database.getActiveSession()?.jsonData.data(using: .utf8) else {
+        guard let jsonData = await database.getActiveSession()?.jsonData.data(using: .utf8) else {
             return nil
         }
         return try jsonDecoder.decode(WorkoutSession.self, from: jsonData)
@@ -24,11 +29,11 @@ public final class WorkoutSessionRepositoryImpl: WorkoutSessionRepository {
         let data = try jsonEncoder.encode(session)
         if let jsonString = String(data: data, encoding: .utf8) {
             let entity = ActiveSession(jsonData: jsonString, updatedAt: Date())
-            database.upsertActiveSession(entity)
+            await database.upsertActiveSession(entity)
         }
     }
     
     public func clearActiveSession() async throws {
-        database.clearActiveSession()
+        await database.clearActiveSession()
     }
 }

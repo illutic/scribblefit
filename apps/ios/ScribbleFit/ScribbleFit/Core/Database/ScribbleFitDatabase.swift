@@ -13,51 +13,51 @@ public final class ScribbleFitDatabase {
     
     // MARK: - WorkoutLog
     
-    public func upsertWorkoutLog(_ log: WorkoutLog) {
+    public func upsertWorkoutLog(_ log: WorkoutLog) async {
         context.insert(log)
         try? context.save()
     }
     
-    public func getAllWorkoutLogs() -> [WorkoutLog] {
+    public func getAllWorkoutLogs() async -> [WorkoutLog] {
         let descriptor = FetchDescriptor<WorkoutLog>(sortBy: [SortDescriptor(\.date, order: .reverse)])
         return (try? context.fetch(descriptor)) ?? []
     }
     
-    public func getWorkoutLog(id: String) -> WorkoutLog? {
+    public func getWorkoutLog(id: String) async -> WorkoutLog? {
         let descriptor = FetchDescriptor<WorkoutLog>(predicate: #Predicate { $0.id == id })
         return try? context.fetch(descriptor).first
     }
     
-    public func deleteWorkoutLog(_ log: WorkoutLog) {
+    public func deleteWorkoutLog(_ log: WorkoutLog) async {
         context.delete(log)
         try? context.save()
     }
     
     // MARK: - WorkoutSet
     
-    public func upsertWorkoutSet(_ set: WorkoutSet) {
+    public func upsertWorkoutSet(_ set: WorkoutSet) async {
         context.insert(set)
         try? context.save()
     }
     
-    public func upsertWorkoutSets(_ sets: [WorkoutSet]) {
+    public func upsertWorkoutSets(_ sets: [WorkoutSet]) async {
         for set in sets {
             context.insert(set)
         }
         try? context.save()
     }
     
-    public func getSetsForWorkout(id: String) -> [WorkoutSet] {
+    public func getSetsForWorkout(id: String) async -> [WorkoutSet] {
         let descriptor = FetchDescriptor<WorkoutSet>(predicate: #Predicate { $0.workout?.id == id })
         return (try? context.fetch(descriptor)) ?? []
     }
     
-    public func deleteWorkoutSet(_ set: WorkoutSet) {
+    public func deleteWorkoutSet(_ set: WorkoutSet) async {
         context.delete(set)
         try? context.save()
     }
     
-    public func saveParsedWorkout(syncItemId: String, workout: ParsedWorkout) {
+    public func saveParsedWorkout(syncItemId: String, workout: ParsedWorkout) async {
         let dateFormatter = ISO8601DateFormatter()
         dateFormatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
         
@@ -107,14 +107,14 @@ public final class ScribbleFitDatabase {
     
     // MARK: - ExerciseDictionary
     
-    public func upsertExercises(_ exercises: [ExerciseDictionary]) {
+    public func upsertExercises(_ exercises: [ExerciseDictionary]) async {
         for exercise in exercises {
             context.insert(exercise)
         }
         try? context.save()
     }
     
-    public func getAllExercises() -> [ExerciseDictionary] {
+    public func getAllExercises() async -> [ExerciseDictionary] {
         let descriptor = FetchDescriptor<ExerciseDictionary>(sortBy: [SortDescriptor(\.canonicalName)])
         return (try? context.fetch(descriptor)) ?? []
     }
@@ -128,19 +128,19 @@ public final class ScribbleFitDatabase {
         return (try? context.fetch(descriptor)) ?? []
     }
     
-    public func deleteAllExercises() {
+    public func deleteAllExercises() async {
         try? context.delete(model: ExerciseDictionary.self)
         try? context.save()
     }
     
     // MARK: - SyncQueue
     
-    public func upsertSyncItem(_ item: SyncQueue) {
+    public func upsertSyncItem(_ item: SyncQueue) async {
         context.insert(item)
         try? context.save()
     }
     
-    public func getSyncItems(status: SyncStatus) -> [SyncQueue] {
+    public func getSyncItems(status: SyncStatus) async -> [SyncQueue] {
         let statusRaw = status.rawValue
         let descriptor = FetchDescriptor<SyncQueue>(
             predicate: #Predicate { $0.status == statusRaw },
@@ -149,14 +149,14 @@ public final class ScribbleFitDatabase {
         return (try? context.fetch(descriptor)) ?? []
     }
     
-    public func getAllSyncItems() -> [SyncQueue] {
+    public func getAllSyncItems() async -> [SyncQueue] {
         let descriptor = FetchDescriptor<SyncQueue>(
             sortBy: [SortDescriptor(\.createdAt)]
         )
         return (try? context.fetch(descriptor)) ?? []
     }
     
-    public func deleteSyncItem(id: String) {
+    public func deleteSyncItem(id: String) async {
         let descriptor = FetchDescriptor<SyncQueue>(predicate: #Predicate { $0.id == id })
         if let item = try? context.fetch(descriptor).first {
             context.delete(item)
@@ -164,7 +164,7 @@ public final class ScribbleFitDatabase {
         }
     }
     
-    public func updateSyncStatus(id: String, status: SyncStatus) {
+    public func updateSyncStatus(id: String, status: SyncStatus) async {
         if let item = (try? context.fetch(FetchDescriptor<SyncQueue>(predicate: #Predicate { $0.id == id })) )?.first {
             item.syncStatus = status
             try? context.save()
@@ -173,55 +173,55 @@ public final class ScribbleFitDatabase {
     
     // MARK: - SystemConfig
     
-    public func upsertConfig(_ config: SystemConfig) {
+    public func upsertConfig(_ config: SystemConfig) async {
         context.insert(config)
         try? context.save()
     }
     
-    public func getConfig(id: String = "config") -> SystemConfig? {
+    public func getConfig(id: String = "config") async -> SystemConfig? {
         let descriptor = FetchDescriptor<SystemConfig>(predicate: #Predicate { $0.id == id })
         return try? context.fetch(descriptor).first
     }
     
     // MARK: - InsightsCache
     
-    public func upsertInsight(_ insight: InsightsCache) {
+    public func upsertInsight(_ insight: InsightsCache) async {
         context.insert(insight)
         try? context.save()
     }
     
-    public func getInsightByKey(key: String) -> InsightsCache? {
+    public func getInsightByKey(key: String) async -> InsightsCache? {
         let descriptor = FetchDescriptor<InsightsCache>(predicate: #Predicate { $0.key == key })
         return try? context.fetch(descriptor).first
     }
     
-    public func clearInsights() {
+    public func clearInsights() async {
         try? context.delete(model: InsightsCache.self)
         try? context.save()
     }
     
     // MARK: - ActiveSession
     
-    public func upsertActiveSession(_ session: ActiveSession) {
+    public func upsertActiveSession(_ session: ActiveSession) async {
         // Ensure only one active session exists
         try? context.delete(model: ActiveSession.self)
         context.insert(session)
         try? context.save()
     }
     
-    public func getActiveSession() -> ActiveSession? {
+    public func getActiveSession() async -> ActiveSession? {
         let descriptor = FetchDescriptor<ActiveSession>()
         return try? context.fetch(descriptor).first
     }
     
-    public func clearActiveSession() {
+    public func clearActiveSession() async {
         try? context.delete(model: ActiveSession.self)
         try? context.save()
     }
     
     // MARK: - General
     
-    public func deleteAll() {
+    public func deleteAll() async {
         try? context.delete(model: SyncQueue.self)
         try? context.delete(model: WorkoutLog.self)
         try? context.delete(model: WorkoutSet.self)

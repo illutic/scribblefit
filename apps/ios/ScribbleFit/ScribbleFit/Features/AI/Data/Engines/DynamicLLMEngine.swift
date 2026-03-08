@@ -42,7 +42,7 @@ public final class DynamicLLMEngine: LLMEngine, AnalysisEngine {
         
         return lastResult ?? ParsedWorkoutResult(
             workout: nil,
-            rawText = rawText,
+            rawText: rawText,
             status: .failure,
             error: "No engines available or all engines failed"
         )
