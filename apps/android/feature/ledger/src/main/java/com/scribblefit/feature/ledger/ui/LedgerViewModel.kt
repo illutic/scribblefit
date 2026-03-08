@@ -17,10 +17,7 @@ class LedgerViewModel @Inject constructor(
     private val ledgerRepository: LedgerRepository
 ) : ViewModel() {
 
-    val workoutHistory: StateFlow<List<WorkoutHistory>> = ledgerRepository.getWorkoutHistory()
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(FLOW_TIMEOUT_MS),
-            initialValue = emptyList()
-        )
+    val workoutHistory: StateFlow<List<WorkoutHistory>> = ledgerRepository
+        .getWorkoutHistory()
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(FLOW_TIMEOUT_MS), emptyList())
 }

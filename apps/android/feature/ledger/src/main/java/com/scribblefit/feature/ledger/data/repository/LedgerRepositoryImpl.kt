@@ -3,15 +3,14 @@ package com.scribblefit.feature.ledger.data.repository
 import com.scribblefit.core.database.dao.ExerciseDictionaryDao
 import com.scribblefit.core.database.dao.SetDao
 import com.scribblefit.core.database.dao.WorkoutLogDao
-import com.scribblefit.core.database.model.ExerciseDictionaryEntity
-import com.scribblefit.core.database.model.SetEntity
-import com.scribblefit.core.database.model.WorkoutLogEntity
+import com.scribblefit.core.database.entity.ExerciseDictionaryEntity
+import com.scribblefit.core.database.entity.SetEntity
+import com.scribblefit.core.database.entity.WorkoutLogEntity
 import com.scribblefit.feature.ledger.domain.model.ExerciseHistory
 import com.scribblefit.feature.ledger.domain.model.SetHistory
 import com.scribblefit.feature.ledger.domain.model.WorkoutHistory
 import com.scribblefit.feature.ledger.domain.repository.LedgerRepository
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import java.util.UUID
 import javax.inject.Inject
@@ -24,24 +23,19 @@ class LedgerRepositoryImpl @Inject constructor(
     private val exerciseDictionaryDao: ExerciseDictionaryDao
 ) : LedgerRepository {
 
-    override fun getWorkoutHistory(): Flow<List<WorkoutHistory>> {
-        return workoutLogDao.getAllWorkoutLogs().map { logs ->
+    override fun getWorkoutHistory(): Flow<List<WorkoutHistory>> =
+        workoutLogDao.observeAll().map { logs ->
             logs.map { log ->
-                val sets = setDao.getSetsForWorkout(log.id).first()
-
-                val exercises = sets.groupBy { it.exerciseId }.map { (exerciseId, setEntities) ->
-                    val exerciseName =
-                        exerciseDictionaryDao.getExerciseById(exerciseId).first()?.canonicalName
-                            ?: exerciseId
-
+                val sets = setDao.getSetsForWorkout(log.id)
+                val grouped = sets.groupBy { it.exerciseId }
+                val exercises = grouped.map { (exerciseId, exerciseSets) ->
                     ExerciseHistory(
-                        canonicalName = exerciseName,
-                        sets = setEntities.map {
-                            SetHistory(it.weight, it.reps, it.rpe, it.notes)
+                        canonicalName = exerciseId,
+                        sets = exerciseSets.map { s ->
+                            SetHistory(weight = s.weight, reps = s.reps, rpe = s.rpe, notes = s.notes)
                         }
                     )
                 }
-
                 WorkoutHistory(
                     id = log.id,
                     date = log.date,
@@ -51,18 +45,8 @@ class LedgerRepositoryImpl @Inject constructor(
                 )
             }
         }
-    }
 
     override suspend fun logWorkout(workout: WorkoutHistory) {
-        workoutLogDao.upsertWorkoutLog(
-            WorkoutLogEntity(
-                id = workout.id,
-                date = workout.date,
-                location = workout.location,
-                totalVolume = workout.totalVolume
-            )
-        )
-
         val exerciseEntities = workout.exercises.map { exercise ->
             ExerciseDictionaryEntity(
                 id = exercise.canonicalName,
@@ -72,6 +56,15 @@ class LedgerRepositoryImpl @Inject constructor(
             )
         }
         exerciseDictionaryDao.insertExercisesIfAbsent(exerciseEntities)
+
+        workoutLogDao.upsert(
+            WorkoutLogEntity(
+                id = workout.id,
+                date = workout.date,
+                location = workout.location,
+                totalVolume = workout.totalVolume
+            )
+        )
 
         val setEntities = workout.exercises.flatMap { exercise ->
             exercise.sets.map { set ->
@@ -86,6 +79,6 @@ class LedgerRepositoryImpl @Inject constructor(
                 )
             }
         }
-        setDao.upsertSets(setEntities)
+        setDao.upsertAll(setEntities)
     }
 }
