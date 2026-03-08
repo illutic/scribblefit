@@ -115,6 +115,7 @@ data class ParsedWorkout(
 @Serializable
 data class ParsedExercise(
     @SerialName("canonical_name") val canonicalName: String,
+    @SerialName("muscle_group") val muscleGroup: String,
     val sets: List<ParsedSet>
 )
 
@@ -252,7 +253,6 @@ class ListenForSyncItemsUseCase(private val syncRepository: SyncRepository) {
 
 **`DynamicLLMEngine`** — selects engine based on `ConfigRepository.getConfig().preferredLlmProvider`
 - Injects `@Named("openai")`, `@Named("gemini")`, `LocalAIEngine`
-- Falls back through priority list if primary fails: e.g. gemini → openai → local
 - Default provider: `gemini`
 - Also implements `AnalysisEngine` by delegating to the active engine
 
@@ -283,7 +283,7 @@ Parse raw gym shorthand into this JSON schema:
 {
   "date": "YYYY-MM-DD",
   "location": "String or null",
-  "exercises": [{ "canonical_name": "String", "sets": [{ "weight": number, "reps": integer, "rpe": number|null, "notes": "String|null" }] }]
+  "exercises": [{ "canonical_name": "String", "muscle_group": "String", "sets": [{ "weight": number, "reps": integer, "rpe": number|null, "notes": "String|null" }] }]
 }
 Output ONLY valid JSON. No markdown, no extra text.
 ```
