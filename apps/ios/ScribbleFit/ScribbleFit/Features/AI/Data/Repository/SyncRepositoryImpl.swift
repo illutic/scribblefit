@@ -61,8 +61,9 @@ public final class SyncRepositoryImpl: SyncRepository {
     }
 
     public func saveParsedWorkout(syncItemId: String, workout: ParsedWorkout) async throws {
-        await database.saveParsedWorkout(syncItemId: syncItemId, workout: workout)
-        try? await updateSyncStatus(id: syncItemId, status: .completed)
+        let jsonData = try JSONEncoder().encode(workout)
+        guard let jsonString = String(data: jsonData, encoding: .utf8) else { return }
+        await database.updateParsedResult(id: syncItemId, status: .completed, jsonData: jsonString)
         await refreshAllItemsSubject()
     }
 

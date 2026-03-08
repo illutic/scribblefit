@@ -21,18 +21,29 @@ public final class CanvasRepositoryImpl: CanvasRepository {
                 for item in items {
                     switch item.itemType {
                     case "SCRIBBLE":
-                        let mappedStatus: ScribbleStatus = switch item.status {
-                        case .pending: .pending
-                        case .processing: .processing
-                        case .failed: .failed
-                        case .completed: .completed
+                        if item.status == .completed,
+                           let data = item.jsonData?.data(using: .utf8),
+                           let workout = try? jsonDecoder.decode(ParsedWorkout.self, from: data) {
+                            feedItems.append(.confirmation(ConfirmationItem(
+                                id: item.id,
+                                timestamp: item.createdAt,
+                                workout: workout,
+                                scribbleId: item.id
+                            )))
+                        } else {
+                            let mappedStatus: ScribbleStatus = switch item.status {
+                            case .pending: .pending
+                            case .processing: .processing
+                            case .failed: .failed
+                            case .completed: .completed
+                            }
+                            feedItems.append(.scribble(ScribbleItem(
+                                id: item.id,
+                                timestamp: item.createdAt,
+                                rawText: item.rawText ?? "",
+                                status: mappedStatus
+                            )))
                         }
-                        feedItems.append(.scribble(ScribbleItem(
-                            id: item.id,
-                            timestamp: item.createdAt,
-                            rawText: item.rawText ?? "",
-                            status: mappedStatus
-                        )))
                     case "PROMPT":
                         if let data = item.jsonData?.data(using: .utf8),
                            let dto = try? jsonDecoder.decode(PromptItem.self, from: data) {

@@ -181,6 +181,14 @@ public final class ScribbleFitDatabase {
             try? context.save()
         }
     }
+
+    public func updateParsedResult(id: String, status: SyncStatus, jsonData: String) async {
+        if let item = (try? context.fetch(FetchDescriptor<SyncQueue>(predicate: #Predicate { $0.id == id })) )?.first {
+            item.syncStatus = status
+            item.jsonData = jsonData
+            try? context.save()
+        }
+    }
     
     // MARK: - SystemConfig
     
