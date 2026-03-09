@@ -11,7 +11,7 @@ public final class ListenForSyncItemsUseCase: Sendable {
     public func execute() async {
         for await items in syncRepository.observeAllSyncItems().values {
             if items.contains(where: { $0.status == .pending }) {
-                try? await syncRepository.syncWorkouts()
+                await syncRepository.syncWorkouts()
             }
         }
     }

@@ -17,14 +17,28 @@ struct MainView: View {
         self.navManager = navManager
 
         let secureKeyStorage = SecureKeyStorageImpl()
-        let geminiEngine = GeminiAIEngine(
-            networkClient: networkClient,
-            secureKeyStorage: secureKeyStorage,
-            prompt: SystemConfig.defaultPrompt
+        let configRepository = ConfigRepositoryImpl(database: database)
+        let dynamicEngine = DynamicLLMEngine(
+            configRepository: configRepository,
+            geminiEngine: GeminiAIEngine(
+                networkClient: networkClient,
+                secureKeyStorage: secureKeyStorage,
+                prompt: SystemConfig.defaultPrompt
+            ),
+            openAIEngine: OpenAIAIEngine(
+                networkClient: networkClient,
+                secureKeyStorage: secureKeyStorage,
+                prompt: SystemConfig.defaultPrompt
+            ),
+            localEngine: LocalAIEngine(),
+            proxyEngine: ScribbleFitProxyEngine(
+                networkClient: networkClient,
+                prompt: SystemConfig.defaultPrompt
+            )
         )
 
         let syncRepository = SyncRepositoryImpl(database: database)
-        let syncWorkoutUseCase = SyncWorkoutUseCase(syncRepository: syncRepository, engine: geminiEngine)
+        let syncWorkoutUseCase = SyncWorkoutUseCase(syncRepository: syncRepository, engine: dynamicEngine)
         syncRepository.configure(syncWorkoutUseCase: syncWorkoutUseCase)
 
         let ledgerRepository = LedgerRepositoryImpl(database: database)

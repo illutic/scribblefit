@@ -30,7 +30,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		60344A982F5B13AC00336125 /* ScribbleFit */ = {
+		60344A982F5B13AC00336125 /* Sources */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = Sources;
 			sourceTree = "<group>";
@@ -70,7 +70,7 @@
 		60344A8D2F5B13AC00336125 = {
 			isa = PBXGroup;
 			children = (
-				60344A982F5B13AC00336125 /* ScribbleFit */,
+				60344A982F5B13AC00336125 /* Sources */,
 				60344AA82F5B13AD00336125 /* ScribbleFitTests */,
 				60344A972F5B13AC00336125 /* Products */,
 			);
@@ -102,7 +102,7 @@
 			dependencies = (
 			);
 			fileSystemSynchronizedGroups = (
-				60344A982F5B13AC00336125 /* ScribbleFit */,
+				60344A982F5B13AC00336125 /* Sources */,
 			);
 			name = ScribbleFit;
 			packageProductDependencies = (

@@ -2,6 +2,8 @@ package com.scribblefit.feature.ai.data.di
 
 import android.content.Context
 import androidx.work.WorkManager
+import com.google.mlkit.genai.prompt.Generation
+import com.google.mlkit.genai.prompt.GenerativeModel
 import com.scribblefit.feature.ai.data.engine.DynamicLLMEngine
 import com.scribblefit.feature.ai.data.engine.GeminiAIEngine
 import com.scribblefit.feature.ai.data.engine.LocalAIEngine
@@ -26,6 +28,10 @@ import dagger.hilt.components.SingletonComponent
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
 import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.client.plugins.logging.ANDROID
+import io.ktor.client.plugins.logging.LogLevel
+import io.ktor.client.plugins.logging.Logger
+import io.ktor.client.plugins.logging.Logging
 import io.ktor.serialization.kotlinx.json.json
 import kotlinx.serialization.json.Json
 import javax.inject.Named
@@ -50,7 +56,13 @@ abstract class SyncModule {
 
         @Provides @Singleton
         fun provideHttpClient(json: Json): HttpClient = HttpClient(OkHttp) {
-            install(ContentNegotiation) { json(json) }
+            install(ContentNegotiation) {
+                json(json)
+            }
+            install(Logging) {
+                logger = Logger.ANDROID
+                level = LogLevel.ALL
+            }
         }
 
         @Provides @Singleton
@@ -64,8 +76,12 @@ abstract class SyncModule {
             json: Json,
             configRepository: ConfigRepository
         ): LLMEngine {
-            val prompt = SystemConfig.defaultPrompt
-            return GeminiAIEngine(httpClient, secureKeyStorage, json, prompt)
+            return GeminiAIEngine(
+                httpClient = httpClient,
+                secureKeyStorage = secureKeyStorage,
+                configRepository = configRepository,
+                json = json
+            )
         }
 
         @Provides @Singleton @Named("openai")
@@ -79,7 +95,11 @@ abstract class SyncModule {
         }
 
         @Provides @Singleton
-        fun provideLocalEngine(): LocalAIEngine = LocalAIEngine()
+        fun provideGenerativeModel(): GenerativeModel = Generation.getClient()
+
+        @Provides @Singleton
+        fun provideLocalEngine(generativeModel: GenerativeModel, json: Json): LocalAIEngine =
+            LocalAIEngine(generativeModel, json)
 
         @Provides @Singleton
         fun provideLLMEngine(

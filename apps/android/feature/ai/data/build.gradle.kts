@@ -23,4 +23,7 @@ dependencies {
     ksp(libs.hilt.work.compiler)
     implementation(libs.coroutines.core)
     implementation(libs.coroutines.android)
+    implementation(libs.mlkit.genai.prompt)
+    implementation(libs.coroutines.play.services)
+    implementation(libs.slf4j.android)
 }
