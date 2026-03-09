@@ -44,6 +44,7 @@ public final class CanvasRepositoryImpl: CanvasRepository {
 
     public func retryScribble(id: String) async throws {
         try await syncRepository.updateSyncStatus(id: id, status: .pending)
+        await syncRepository.syncWorkouts()
     }
 
     public func addConfirmation(item: ConfirmationItem) async throws {

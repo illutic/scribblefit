@@ -35,7 +35,13 @@ public final class CanvasViewModel: ObservableObject {
 
         canvasRepository.getFeed()
             .receive(on: DispatchQueue.main)
-            .sink { [weak self] items in self?.uiState.feedItems = items }
+            .sink { [weak self] items in
+                self?.uiState.feedItems = items
+                self?.uiState.isSyncing = items.contains {
+                    if case .scribble(let s) = $0 { return s.status == .processing }
+                    return false
+                }
+            }
             .store(in: &cancellables)
 
         uiState.greeting = greeting()

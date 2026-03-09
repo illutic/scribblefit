@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.scribblefit.feature.ai.domain.model.AnalysisSuggestion
 import com.scribblefit.feature.canvas.domain.model.FeedItem
+import com.scribblefit.feature.canvas.domain.model.ScribbleStatus
 import com.scribblefit.feature.canvas.domain.repository.CanvasRepository
 import com.scribblefit.feature.canvas.domain.usecase.ConfirmWorkoutUseCase
 import com.scribblefit.feature.canvas.domain.usecase.ExecuteQuickActionUseCase
@@ -54,7 +55,8 @@ class CanvasViewModel @Inject constructor(
             scribbleText = scribbleText,
             feedItems = feedItems,
             homeSuggestion = extras.homeSuggestion,
-            isRecording = extras.isRecording
+            isRecording = extras.isRecording,
+            isSyncing = feedItems.any { it is FeedItem.Scribble && it.status == ScribbleStatus.PROCESSING }
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(FLOW_TIMEOUT_MS), CanvasUiState())
 

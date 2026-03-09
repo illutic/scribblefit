@@ -49,6 +49,7 @@ class SyncRepositoryImpl @Inject constructor(
             createdAt = System.currentTimeMillis()
         )
         syncQueueDao.insert(entity)
+        syncWorkouts()
     }
 
     override suspend fun saveFeedItem(id: String, type: String, jsonData: String, status: SyncStatus) {

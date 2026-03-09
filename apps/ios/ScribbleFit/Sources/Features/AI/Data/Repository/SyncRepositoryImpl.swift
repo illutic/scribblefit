@@ -4,13 +4,16 @@ import Foundation
 @MainActor
 public final class SyncRepositoryImpl: SyncRepository {
     private let database: ScribbleFitDatabase
-    private let syncWorkoutUseCase: SyncWorkoutUseCase
+    private var syncWorkoutUseCase: SyncWorkoutUseCase?
     nonisolated(unsafe) private let allItemsSubject = CurrentValueSubject<[AISyncItem], Never>([])
 
-    public init(database: ScribbleFitDatabase, syncWorkoutUseCase: SyncWorkoutUseCase) {
+    public init(database: ScribbleFitDatabase) {
         self.database = database
-        self.syncWorkoutUseCase = syncWorkoutUseCase
         refreshAllItemsSubject()
+    }
+
+    public func configure(syncWorkoutUseCase: SyncWorkoutUseCase) {
+        self.syncWorkoutUseCase = syncWorkoutUseCase
     }
 
     public nonisolated func observeAllSyncItems() -> AnyPublisher<[AISyncItem], Never> {
@@ -41,6 +44,7 @@ public final class SyncRepositoryImpl: SyncRepository {
         let item = SyncQueue(id: id, itemType: "SCRIBBLE", rawText: rawText, status: .pending)
         database.insertSyncItem(item)
         refreshAllItemsSubject()
+        await syncWorkouts()
     }
 
     public func saveFeedItem(id: String, type: String, jsonData: String, status: SyncStatus) async throws {
@@ -54,8 +58,9 @@ public final class SyncRepositoryImpl: SyncRepository {
         refreshAllItemsSubject()
     }
 
-    public func syncWorkouts() async throws {
-        await syncWorkoutUseCase.execute()
+    public func syncWorkouts() async {
+        guard let useCase = syncWorkoutUseCase else { return }
+        await useCase.execute()
     }
 
     private func refreshAllItemsSubject() {

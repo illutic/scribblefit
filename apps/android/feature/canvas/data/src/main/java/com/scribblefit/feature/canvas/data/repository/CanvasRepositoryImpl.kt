@@ -63,6 +63,7 @@ class CanvasRepositoryImpl @Inject constructor(
 
     override suspend fun retryScribble(id: String) {
         syncRepository.updateSyncStatus(id, SyncStatus.PENDING)
+        syncRepository.syncWorkouts()
     }
 
     override suspend fun addConfirmation(item: FeedItem.Confirmation) {

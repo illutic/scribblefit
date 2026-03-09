@@ -10,5 +10,5 @@ public protocol SyncRepository: Sendable {
     func enqueueScribble(id: String, rawText: String) async throws
     func saveFeedItem(id: String, type: String, jsonData: String, status: SyncStatus) async throws
     func deleteSyncItem(id: String) async throws
-    func syncWorkouts() async throws
+    func syncWorkouts() async
 }

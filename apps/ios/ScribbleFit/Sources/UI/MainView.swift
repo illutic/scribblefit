@@ -23,8 +23,9 @@ struct MainView: View {
             prompt: SystemConfig.defaultPrompt
         )
 
-        let syncWorkoutUseCase = SyncWorkoutUseCase(syncRepository: PlaceholderSyncRepository(), engine: geminiEngine)
-        let syncRepository = SyncRepositoryImpl(database: database, syncWorkoutUseCase: syncWorkoutUseCase)
+        let syncRepository = SyncRepositoryImpl(database: database)
+        let syncWorkoutUseCase = SyncWorkoutUseCase(syncRepository: syncRepository, engine: geminiEngine)
+        syncRepository.configure(syncWorkoutUseCase: syncWorkoutUseCase)
 
         let ledgerRepository = LedgerRepositoryImpl(database: database)
         let canvasRepository = CanvasRepositoryImpl(syncRepository: syncRepository)
@@ -66,17 +67,4 @@ struct MainView: View {
                 .tag(AppTab.profile)
         }
     }
-}
-
-// Temporary placeholder to break the circular init dependency in SyncRepositoryImpl
-private final class PlaceholderSyncRepository: SyncRepository {
-    func getPendingSyncItems() async throws -> [AISyncItem] { [] }
-    func getAllSyncItems() async throws -> [AISyncItem] { [] }
-    func observeAllSyncItems() -> AnyPublisher<[AISyncItem], Never> { Just([]).eraseToAnyPublisher() }
-    func updateSyncStatus(id: String, status: SyncStatus) async throws {}
-    func saveParsedWorkout(syncItemId: String, workout: ParsedWorkout) async throws {}
-    func enqueueScribble(id: String, rawText: String) async throws {}
-    func saveFeedItem(id: String, type: String, jsonData: String, status: SyncStatus) async throws {}
-    func deleteSyncItem(id: String) async throws {}
-    func syncWorkouts() async throws {}
 }

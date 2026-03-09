@@ -26,6 +26,7 @@ public final class SettingsViewModel: ObservableObject {
         self.settingsRepository = settingsRepository
         self.modelRepository = modelRepository
         self.secureKeyStorage = secureKeyStorage
+        Task { await loadSettings() }
     }
 
     public func loadSettings() async {
@@ -36,8 +37,13 @@ public final class SettingsViewModel: ObservableObject {
 
     public func onProviderChanged(_ provider: LLMProvider) async {
         uiState.settings.aiProvider = provider
-        uiState.showApiKeyField = provider != .proxy
+        uiState.settings.selectedModel = nil
+        uiState.availableModels = []
+        uiState.showApiKeyField = provider != .proxy && provider != .local
         try? await settingsRepository.updateSettings(uiState.settings)
+        if provider != .proxy && provider != .local && !uiState.apiKey.isEmpty {
+            await fetchModels()
+        }
     }
 
     public func onModelSelected(_ model: String) {
@@ -63,6 +69,8 @@ public final class SettingsViewModel: ObservableObject {
 
     public func onClearDataTapped() async {
         try? await settingsRepository.clearAllData()
+        try? await secureKeyStorage.clearApiKey()
+        uiState = SettingsUiState()
     }
 
     public func fetchModels() async {
