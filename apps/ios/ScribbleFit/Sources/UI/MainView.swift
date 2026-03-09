@@ -62,7 +62,7 @@ struct MainView: View {
                 .tag(AppTab.ledger)
 
             ProfileView(settingsViewModel: settingsViewModel)
-                .tabItem { Label("Profile", systemImage: "person") }
+                .tabItem { Label("Settings", systemImage: "gearshape") }
                 .tag(AppTab.profile)
         }
     }
