@@ -81,31 +81,3 @@ public struct AISyncItem: Sendable, Identifiable {
         self.jsonData = jsonData
     }
 }
-
-public enum LLMProvider: String, Codable, Sendable {
-    case openai, gemini, local, proxy
-}
-
-public struct SystemConfigDomain: Sendable {
-    public let promptVersion: String
-    public let promptText: String
-    public let exerciseVersion: String
-    public let preferredLlmProvider: LLMProvider
-    public let preferredModel: String
-    public let parsingMode: String
-    public let weightUnit: String
-    public let themePreference: String
-    public let updatedAt: Date
-
-    public init(promptVersion: String, promptText: String, exerciseVersion: String = "0.0.0", preferredLlmProvider: LLMProvider = .proxy, preferredModel: String = "", parsingMode: String = "managed", weightUnit: String = "lbs", themePreference: String = "system", updatedAt: Date = Date()) {
-        self.promptVersion = promptVersion
-        self.promptText = promptText
-        self.exerciseVersion = exerciseVersion
-        self.preferredLlmProvider = preferredLlmProvider
-        self.preferredModel = preferredModel
-        self.parsingMode = parsingMode
-        self.weightUnit = weightUnit
-        self.themePreference = themePreference
-        self.updatedAt = updatedAt
-    }
-}

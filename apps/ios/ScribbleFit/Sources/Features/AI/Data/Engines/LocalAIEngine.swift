@@ -30,7 +30,7 @@ public final class LocalAIEngine: LLMEngine {
             )
         }
         do {
-            let session = LanguageModelSession(instructions: SystemConfig.defaultPrompt)
+            let session = LanguageModelSession(instructions: SystemConfigDomain.PARSE_PROMPT)
             let response = try await session.respond(to: rawText)
             let cleanString = response.content
                 .replacingOccurrences(of: "```json", with: "")
