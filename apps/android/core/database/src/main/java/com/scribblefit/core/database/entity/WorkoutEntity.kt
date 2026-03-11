@@ -4,10 +4,9 @@ import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "Workout_Logs")
-data class WorkoutLogEntity(
+@Entity(tableName = "Workout")
+data class WorkoutEntity(
     @PrimaryKey val id: String,
-    @ColumnInfo(name = "date") val date: Long,
-    @ColumnInfo(name = "location") val location: String? = null,
+    @ColumnInfo(name = "date") val date: String,
     @ColumnInfo(name = "total_volume") val totalVolume: Double? = null
 )

@@ -11,20 +11,20 @@ public final class ScribbleFitDatabase {
         self.context = container.mainContext
     }
 
-    // MARK: - SyncQueue
+    // MARK: - ScribbleEntity
 
-    public func insertSyncItem(_ item: SyncQueue) {
+    public func insertSyncItem(_ item: ScribbleEntity) {
         context.insert(item)
         try? context.save()
     }
 
-    public func getAllSyncItems() -> [SyncQueue] {
-        let descriptor = FetchDescriptor<SyncQueue>(sortBy: [SortDescriptor(\.createdAt)])
+    public func getAllSyncItems() -> [ScribbleEntity] {
+        let descriptor = FetchDescriptor<ScribbleEntity>(sortBy: [SortDescriptor(\.createdAt)])
         return (try? context.fetch(descriptor)) ?? []
     }
 
     public func updateSyncStatus(id: String, status: SyncStatus) {
-        let descriptor = FetchDescriptor<SyncQueue>(predicate: #Predicate { $0.id == id })
+        let descriptor = FetchDescriptor<ScribbleEntity>(predicate: #Predicate { $0.id == id })
         if let item = try? context.fetch(descriptor).first {
             item.syncStatus = status
             try? context.save()
@@ -32,7 +32,7 @@ public final class ScribbleFitDatabase {
     }
 
     public func updateParsedResult(id: String, status: SyncStatus, jsonData: String) {
-        let descriptor = FetchDescriptor<SyncQueue>(predicate: #Predicate { $0.id == id })
+        let descriptor = FetchDescriptor<ScribbleEntity>(predicate: #Predicate { $0.id == id })
         if let item = try? context.fetch(descriptor).first {
             item.syncStatus = status
             item.jsonData = jsonData
@@ -41,23 +41,23 @@ public final class ScribbleFitDatabase {
     }
 
     public func deleteSyncItem(id: String) {
-        let descriptor = FetchDescriptor<SyncQueue>(predicate: #Predicate { $0.id == id })
+        let descriptor = FetchDescriptor<ScribbleEntity>(predicate: #Predicate { $0.id == id })
         if let item = try? context.fetch(descriptor).first {
             context.delete(item)
             try? context.save()
         }
     }
 
-    // MARK: - WorkoutLog
+    // MARK: - WorkoutEntity
 
-    public func getAllWorkoutLogs() -> [WorkoutLog] {
-        let descriptor = FetchDescriptor<WorkoutLog>(sortBy: [SortDescriptor(\.date, order: .reverse)])
+    public func getAllWorkoutLogs() -> [WorkoutEntity] {
+        let descriptor = FetchDescriptor<WorkoutEntity>(sortBy: [SortDescriptor(\.date, order: .reverse)])
         return (try? context.fetch(descriptor)) ?? []
     }
 
-    public func upsertWorkoutLog(_ log: WorkoutLog) {
+    public func upsertWorkoutLog(_ log: WorkoutEntity) {
         let id = log.id
-        let descriptor = FetchDescriptor<WorkoutLog>(predicate: #Predicate { $0.id == id })
+        let descriptor = FetchDescriptor<WorkoutEntity>(predicate: #Predicate { $0.id == id })
         if let existing = try? context.fetch(descriptor).first {
             existing.date = log.date
             existing.location = log.location
@@ -82,12 +82,12 @@ public final class ScribbleFitDatabase {
         try? context.save()
     }
 
-    // MARK: - ExerciseDictionary
+    // MARK: - ExerciseEntity
 
-    public func insertExercisesIfAbsent(_ exercises: [ExerciseDictionary]) {
+    public func insertExercisesIfAbsent(_ exercises: [ExerciseEntity]) {
         for exercise in exercises {
             let id = exercise.id
-            let descriptor = FetchDescriptor<ExerciseDictionary>(predicate: #Predicate { $0.id == id })
+            let descriptor = FetchDescriptor<ExerciseEntity>(predicate: #Predicate { $0.id == id })
             if (try? context.fetch(descriptor).first) == nil {
                 context.insert(exercise)
             }
@@ -95,15 +95,15 @@ public final class ScribbleFitDatabase {
         try? context.save()
     }
 
-    // MARK: - SystemConfig
+    // MARK: - SystemConfigEntity
 
-    public func getConfig() -> SystemConfig? {
-        let descriptor = FetchDescriptor<SystemConfig>(predicate: #Predicate { $0.id == "config" })
+    public func getConfig() -> SystemConfigEntity? {
+        let descriptor = FetchDescriptor<SystemConfigEntity>(predicate: #Predicate { $0.id == "config" })
         return try? context.fetch(descriptor).first
     }
 
-    public func upsertConfig(_ config: SystemConfig) {
-        let descriptor = FetchDescriptor<SystemConfig>(predicate: #Predicate { $0.id == "config" })
+    public func upsertConfig(_ config: SystemConfigEntity) {
+        let descriptor = FetchDescriptor<SystemConfigEntity>(predicate: #Predicate { $0.id == "config" })
         if let existing = try? context.fetch(descriptor).first {
             existing.promptVersion = config.promptVersion
             existing.promptText = config.promptText
@@ -176,10 +176,10 @@ public final class ScribbleFitDatabase {
     // MARK: - Nuclear
 
     public func deleteAll() {
-        try? context.delete(model: SyncQueue.self)
-        try? context.delete(model: WorkoutLog.self)
-        try? context.delete(model: ExerciseDictionary.self)
-        try? context.delete(model: SystemConfig.self)
+        try? context.delete(model: ScribbleEntity.self)
+        try? context.delete(model: WorkoutEntity.self)
+        try? context.delete(model: ExerciseEntity.self)
+        try? context.delete(model: SystemConfigEntity.self)
         try? context.delete(model: InsightsCache.self)
         try? context.delete(model: ActiveSession.self)
         try? context.save()

@@ -1,7 +1,7 @@
 import Foundation
 import SwiftData
 
-@Model public final class ExerciseDictionary {
+@Model public final class ExerciseEntity {
     @Attribute(.unique) public var id: String
     public var canonicalName: String
     public var muscleGroup: String

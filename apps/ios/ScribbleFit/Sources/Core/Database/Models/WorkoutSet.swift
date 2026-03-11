@@ -8,7 +8,7 @@ import SwiftData
     public var rpe: Double?
     public var notes: String?
     public var exerciseId: String
-    public var workout: WorkoutLog?
+    public var workout: WorkoutEntity?
 
     public init(id: String, weight: Double, reps: Int, rpe: Double? = nil, notes: String? = nil, exerciseId: String) {
         self.id = id

@@ -7,6 +7,7 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "Insights_Cache")
 data class InsightsCacheEntity(
     @PrimaryKey val key: String,
-    @ColumnInfo(name = "json_data") val jsonData: String,
-    @ColumnInfo(name = "created_at") val createdAt: Long
+    @ColumnInfo(name = "created_at") val createdAt: Long,
+    @ColumnInfo(name = "display_text") val displayText: String,
+    @ColumnInfo(name = "text") val text: String
 )

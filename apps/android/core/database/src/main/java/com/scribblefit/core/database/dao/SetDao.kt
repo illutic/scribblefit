@@ -11,6 +11,9 @@ interface SetDao {
     @Query("SELECT * FROM Sets WHERE workout_id = :workoutId")
     suspend fun getSetsForWorkout(workoutId: String): List<SetEntity>
 
+    @Query("SELECT * FROM Sets WHERE exercise_id = :exerciseId")
+    suspend fun getSetsForExercise(exerciseId: String): List<SetEntity>
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun upsertAll(sets: List<SetEntity>)
 

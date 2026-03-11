@@ -20,10 +20,10 @@ object DatabaseModule {
     fun provideDatabase(@ApplicationContext context: Context): ScribbleFitDatabase =
         Room.databaseBuilder(context, ScribbleFitDatabase::class.java, DATABASE_NAME).build()
 
-    @Provides fun provideSyncQueueDao(db: ScribbleFitDatabase) = db.syncQueueDao()
-    @Provides fun provideWorkoutLogDao(db: ScribbleFitDatabase) = db.workoutLogDao()
+    @Provides fun provideSyncQueueDao(db: ScribbleFitDatabase) = db.scribbleDao()
+    @Provides fun provideWorkoutLogDao(db: ScribbleFitDatabase) = db.workoutDao()
     @Provides fun provideSetDao(db: ScribbleFitDatabase) = db.setDao()
-    @Provides fun provideExerciseDictionaryDao(db: ScribbleFitDatabase) = db.exerciseDictionaryDao()
+    @Provides fun provideExerciseDictionaryDao(db: ScribbleFitDatabase) = db.exerciseDao()
     @Provides fun provideSystemConfigDao(db: ScribbleFitDatabase) = db.systemConfigDao()
     @Provides fun provideInsightsCacheDao(db: ScribbleFitDatabase) = db.insightsCacheDao()
 }

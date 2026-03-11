@@ -9,13 +9,13 @@ import androidx.room.PrimaryKey
     tableName = "Sets",
     foreignKeys = [
         ForeignKey(
-            entity = WorkoutLogEntity::class,
+            entity = WorkoutEntity::class,
             parentColumns = ["id"],
             childColumns = ["workout_id"],
             onDelete = ForeignKey.CASCADE
         ),
         ForeignKey(
-            entity = ExerciseDictionaryEntity::class,
+            entity = ExerciseEntity::class,
             parentColumns = ["id"],
             childColumns = ["exercise_id"],
             onDelete = ForeignKey.RESTRICT

@@ -8,7 +8,7 @@ public enum SyncStatus: String, Codable, Sendable {
     case failed = "FAILED"
 }
 
-@Model public final class SyncQueue {
+@Model public final class ScribbleEntity {
     public var id: String
     public var itemType: String
     public var rawText: String?

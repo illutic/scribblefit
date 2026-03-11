@@ -1,7 +1,7 @@
 import Foundation
 import SwiftData
 
-@Model public final class WorkoutLog {
+@Model public final class WorkoutEntity {
     public var id: String
     public var date: Date
     public var location: String?

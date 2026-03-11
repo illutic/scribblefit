@@ -1,7 +1,7 @@
 import Foundation
 import SwiftData
 
-@Model public final class SystemConfig {
+@Model public final class SystemConfigEntity {
     public var id: String
     public var promptVersion: String
     public var promptText: String
@@ -23,7 +23,7 @@ import SwiftData
     public init(
         id: String = "config",
         promptVersion: String = "1.0.0",
-        promptText: String = SystemConfig.defaultPrompt,
+        promptText: String = SystemConfigEntity.defaultPrompt,
         exerciseVersion: String = "0.0.0",
         preferredLlmProvider: String = "proxy",
         preferredModel: String = "",

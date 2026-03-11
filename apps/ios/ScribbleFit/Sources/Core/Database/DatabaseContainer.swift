@@ -8,11 +8,11 @@ public final class DatabaseContainer: @unchecked Sendable {
 
     private init() {
         let schema = Schema([
-            WorkoutLog.self,
+            WorkoutEntity.self,
             WorkoutSet.self,
-            SyncQueue.self,
-            ExerciseDictionary.self,
-            SystemConfig.self,
+            ScribbleEntity.self,
+            ExerciseEntity.self,
+            SystemConfigEntity.self,
             InsightsCache.self,
             ActiveSession.self
         ])

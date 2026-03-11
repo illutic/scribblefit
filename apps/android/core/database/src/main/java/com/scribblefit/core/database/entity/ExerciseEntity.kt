@@ -6,9 +6,9 @@ import androidx.room.PrimaryKey
 import androidx.room.TypeConverters
 import com.scribblefit.core.database.converter.StringListConverter
 
-@Entity(tableName = "Exercise_Dictionary")
+@Entity(tableName = "Exercise")
 @TypeConverters(StringListConverter::class)
-data class ExerciseDictionaryEntity(
+data class ExerciseEntity(
     @PrimaryKey val id: String,
     @ColumnInfo(name = "canonical_name") val canonicalName: String,
     @ColumnInfo(name = "muscle_group") val muscleGroup: String = "",
