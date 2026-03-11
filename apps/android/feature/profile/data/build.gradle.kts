@@ -11,6 +11,8 @@ android {
 dependencies {
     implementation(project(":core:database"))
     implementation(project(":core:network"))
+    implementation(project(":feature:workout:domain"))
+    implementation(project(":core:config:domain"))
     implementation(project(":feature:ai:domain"))
     implementation(project(":feature:profile:domain"))
     implementation(project(":feature:ledger"))

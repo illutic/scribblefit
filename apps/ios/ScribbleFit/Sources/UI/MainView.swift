@@ -18,52 +18,53 @@ struct MainView: View {
 
         let secureKeyStorage = SecureKeyStorageImpl()
         let configRepository = ConfigRepositoryImpl(database: database)
+
         let dynamicEngine = DynamicLLMEngine(
             configRepository: configRepository,
             geminiEngine: GeminiAIEngine(
                 networkClient: networkClient,
                 secureKeyStorage: secureKeyStorage,
-                prompt: SystemConfig.defaultPrompt
+                prompt: SystemConfigDomain.PARSE_PROMPT
             ),
             openAIEngine: OpenAIAIEngine(
                 networkClient: networkClient,
                 secureKeyStorage: secureKeyStorage,
-                prompt: SystemConfig.defaultPrompt
+                prompt: SystemConfigDomain.PARSE_PROMPT
             ),
             localEngine: LocalAIEngine(),
             proxyEngine: ScribbleFitProxyEngine(
                 networkClient: networkClient,
-                prompt: SystemConfig.defaultPrompt
+                prompt: SystemConfigDomain.PARSE_PROMPT
             )
         )
 
-        let syncRepository = SyncRepositoryImpl(database: database)
-        let syncWorkoutUseCase = SyncWorkoutUseCase(syncRepository: syncRepository, engine: dynamicEngine)
-        syncRepository.configure(syncWorkoutUseCase: syncWorkoutUseCase)
-
         let ledgerRepository = LedgerRepositoryImpl(database: database)
-        let canvasRepository = CanvasRepositoryImpl(syncRepository: syncRepository)
-        let sessionRepository = WorkoutSessionRepositoryImpl(database: database)
+        let scribbleRepository = ScribbleRepositoryImpl(database: database)
 
         ledgerViewModel = LedgerViewModel(ledgerRepository: ledgerRepository)
         canvasViewModel = CanvasViewModel(
-            canvasRepository: canvasRepository,
-            processScribbleUseCase: ProcessScribbleUseCase(canvasRepository: canvasRepository),
+            scribbleRepository: scribbleRepository,
             confirmWorkoutUseCase: ConfirmWorkoutUseCase(
-                canvasRepository: canvasRepository,
-                sessionRepository: sessionRepository,
+                scribbleRepository: scribbleRepository,
                 ledgerRepository: ledgerRepository
-            ),
-            executeQuickActionUseCase: ExecuteQuickActionUseCase(canvasRepository: canvasRepository)
+            )
         )
 
-        let settingsRepo = SettingsRepositoryImpl(database: database)
         let modelRepo = ModelRepositoryImpl(networkClient: networkClient)
         settingsViewModel = SettingsViewModel(
-            settingsRepository: settingsRepo,
+            configRepository: configRepository,
             modelRepository: modelRepo,
             secureKeyStorage: secureKeyStorage
         )
+
+        // Start background sync
+        let syncScribblesUseCase = SyncScribblesUseCase(
+            scribbleRepository: scribbleRepository,
+            engine: dynamicEngine
+        )
+        Task {
+            await syncScribblesUseCase.execute()
+        }
     }
 
     var body: some View {

@@ -32,7 +32,7 @@ public struct SettingsView: View {
                     // Provider row
                     settingsRow(
                         label: "Provider",
-                        value: providerDisplayString(viewModel.uiState.settings.aiProvider)
+                        value: providerDisplayString(viewModel.uiState.config.preferredLlmProvider)
                     ) {
                         showProviderPicker = true
                     }
@@ -45,13 +45,13 @@ public struct SettingsView: View {
                         Button("Cancel", role: .cancel) {}
                     }
 
-                    // Model row — only shown when provider != proxy
-                    if viewModel.uiState.settings.aiProvider != .proxy && viewModel.uiState.settings.aiProvider != .local {
+                    // Model row — only shown when provider requires an API key
+                    if viewModel.uiState.config.preferredLlmProvider != .proxy && viewModel.uiState.config.preferredLlmProvider != .local {
                         rowDivider()
 
                         settingsRow(
                             label: "Model",
-                            value: modelDisplayString(viewModel.uiState.settings.selectedModel)
+                            value: modelDisplayString(viewModel.uiState.config.preferredModel)
                         ) {
                             if !viewModel.uiState.availableModels.isEmpty {
                                 showModelPicker = true
@@ -66,8 +66,8 @@ public struct SettingsView: View {
                         }
                     }
 
-                    // API Key row — only shown when provider != proxy
-                    if viewModel.uiState.settings.aiProvider != .proxy && viewModel.uiState.settings.aiProvider != .local {
+                    // API Key row — only shown when provider requires an API key
+                    if viewModel.uiState.config.preferredLlmProvider != .proxy && viewModel.uiState.config.preferredLlmProvider != .local {
                         rowDivider()
 
                         apiKeyRow()
@@ -86,7 +86,7 @@ public struct SettingsView: View {
                     // Theme row
                     settingsRow(
                         label: "Theme",
-                        value: themeDisplayString(viewModel.uiState.settings.themePreference)
+                        value: themeDisplayString(viewModel.uiState.config.themePreference)
                     ) {
                         showThemePicker = true
                     }
@@ -130,7 +130,7 @@ public struct SettingsView: View {
             }
         }
         .background(ScribbleFitColor.background)
-        .task { await viewModel.loadSettings() }
+        .task { await viewModel.loadConfig() }
     }
 
     // MARK: - Section Header
@@ -267,7 +267,7 @@ public struct SettingsView: View {
             // Custom segmented toggle
             HStack(spacing: 0) {
                 weightUnitSegment("lbs", unit: .lbs)
-                weightUnitSegment("kg", unit: .kg)
+                weightUnitSegment("kgs", unit: .kgs)
             }
             .background(ScribbleFitColor.softGray)
             .clipShape(RoundedRectangle(cornerRadius: 6))
@@ -277,8 +277,8 @@ public struct SettingsView: View {
     }
 
     @ViewBuilder
-    private func weightUnitSegment(_ label: String, unit: WeightUnit) -> some View {
-        let isActive = viewModel.uiState.settings.weightUnit == unit
+    private func weightUnitSegment(_ label: String, unit: Weight) -> some View {
+        let isActive = viewModel.uiState.config.weightUnit == unit
         Button {
             Task { await viewModel.onWeightUnitChanged(unit) }
         } label: {

@@ -2,143 +2,117 @@ package com.scribblefit.feature.profile.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.scribblefit.feature.ai.domain.model.LLMProvider
+import com.scribblefit.core.config.domain.ConfigRepository
+import com.scribblefit.core.config.domain.LLMProvider
+import com.scribblefit.core.config.domain.SystemConfig
+import com.scribblefit.core.config.domain.ThemePreference
+import com.scribblefit.core.config.domain.Weight
 import com.scribblefit.feature.ai.domain.security.SecureKeyStorage
-import com.scribblefit.feature.profile.domain.model.AppSettings
-import com.scribblefit.feature.profile.domain.model.ThemePreference
-import com.scribblefit.feature.profile.domain.model.WeightUnit
 import com.scribblefit.feature.profile.domain.repository.ModelRepository
-import com.scribblefit.feature.profile.domain.repository.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
-private const val FLOW_TIMEOUT_MS = 5_000L
-
 data class SettingsUiState(
-    val settings: AppSettings = AppSettings(),
+    val settings: SystemConfig,
     val availableModels: List<String> = emptyList(),
     val isLoadingModels: Boolean = false,
-    val apiKey: String = "",
     val showApiKeyInput: Boolean = false
 )
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
-    private val settingsRepository: SettingsRepository,
+    private val configRepository: ConfigRepository,
     private val modelRepository: ModelRepository,
     private val secureKeyStorage: SecureKeyStorage
 ) : ViewModel() {
-
-    private val extras = MutableStateFlow(
-        SettingsExtras(
-            availableModels = emptyList(),
-            isLoadingModels = false,
-            apiKey = "",
-            showApiKeyInput = false
+    val uiState: StateFlow<SettingsUiState> = configRepository.config
+        .map { config ->
+            getStateFromConfig(
+                config = config,
+                apiKey = secureKeyStorage.getApiKey().orEmpty()
+            )
+        }.stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.Eagerly,
+            initialValue = SettingsUiState(
+                settings = configRepository.config.value
+            )
         )
-    )
-
-    val uiState: StateFlow<SettingsUiState> = combine(
-        settingsRepository.getSettings(),
-        extras
-    ) { settings, ext ->
-        SettingsUiState(
-            settings = settings,
-            availableModels = ext.availableModels,
-            isLoadingModels = ext.isLoadingModels,
-            apiKey = ext.apiKey,
-            showApiKeyInput = ext.showApiKeyInput
-        )
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(FLOW_TIMEOUT_MS), SettingsUiState())
-
-    init {
-        loadSettings()
-    }
-
-    private fun loadSettings() {
-        viewModelScope.launch {
-            val savedKey = secureKeyStorage.getApiKey() ?: ""
-            extras.update { it.copy(apiKey = savedKey) }
-        }
-    }
 
     fun onProviderChanged(provider: LLMProvider) {
         viewModelScope.launch {
             val current = uiState.value.settings
-            settingsRepository.updateSettings(current.copy(aiProvider = provider, selectedModel = ""))
-            val showInput = provider != LLMProvider.PROXY && provider != LLMProvider.LOCAL
-            extras.update { it.copy(showApiKeyInput = showInput, availableModels = emptyList()) }
-            if (showInput) {
-                val existingKey = secureKeyStorage.getApiKey()
-                if (!existingKey.isNullOrBlank()) {
-                    fetchModels(provider, existingKey)
-                }
-            }
+            configRepository.updateConfig(
+                current.copy(preferredLlmProvider = provider, preferredModel = null)
+            )
         }
     }
 
     fun onModelSelected(model: String) {
         viewModelScope.launch {
             val current = uiState.value.settings
-            settingsRepository.updateSettings(current.copy(selectedModel = model))
+            configRepository.updateConfig(current.copy(preferredModel = model))
         }
     }
 
     fun onApiKeySaved(key: String) {
         viewModelScope.launch {
             secureKeyStorage.saveApiKey(key)
-            extras.update { it.copy(apiKey = key) }
-            val provider = uiState.value.settings.aiProvider
-            fetchModels(provider, key)
+            configRepository.updateConfig(
+                uiState.value.settings.copy(
+                    preferredModel = null,
+                    updatedAt = System.currentTimeMillis()
+                )
+            )
         }
     }
 
-    fun onWeightUnitChanged(unit: WeightUnit) {
+    fun onWeightUnitChanged(unit: Weight) {
         viewModelScope.launch {
             val current = uiState.value.settings
-            settingsRepository.updateSettings(current.copy(weightUnit = unit))
+            configRepository.updateConfig(current.copy(weightUnit = unit))
         }
     }
 
     fun onThemeChanged(theme: ThemePreference) {
         viewModelScope.launch {
             val current = uiState.value.settings
-            settingsRepository.updateSettings(current.copy(themePreference = theme))
+            configRepository.updateConfig(current.copy(themePreference = theme))
         }
     }
 
     fun onClearDataTapped() {
         viewModelScope.launch {
-            settingsRepository.clearAllData()
+            configRepository.resetConfig()
             secureKeyStorage.clearApiKey()
-            extras.update { SettingsExtras(availableModels = emptyList(), isLoadingModels = false, apiKey = "", showApiKeyInput = false) }
         }
     }
 
-    fun fetchModels() {
-        val state = uiState.value
-        viewModelScope.launch {
-            fetchModels(state.settings.aiProvider, state.apiKey)
+    private suspend fun getStateFromConfig(
+        config: SystemConfig,
+        apiKey: String
+    ): SettingsUiState {
+        val showInput = config.preferredLlmProvider.requiresApiKey
+        val models = if (showInput) {
+            runCatching {
+                modelRepository.fetchModels(
+                    provider = config.preferredLlmProvider,
+                    apiKey = apiKey
+                )
+            }.getOrDefault(emptyList())
+        } else {
+            emptyList()
         }
-    }
 
-    private suspend fun fetchModels(provider: LLMProvider, apiKey: String) {
-        extras.update { it.copy(isLoadingModels = true) }
-        val models = runCatching { modelRepository.fetchModels(provider, apiKey) }.getOrDefault(emptyList())
-        extras.update { it.copy(isLoadingModels = false, availableModels = models) }
+        return SettingsUiState(
+            settings = config,
+            availableModels = models,
+            showApiKeyInput = showInput && apiKey.isEmpty()
+        )
     }
 }
-
-private data class SettingsExtras(
-    val availableModels: List<String>,
-    val isLoadingModels: Boolean,
-    val apiKey: String,
-    val showApiKeyInput: Boolean
-)

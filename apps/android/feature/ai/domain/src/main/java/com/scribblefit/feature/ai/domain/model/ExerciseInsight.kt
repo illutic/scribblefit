@@ -1,8 +1,5 @@
 package com.scribblefit.feature.ai.domain.model
 
-import kotlinx.serialization.Serializable
-
-@Serializable
 data class ExerciseInsight(
     val exerciseId: String,
     val estimated1RM: Double,
@@ -12,5 +9,4 @@ data class ExerciseInsight(
     val timestamp: Long
 )
 
-@Serializable
 enum class InsightTrend { IMPROVING, STABLE, PLATEAUED, DECLINING }

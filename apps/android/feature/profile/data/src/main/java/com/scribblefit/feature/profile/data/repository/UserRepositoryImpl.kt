@@ -17,9 +17,15 @@ class UserRepositoryImpl @Inject constructor(
         ledgerRepository.getWorkoutHistory().map { history ->
             UserStats(
                 totalWorkouts = history.size,
-                lifetimeVolume = history.sumOf { it.totalVolume },
+                lifetimeVolume = history.sumOf { workout ->
+                    workout.exercises.sumOf { exercise ->
+                        exercise.sets.sumOf { set ->
+                            set.weight * set.reps
+                        }
+                    }
+                },
                 prCount = 0,
-                joinDate = history.minOfOrNull { it.date } ?: System.currentTimeMillis()
+                joinDate = history.minOfOrNull { it.date }
             )
         }
 }

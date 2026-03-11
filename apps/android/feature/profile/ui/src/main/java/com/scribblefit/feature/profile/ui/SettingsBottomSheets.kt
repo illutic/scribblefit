@@ -14,10 +14,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.scribblefit.core.config.domain.LLMProvider
+import com.scribblefit.core.config.domain.ThemePreference
 import com.scribblefit.core.designsystem.ScribbleFitColors
 import com.scribblefit.core.designsystem.ScribbleFitSpacing
-import com.scribblefit.feature.ai.domain.model.LLMProvider
-import com.scribblefit.feature.profile.domain.model.ThemePreference
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

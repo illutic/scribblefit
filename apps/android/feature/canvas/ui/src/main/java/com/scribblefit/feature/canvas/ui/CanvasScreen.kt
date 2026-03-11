@@ -43,11 +43,10 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.scribblefit.core.designsystem.ScribbleFitColors
-import com.scribblefit.core.designsystem.ScribbleFitShapes
 import com.scribblefit.core.designsystem.ScribbleFitSpacing
-import com.scribblefit.feature.ai.domain.model.ParsedExercise
-import com.scribblefit.feature.canvas.domain.model.FeedItem
-import com.scribblefit.feature.canvas.domain.model.ScribbleStatus
+import com.scribblefit.feature.scribble.domain.Scribble
+import com.scribblefit.feature.scribble.domain.SyncStatus
+import com.scribblefit.feature.workout.domain.Exercise
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -122,8 +121,8 @@ fun CanvasScreen(
                     item(key = "header_${group.startOfDayMillis}") {
                         DateHeader(label = group.label)
                     }
-                    items(group.items, key = { it.feedId() }) { item ->
-                        FeedItemRow(
+                    items(group.items, key = { it.id }) { item ->
+                        ScribbleRow(
                             item = item,
                             onConfirm = viewModel::onConfirmClick,
                             onRetry = viewModel::onRetryScribble
@@ -199,26 +198,28 @@ private fun DateHeader(label: String) {
 }
 
 @Composable
-private fun FeedItemRow(
-    item: FeedItem,
-    onConfirm: (FeedItem.Confirmation) -> Unit,
+private fun ScribbleRow(
+    item: Scribble,
+    onConfirm: (Scribble.Parsed) -> Unit,
     onRetry: (String) -> Unit
 ) {
     when (item) {
-        is FeedItem.Scribble -> ScribbleCard(item = item, onRetry = onRetry)
-        is FeedItem.Confirmation -> ConfirmationCard(item = item, onConfirm = onConfirm)
-        is FeedItem.Prompt -> PromptCard(item = item)
-        is FeedItem.Insight -> InsightCard(item = item)
+        is Scribble.Raw -> ScribbleCard(item = item, onRetry = onRetry)
+        is Scribble.Parsed -> ConfirmationCard(item = item, onConfirm = onConfirm)
+        is Scribble.Insight -> PromptCard(item = item)
     }
 }
 
 @Composable
-private fun ScribbleCard(item: FeedItem.Scribble, onRetry: (String) -> Unit) {
-    val isFailed = item.status == ScribbleStatus.FAILED
+private fun ScribbleCard(item: Scribble.Raw, onRetry: (String) -> Unit) {
+    val isFailed = item.status == SyncStatus.Failed
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = ScribbleFitSpacing.Medium, vertical = ScribbleFitSpacing.Small / 2)
+            .padding(
+                horizontal = ScribbleFitSpacing.Medium,
+                vertical = ScribbleFitSpacing.Small / 2
+            )
             .height(SCRIBBLE_PILL_HEIGHT_DP.dp)
             .clip(CapsuleShape)
             .background(ScribbleFitColors.SoftGray)
@@ -239,8 +240,7 @@ private fun ScribbleCard(item: FeedItem.Scribble, onRetry: (String) -> Unit) {
             modifier = Modifier.weight(1f)
         )
         when (item.status) {
-            ScribbleStatus.PENDING,
-            ScribbleStatus.PROCESSING -> {
+            SyncStatus.Pending -> {
                 Spacer(modifier = Modifier.width(ScribbleFitSpacing.Small))
                 Box(
                     modifier = Modifier
@@ -249,7 +249,8 @@ private fun ScribbleCard(item: FeedItem.Scribble, onRetry: (String) -> Unit) {
                         .background(ScribbleFitColors.MidGray)
                 )
             }
-            ScribbleStatus.FAILED -> {
+
+            SyncStatus.Failed -> {
                 Spacer(modifier = Modifier.width(ScribbleFitSpacing.Small))
                 Box(
                     modifier = Modifier
@@ -258,20 +259,25 @@ private fun ScribbleCard(item: FeedItem.Scribble, onRetry: (String) -> Unit) {
                         .background(ScribbleFitColors.DangerRed)
                 )
             }
-            ScribbleStatus.COMPLETED -> Unit
+
+            is SyncStatus.Completed,
+            SyncStatus.Logged -> Unit
         }
     }
 }
 
 @Composable
 private fun ConfirmationCard(
-    item: FeedItem.Confirmation,
-    onConfirm: (FeedItem.Confirmation) -> Unit
+    item: Scribble.Parsed,
+    onConfirm: (Scribble.Parsed) -> Unit
 ) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = ScribbleFitSpacing.Medium, vertical = ScribbleFitSpacing.Small / 2)
+            .padding(
+                horizontal = ScribbleFitSpacing.Medium,
+                vertical = ScribbleFitSpacing.Small / 2
+            )
             .clip(CardShape)
             .background(ScribbleFitColors.Background)
             .border(
@@ -284,26 +290,17 @@ private fun ConfirmationCard(
                 vertical = CARD_VERTICAL_PADDING_DP.dp
             )
     ) {
-        item.workout.exercises.forEachIndexed { index, exercise ->
-            ExerciseRow(
-                exercise = exercise,
-                isFirst = index == 0,
-                onConfirm = if (index == 0) {
-                    { onConfirm(item) }
-                } else {
-                    null
-                }
-            )
-            if (index < item.workout.exercises.lastIndex) {
-                Spacer(modifier = Modifier.height(ScribbleFitSpacing.Small))
-            }
-        }
+        ExerciseRow(
+            exercise = item.value,
+            isFirst = true,
+            onConfirm = { onConfirm(item) }
+        )
     }
 }
 
 @Composable
 private fun ExerciseRow(
-    exercise: ParsedExercise,
+    exercise: Exercise,
     isFirst: Boolean,
     onConfirm: (() -> Unit)?
 ) {
@@ -340,36 +337,19 @@ private fun ExerciseRow(
 }
 
 @Composable
-private fun PromptCard(item: FeedItem.Prompt) {
+private fun PromptCard(item: Scribble.Insight) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = ScribbleFitSpacing.Medium, vertical = PROMPT_VERTICAL_PADDING_DP.dp),
+            .padding(
+                horizontal = ScribbleFitSpacing.Medium,
+                vertical = PROMPT_VERTICAL_PADDING_DP.dp
+            ),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Text(text = item.emoji, fontSize = PROMPT_TEXT_SP.sp)
         Spacer(modifier = Modifier.width(ScribbleFitSpacing.Small))
         Text(
-            text = item.text,
-            color = ScribbleFitColors.MidGray,
-            fontSize = PROMPT_TEXT_SP.sp,
-            fontStyle = FontStyle.Italic
-        )
-    }
-}
-
-@Composable
-private fun InsightCard(item: FeedItem.Insight) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(horizontal = ScribbleFitSpacing.Medium, vertical = PROMPT_VERTICAL_PADDING_DP.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(text = item.emoji, fontSize = PROMPT_TEXT_SP.sp)
-        Spacer(modifier = Modifier.width(ScribbleFitSpacing.Small))
-        Text(
-            text = item.text,
+            text = item.displayText,
             color = ScribbleFitColors.MidGray,
             fontSize = PROMPT_TEXT_SP.sp,
             fontStyle = FontStyle.Italic
@@ -382,7 +362,11 @@ private fun EmptyState() {
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(top = 120.dp, start = ScribbleFitSpacing.Medium, end = ScribbleFitSpacing.Medium),
+            .padding(
+                top = 120.dp,
+                start = ScribbleFitSpacing.Medium,
+                end = ScribbleFitSpacing.Medium
+            ),
         contentAlignment = Alignment.Center
     ) {
         Row(verticalAlignment = Alignment.CenterVertically) {
@@ -470,16 +454,16 @@ private fun InputBar(
 private data class FeedGroup(
     val startOfDayMillis: Long,
     val label: String,
-    val items: List<FeedItem>
+    val items: List<Scribble>
 )
 
-private fun buildGroupedFeed(feedItems: List<FeedItem>): List<FeedGroup> {
-    if (feedItems.isEmpty()) return emptyList()
+private fun buildGroupedFeed(Scribbles: List<Scribble>): List<FeedGroup> {
+    if (Scribbles.isEmpty()) return emptyList()
 
     val todayStart = startOfDay(System.currentTimeMillis())
     val yesterdayStart = todayStart - MILLIS_IN_DAY
 
-    val grouped = feedItems.groupBy { startOfDay(it.timestamp()) }
+    val grouped = Scribbles.groupBy { startOfDay(it.createdAt) }
 
     return grouped.entries
         .sortedByDescending { it.key }
@@ -487,7 +471,7 @@ private fun buildGroupedFeed(feedItems: List<FeedItem>): List<FeedGroup> {
             FeedGroup(
                 startOfDayMillis = startMillis,
                 label = formatDateLabel(startMillis, todayStart, yesterdayStart),
-                items = items.sortedBy { it.timestamp() }
+                items = items.sortedBy { it.createdAt }
             )
         }
 }
@@ -512,7 +496,7 @@ private fun formatDateLabel(startMillis: Long, todayStart: Long, yesterdayStart:
     }
 }
 
-private fun buildSetSummary(exercise: ParsedExercise): String {
+private fun buildSetSummary(exercise: Exercise): String {
     val firstSet = exercise.sets.first()
     val setCount = exercise.sets.size
     val weightStr = if (firstSet.weight % 1.0 == 0.0) {
@@ -521,20 +505,6 @@ private fun buildSetSummary(exercise: ParsedExercise): String {
         firstSet.weight.toString()
     }
     return "$setCount sets \u00B7 $weightStr lb \u00B7 ${firstSet.reps} reps"
-}
-
-private fun FeedItem.timestamp(): Long = when (this) {
-    is FeedItem.Prompt -> timestamp
-    is FeedItem.Scribble -> timestamp
-    is FeedItem.Confirmation -> timestamp
-    is FeedItem.Insight -> timestamp
-}
-
-private fun FeedItem.feedId(): String = when (this) {
-    is FeedItem.Prompt -> id
-    is FeedItem.Scribble -> id
-    is FeedItem.Confirmation -> id
-    is FeedItem.Insight -> id
 }
 
 private const val MILLIS_IN_DAY = 86_400_000L

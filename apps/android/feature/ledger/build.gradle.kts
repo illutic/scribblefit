@@ -9,6 +9,7 @@ android {
 
 dependencies {
     implementation(project(":feature:ai:domain"))
+    implementation(project(":feature:workout:domain"))
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.hilt.navigation.compose)

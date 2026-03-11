@@ -9,6 +9,7 @@ android {
 
 dependencies {
     implementation(project(":feature:ai:domain"))
+    implementation(project(":core:config:domain"))
     implementation(project(":feature:ledger"))
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.coroutines.core)

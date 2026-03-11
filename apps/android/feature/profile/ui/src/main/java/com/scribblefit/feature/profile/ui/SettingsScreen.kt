@@ -26,11 +26,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.scribblefit.core.config.domain.LLMProvider
+import com.scribblefit.core.config.domain.ThemePreference
+import com.scribblefit.core.config.domain.Weight
 import com.scribblefit.core.designsystem.ScribbleFitColors
 import com.scribblefit.core.designsystem.ScribbleFitSpacing
-import com.scribblefit.feature.ai.domain.model.LLMProvider
-import com.scribblefit.feature.profile.domain.model.ThemePreference
-import com.scribblefit.feature.profile.domain.model.WeightUnit
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -39,7 +39,7 @@ internal fun SettingsScreen(
     onProviderChanged: (LLMProvider) -> Unit,
     onModelSelected: (String) -> Unit,
     onApiKeySaved: (String) -> Unit,
-    onWeightUnitChanged: (WeightUnit) -> Unit,
+    onWeightUnitChanged: (Weight) -> Unit,
     onThemeChanged: (ThemePreference) -> Unit,
     onClearDataTapped: () -> Unit,
     modifier: Modifier = Modifier
@@ -51,8 +51,7 @@ internal fun SettingsScreen(
     var showApiKeyInput by remember { mutableStateOf(uiState.showApiKeyInput) }
     var apiKeyInputText by remember { mutableStateOf("") }
 
-    val needsApiKey = uiState.settings.aiProvider != LLMProvider.PROXY &&
-            uiState.settings.aiProvider != LLMProvider.LOCAL
+    val needsApiKey = uiState.settings.preferredLlmProvider.requiresApiKey
 
     Column(
         modifier = modifier
@@ -80,7 +79,7 @@ internal fun SettingsScreen(
             item {
                 SettingsRow(
                     label = "Provider",
-                    value = uiState.settings.aiProvider.displayName(),
+                    value = uiState.settings.preferredLlmProvider.displayName(),
                     onClick = { showProviderSheet = true }
                 )
             }
@@ -88,13 +87,14 @@ internal fun SettingsScreen(
                 item {
                     SettingsRow(
                         label = "Model",
-                        value = uiState.settings.selectedModel.ifBlank { "Auto" },
-                        onClick = { if (uiState.availableModels.isNotEmpty()) showModelSheet = true }
+                        value = uiState.settings.preferredModel?.ifBlank { "Auto" } ?: "Auto",
+                        onClick = {
+                            if (uiState.availableModels.isNotEmpty()) showModelSheet = true
+                        }
                     )
                 }
                 item {
                     ApiKeyRow(
-                        apiKey = uiState.apiKey,
                         showInput = showApiKeyInput,
                         inputText = apiKeyInputText,
                         onInputTextChanged = { apiKeyInputText = it },
@@ -172,11 +172,11 @@ internal fun SettingsScreen(
 
     if (showProviderSheet) {
         ProviderBottomSheet(
-            currentProvider = uiState.settings.aiProvider,
+            currentProvider = uiState.settings.preferredLlmProvider,
             onProviderSelected = { provider ->
                 onProviderChanged(provider)
                 showProviderSheet = false
-                showApiKeyInput = provider != LLMProvider.PROXY && provider != LLMProvider.LOCAL
+                showApiKeyInput = provider != LLMProvider.LOCAL
             },
             onDismiss = { showProviderSheet = false }
         )

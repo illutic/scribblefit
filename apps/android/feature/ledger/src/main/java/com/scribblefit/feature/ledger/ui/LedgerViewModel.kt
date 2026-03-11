@@ -2,7 +2,7 @@ package com.scribblefit.feature.ledger.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.scribblefit.feature.ledger.domain.model.WorkoutHistory
+import com.scribblefit.feature.workout.domain.Workout
 import com.scribblefit.feature.ledger.domain.repository.LedgerRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
@@ -17,7 +17,7 @@ class LedgerViewModel @Inject constructor(
     private val ledgerRepository: LedgerRepository
 ) : ViewModel() {
 
-    val workoutHistory: StateFlow<List<WorkoutHistory>> = ledgerRepository
+    val workoutHistory: StateFlow<List<Workout>> = ledgerRepository
         .getWorkoutHistory()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(FLOW_TIMEOUT_MS), emptyList())
 }

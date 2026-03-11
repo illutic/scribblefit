@@ -33,7 +33,7 @@ public final class LedgerRepositoryImpl: LedgerRepository {
 
     public func logWorkout(_ workout: WorkoutHistory) async throws {
         let exercises = workout.exercises.map { exercise in
-            ExerciseDictionary(
+            ExerciseEntity(
                 id: exercise.canonicalName,
                 canonicalName: exercise.canonicalName,
                 muscleGroup: "",
@@ -42,7 +42,7 @@ public final class LedgerRepositoryImpl: LedgerRepository {
         }
         database.insertExercisesIfAbsent(exercises)
 
-        database.upsertWorkoutLog(WorkoutLog(
+        database.upsertWorkoutLog(WorkoutEntity(
             id: workout.id,
             date: workout.date,
             location: workout.location,

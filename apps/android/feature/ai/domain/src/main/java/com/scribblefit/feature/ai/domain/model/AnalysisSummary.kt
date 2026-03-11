@@ -1,8 +1,5 @@
 package com.scribblefit.feature.ai.domain.model
 
-import kotlinx.serialization.Serializable
-
-@Serializable
 data class AnalysisSummary(
     val period: SummaryPeriod,
     val summaryText: String,
@@ -13,8 +10,6 @@ data class AnalysisSummary(
     val timestamp: Long
 )
 
-@Serializable
 data class MuscleGroupStat(val muscleGroup: String, val volumePercentage: Double)
 
-@Serializable
 enum class SummaryPeriod { DAY, WEEK, MONTH, YEAR }

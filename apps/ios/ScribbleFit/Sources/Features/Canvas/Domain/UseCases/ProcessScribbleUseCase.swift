@@ -1,13 +1,13 @@
 import Foundation
 
 public final class ProcessScribbleUseCase: Sendable {
-    private let canvasRepository: any CanvasRepository
+    private let scribbleRepository: any ScribbleRepository
 
-    public init(canvasRepository: any CanvasRepository) {
-        self.canvasRepository = canvasRepository
+    public init(scribbleRepository: any ScribbleRepository) {
+        self.scribbleRepository = scribbleRepository
     }
 
-    public func execute(rawText: String) async throws {
-        try await canvasRepository.addScribble(rawText: rawText)
+    public func execute(rawText: String) async {
+        await scribbleRepository.enqueueScribble(rawText: rawText)
     }
 }

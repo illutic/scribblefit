@@ -9,20 +9,20 @@ public struct CanvasView: View {
         self.onSettingsTap = onSettingsTap
     }
 
-    // Groups feed by calendar day, newest date at top, items within a day ascending
-    private var groupedFeed: [(label: String, items: [FeedItem])] {
+    // Groups scribbles by calendar day, newest date at top, items within a day ascending
+    private var groupedScribbles: [(label: String, items: [Scribble])] {
         let calendar = Calendar.current
         let today = calendar.startOfDay(for: Date())
 
-        let grouped = Dictionary(grouping: viewModel.uiState.feedItems) { item in
-            calendar.startOfDay(for: item.timestamp)
+        let grouped = Dictionary(grouping: viewModel.uiState.scribbles) { item in
+            calendar.startOfDay(for: item.createdAt)
         }
 
         return grouped
             .sorted { $0.key > $1.key }
             .map { (date, items) in
                 let label = dateLabel(date, today: today, calendar: calendar)
-                let sorted = items.sorted { $0.timestamp < $1.timestamp }
+                let sorted = items.sorted { $0.createdAt < $1.createdAt }
                 return (label: label, items: sorted)
             }
     }
@@ -45,13 +45,13 @@ public struct CanvasView: View {
         VStack(spacing: 0) {
             topNavBar
 
-            if viewModel.uiState.feedItems.isEmpty {
+            if viewModel.uiState.scribbles.isEmpty {
                 EmptyFeedView()
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 0) {
-                        ForEach(groupedFeed, id: \.label) { group in
+                        ForEach(groupedScribbles, id: \.label) { group in
                             Text(group.label)
                                 .font(.system(size: 12, weight: .regular))
                                 .foregroundStyle(ScribbleFitColor.midGray)
@@ -60,7 +60,7 @@ public struct CanvasView: View {
                                 .padding(.bottom, ScribbleFitSpacing.small)
 
                             ForEach(group.items) { item in
-                                feedItemRow(item)
+                                scribbleRow(item)
                                     .padding(.horizontal, ScribbleFitSpacing.medium)
                                     .padding(.bottom, ScribbleFitSpacing.medium)
                             }
@@ -105,16 +105,22 @@ public struct CanvasView: View {
     }
 
     @ViewBuilder
-    private func feedItemRow(_ item: FeedItem) -> some View {
+    private func scribbleRow(_ item: Scribble) -> some View {
         switch item {
-        case .scribble(let s):
-            ScribbleCard(item: s, onRetry: viewModel.onRetryScribble)
-        case .confirmation(let c):
-            ConfirmationCard(confirmation: c, onConfirm: viewModel.onConfirmClick)
-        case .prompt(let p):
-            PromptCard(emoji: p.emoji, text: p.text)
-        case .insight(let i):
-            PromptCard(emoji: i.emoji, text: i.text)
+        case .raw(let id, _, let rawText, let status):
+            ScribbleCard(
+                id: id,
+                rawText: rawText,
+                status: status,
+                onRetry: viewModel.onRetryScribble
+            )
+        case .parsed(_, _, let exercise):
+            ParsedScribbleCard(
+                exercise: exercise,
+                onConfirm: { workout in viewModel.onConfirmClick(parsedWorkout: workout, scribbleId: item.id) }
+            )
+        case .insight(_, _, let displayText, _):
+            PromptCard(text: displayText)
         }
     }
 }

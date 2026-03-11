@@ -1,7 +1,9 @@
 package com.scribblefit.feature.ai.domain.model
 
+import com.scribblefit.feature.workout.domain.Workout
+
 data class ParsedWorkoutResult(
-    val workout: ParsedWorkout?,
+    val workout: Workout?,
     val rawText: String,
     val status: ParsingStatus,
     val modelUsed: String? = null,

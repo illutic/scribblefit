@@ -1,23 +1,10 @@
 import SwiftUI
 
-// MARK: - Confirmation Card
+// MARK: - Parsed Scribble Card (Confirmation)
 
-struct ConfirmationCard: View {
-    let confirmation: ConfirmationItem
-    let onConfirm: (ConfirmationItem) -> Void
-
-    var body: some View {
-        VStack(spacing: ScribbleFitSpacing.small) {
-            ForEach(confirmation.workout.exercises, id: \.canonicalName) { exercise in
-                ExerciseConfirmationRow(exercise: exercise, onConfirm: { onConfirm(confirmation) })
-            }
-        }
-    }
-}
-
-private struct ExerciseConfirmationRow: View {
-    let exercise: ParsedExercise
-    let onConfirm: () -> Void
+struct ParsedScribbleCard: View {
+    let exercise: SyncExercise
+    let onConfirm: (ParsedWorkout) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
@@ -26,8 +13,21 @@ private struct ExerciseConfirmationRow: View {
                     .font(.system(size: 17, weight: .semibold))
                     .foregroundStyle(ScribbleFitColor.richBlack)
                 Spacer()
-                Button(action: onConfirm) {
-                    Text("✓ Logged")
+                Button(action: {
+                    let parsedSets = exercise.sets.map { s in
+                        ParsedSet(weight: s.weight, reps: s.reps, rpe: s.rpe, notes: s.notes)
+                    }
+                    let parsedExercise = ParsedExercise(
+                        canonicalName: exercise.canonicalName,
+                        muscleGroup: exercise.muscleGroup,
+                        sets: parsedSets
+                    )
+                    let formatter = DateFormatter()
+                    formatter.dateFormat = "yyyy-MM-dd"
+                    let workout = ParsedWorkout(date: formatter.string(from: Date()), exercises: [parsedExercise])
+                    onConfirm(workout)
+                }) {
+                    Text("✓ Log")
                         .font(.system(size: 12, weight: .regular))
                         .foregroundStyle(ScribbleFitColor.midGray)
                 }
@@ -47,7 +47,7 @@ private struct ExerciseConfirmationRow: View {
         .clipShape(RoundedRectangle(cornerRadius: 12))
     }
 
-    private func setSummary(for sets: [ParsedSet]) -> String {
+    private func setSummary(for sets: [SyncExerciseSet]) -> String {
         let count = sets.count
         guard count > 0 else { return "\(count) sets" }
         let weight = sets[0].weight
@@ -60,12 +60,14 @@ private struct ExerciseConfirmationRow: View {
 // MARK: - Scribble Card
 
 struct ScribbleCard: View {
-    let item: ScribbleItem
+    let id: String
+    let rawText: String
+    let status: ScribbleSyncStatus
     let onRetry: (String) -> Void
 
     var body: some View {
         HStack(spacing: 12) {
-            Text(item.rawText)
+            Text(rawText)
                 .font(.system(size: 15, weight: .regular))
                 .foregroundStyle(ScribbleFitColor.richBlack)
                 .lineLimit(1)
@@ -77,14 +79,14 @@ struct ScribbleCard: View {
         .background(ScribbleFitColor.softGray)
         .clipShape(Capsule())
         .onTapGesture {
-            if item.status == .failed { onRetry(item.id) }
+            if case .failed = status { onRetry(id) }
         }
     }
 
     @ViewBuilder
     private var statusDot: some View {
-        switch item.status {
-        case .pending, .processing:
+        switch status {
+        case .pending:
             Circle()
                 .fill(ScribbleFitColor.midGray)
                 .frame(width: 8, height: 8)
@@ -92,7 +94,7 @@ struct ScribbleCard: View {
             Circle()
                 .fill(ScribbleFitColor.dangerRed)
                 .frame(width: 8, height: 8)
-        case .completed:
+        case .logged, .completed:
             EmptyView()
         }
     }
@@ -101,13 +103,10 @@ struct ScribbleCard: View {
 // MARK: - Prompt / Insight Card
 
 struct PromptCard: View {
-    let emoji: String
     let text: String
 
     var body: some View {
         HStack(alignment: .top, spacing: 8) {
-            Text(emoji)
-                .font(.system(size: 15))
             Text(text)
                 .font(.system(size: 15, weight: .regular).italic())
                 .foregroundStyle(ScribbleFitColor.midGray)

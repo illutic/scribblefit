@@ -10,6 +10,7 @@ dependencies {
     implementation(project(":feature:ai:domain"))
     implementation(project(":feature:profile:domain"))
     implementation(project(":feature:profile:data"))
+    implementation(project(":core:config:domain"))
     implementation(libs.androidx.lifecycle.viewmodel.compose)
     implementation(libs.hilt.navigation.compose)
 }

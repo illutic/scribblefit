@@ -1,45 +1,65 @@
 package com.scribblefit.feature.ai.data.engine
 
+import com.scribblefit.core.config.domain.ConfigRepository
+import com.scribblefit.core.config.domain.LLMProvider
 import com.scribblefit.feature.ai.domain.engine.AnalysisEngine
-import com.scribblefit.feature.ai.domain.engine.ConfigRepository
 import com.scribblefit.feature.ai.domain.engine.LLMEngine
 import com.scribblefit.feature.ai.domain.model.AnalysisSuggestion
 import com.scribblefit.feature.ai.domain.model.AnalysisSummary
 import com.scribblefit.feature.ai.domain.model.ExerciseInsight
-import com.scribblefit.feature.ai.domain.model.LLMProvider
 import com.scribblefit.feature.ai.domain.model.ParsedWorkoutResult
 import com.scribblefit.feature.ai.domain.model.SummaryPeriod
-import kotlinx.coroutines.flow.first
-import javax.inject.Named
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineName
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.withContext
 
-class DynamicLLMEngine(
-    @Named("openai") private val openAIEngine: LLMEngine,
-    @Named("gemini") private val geminiEngine: LLMEngine,
+internal class DynamicLLMEngine(
+    private val openAIEngine: LLMEngine,
+    private val geminiEngine: LLMEngine,
     private val localEngine: LocalAIEngine,
-    private val configRepository: ConfigRepository
-) : LLMEngine, AnalysisEngine {
-
-    private suspend fun activeEngine(): LLMEngine {
-        val config = configRepository.getConfig().first()
-        return when (config?.preferredLlmProvider) {
+    configRepository: ConfigRepository,
+    coroutineDispatcher: CoroutineDispatcher
+) : LLMEngine, AnalysisEngine,
+    CoroutineScope by CoroutineScope(coroutineDispatcher + CoroutineName("DynamicLLMEngine")) {
+    private val activeEngine = configRepository.config.map {
+        when (it.preferredLlmProvider) {
             LLMProvider.OPENAI -> openAIEngine
-            LLMProvider.LOCAL -> localEngine
-            else -> geminiEngine
+            LLMProvider.GEMINI -> geminiEngine
+            else -> localEngine
         }
-    }
+    }.stateIn(this, SharingStarted.Eagerly, localEngine)
 
-    override suspend fun parseWorkout(rawText: String): ParsedWorkoutResult =
-        activeEngine().parseWorkout(rawText)
+    override suspend fun parseWorkout(rawText: String): Result<ParsedWorkoutResult> =
+        withContext(coroutineContext) {
+            activeEngine.value.parseWorkout(rawText)
+        }
 
     override suspend fun generateSuggestion(context: String): Result<AnalysisSuggestion> =
-        (activeEngine() as? AnalysisEngine)?.generateSuggestion(context)
-            ?: Result.failure(IllegalStateException("Active engine does not support analysis"))
+        withContext(coroutineContext) {
+            ensureAnalysisEngine().generateSuggestion(context)
+        }
 
-    override suspend fun generateSummary(period: SummaryPeriod, workoutData: String): Result<AnalysisSummary> =
-        (activeEngine() as? AnalysisEngine)?.generateSummary(period, workoutData)
-            ?: Result.failure(IllegalStateException("Active engine does not support analysis"))
+    override suspend fun generateSummary(
+        period: SummaryPeriod,
+        workoutData: String
+    ): Result<AnalysisSummary> = withContext(coroutineContext) {
+        ensureAnalysisEngine().generateSummary(
+            period,
+            workoutData
+        )
+    }
 
-    override suspend fun generateExerciseInsight(exerciseName: String, historyData: String): Result<ExerciseInsight> =
-        (activeEngine() as? AnalysisEngine)?.generateExerciseInsight(exerciseName, historyData)
-            ?: Result.failure(IllegalStateException("Active engine does not support analysis"))
+    override suspend fun generateExerciseInsight(
+        exerciseId: String
+    ): Result<ExerciseInsight> = withContext(coroutineContext) {
+        ensureAnalysisEngine().generateExerciseInsight(exerciseId)
+    }
+
+    private fun ensureAnalysisEngine() =
+        activeEngine.value as? AnalysisEngine ?: error("Active engine does not support analysis")
+
 }

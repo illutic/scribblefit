@@ -3,13 +3,12 @@ package com.scribblefit.feature.canvas.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.scribblefit.feature.ai.domain.model.AnalysisSuggestion
-import com.scribblefit.feature.canvas.domain.model.FeedItem
-import com.scribblefit.feature.canvas.domain.model.ScribbleStatus
-import com.scribblefit.feature.canvas.domain.repository.CanvasRepository
 import com.scribblefit.feature.canvas.domain.usecase.ConfirmWorkoutUseCase
-import com.scribblefit.feature.canvas.domain.usecase.ExecuteQuickActionUseCase
 import com.scribblefit.feature.canvas.domain.usecase.ProcessScribbleUseCase
-import com.scribblefit.feature.canvas.domain.usecase.QuickActionType
+import com.scribblefit.feature.scribble.domain.Scribble
+import com.scribblefit.feature.scribble.domain.ScribbleRepository
+import com.scribblefit.feature.scribble.domain.SyncScribblesUseCase
+import com.scribblefit.feature.scribble.domain.SyncStatus
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -26,37 +25,35 @@ private const val FLOW_TIMEOUT_MS = 5_000L
 data class CanvasUiState(
     val greeting: String = "",
     val userName: String = "George",
-    val quickActions: List<QuickActionType> = QuickActionType.entries,
     val homeSuggestion: AnalysisSuggestion? = null,
     val scribbleText: String = "",
-    val feedItems: List<FeedItem> = emptyList(),
+    val feedItems: List<Scribble> = emptyList(),
     val isSyncing: Boolean = false,
     val isRecording: Boolean = false
 )
 
 @HiltViewModel
 class CanvasViewModel @Inject constructor(
-    private val canvasRepository: CanvasRepository,
+    private val scribbleRepository: ScribbleRepository,
     private val processScribbleUseCase: ProcessScribbleUseCase,
     private val confirmWorkoutUseCase: ConfirmWorkoutUseCase,
-    private val executeQuickActionUseCase: ExecuteQuickActionUseCase
+    private val syncScribbles: SyncScribblesUseCase
 ) : ViewModel() {
 
     private val _scribbleText = MutableStateFlow("")
     private val _extras = MutableStateFlow(CanvasExtras())
 
     val uiState: StateFlow<CanvasUiState> = combine(
-        canvasRepository.getFeed(),
+        scribbleRepository.getAllScribbles(),
         _scribbleText,
         _extras
-    ) { feedItems, scribbleText, extras ->
+    ) { scribbles, scribbleText, extras ->
         CanvasUiState(
             greeting = getGreeting(),
             scribbleText = scribbleText,
-            feedItems = feedItems,
+            feedItems = scribbles,
             homeSuggestion = extras.homeSuggestion,
             isRecording = extras.isRecording,
-            isSyncing = feedItems.any { it is FeedItem.Scribble && it.status == ScribbleStatus.PROCESSING }
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(FLOW_TIMEOUT_MS), CanvasUiState())
 
@@ -73,16 +70,12 @@ class CanvasViewModel @Inject constructor(
         }
     }
 
-    fun onQuickActionClick(type: QuickActionType) {
-        viewModelScope.launch { executeQuickActionUseCase.execute(type) }
-    }
-
     fun onRetryScribble(id: String) {
-        viewModelScope.launch { canvasRepository.retryScribble(id) }
+        viewModelScope.launch { scribbleRepository.updateSyncStatus(id, SyncStatus.Pending) }
     }
 
-    fun onConfirmClick(confirmation: FeedItem.Confirmation) {
-        viewModelScope.launch { confirmWorkoutUseCase.execute(confirmation) }
+    fun onConfirmClick(parsed: Scribble.Parsed) {
+        viewModelScope.launch { confirmWorkoutUseCase.execute(parsed) }
     }
 
     fun onMicClick() {
@@ -102,6 +95,12 @@ class CanvasViewModel @Inject constructor(
         val homeSuggestion: AnalysisSuggestion? = null,
         val isRecording: Boolean = false
     )
+
+    init {
+        viewModelScope.launch {
+            syncScribbles()
+        }
+    }
 
     companion object {
         private const val MORNING_CUTOFF = 12

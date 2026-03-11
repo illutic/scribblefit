@@ -17,10 +17,13 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.scribblefit.core.designsystem.ScribbleFitCard
 import com.scribblefit.core.designsystem.ScribbleFitColors
 import com.scribblefit.core.designsystem.ScribbleFitSpacing
-import com.scribblefit.feature.ledger.domain.model.WorkoutHistory
+import com.scribblefit.feature.workout.domain.Workout
 import java.text.SimpleDateFormat
+import java.time.Instant
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.TimeUnit
+import kotlin.time.Duration.Companion.milliseconds
 
 private val DateFormatter = SimpleDateFormat("MMM d, yyyy", Locale.getDefault())
 
@@ -47,16 +50,18 @@ fun LedgerScreen(
 }
 
 @Composable
-private fun WorkoutHistoryCard(workout: WorkoutHistory) {
+private fun WorkoutHistoryCard(workout: Workout) {
     ScribbleFitCard(modifier = Modifier.fillMaxWidth()) {
         Column(verticalArrangement = Arrangement.spacedBy(ScribbleFitSpacing.Small)) {
+            val date = workout.date.toLongOrNull()?.let { Date(it) } ?: Date.from(Instant.now())
+
             Text(
-                text = DateFormatter.format(Date(workout.date)),
+                text = DateFormatter.format(date),
                 color = ScribbleFitColors.RichBlack,
                 fontSize = 16.sp
             )
             Text(
-                text = "${workout.exercises.size} exercises · ${workout.totalVolume.toInt()} lbs",
+                text = "${workout.exercises.size} exercises · lbs",
                 color = ScribbleFitColors.MidGray,
                 fontSize = 14.sp
             )

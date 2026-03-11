@@ -29,10 +29,10 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.scribblefit.core.config.domain.LLMProvider
+import com.scribblefit.core.config.domain.Weight
 import com.scribblefit.core.designsystem.ScribbleFitColors
 import com.scribblefit.core.designsystem.ScribbleFitSpacing
-import com.scribblefit.feature.ai.domain.model.LLMProvider
-import com.scribblefit.feature.profile.domain.model.WeightUnit
 
 internal const val TITLE_FONT_SIZE_SP = 28
 internal const val SECTION_HEADER_FONT_SIZE_SP = 12
@@ -53,10 +53,8 @@ internal const val PILL_CORNER_DP = 8
 internal const val PILL_BORDER_DP = 1
 internal const val PILL_HORIZONTAL_PADDING_DP = 12
 internal const val PILL_VERTICAL_PADDING_DP = 6
-internal const val API_KEY_LAST_CHARS = 4
 
 internal fun LLMProvider.displayName(): String = when (this) {
-    LLMProvider.PROXY -> "Proxy (Default)"
     LLMProvider.GEMINI -> "Gemini"
     LLMProvider.OPENAI -> "OpenAI"
     LLMProvider.LOCAL -> "Local"
@@ -120,7 +118,6 @@ internal fun SettingsRow(
 
 @Composable
 internal fun ApiKeyRow(
-    apiKey: String,
     showInput: Boolean,
     inputText: String,
     onInputTextChanged: (String) -> Unit,
@@ -144,11 +141,7 @@ internal fun ApiKeyRow(
                 color = ScribbleFitColors.RichBlack
             )
             Spacer(modifier = Modifier.weight(1f))
-            val maskedDisplay = if (apiKey.length >= API_KEY_LAST_CHARS) {
-                "\u2022\u2022\u2022\u2022" + apiKey.takeLast(API_KEY_LAST_CHARS)
-            } else {
-                "Not set"
-            }
+            val maskedDisplay = "\u2022\u2022\u2022\u2022"
             Text(
                 text = maskedDisplay,
                 fontSize = ROW_VALUE_FONT_SIZE_SP.sp,
@@ -178,7 +171,11 @@ internal fun ApiKeyRow(
                     .padding(bottom = ROW_VERTICAL_PADDING_DP.dp)
                     .clip(RoundedCornerShape(PILL_CORNER_DP.dp))
                     .background(ScribbleFitColors.SoftGray)
-                    .border(PILL_BORDER_DP.dp, ScribbleFitColors.LightGray, RoundedCornerShape(PILL_CORNER_DP.dp))
+                    .border(
+                        PILL_BORDER_DP.dp,
+                        ScribbleFitColors.LightGray,
+                        RoundedCornerShape(PILL_CORNER_DP.dp)
+                    )
                     .clickable(onClick = onConfirm)
                     .padding(vertical = ScribbleFitSpacing.Small),
                 contentAlignment = Alignment.Center
@@ -224,8 +221,8 @@ internal fun SaveKeyPill(onClick: () -> Unit) {
 
 @Composable
 internal fun WeightUnitToggle(
-    selected: WeightUnit,
-    onUnitSelected: (WeightUnit) -> Unit
+    selected: Weight,
+    onUnitSelected: (Weight) -> Unit
 ) {
     Row(
         modifier = Modifier
@@ -233,7 +230,7 @@ internal fun WeightUnitToggle(
             .background(ScribbleFitColors.SoftGray),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        WeightUnit.entries.forEach { unit ->
+        Weight.entries.forEach { unit ->
             val isActive = unit == selected
             Box(
                 modifier = Modifier

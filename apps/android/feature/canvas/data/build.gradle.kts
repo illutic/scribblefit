@@ -10,7 +10,10 @@ android {
 
 dependencies {
     implementation(project(":core:database"))
+    implementation(project(":core:coroutines"))
+    implementation(project(":feature:workout:domain"))
     implementation(project(":feature:ai:domain"))
+    implementation(project(":feature:scribble:domain"))
     implementation(project(":feature:canvas:domain"))
     implementation(project(":feature:ledger"))
     implementation(libs.kotlinx.serialization.json)
