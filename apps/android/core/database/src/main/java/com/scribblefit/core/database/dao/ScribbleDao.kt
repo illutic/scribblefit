@@ -2,29 +2,22 @@ package com.scribblefit.core.database.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
-import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.scribblefit.core.database.entity.EntitySyncStatus
-import com.scribblefit.core.database.entity.ScribbleEntity
+import androidx.room.Update
+import com.scribblefit.core.database.entity.scribble.ScribbleEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ScribbleDao {
-    @Query("SELECT * FROM Scribble ORDER BY created_at ASC")
-    fun observeAll(): Flow<List<ScribbleEntity>>
+    @Insert
+    suspend fun insertScribble(scribble: ScribbleEntity): Long
 
-    @Query("SELECT * FROM Scribble WHERE status = 'PENDING' ORDER BY created_at ASC")
-    fun observePendingScribbles(): Flow<List<ScribbleEntity>>
+    @Update
+    suspend fun updateScribble(scribble: ScribbleEntity)
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
-    suspend fun insert(item: ScribbleEntity)
+    @Query("SELECT * FROM scribbles WHERE scribbleId = :id")
+    fun getScribbleById(id: Long): Flow<ScribbleEntity>
 
-    @Query("UPDATE Scribble SET status = :status WHERE id = :id")
-    suspend fun updateStatus(id: String, status: EntitySyncStatus)
-
-    @Query("DELETE FROM Scribble WHERE id = :id")
-    suspend fun deleteById(id: String)
-
-    @Query("DELETE FROM Scribble")
-    suspend fun deleteAll()
+    @Query("SELECT * FROM scribbles WHERE status = :status")
+    fun getScribblesByStatus(status: String): Flow<List<ScribbleEntity>>
 }

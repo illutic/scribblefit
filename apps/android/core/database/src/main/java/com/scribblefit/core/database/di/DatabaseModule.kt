@@ -3,6 +3,11 @@ package com.scribblefit.core.database.di
 import android.content.Context
 import androidx.room.Room
 import com.scribblefit.core.database.ScribbleFitDatabase
+import com.scribblefit.core.database.dao.ExerciseDao
+import com.scribblefit.core.database.dao.ScribbleDao
+import com.scribblefit.core.database.dao.SystemConfigDao
+import com.scribblefit.core.database.dao.WorkoutDao
+import com.scribblefit.core.database.dao.WorkoutTrackerDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -20,10 +25,23 @@ object DatabaseModule {
     fun provideDatabase(@ApplicationContext context: Context): ScribbleFitDatabase =
         Room.databaseBuilder(context, ScribbleFitDatabase::class.java, DATABASE_NAME).build()
 
-    @Provides fun provideSyncQueueDao(db: ScribbleFitDatabase) = db.scribbleDao()
-    @Provides fun provideWorkoutLogDao(db: ScribbleFitDatabase) = db.workoutDao()
-    @Provides fun provideSetDao(db: ScribbleFitDatabase) = db.setDao()
-    @Provides fun provideExerciseDictionaryDao(db: ScribbleFitDatabase) = db.exerciseDao()
-    @Provides fun provideSystemConfigDao(db: ScribbleFitDatabase) = db.systemConfigDao()
-    @Provides fun provideInsightsCacheDao(db: ScribbleFitDatabase) = db.insightsCacheDao()
+    @Provides
+    fun provideWorkoutDao(database: ScribbleFitDatabase): WorkoutDao =
+        database.workoutDao()
+
+    @Provides
+    fun provideExerciseDao(database: ScribbleFitDatabase): ExerciseDao =
+        database.exerciseDao()
+
+    @Provides
+    fun provideWorkoutTrackerDao(database: ScribbleFitDatabase): WorkoutTrackerDao =
+        database.workoutTrackerDao()
+
+    @Provides
+    fun provideScribbleDao(database: ScribbleFitDatabase): ScribbleDao =
+        database.scribbleDao()
+
+    @Provides
+    fun provideSystemConfigDao(database: ScribbleFitDatabase): SystemConfigDao =
+        database.systemConfigDao()
 }

@@ -4,20 +4,17 @@ import androidx.room.Dao
 import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import com.scribblefit.core.database.entity.ExerciseEntity
+import com.scribblefit.core.database.entity.exercise.Exercise
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ExerciseDao {
-    @Query("SELECT * FROM Exercise ORDER BY canonical_name ASC")
-    fun observeAll(): Flow<List<ExerciseEntity>>
-
     @Insert(onConflict = OnConflictStrategy.IGNORE)
-    suspend fun insertExerciseIfAbsent(exercise: ExerciseEntity)
+    suspend fun insertExercise(exercise: Exercise): Long
 
-    @Query("SELECT * FROM Exercise WHERE id = :id")
-    suspend fun getById(id: String): ExerciseEntity?
+    @Query("SELECT * FROM exercise WHERE name LIKE '%' || :searchQuery || '%'")
+    fun getExercisesByName(searchQuery: String): Flow<List<Exercise>>
 
-    @Query("DELETE FROM Exercise")
-    suspend fun deleteAll()
+    @Query("SELECT * FROM exercise WHERE muscleGroup = :muscleGroup")
+    fun getExercisesByMuscleGroup(muscleGroup: String): Flow<List<Exercise>>
 }
