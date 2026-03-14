@@ -1,7 +1,9 @@
 import com.android.build.api.dsl.LibraryExtension
+import com.scribblefit.buildlogic.libs
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.configure
+import org.gradle.kotlin.dsl.dependencies
 import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 
 class AndroidLibraryConventionPlugin : Plugin<Project> {
@@ -22,6 +24,9 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
 
             extensions.configure<KotlinAndroidProjectExtension> {
                 jvmToolchain(17)
+                dependencies {
+                    add("implementation", libs.findLibrary("coroutines.core").get())
+                }
             }
         }
     }
