@@ -1,4 +1,5 @@
 import Foundation
+import Combine
 
 public final class SyncScribblesUseCase: Sendable {
     private let scribbleRepository: any ScribbleRepository
