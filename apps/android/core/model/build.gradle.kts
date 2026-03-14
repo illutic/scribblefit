@@ -3,5 +3,5 @@ plugins {
 }
 
 android {
-    namespace = "com.scribblefit.core.config.domain"
+    namespace = "com.scribblefit.core.model"
 }

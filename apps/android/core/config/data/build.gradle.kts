@@ -11,7 +11,6 @@ dependencies {
     implementation(project(":core:database"))
     implementation(project(":core:coroutines"))
     implementation(project(":core:config:domain"))
-    implementation(libs.coroutines.core)
     implementation(libs.coroutines.android)
     implementation(libs.slf4j.android)
 }

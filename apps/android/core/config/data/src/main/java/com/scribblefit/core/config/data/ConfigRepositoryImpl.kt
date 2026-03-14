@@ -6,7 +6,8 @@ import com.scribblefit.core.config.domain.SystemConfig
 import com.scribblefit.core.config.domain.ThemePreference
 import com.scribblefit.core.config.domain.Weight
 import com.scribblefit.core.database.dao.SystemConfigDao
-import com.scribblefit.core.database.entity.SystemConfigEntity
+import com.scribblefit.core.database.mapper.toDomain
+import com.scribblefit.core.database.mapper.toEntity
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
@@ -32,40 +33,15 @@ class ConfigRepositoryImpl(
         updatedAt = Clock.System.now().toEpochMilliseconds()
     )
 
-    override val config = systemConfigDao.observe()
+    override val config = systemConfigDao.getSystemConfig()
         .mapNotNull { it?.toDomain() }
         .stateIn(this, SharingStarted.Eagerly, defaultConfig)
 
     override suspend fun updateConfig(config: SystemConfig) {
-        systemConfigDao.upsert(config.toEntity())
+        systemConfigDao.insertSystem(config.toEntity())
     }
 
     override suspend fun resetConfig() {
-        systemConfigDao.upsert(defaultConfig.toEntity())
+        systemConfigDao.insertSystem(defaultConfig.toEntity())
     }
-
-    private fun SystemConfigEntity.toDomain(): SystemConfig = SystemConfig(
-        summaryPrompt = summaryPrompt,
-        suggestionPrompt = suggestionPrompt,
-        insightPrompt = insightPrompt,
-        parsePrompt = parsePrompt,
-        preferredLlmProvider = LLMProvider.valueOf(preferredLlmProvider.uppercase()),
-        preferredModel = preferredModel,
-        weightUnit = Weight.valueOf(weightUnit.uppercase()),
-        themePreference = ThemePreference.valueOf(themePreference.uppercase()),
-        updatedAt = updatedAt
-    )
-
-    private fun SystemConfig.toEntity(): SystemConfigEntity = SystemConfigEntity(
-        id = "config",
-        summaryPrompt = summaryPrompt,
-        suggestionPrompt = suggestionPrompt,
-        insightPrompt = insightPrompt,
-        parsePrompt = parsePrompt,
-        preferredLlmProvider = preferredLlmProvider.name,
-        preferredModel = preferredModel,
-        weightUnit = weightUnit.name,
-        themePreference = themePreference.name,
-        updatedAt = updatedAt
-    )
 }
