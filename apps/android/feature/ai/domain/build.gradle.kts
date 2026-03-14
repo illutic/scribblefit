@@ -8,7 +8,6 @@ android {
 }
 
 dependencies {
-    implementation(project(":feature:workout:domain"))
+    implementation(project(":core:model"))
     implementation(libs.kotlinx.serialization.json)
-    implementation(libs.coroutines.core)
 }

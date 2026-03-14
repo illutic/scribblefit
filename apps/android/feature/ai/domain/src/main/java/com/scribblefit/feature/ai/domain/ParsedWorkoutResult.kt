@@ -1,6 +1,6 @@
-package com.scribblefit.feature.ai.domain.model
+package com.scribblefit.feature.ai.domain
 
-import com.scribblefit.feature.workout.domain.Workout
+import com.scribblefit.core.model.Workout
 
 data class ParsedWorkoutResult(
     val workout: Workout?,

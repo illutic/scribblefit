@@ -6,9 +6,9 @@ import com.google.mlkit.genai.prompt.GenerativeModel
 import com.scribblefit.core.config.domain.ConfigRepository
 import com.scribblefit.feature.ai.data.entity.WorkoutDto
 import com.scribblefit.feature.ai.data.entity.toDomain
-import com.scribblefit.feature.ai.domain.engine.LLMEngine
-import com.scribblefit.feature.ai.domain.model.ParsedWorkoutResult
-import com.scribblefit.feature.ai.domain.model.ParsingStatus
+import com.scribblefit.feature.ai.domain.LLMEngine
+import com.scribblefit.feature.ai.domain.ParsedWorkoutResult
+import com.scribblefit.feature.ai.domain.ParsingStatus
 import kotlinx.serialization.json.Json
 import org.slf4j.LoggerFactory
 

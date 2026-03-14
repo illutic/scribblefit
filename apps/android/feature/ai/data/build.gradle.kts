@@ -10,9 +10,9 @@ android {
 
 dependencies {
     implementation(project(":core:database"))
+    implementation(project(":core:model"))
     implementation(project(":core:coroutines"))
     implementation(project(":core:config:domain"))
-    implementation(project(":feature:workout:domain"))
     implementation(project(":feature:ai:domain"))
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.ktor.client.core)
@@ -21,9 +21,7 @@ dependencies {
     implementation(libs.ktor.serialization.kotlinx.json)
     implementation(libs.ktor.client.logging)
     implementation(libs.security.crypto)
-    implementation(libs.coroutines.core)
     implementation(libs.coroutines.android)
     implementation(libs.mlkit.genai.prompt)
-    implementation(libs.coroutines.play.services)
     implementation(libs.slf4j.android)
 }

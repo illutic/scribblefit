@@ -1,9 +1,12 @@
 package com.scribblefit.core.designsystem
 
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.unit.dp
 
-object ScribbleFitShapes {
-    val Small = 8.dp
-    val Medium = 12.dp
-    val Large = 20.dp
+data object ScribbleFitShapes {
+    val small = 8.dp
+    val medium = 12.dp
+    val large = 20.dp
 }
+
+internal val LocalShapes = staticCompositionLocalOf { ScribbleFitShapes }

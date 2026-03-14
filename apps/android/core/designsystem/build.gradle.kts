@@ -7,6 +7,7 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:navigation"))
     implementation(libs.androidx.core.ktx)
     api(libs.androidx.material.icons)
 }

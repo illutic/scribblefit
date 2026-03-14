@@ -2,13 +2,8 @@ package com.scribblefit.feature.ai.data.engine
 
 import com.scribblefit.core.config.domain.ConfigRepository
 import com.scribblefit.core.config.domain.LLMProvider
-import com.scribblefit.feature.ai.domain.engine.AnalysisEngine
-import com.scribblefit.feature.ai.domain.engine.LLMEngine
-import com.scribblefit.feature.ai.domain.model.AnalysisSuggestion
-import com.scribblefit.feature.ai.domain.model.AnalysisSummary
-import com.scribblefit.feature.ai.domain.model.ExerciseInsight
-import com.scribblefit.feature.ai.domain.model.ParsedWorkoutResult
-import com.scribblefit.feature.ai.domain.model.SummaryPeriod
+import com.scribblefit.feature.ai.domain.LLMEngine
+import com.scribblefit.feature.ai.domain.ParsedWorkoutResult
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
@@ -23,7 +18,7 @@ internal class DynamicLLMEngine(
     private val localEngine: LocalAIEngine,
     configRepository: ConfigRepository,
     coroutineDispatcher: CoroutineDispatcher
-) : LLMEngine, AnalysisEngine,
+) : LLMEngine,
     CoroutineScope by CoroutineScope(coroutineDispatcher + CoroutineName("DynamicLLMEngine")) {
     private val activeEngine = configRepository.config.map {
         when (it.preferredLlmProvider) {
@@ -37,29 +32,4 @@ internal class DynamicLLMEngine(
         withContext(coroutineContext) {
             activeEngine.value.parseWorkout(rawText)
         }
-
-    override suspend fun generateSuggestion(context: String): Result<AnalysisSuggestion> =
-        withContext(coroutineContext) {
-            ensureAnalysisEngine().generateSuggestion(context)
-        }
-
-    override suspend fun generateSummary(
-        period: SummaryPeriod,
-        workoutData: String
-    ): Result<AnalysisSummary> = withContext(coroutineContext) {
-        ensureAnalysisEngine().generateSummary(
-            period,
-            workoutData
-        )
-    }
-
-    override suspend fun generateExerciseInsight(
-        exerciseId: String
-    ): Result<ExerciseInsight> = withContext(coroutineContext) {
-        ensureAnalysisEngine().generateExerciseInsight(exerciseId)
-    }
-
-    private fun ensureAnalysisEngine() =
-        activeEngine.value as? AnalysisEngine ?: error("Active engine does not support analysis")
-
 }

@@ -1,10 +1,13 @@
 package com.scribblefit.core.designsystem
 
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.unit.dp
 
-object ScribbleFitSpacing {
-    val Small = 8.dp
-    val Medium = 16.dp
-    val Large = 24.dp
+data object ScribbleFitSpacing {
+    val small = 8.dp
+    val medium = 16.dp
+    val large = 24.dp
     val screenPadding = 24.dp
 }
+
+internal val LocalSpacing = staticCompositionLocalOf { ScribbleFitSpacing }

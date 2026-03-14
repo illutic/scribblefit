@@ -1,24 +1,18 @@
 package com.scribblefit.feature.ai.data.engine
 
 import com.scribblefit.core.config.domain.ConfigRepository
+import com.scribblefit.core.config.domain.SecureKeyStorage
 import com.scribblefit.feature.ai.data.entity.WorkoutDto
 import com.scribblefit.feature.ai.data.entity.toDomain
-import com.scribblefit.feature.ai.domain.engine.AnalysisEngine
-import com.scribblefit.feature.ai.domain.engine.LLMEngine
-import com.scribblefit.feature.ai.domain.model.AnalysisSuggestion
-import com.scribblefit.feature.ai.domain.model.AnalysisSummary
-import com.scribblefit.feature.ai.domain.model.ExerciseInsight
-import com.scribblefit.feature.ai.domain.model.ParsedWorkoutResult
-import com.scribblefit.feature.ai.domain.model.ParsingStatus
-import com.scribblefit.feature.ai.domain.model.SummaryPeriod
-import com.scribblefit.feature.ai.domain.security.SecureKeyStorage
+import com.scribblefit.feature.ai.domain.LLMEngine
+import com.scribblefit.feature.ai.domain.ParsedWorkoutResult
+import com.scribblefit.feature.ai.domain.ParsingStatus
 import io.ktor.client.HttpClient
 import io.ktor.client.call.body
 import io.ktor.client.request.post
 import io.ktor.client.request.setBody
 import io.ktor.http.ContentType
 import io.ktor.http.contentType
-import kotlinx.serialization.InternalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
@@ -29,11 +23,10 @@ internal class GeminiAIEngine(
     private val secureKeyStorage: SecureKeyStorage,
     private val configRepository: ConfigRepository,
     private val json: Json
-) : LLMEngine, AnalysisEngine {
+) : LLMEngine {
     private val config get() = configRepository.config.value
     private val apiKey get() = secureKeyStorage.getApiKey() ?: error("API Key is not provided")
 
-    @InternalSerializationApi
     override suspend fun parseWorkout(rawText: String): Result<ParsedWorkoutResult> = runCatching {
         val prompt = config.parsePrompt
         val startMs = System.currentTimeMillis()
@@ -48,49 +41,6 @@ internal class GeminiAIEngine(
         )
     }
 
-    @InternalSerializationApi
-    override suspend fun generateSuggestion(context: String): Result<AnalysisSuggestion> =
-        runCatching {
-            val responseText =
-                callGemini(apiKey, "${config.suggestionPrompt}\n\nContext:\n$context")
-            val dto = json.decodeFromString<SuggestionResponseDto>(responseText)
-            dto.toDomain()
-        }
-
-    @InternalSerializationApi
-    override suspend fun generateSummary(
-        period: SummaryPeriod,
-        workoutData: String
-    ): Result<AnalysisSummary> = runCatching {
-        val responseText =
-            callGemini(
-                apiKey,
-                "${config.summaryPrompt}\n\nPeriod: ${period.name}\nData:\n$workoutData"
-            )
-        val dto = json.decodeFromString<SummaryResponseDto>(responseText)
-
-        dto.toDomain(period)
-    }
-
-    @InternalSerializationApi
-    override suspend fun generateExerciseInsight(
-        exerciseId: String
-    ): Result<ExerciseInsight> = runCatching {
-        // TODO - get exercise data and history based on exerciseId, for now using placeholders
-        val exerciseName = "Squat"
-        val historyData = "Week 1: 3 sets of 5 reps at 100kg\nWeek 2: 3 sets of 5 reps at 105kg\n"
-
-        val responseText =
-            callGemini(
-                apiKey,
-                "${config.insightPrompt}\n\nExercise: $exerciseName\nHistory:\n$historyData"
-            )
-        val dto = json.decodeFromString<InsightResponseDto>(responseText)
-
-        dto.toDomain(exerciseId)
-    }
-
-    @InternalSerializationApi
     private suspend fun callGemini(apiKey: String, userPrompt: String): String {
         @Serializable
         data class Part(val text: String)

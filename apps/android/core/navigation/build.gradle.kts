@@ -5,8 +5,3 @@ plugins {
 android {
     namespace = "com.scribblefit.core.navigation"
 }
-
-dependencies {
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.navigation.compose)
-}
