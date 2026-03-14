@@ -9,9 +9,8 @@ import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-abstract class NavigationModule {
-
+internal interface NavigationModule {
     @Binds
     @Singleton
-    abstract fun bindNavigator(impl: NavigatorImpl): Navigator
+    fun bindsNavigator(impl: NavigatorImpl): Navigator
 }
