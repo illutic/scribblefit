@@ -73,7 +73,7 @@ data class SystemConfig(
 enum class LLMProvider(
     val requiresApiKey: Boolean
 ) {
-    OPENAI(requiresApiKey = true), GEMINI(requiresApiKey = true), LOCAL(requiresApiKey = false)
+    GEMINI(requiresApiKey = true), LOCAL(requiresApiKey = false)
 }
 
 enum class Weight {
