@@ -12,7 +12,7 @@ import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.ArrowUpward
+import androidx.compose.material.icons.rounded.KeyboardArrowUp
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -97,7 +97,7 @@ internal fun ScribbleTextInput(
             )
 
             val isSendEnabled = value.isNotBlank() && !isLoading
-            
+
             IconButton(
                 onClick = onSendClick,
                 enabled = isSendEnabled,
@@ -108,7 +108,7 @@ internal fun ScribbleTextInput(
                     .background(colors.softGray)
             ) {
                 Icon(
-                    imageVector = Icons.Rounded.ArrowUpward,
+                    imageVector = Icons.Rounded.KeyboardArrowUp,
                     contentDescription = "Send workout",
                     tint = colors.richBlack,
                     modifier = Modifier
