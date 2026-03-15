@@ -6,8 +6,15 @@ package com.scribblefit.core.model
 data class Scribble(
     val id: Long,
     val rawText: String,
-    val parsedJson: String?,
-    val status: String, // String representation for domain
-    val workoutExerciseId: Long?,
-    val createdAt: Long
+    val parsedJson: String? = null,
+    val status: ScribbleStatus,
+    val createdAt: Long,
+    val exercises: List<Exercise> = emptyList(),
 )
+
+enum class ScribbleStatus {
+    RAW,
+    PARSED,
+    COMPLETED,
+    FAILED
+}

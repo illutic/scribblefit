@@ -24,21 +24,20 @@ rootProject.name = "scribblefit-android"
 includeBuild("build-logic")
 
 include(":app")
-include(":core:database")
-include(":core:network")
-include(":core:designsystem")
-include(":core:navigation")
-include(":core:coroutines")
-include(":core:model")
-include(":core:config:domain")
-include(":core:config:data")
-include(":feature:ai:domain")
-include(":feature:ai:data")
-include(":feature:scribble:domain")
-include(":feature:scribble:data")
-include(":feature:exercises:domain")
-include(":feature:exercises:data")
-include(":feature:workouts:domain")
-include(":feature:workouts:data")
-include(":feature:sets:domain")
-include(":feature:sets:data")
+include(
+    ":core:database",
+    ":core:network",
+    ":core:designsystem",
+    ":core:navigation",
+    ":core:coroutines",
+    ":core:model",
+    ":core:common",
+    ":core:config:domain",
+    ":core:config:data"
+)
+include(":feature:ai:domain", ":feature:ai:data")
+include(":feature:scribble:domain", ":feature:scribble:data")
+include(":feature:exercises:domain", ":feature:exercises:data")
+include(":feature:workouts:domain", ":feature:workouts:data")
+include(":feature:sets:domain", ":feature:sets:data")
+include(":feature:canvas:ui", ":feature:canvas:domain", ":feature:canvas:data")

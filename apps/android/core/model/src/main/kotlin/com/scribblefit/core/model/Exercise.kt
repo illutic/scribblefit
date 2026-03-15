@@ -4,5 +4,6 @@ data class Exercise(
     val id: Long,
     val canonicalName: String,
     val muscleGroup: String,
-    val sets: List<Set>
+    val sets: List<Set>,
+    val isDraft: Boolean = false
 )
