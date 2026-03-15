@@ -54,10 +54,4 @@ class ExerciseRepositoryImpl(
             )
         )
     }
-
-    override fun getWorkoutExerciseDetails(workoutExerciseId: Long): Flow<Exercise> =
-        workoutExerciseDao
-            .getWorkoutExerciseWithDetails(workoutExerciseId)
-            .flowOn(coroutineDispatcher)
-            .map { it.toDomain() }
 }

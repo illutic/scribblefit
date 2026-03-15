@@ -14,7 +14,7 @@ class AddRawScribbleUseCase(
     private val scribbleRepository: ScribbleRepository,
     private val coroutineDispatcher: CoroutineDispatcher
 ) {
-    suspend operator fun invoke(newText: String): Result<Unit> =
+    suspend operator fun invoke(newText: String, date: LocalDate = LocalDate.now()): Result<Unit> =
         runCatchingWithCancellation {
             withContext(coroutineDispatcher) {
                 if (newText.isBlank()) throw EmptyScribbleTextException()
@@ -24,13 +24,13 @@ class AddRawScribbleUseCase(
                         id = 0L,
                         rawText = newText,
                         status = ScribbleStatus.RAW,
-                        createdAt = getCurrentDateInMillis()
+                        createdAt = getCurrentDateInMillis(date)
                     )
                 )
             }
         }
 
-    private fun getCurrentDateInMillis(): Long = LocalDate.now()
+    private fun getCurrentDateInMillis(date: LocalDate): Long = date
         .atStartOfDay(ZoneOffset.UTC)
         .toInstant()
         .toEpochMilli()

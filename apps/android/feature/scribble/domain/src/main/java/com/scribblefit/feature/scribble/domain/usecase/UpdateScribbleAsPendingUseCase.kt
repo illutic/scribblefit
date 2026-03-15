@@ -15,17 +15,17 @@ class UpdateScribbleAsPendingUseCase(
 ) {
     suspend operator fun invoke(id: Long): Result<Unit> = withContext(coroutineDispatcher) {
         runCatchingWithCancellation {
-            val scribble = scribbleRepository.getScribbleWithExercises(id).firstOrNull()
+            val scribble = scribbleRepository.getScribble(id).firstOrNull()
                 ?: throw ScribbleNotFoundException(id)
 
-            updateScribbleStatusToFailed(scribble)
+            updateScribbleStatusToPending(scribble)
         }
     }
 
-    private suspend fun updateScribbleStatusToFailed(scribble: Scribble) {
+    private suspend fun updateScribbleStatusToPending(scribble: Scribble) {
         scribbleRepository.updateScribble(
             scribble.copy(
-                status = ScribbleStatus.FAILED
+                status = ScribbleStatus.IN_PROGRESS
             )
         )
     }

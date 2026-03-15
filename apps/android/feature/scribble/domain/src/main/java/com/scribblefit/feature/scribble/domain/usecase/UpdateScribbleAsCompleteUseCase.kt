@@ -15,7 +15,7 @@ class UpdateScribbleAsCompleteUseCase(
     private val markExerciseAsCompleteUseCase: MarkExerciseAsCompleteUseCase,
     private val coroutineDispatcher: CoroutineDispatcher,
 ) {
-    suspend fun invoke(id: Long): Result<Unit> = withContext(coroutineDispatcher) {
+    suspend operator fun invoke(id: Long): Result<Unit> = withContext(coroutineDispatcher) {
         runCatchingWithCancellation {
             val scribble = scribbleRepository.getScribbleWithExercises(id).firstOrNull()
                 ?: throw ScribbleNotFoundException(id)
