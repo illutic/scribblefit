@@ -12,5 +12,6 @@ dependencies {
     implementation(project(":core:coroutines"))
     implementation(project(":core:model"))
     implementation(project(":feature:exercises:domain"))
+    implementation(project(":feature:sets:domain"))
     implementation(libs.coroutines.android)
 }

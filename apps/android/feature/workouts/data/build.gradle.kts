@@ -12,4 +12,5 @@ dependencies {
     implementation(project(":core:coroutines"))
     implementation(project(":core:model"))
     implementation(project(":feature:workouts:domain"))
+    implementation(project(":feature:exercises:domain"))
 }

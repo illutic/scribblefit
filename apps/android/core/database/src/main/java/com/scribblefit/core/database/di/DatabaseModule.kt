@@ -5,6 +5,7 @@ import androidx.room.Room
 import com.scribblefit.core.database.ScribbleFitDatabase
 import com.scribblefit.core.database.dao.ExerciseDao
 import com.scribblefit.core.database.dao.ScribbleDao
+import com.scribblefit.core.database.dao.ScribbleTrackerDao
 import com.scribblefit.core.database.dao.SystemConfigDao
 import com.scribblefit.core.database.dao.WorkoutDao
 import com.scribblefit.core.database.dao.WorkoutExerciseDao
@@ -40,6 +41,10 @@ object DatabaseModule {
     @Provides
     fun provideScribbleDao(database: ScribbleFitDatabase): ScribbleDao =
         database.scribbleDao()
+
+    @Provides
+    fun provideScribbleTrackerDao(database: ScribbleFitDatabase): ScribbleTrackerDao =
+        database.scribbleTrackerDao()
 
     @Provides
     fun provideSystemConfigDao(database: ScribbleFitDatabase): SystemConfigDao =
