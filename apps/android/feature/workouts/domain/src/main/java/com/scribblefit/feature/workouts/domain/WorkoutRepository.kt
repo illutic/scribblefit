@@ -5,7 +5,6 @@ import kotlinx.coroutines.flow.Flow
 
 interface WorkoutRepository {
     suspend fun saveWorkout(workout: Workout): Long
-    fun getWorkoutById(id: Long): Flow<Workout>
-    fun getWorkoutsInDateRange(startDate: Long, endDate: Long): Flow<List<Workout>>
-    suspend fun deleteWorkout(workoutId: Long)
+    fun getWorkoutByDate(date: Long): Flow<Workout?>
+    fun getWorkoutById(workoutId: Long): Flow<Workout?>
 }

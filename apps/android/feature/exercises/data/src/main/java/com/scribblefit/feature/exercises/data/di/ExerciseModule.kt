@@ -10,6 +10,8 @@ import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
 import javax.inject.Singleton
 
+import com.scribblefit.core.database.dao.WorkoutExerciseDao
+
 @Module
 @InstallIn(SingletonComponent::class)
 internal object ExerciseModule {
@@ -18,9 +20,11 @@ internal object ExerciseModule {
     @Singleton
     fun providesExerciseRepository(
         exerciseDao: ExerciseDao,
+        workoutExerciseDao: WorkoutExerciseDao,
         coroutineDispatcherProvider: CoroutineDispatcherProvider
     ): ExerciseRepository = ExerciseRepositoryImpl(
         exerciseDao = exerciseDao,
+        workoutExerciseDao = workoutExerciseDao,
         coroutineDispatcher = coroutineDispatcherProvider.io()
     )
 }

@@ -20,20 +20,15 @@ internal class WorkoutRepositoryImpl(
         workoutDao.insertWorkout(workout.toEntity())
     }
 
-    override fun getWorkoutById(id: Long): Flow<Workout> =
+    override fun getWorkoutByDate(date: Long): Flow<Workout?> =
         workoutDao
-            .getWorkoutWithAllDetails(id)
+            .getWorkoutByDate(date)
+            .flowOn(coroutineDispatcher)
+            .map { entity -> entity?.toDomain() }
+
+    override fun getWorkoutById(workoutId: Long): Flow<Workout?> =
+        workoutDao
+            .getWorkoutWithAllDetails(workoutId)
             .flowOn(coroutineDispatcher)
             .map { it.toDomain() }
-
-
-    override fun getWorkoutsInDateRange(startDate: Long, endDate: Long): Flow<List<Workout>> =
-        workoutDao
-            .getWorkoutsInDateRange(startDate, endDate)
-            .flowOn(coroutineDispatcher)
-            .map { entities -> entities.map { it.toDomain() } }
-
-    override suspend fun deleteWorkout(workoutId: Long) = withContext(coroutineDispatcher) {
-        workoutDao.deleteWorkout(workoutId)
-    }
 }

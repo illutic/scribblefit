@@ -1,7 +1,7 @@
 package com.scribblefit.feature.sets.data.di
 
 import com.scribblefit.core.coroutines.CoroutineDispatcherProvider
-import com.scribblefit.core.database.dao.WorkoutTrackerDao
+import com.scribblefit.core.database.dao.WorkoutExerciseDao
 import com.scribblefit.feature.sets.data.SetRepositoryImpl
 import com.scribblefit.feature.sets.domain.SetRepository
 import dagger.Module
@@ -17,10 +17,10 @@ internal object SetModule {
     @Provides
     @Singleton
     fun providesSetRepository(
-        workoutTrackerDao: WorkoutTrackerDao,
+        workoutExerciseDao: WorkoutExerciseDao,
         coroutineDispatcherProvider: CoroutineDispatcherProvider
     ): SetRepository = SetRepositoryImpl(
-        workoutTrackerDao = workoutTrackerDao,
+        workoutExerciseDao = workoutExerciseDao,
         coroutineDispatcher = coroutineDispatcherProvider.io()
     )
 }
