@@ -8,7 +8,6 @@ import com.scribblefit.core.coroutines.CoroutineDispatcherProvider
 import com.scribblefit.feature.ai.data.engine.DynamicLLMEngine
 import com.scribblefit.feature.ai.data.engine.GeminiAIEngine
 import com.scribblefit.feature.ai.data.engine.LocalAIEngine
-import com.scribblefit.feature.ai.data.engine.OpenAIEngine
 import com.scribblefit.feature.ai.domain.LLMEngine
 import dagger.Module
 import dagger.Provides
@@ -24,37 +23,17 @@ internal object AIModule {
 
     @Provides
     @Singleton
-    @GeminiLLMEngine
     fun provideGeminiEngine(
         httpClient: HttpClient,
         secureKeyStorage: SecureKeyStorage,
         json: Json,
         configRepository: ConfigRepository
-    ): LLMEngine {
+    ): GeminiAIEngine {
         return GeminiAIEngine(
             httpClient = httpClient,
             secureKeyStorage = secureKeyStorage,
             configRepository = configRepository,
             json = json
-        )
-    }
-
-    @Provides
-    @Singleton
-    @OpenAILLMEngine
-    fun provideOpenAIEngine(
-        httpClient: HttpClient,
-        secureKeyStorage: SecureKeyStorage,
-        json: Json,
-        configRepository: ConfigRepository,
-        coroutineDispatcherProvider: CoroutineDispatcherProvider
-    ): LLMEngine {
-        return OpenAIEngine(
-            httpClient = httpClient,
-            secureKeyStorage = secureKeyStorage,
-            json = json,
-            configRepository = configRepository,
-            coroutineDispatcher = coroutineDispatcherProvider.io()
         )
     }
 
@@ -78,13 +57,11 @@ internal object AIModule {
     @Provides
     @Singleton
     fun provideLLMEngine(
-        @OpenAILLMEngine openAIEngine: LLMEngine,
-        @GeminiLLMEngine geminiEngine: LLMEngine,
+        geminiEngine: GeminiAIEngine,
         localEngine: LocalAIEngine,
         configRepository: ConfigRepository,
         coroutineDispatcherProvider: CoroutineDispatcherProvider
     ): LLMEngine = DynamicLLMEngine(
-        openAIEngine = openAIEngine,
         geminiEngine = geminiEngine,
         localEngine = localEngine,
         configRepository = configRepository,

@@ -13,7 +13,6 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.withContext
 
 internal class DynamicLLMEngine(
-    private val openAIEngine: LLMEngine,
     private val geminiEngine: LLMEngine,
     private val localEngine: LocalAIEngine,
     configRepository: ConfigRepository,
@@ -22,7 +21,6 @@ internal class DynamicLLMEngine(
     CoroutineScope by CoroutineScope(coroutineDispatcher + CoroutineName("DynamicLLMEngine")) {
     private val activeEngine = configRepository.config.map {
         when (it.preferredLlmProvider) {
-            LLMProvider.OPENAI -> openAIEngine
             LLMProvider.GEMINI -> geminiEngine
             else -> localEngine
         }
