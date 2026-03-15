@@ -6,6 +6,7 @@ import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
 import com.scribblefit.core.navigation.NavState
 import com.scribblefit.core.navigation.Screen
+import com.scribblefit.feature.canvas.ui.CanvasRoute
 
 @Composable
 fun MainNavigation(
@@ -17,9 +18,7 @@ fun MainNavigation(
         modifier = modifier
     ) { screen ->
         when (screen) {
-            Screen.Canvas -> NavEntry(screen) {
-
-            }
+            Screen.Canvas -> NavEntry(screen) { CanvasRoute() }
 
             Screen.Insights -> NavEntry(screen) {
 

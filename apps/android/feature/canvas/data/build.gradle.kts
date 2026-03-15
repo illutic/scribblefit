@@ -1,5 +1,6 @@
 plugins {
     id("scribblefit.android.library")
+    id("scribblefit.android.hilt")
 }
 
 android {
@@ -8,5 +9,8 @@ android {
 
 dependencies {
     implementation(project(":core:model"))
+    implementation(project(":core:coroutines"))
     implementation(project(":feature:canvas:domain"))
+    implementation(project(":feature:scribble:domain"))
+    implementation(project(":feature:ai:domain"))
 }

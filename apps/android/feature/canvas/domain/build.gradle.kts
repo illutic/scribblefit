@@ -9,4 +9,6 @@ android {
 dependencies {
     implementation(project(":core:model"))
     implementation(project(":feature:scribble:domain"))
+    implementation(project(":feature:ai:domain"))
+    implementation(libs.slf4j.android)
 }
