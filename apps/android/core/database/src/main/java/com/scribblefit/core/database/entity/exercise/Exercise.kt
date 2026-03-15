@@ -11,5 +11,6 @@ data class Exercise(
     @PrimaryKey(autoGenerate = true)
     val exerciseId: Long = 0,
     val name: String,
-    val muscleGroup: String
+    val muscleGroup: String,
+    val isDraft: Boolean = false
 )

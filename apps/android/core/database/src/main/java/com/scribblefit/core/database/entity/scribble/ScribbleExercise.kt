@@ -1,4 +1,4 @@
-package com.scribblefit.core.database.entity.set
+package com.scribblefit.core.database.entity.scribble
 
 import androidx.room.Entity
 import androidx.room.ForeignKey
@@ -6,12 +6,15 @@ import androidx.room.Index
 import androidx.room.PrimaryKey
 import com.scribblefit.core.database.entity.exercise.WorkoutExercise
 
-/**
- * Represents a single set performed for a WorkoutExercise.
- */
 @Entity(
-    tableName = "workout_set",
+    tableName = "scribble_exercise",
     foreignKeys = [
+        ForeignKey(
+            entity = ScribbleEntity::class,
+            parentColumns = ["scribbleId"],
+            childColumns = ["scribbleId"],
+            onDelete = ForeignKey.CASCADE
+        ),
         ForeignKey(
             entity = WorkoutExercise::class,
             parentColumns = ["workoutExerciseId"],
@@ -20,16 +23,13 @@ import com.scribblefit.core.database.entity.exercise.WorkoutExercise
         )
     ],
     indices = [
+        Index(value = ["scribbleId"]),
         Index(value = ["workoutExerciseId"])
     ]
 )
-data class WorkoutSet(
+data class ScribbleExercise(
     @PrimaryKey(autoGenerate = true)
-    val setId: Long = 0,
+    val scribbleExerciseId: Long = 0,
+    val scribbleId: Long,
     val workoutExerciseId: Long,
-    val setNumber: Int,
-    val reps: Int,
-    val weight: Float,
-    val rpe: Float? = null,
-    val notes: String? = null
 )

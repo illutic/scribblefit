@@ -6,13 +6,17 @@ import com.scribblefit.core.config.domain.Weight
 import com.scribblefit.core.database.entity.config.SystemConfig
 import com.scribblefit.core.database.entity.exercise.Exercise
 import com.scribblefit.core.database.entity.exercise.WorkoutExerciseWithDetails
+import com.scribblefit.core.database.entity.scribble.ScribbleEntity
+import com.scribblefit.core.database.entity.scribble.ScribbleWithExercises
 import com.scribblefit.core.database.entity.set.WorkoutSet
 import com.scribblefit.core.database.entity.workout.Workout
 import com.scribblefit.core.database.entity.workout.WorkoutWithAllDetails
+import com.scribblefit.core.model.Scribble
+import com.scribblefit.core.model.ScribbleStatus
+import com.scribblefit.core.config.domain.SystemConfig as DomainSystemConfig
 import com.scribblefit.core.model.Exercise as DomainExercise
 import com.scribblefit.core.model.Set as DomainSet
 import com.scribblefit.core.model.Workout as DomainWorkout
-import com.scribblefit.core.config.domain.SystemConfig as DomainSystemConfig
 
 /**
  * Mapper extension functions to convert Room entities into domain objects.
@@ -23,7 +27,8 @@ fun Exercise.toDomain(): DomainExercise {
         id = exerciseId,
         canonicalName = name,
         muscleGroup = muscleGroup,
-        sets = emptyList()
+        sets = emptyList(),
+        isDraft = isDraft
     )
 }
 
@@ -52,7 +57,8 @@ fun WorkoutExerciseWithDetails.toDomain(): DomainExercise {
         id = exercise.exerciseId,
         canonicalName = exercise.name,
         muscleGroup = exercise.muscleGroup,
-        sets = sets.map { it.toDomain() }
+        sets = sets.map { it.toDomain() },
+        isDraft = exercise.isDraft
     )
 }
 
@@ -79,9 +85,40 @@ fun SystemConfig.toDomain(): DomainSystemConfig {
     )
 }
 
+fun ScribbleEntity.toDomain(): Scribble {
+    return Scribble(
+        id = scribbleId,
+        rawText = rawText,
+        parsedJson = parsedJson,
+        status = ScribbleStatus.valueOf(status),
+        createdAt = createdAt
+    )
+}
+
+fun ScribbleWithExercises.toDomain(): Scribble {
+    return Scribble(
+        id = scribble.scribbleId,
+        rawText = scribble.rawText,
+        parsedJson = scribble.parsedJson,
+        status = ScribbleStatus.valueOf(scribble.status),
+        createdAt = scribble.createdAt,
+        exercises = exercises.map { it.toDomain() }
+    )
+}
+
 /**
  * Mapper extension functions to convert domain objects into Room entities.
  */
+
+fun Scribble.toEntity(): ScribbleEntity {
+    return ScribbleEntity(
+        scribbleId = id,
+        rawText = rawText,
+        parsedJson = parsedJson,
+        status = status.name,
+        createdAt = createdAt
+    )
+}
 
 fun DomainSet.toEntity(workoutExerciseId: Long): WorkoutSet {
     return WorkoutSet(
@@ -99,7 +136,8 @@ fun DomainExercise.toEntity(): Exercise {
     return Exercise(
         exerciseId = id,
         name = canonicalName,
-        muscleGroup = muscleGroup
+        muscleGroup = muscleGroup,
+        isDraft = isDraft
     )
 }
 

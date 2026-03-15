@@ -7,7 +7,7 @@ import com.scribblefit.core.database.dao.ExerciseDao
 import com.scribblefit.core.database.dao.ScribbleDao
 import com.scribblefit.core.database.dao.SystemConfigDao
 import com.scribblefit.core.database.dao.WorkoutDao
-import com.scribblefit.core.database.dao.WorkoutTrackerDao
+import com.scribblefit.core.database.dao.WorkoutExerciseDao
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -34,7 +34,7 @@ object DatabaseModule {
         database.exerciseDao()
 
     @Provides
-    fun provideWorkoutTrackerDao(database: ScribbleFitDatabase): WorkoutTrackerDao =
+    fun provideWorkoutTrackerDao(database: ScribbleFitDatabase): WorkoutExerciseDao =
         database.workoutTrackerDao()
 
     @Provides

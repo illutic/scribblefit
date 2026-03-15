@@ -15,9 +15,15 @@ interface ScribbleDao {
     @Update
     suspend fun updateScribble(scribble: ScribbleEntity)
 
+    @Query("DELETE FROM scribbles WHERE scribbleId = :id")
+    suspend fun deleteScribble(id: Long)
+
     @Query("SELECT * FROM scribbles WHERE scribbleId = :id")
     fun getScribbleById(id: Long): Flow<ScribbleEntity>
 
-    @Query("SELECT * FROM scribbles WHERE status = :status")
-    fun getScribblesByStatus(status: String): Flow<List<ScribbleEntity>>
+    @Query("SELECT * FROM scribbles WHERE status = :status AND createdAt = :date")
+    fun getScribblesByStatusAndDate(status: String, date: Long): Flow<List<ScribbleEntity>>
+
+    @Query("SELECT * FROM scribbles WHERE createdAt = :date")
+    fun getAllScribblesByDate(date: Long): Flow<List<ScribbleEntity>>
 }

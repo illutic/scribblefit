@@ -23,7 +23,7 @@ import com.scribblefit.core.database.entity.workout.Workout
             entity = Exercise::class,
             parentColumns = ["exerciseId"],
             childColumns = ["exerciseId"],
-            onDelete = ForeignKey.RESTRICT
+            onDelete = ForeignKey.CASCADE
         )
     ],
     indices = [
@@ -36,5 +36,4 @@ data class WorkoutExercise(
     val workoutExerciseId: Long = 0,
     val workoutId: Long,
     val exerciseId: Long,
-    val isDraft: Boolean = false
 )

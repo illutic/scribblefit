@@ -2,11 +2,11 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "50cd1397c8af7d9152102b523d36042f",
+    "identityHash": "dfb85d9aa483b6e4ec15319add2dbbfe",
     "entities": [
       {
         "tableName": "workout",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`workoutId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `workoutDate` INTEGER NOT NULL, `notes` TEXT, `isDraft` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`workoutId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `workoutDate` INTEGER NOT NULL, `notes` TEXT)",
         "fields": [
           {
             "fieldPath": "workoutId",
@@ -24,12 +24,6 @@
             "fieldPath": "notes",
             "columnName": "notes",
             "affinity": "TEXT"
-          },
-          {
-            "fieldPath": "isDraft",
-            "columnName": "isDraft",
-            "affinity": "INTEGER",
-            "notNull": true
           }
         ],
         "primaryKey": {
@@ -41,7 +35,7 @@
       },
       {
         "tableName": "exercise",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`exerciseId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `muscleGroup` TEXT NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`exerciseId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `name` TEXT NOT NULL, `muscleGroup` TEXT NOT NULL, `isDraft` INTEGER NOT NULL)",
         "fields": [
           {
             "fieldPath": "exerciseId",
@@ -60,6 +54,12 @@
             "columnName": "muscleGroup",
             "affinity": "TEXT",
             "notNull": true
+          },
+          {
+            "fieldPath": "isDraft",
+            "columnName": "isDraft",
+            "affinity": "INTEGER",
+            "notNull": true
           }
         ],
         "primaryKey": {
@@ -71,7 +71,7 @@
       },
       {
         "tableName": "workout_exercise",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`workoutExerciseId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `workoutId` INTEGER NOT NULL, `exerciseId` INTEGER NOT NULL, `isDraft` INTEGER NOT NULL, FOREIGN KEY(`workoutId`) REFERENCES `workout`(`workoutId`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`exerciseId`) REFERENCES `exercise`(`exerciseId`) ON UPDATE NO ACTION ON DELETE RESTRICT )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`workoutExerciseId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `workoutId` INTEGER NOT NULL, `exerciseId` INTEGER NOT NULL, FOREIGN KEY(`workoutId`) REFERENCES `workout`(`workoutId`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`exerciseId`) REFERENCES `exercise`(`exerciseId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
         "fields": [
           {
             "fieldPath": "workoutExerciseId",
@@ -88,12 +88,6 @@
           {
             "fieldPath": "exerciseId",
             "columnName": "exerciseId",
-            "affinity": "INTEGER",
-            "notNull": true
-          },
-          {
-            "fieldPath": "isDraft",
-            "columnName": "isDraft",
             "affinity": "INTEGER",
             "notNull": true
           }
@@ -138,7 +132,7 @@
           },
           {
             "table": "exercise",
-            "onDelete": "RESTRICT",
+            "onDelete": "CASCADE",
             "onUpdate": "NO ACTION",
             "columns": [
               "exerciseId"
@@ -227,7 +221,7 @@
       },
       {
         "tableName": "scribbles",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`scribbleId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `rawText` TEXT NOT NULL, `parsedJson` TEXT, `status` TEXT NOT NULL, `workoutExerciseId` INTEGER, `createdAt` INTEGER NOT NULL, FOREIGN KEY(`workoutExerciseId`) REFERENCES `workout_exercise`(`workoutExerciseId`) ON UPDATE NO ACTION ON DELETE SET NULL )",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`scribbleId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `rawText` TEXT NOT NULL, `parsedJson` TEXT, `status` TEXT NOT NULL, `createdAt` INTEGER NOT NULL)",
         "fields": [
           {
             "fieldPath": "scribbleId",
@@ -253,11 +247,6 @@
             "notNull": true
           },
           {
-            "fieldPath": "workoutExerciseId",
-            "columnName": "workoutExerciseId",
-            "affinity": "INTEGER"
-          },
-          {
             "fieldPath": "createdAt",
             "columnName": "createdAt",
             "affinity": "INTEGER",
@@ -269,31 +258,7 @@
           "columnNames": [
             "scribbleId"
           ]
-        },
-        "indices": [
-          {
-            "name": "index_scribbles_workoutExerciseId",
-            "unique": false,
-            "columnNames": [
-              "workoutExerciseId"
-            ],
-            "orders": [],
-            "createSql": "CREATE INDEX IF NOT EXISTS `index_scribbles_workoutExerciseId` ON `${TABLE_NAME}` (`workoutExerciseId`)"
-          }
-        ],
-        "foreignKeys": [
-          {
-            "table": "workout_exercise",
-            "onDelete": "SET NULL",
-            "onUpdate": "NO ACTION",
-            "columns": [
-              "workoutExerciseId"
-            ],
-            "referencedColumns": [
-              "workoutExerciseId"
-            ]
-          }
-        ]
+        }
       },
       {
         "tableName": "system_config",
@@ -365,11 +330,85 @@
             "id"
           ]
         }
+      },
+      {
+        "tableName": "scribble_exercise",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`scribbleExerciseId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `scribbleId` INTEGER NOT NULL, `workoutExerciseId` INTEGER NOT NULL, FOREIGN KEY(`scribbleId`) REFERENCES `scribbles`(`scribbleId`) ON UPDATE NO ACTION ON DELETE CASCADE , FOREIGN KEY(`workoutExerciseId`) REFERENCES `workout_exercise`(`workoutExerciseId`) ON UPDATE NO ACTION ON DELETE CASCADE )",
+        "fields": [
+          {
+            "fieldPath": "scribbleExerciseId",
+            "columnName": "scribbleExerciseId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "scribbleId",
+            "columnName": "scribbleId",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "workoutExerciseId",
+            "columnName": "workoutExerciseId",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "scribbleExerciseId"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_scribble_exercise_scribbleId",
+            "unique": false,
+            "columnNames": [
+              "scribbleId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_scribble_exercise_scribbleId` ON `${TABLE_NAME}` (`scribbleId`)"
+          },
+          {
+            "name": "index_scribble_exercise_workoutExerciseId",
+            "unique": false,
+            "columnNames": [
+              "workoutExerciseId"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_scribble_exercise_workoutExerciseId` ON `${TABLE_NAME}` (`workoutExerciseId`)"
+          }
+        ],
+        "foreignKeys": [
+          {
+            "table": "scribbles",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "scribbleId"
+            ],
+            "referencedColumns": [
+              "scribbleId"
+            ]
+          },
+          {
+            "table": "workout_exercise",
+            "onDelete": "CASCADE",
+            "onUpdate": "NO ACTION",
+            "columns": [
+              "workoutExerciseId"
+            ],
+            "referencedColumns": [
+              "workoutExerciseId"
+            ]
+          }
+        ]
       }
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '50cd1397c8af7d9152102b523d36042f')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'dfb85d9aa483b6e4ec15319add2dbbfe')"
     ]
   }
 }

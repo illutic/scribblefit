@@ -11,6 +11,5 @@ data class Workout(
     @PrimaryKey(autoGenerate = true)
     val workoutId: Long = 0,
     val workoutDate: Long, // Unix timestamp
-    val notes: String? = null,
-    val isDraft: Boolean = false
+    val notes: String? = null
 )
