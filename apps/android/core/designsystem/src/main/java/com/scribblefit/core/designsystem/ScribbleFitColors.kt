@@ -6,17 +6,20 @@ import androidx.compose.ui.graphics.Color
 private val BackgroundColor = Color(0xFFFFFFFF)
 private val DarkBackgroundColor = Color(0xFF000000)
 
+private val RichBlackColor = Color(0xFF101010)
+private val DarkRichBlackColor = Color(0xFFFFFFFF)
+
 private val SoftGrayColor = Color(0xFFF7F7F8)
 private val DarkSoftGrayColor = Color(0xFF1A1A1A)
 
-private val RichBlackColor = Color(0xFF101010)
-private val DarkRichBlackColor = Color(0xFFFFFFFF)
+private val LightGrayColor = Color(0xFFE5E5EA)
+private val DarkLightGrayColor = Color(0xFF2C2C2E)
 
 private val MidGrayColor = Color(0xFF8E8EA0)
 private val DarkMidGrayColor = Color(0xFF8E8EA0)
 
-private val LightGrayColor = Color(0xFFE5E5EA)
-private val DarkLightGrayColor = Color(0xFF2C2C2E)
+private val StrongGrayColor = Color(0xFF636366)
+private val DarkStrongGrayColor = Color(0xFF636366)
 
 private val DangerRedColor = Color(0xFFFF3B30)
 private val DarkDangerRedColor = Color(0xFFFF453A)
@@ -38,6 +41,7 @@ data class ScribbleFitColors(
     val softGray: Color = SoftGrayColor,
     val richBlack: Color = RichBlackColor,
     val midGray: Color = MidGrayColor,
+    val strongGray: Color = StrongGrayColor,
     val lightGray: Color = LightGrayColor,
     val dangerRed: Color = DangerRedColor,
     val errorBackground: Color = ErrorBackgroundColor,
@@ -52,6 +56,7 @@ internal val darkScribbleFitColors = ScribbleFitColors(
     background = DarkBackgroundColor,
     softGray = DarkSoftGrayColor,
     richBlack = DarkRichBlackColor,
+    strongGray = DarkStrongGrayColor,
     midGray = DarkMidGrayColor,
     lightGray = DarkLightGrayColor,
     dangerRed = DarkDangerRedColor,

@@ -1,7 +1,9 @@
 package com.scribblefit.core.designsystem
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -10,9 +12,9 @@ import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.FloatingToolbarDefaults
 import androidx.compose.material3.HorizontalFloatingToolbar
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,23 +51,46 @@ private val BottomBarItem.string: String
         }
     }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-private fun AppBottomBar(
+fun BottomBarContainer(
     bottomBarState: BottomBarState,
     onClick: (Screen) -> Unit,
     modifier: Modifier = Modifier
 ) {
+    Box(modifier = modifier) {
+        if (bottomBarState.isVisible) {
+            BottomBar(
+                bottomBarState = bottomBarState,
+                onClick = onClick,
+                modifier = Modifier
+                    .animateContentSize()
+                    .align(Alignment.BottomCenter)
+            )
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3ExpressiveApi::class)
+@Composable
+private fun BottomBar(
+    bottomBarState: BottomBarState,
+    onClick: (Screen) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val colors = FloatingToolbarDefaults.vibrantFloatingToolbarColors(
+        toolbarContainerColor = ScribbleFitTheme.colors.softGray,
+    )
+
     HorizontalFloatingToolbar(
         expanded = bottomBarState.isVisible,
-        modifier = modifier.padding(ScribbleFitTheme.spacing.screenPadding)
+        colors = colors,
+        modifier = modifier
     ) {
         bottomBarState.items.forEach { item ->
             BottomBarItem(
                 item = item,
                 isSelected = item.screen == bottomBarState.selectedTab,
                 onClick = onClick,
-                modifier = Modifier.padding(horizontal = ScribbleFitTheme.spacing.medium)
             )
         }
     }
@@ -82,7 +107,7 @@ private fun BottomBarItem(
         modifier = modifier
             .clip(RoundedCornerShape(ScribbleFitTheme.shapes.large))
             .clickable(onClick = { onClick(item.screen) })
-            .padding(ScribbleFitTheme.spacing.medium),
+            .padding(horizontal = ScribbleFitTheme.spacing.medium),
         verticalArrangement = Arrangement.spacedBy(ScribbleFitTheme.spacing.small),
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
@@ -91,19 +116,14 @@ private fun BottomBarItem(
             contentDescription = item.string,
             tint = if (isSelected) ScribbleFitTheme.colors.richBlack else ScribbleFitTheme.colors.midGray
         )
-        Text(
-            text = item.string,
-            style = ScribbleFitTheme.typography.labelMedium,
-            color = if (isSelected) ScribbleFitTheme.colors.richBlack else ScribbleFitTheme.colors.midGray
-        )
     }
 }
 
 @Composable
 @PreviewLightDark
-private fun AppBottomBarPreview() {
+private fun BottomBarPreview() {
     ScribbleFitTheme {
-        AppBottomBar(
+        BottomBar(
             bottomBarState = BottomBarState(),
             onClick = {}
         )

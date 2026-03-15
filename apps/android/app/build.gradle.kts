@@ -16,7 +16,10 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = true
-            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
         }
     }
 }
@@ -38,6 +41,9 @@ dependencies {
     implementation(project(":feature:sets:domain"))
     implementation(project(":feature:scribble:data"))
     implementation(project(":feature:scribble:domain"))
+
+    implementation(project(":feature:canvas:ui"))
+    implementation(project(":feature:canvas:data"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

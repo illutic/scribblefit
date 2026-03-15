@@ -55,7 +55,8 @@ fun ScribbleFitTheme(
         }
     }
 
-    val scribbleFitColors = if (isSystemInDarkTheme) darkScribbleFitColors else lightScribbleFitColors
+    val scribbleFitColors =
+        if (isSystemInDarkTheme) darkScribbleFitColors else lightScribbleFitColors
 
     CompositionLocalProvider(
         LocalColors provides scribbleFitColors,
@@ -90,7 +91,7 @@ private val darkScribbleFitColorScheme
     @ReadOnlyComposable
     get() = darkColorScheme(
         background = ScribbleFitTheme.colors.background,
-        surface = ScribbleFitTheme.colors.background,
+        surface = ScribbleFitTheme.colors.softGray,
         onBackground = ScribbleFitTheme.colors.richBlack,
         onSurface = ScribbleFitTheme.colors.richBlack,
         primary = ScribbleFitTheme.colors.richBlack,
