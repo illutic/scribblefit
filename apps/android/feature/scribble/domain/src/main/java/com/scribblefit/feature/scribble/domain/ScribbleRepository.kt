@@ -7,10 +7,12 @@ import kotlinx.coroutines.flow.Flow
  * Repository interface for managing scribbles.
  */
 interface ScribbleRepository {
-    suspend fun saveRawScribble(text: String): Long
-    suspend fun updateScribbleWithParsedData(scribbleId: Long, parsedJson: String)
-    suspend fun markScribbleCompleted(scribbleId: Long, workoutExerciseId: Long)
-    suspend fun markScribbleFailed(scribbleId: Long)
+    suspend fun insertScribble(scribble: Scribble): Long
+    suspend fun updateScribble(scribble: Scribble)
+    suspend fun deleteScribble(scribbleId: Long)
+    suspend fun addExerciseToScribble(scribbleId: Long, workoutExerciseId: Long): Long
     fun getScribble(scribbleId: Long): Flow<Scribble>
-    fun getPendingScribbles(): Flow<List<Scribble>>
+    fun getScribbleWithExercises(scribbleId: Long): Flow<Scribble>
+    fun getPendingScribblesByDate(date: Long): Flow<List<Scribble>>
+    fun getScribblesByDate(date: Long): Flow<List<Scribble>>
 }

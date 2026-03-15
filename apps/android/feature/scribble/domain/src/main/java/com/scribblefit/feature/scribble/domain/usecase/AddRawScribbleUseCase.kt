@@ -1,0 +1,38 @@
+package com.scribblefit.feature.scribble.domain.usecase
+
+import com.scribblefit.core.common.runCatchingWithCancellation
+import com.scribblefit.core.model.Scribble
+import com.scribblefit.core.model.ScribbleStatus
+import com.scribblefit.feature.scribble.domain.EmptyScribbleTextException
+import com.scribblefit.feature.scribble.domain.ScribbleRepository
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.withContext
+import java.time.LocalDate
+import java.time.ZoneOffset
+
+class AddRawScribbleUseCase(
+    private val scribbleRepository: ScribbleRepository,
+    private val coroutineDispatcher: CoroutineDispatcher
+) {
+    suspend operator fun invoke(newText: String): Result<Unit> =
+        runCatchingWithCancellation {
+            withContext(coroutineDispatcher) {
+                if (newText.isBlank()) throw EmptyScribbleTextException()
+
+                scribbleRepository.insertScribble(
+                    Scribble(
+                        id = 0L,
+                        rawText = newText,
+                        status = ScribbleStatus.RAW,
+                        createdAt = getCurrentDateInMillis()
+                    )
+                )
+            }
+        }
+
+    private fun getCurrentDateInMillis(): Long = LocalDate.now()
+        .atStartOfDay(ZoneOffset.UTC)
+        .toInstant()
+        .toEpochMilli()
+}
+

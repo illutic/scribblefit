@@ -1,13 +1,15 @@
 package com.scribblefit.feature.scribble.data
 
 import com.scribblefit.core.database.dao.ScribbleDao
-import com.scribblefit.core.database.entity.scribble.ScribbleEntity
+import com.scribblefit.core.database.dao.ScribbleTrackerDao
+import com.scribblefit.core.database.entity.scribble.ScribbleExercise
 import com.scribblefit.core.database.entity.scribble.ScribbleStatus
+import com.scribblefit.core.database.mapper.toDomain
+import com.scribblefit.core.database.mapper.toEntity
 import com.scribblefit.core.model.Scribble
 import com.scribblefit.feature.scribble.domain.ScribbleRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
@@ -17,44 +19,31 @@ import kotlinx.coroutines.withContext
  */
 internal class ScribbleRepositoryImpl(
     private val scribbleDao: ScribbleDao,
+    private val scribbleTrackerDao: ScribbleTrackerDao,
     private val coroutineDispatcher: CoroutineDispatcher
 ) : ScribbleRepository {
+    override suspend fun insertScribble(scribble: Scribble): Long =
+        withContext(coroutineDispatcher) {
+            scribbleDao.insertScribble(scribble.toEntity())
+        }
 
-    override suspend fun saveRawScribble(text: String): Long = withContext(coroutineDispatcher) {
-        val entity = ScribbleEntity(
-            rawText = text,
-            status = ScribbleStatus.RAW.name
-        )
-        scribbleDao.insertScribble(entity)
+    override suspend fun updateScribble(scribble: Scribble) = withContext(coroutineDispatcher) {
+        scribbleDao.updateScribble(scribble.toEntity())
     }
 
-    override suspend fun updateScribbleWithParsedData(scribbleId: Long, parsedJson: String) =
-        withContext(coroutineDispatcher) {
-            val existing = scribbleDao.getScribbleById(scribbleId).first()
-            scribbleDao.updateScribble(
-                existing.copy(
-                    parsedJson = parsedJson,
-                    status = ScribbleStatus.PARSED.name
-                )
-            )
-        }
+    override suspend fun deleteScribble(scribbleId: Long) = withContext(coroutineDispatcher) {
+        scribbleDao.deleteScribble(scribbleId)
+    }
 
-    override suspend fun markScribbleCompleted(scribbleId: Long, workoutExerciseId: Long) =
-        withContext(coroutineDispatcher) {
-            val existing = scribbleDao.getScribbleById(scribbleId).first()
-            scribbleDao.updateScribble(
-                existing.copy(
-                    status = ScribbleStatus.COMPLETED.name,
-                    workoutExerciseId = workoutExerciseId
-                )
-            )
-        }
-
-    override suspend fun markScribbleFailed(scribbleId: Long) = withContext(coroutineDispatcher) {
-        val existing = scribbleDao.getScribbleById(scribbleId).first()
-        scribbleDao.updateScribble(
-            existing.copy(status = ScribbleStatus.FAILED.name)
+    override suspend fun addExerciseToScribble(
+        scribbleId: Long,
+        workoutExerciseId: Long
+    ): Long = withContext(coroutineDispatcher) {
+        val entity = ScribbleExercise(
+            scribbleId = scribbleId,
+            workoutExerciseId = workoutExerciseId
         )
+        scribbleTrackerDao.insertScribbleExercise(entity)
     }
 
     override fun getScribble(scribbleId: Long): Flow<Scribble> =
@@ -63,9 +52,21 @@ internal class ScribbleRepositoryImpl(
             .flowOn(coroutineDispatcher)
             .map { it.toDomain() }
 
-    override fun getPendingScribbles(): Flow<List<Scribble>> =
+    override fun getScribbleWithExercises(scribbleId: Long): Flow<Scribble> =
+        scribbleTrackerDao
+            .getScribbleWithExercises(scribbleId)
+            .flowOn(coroutineDispatcher)
+            .map { it.toDomain() }
+
+    override fun getPendingScribblesByDate(date: Long): Flow<List<Scribble>> =
         scribbleDao
-            .getScribblesByStatus(ScribbleStatus.RAW.name)
+            .getScribblesByStatusAndDate(ScribbleStatus.RAW.name, date)
+            .flowOn(coroutineDispatcher)
+            .map { list -> list.map { it.toDomain() } }
+
+    override fun getScribblesByDate(date: Long): Flow<List<Scribble>> =
+        scribbleDao
+            .getAllScribblesByDate(date)
             .flowOn(coroutineDispatcher)
             .map { list -> list.map { it.toDomain() } }
 }

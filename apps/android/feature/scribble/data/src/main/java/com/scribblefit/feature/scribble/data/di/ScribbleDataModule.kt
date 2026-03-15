@@ -2,6 +2,7 @@ package com.scribblefit.feature.scribble.data.di
 
 import com.scribblefit.core.coroutines.CoroutineDispatcherProvider
 import com.scribblefit.core.database.dao.ScribbleDao
+import com.scribblefit.core.database.dao.ScribbleTrackerDao
 import com.scribblefit.feature.scribble.data.ScribbleRepositoryImpl
 import com.scribblefit.feature.scribble.domain.ScribbleRepository
 import dagger.Binds
@@ -22,9 +23,11 @@ internal object ScribbleDataModule {
     @Singleton
     fun provideScribbleRepository(
         scribbleDao: ScribbleDao,
+        scribbleTrackerDao: ScribbleTrackerDao,
         coroutineDispatcherProvider: CoroutineDispatcherProvider
     ): ScribbleRepository = ScribbleRepositoryImpl(
         scribbleDao = scribbleDao,
+        scribbleTrackerDao = scribbleTrackerDao,
         coroutineDispatcher = coroutineDispatcherProvider.io()
     )
 }
