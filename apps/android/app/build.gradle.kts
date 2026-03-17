@@ -41,6 +41,9 @@ dependencies {
     implementation(project(":feature:sets:domain"))
     implementation(project(":feature:scribble:data"))
     implementation(project(":feature:scribble:domain"))
+    implementation(project(":feature:insights:domain"))
+    implementation(project(":feature:insights:data"))
+    implementation(project(":feature:insights:ui"))
 
     implementation(project(":feature:canvas:ui"))
     implementation(project(":feature:canvas:data"))

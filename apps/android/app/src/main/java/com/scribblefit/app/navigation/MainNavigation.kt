@@ -7,6 +7,7 @@ import androidx.navigation3.ui.NavDisplay
 import com.scribblefit.core.navigation.NavState
 import com.scribblefit.core.navigation.Screen
 import com.scribblefit.feature.canvas.ui.CanvasRoute
+import com.scribblefit.feature.insights.ui.InsightsRoute
 
 @Composable
 fun MainNavigation(
@@ -21,7 +22,7 @@ fun MainNavigation(
             Screen.Canvas -> NavEntry(screen) { CanvasRoute() }
 
             Screen.Insights -> NavEntry(screen) {
-
+                InsightsRoute()
             }
 
             Screen.Ledger -> NavEntry(screen) {

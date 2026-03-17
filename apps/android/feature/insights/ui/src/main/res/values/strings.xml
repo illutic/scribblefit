@@ -1,0 +1,10 @@
+<resources>
+    <string name="insights_title">Insights</string>
+    <string name="insights_empty_title">No insights yet</string>
+    <string name="insights_empty_description">Record at least two workouts to see your progress trends.</string>
+    <string name="insights_loading">Calculating statistics...</string>
+    <string name="insights_total_workouts">Total Workouts</string>
+    <string name="insights_workouts_per_week">Workouts per Week</string>
+    <string name="insights_volume_chart_title">Training Volume</string>
+    <string name="insights_muscle_distribution_title">Muscle Group Distribution</string>
+</resources>
