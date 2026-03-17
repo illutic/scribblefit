@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="canvas_app_name">ScribbleFit</string>
+    <string name="canvas_empty_scribble_text">Start scribbling.\n Type your first set below.</string>
+    <string name="canvas_textfield_placeholder">What did you lift today?</string>
+    <string name="canvas_error_unknown">An unknown error occurred.</string>
+    <string name="canvas_send_workout">Send workout</string>
+    <string name="canvas_workout_input_field">Workout input field</string>
+    <string name="canvas_workout_input_hint">Type your workout shorthand here to log it.</string>
+    <string name="canvas_input_enabled">Enabled</string>
+    <string name="canvas_input_disabled">Disabled</string>
+    <string name="canvas_status_pending">Pending</string>
+    <string name="canvas_status_parsing">Parsing</string>
+    <string name="canvas_status_completed">Completed</string>
+    <string name="canvas_status_failed">Failed</string>
+    <string name="canvas_dialog_title">Confirm Workout</string>
+    <string name="canvas_dialog_confirm">Confirm</string>
+    <string name="canvas_dialog_delete">Delete</string>
+    <string name="canvas_dialog_edit">Edit</string>
+    <string name="canvas_weight_unit_kg">kg</string>
+    <string name="canvas_profile_button">Profile</string>
+    <string name="canvas_previous_day">Previous Day</string>
+    <string name="canvas_next_day">Next Day</string>
+</resources>

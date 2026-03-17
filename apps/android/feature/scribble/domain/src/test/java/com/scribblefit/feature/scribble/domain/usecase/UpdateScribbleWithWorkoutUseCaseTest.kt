@@ -49,7 +49,7 @@ class UpdateScribbleWithWorkoutUseCaseTest {
                 id = scribbleId,
                 rawText = "raw text",
                 parsedJson = null,
-                status = ScribbleStatus.RAW,
+                status = ScribbleStatus.PENDING,
                 createdAt = 123456789L,
                 exercises = emptyList()
             )
@@ -73,7 +73,7 @@ class UpdateScribbleWithWorkoutUseCaseTest {
                 scribbleRepository.addExerciseToScribble(scribbleId, exerciseId1)
                 scribbleRepository.addExerciseToScribble(scribbleId, exerciseId2)
                 scribbleRepository.updateScribble(match {
-                    it.id == scribbleId && it.status == ScribbleStatus.PARSED
+                    it.id == scribbleId && it.status == ScribbleStatus.SUCCESS
                 })
             }
         }

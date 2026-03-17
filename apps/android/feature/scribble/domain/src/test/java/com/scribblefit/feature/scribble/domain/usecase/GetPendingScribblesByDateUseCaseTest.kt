@@ -30,7 +30,7 @@ class GetPendingScribblesByDateUseCaseTest {
                 id = 1L,
                 rawText = "text",
                 parsedJson = null,
-                status = ScribbleStatus.RAW,
+                status = ScribbleStatus.PENDING,
                 createdAt = expectedMillis,
                 exercises = emptyList()
             )

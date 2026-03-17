@@ -18,14 +18,14 @@ class UpdateScribbleAsPendingUseCase(
             val scribble = scribbleRepository.getScribble(id).firstOrNull()
                 ?: throw ScribbleNotFoundException(id)
 
-            updateScribbleStatusToPending(scribble)
+            updateScribbleStatusToParsing(scribble)
         }
     }
 
-    private suspend fun updateScribbleStatusToPending(scribble: Scribble) {
+    private suspend fun updateScribbleStatusToParsing(scribble: Scribble) {
         scribbleRepository.updateScribble(
             scribble.copy(
-                status = ScribbleStatus.IN_PROGRESS
+                status = ScribbleStatus.PARSING
             )
         )
     }

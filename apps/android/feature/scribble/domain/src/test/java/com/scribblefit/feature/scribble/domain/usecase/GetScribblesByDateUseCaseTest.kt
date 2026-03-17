@@ -38,7 +38,7 @@ class GetScribblesByDateUseCaseTest {
         every { scribbleRepository.getScribblesByDate(expectedMillis) } returns flowOf(scribbles)
 
         // When & Then
-        useCase(date).test {
+        useCase(flowOf(date)).test {
             assertEquals(scribbles, awaitItem())
             awaitComplete()
         }

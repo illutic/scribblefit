@@ -23,7 +23,7 @@ class AddRawScribbleUseCase(
                     Scribble(
                         id = 0L,
                         rawText = newText,
-                        status = ScribbleStatus.RAW,
+                        status = ScribbleStatus.PENDING,
                         createdAt = getCurrentDateInMillis(date)
                     )
                 )

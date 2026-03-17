@@ -60,7 +60,7 @@ internal class ScribbleRepositoryImpl(
 
     override fun getPendingScribblesByDate(date: Long): Flow<List<Scribble>> =
         scribbleDao
-            .getScribblesByStatusAndDate(ScribbleStatus.RAW.name, date)
+            .getScribblesByStatusAndDate(ScribbleStatus.PENDING.name, date)
             .flowOn(coroutineDispatcher)
             .map { list -> list.map { it.toDomain() } }
 

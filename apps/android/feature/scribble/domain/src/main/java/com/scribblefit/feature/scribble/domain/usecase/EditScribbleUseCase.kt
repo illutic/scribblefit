@@ -24,7 +24,7 @@ class EditScribbleUseCase(
                 scribbleRepository.updateScribble(
                     existing.copy(
                         rawText = newText,
-                        status = ScribbleStatus.RAW
+                        status = ScribbleStatus.PENDING
                     )
                 )
             }

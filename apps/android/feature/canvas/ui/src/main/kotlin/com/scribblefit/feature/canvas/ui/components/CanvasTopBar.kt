@@ -7,9 +7,11 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.scribblefit.core.designsystem.ScribbleFitTheme
 import com.scribblefit.core.designsystem.TopBar
+import com.scribblefit.feature.canvas.ui.R
 
 @Composable
 internal fun CanvasTopBar(
@@ -41,7 +43,7 @@ private fun ProfileIconButton(
     ) {
         Icon(
             imageVector = Icons.Rounded.Person,
-            contentDescription = "Profile"
+            contentDescription = stringResource(R.string.canvas_profile_button)
         )
     }
 }

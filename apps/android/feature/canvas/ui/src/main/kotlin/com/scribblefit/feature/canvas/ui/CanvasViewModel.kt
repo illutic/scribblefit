@@ -92,12 +92,19 @@ class CanvasViewModel @Inject constructor(
     }
 
     private fun addScribble(text: String) {
-        if (text.isBlank()) return
-
         viewModelScope.launch {
-            _state.update { it.copy(currentScribbleText = "") }
+            val editingId = _state.value.editingScribbleId
+            _state.update { it.copy(currentScribbleText = "", editingScribbleId = null) }
 
-            addRawScribbleUseCase(text, _state.value.currentDate)
+            val result = if (editingId != null) {
+                editScribbleUseCase(editingId, text)
+            } else {
+                addRawScribbleUseCase(text, _state.value.currentDate)
+            }
+
+            result.onFailure { e ->
+                _state.update { it.copy(error = e) }
+            }
         }
     }
 
@@ -105,7 +112,7 @@ class CanvasViewModel @Inject constructor(
         viewModelScope.launch {
             when (scribble.status) {
                 ScribbleStatus.FAILED -> parsePendingScribblesUseCase(_state.value.currentDate)
-                ScribbleStatus.COMPLETED -> _state.update { it.copy(selectedScribble = scribble) }
+                ScribbleStatus.SUCCESS -> _state.update { it.copy(selectedScribble = scribble) }
                 else -> {}
             }
         }
@@ -114,12 +121,14 @@ class CanvasViewModel @Inject constructor(
     private fun completeScribble(scribble: Scribble) {
         viewModelScope.launch {
             updateScribbleAsCompleteUseCase(scribble.id)
+            dismissScribbleDialog()
         }
     }
 
     private fun deleteScribble(scribble: Scribble) {
         viewModelScope.launch {
             removeScribbleUseCase(scribble.id)
+            dismissScribbleDialog()
         }
     }
 
@@ -128,8 +137,12 @@ class CanvasViewModel @Inject constructor(
     }
 
     private fun editScribble(scribble: Scribble) {
-        viewModelScope.launch {
-            editScribbleUseCase(scribble.id, _state.value.currentScribbleText)
+        _state.update {
+            it.copy(
+                currentScribbleText = scribble.rawText,
+                editingScribbleId = scribble.id,
+                selectedScribble = null
+            )
         }
     }
 }

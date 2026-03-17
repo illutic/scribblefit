@@ -22,7 +22,7 @@ class UpdateScribbleWithWorkoutUseCase(
             withContext(coroutineDispatcher) {
                 val workoutId = insertWorkoutUseCase(workout).getOrThrow()
                 insertExercisesToScribble(id, workoutId)
-                updateScribbleStatusToParsed(id)
+                updateScribbleStatusToSuccess(id)
             }
         }
 
@@ -34,12 +34,12 @@ class UpdateScribbleWithWorkoutUseCase(
         }
     }
 
-    private suspend fun updateScribbleStatusToParsed(scribbleId: Long) {
+    private suspend fun updateScribbleStatusToSuccess(scribbleId: Long) {
         val scribble = scribbleRepository.getScribble(scribbleId).firstOrNull()
             ?: throw ScribbleNotFoundException(scribbleId)
         scribbleRepository.updateScribble(
             scribble.copy(
-                status = ScribbleStatus.PARSED
+                status = ScribbleStatus.SUCCESS
             )
         )
     }

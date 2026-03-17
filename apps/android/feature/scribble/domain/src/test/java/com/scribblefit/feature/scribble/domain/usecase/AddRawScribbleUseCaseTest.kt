@@ -31,7 +31,7 @@ class AddRawScribbleUseCaseTest {
         assertTrue(result.isSuccess)
         coVerify(exactly = 1) {
             scribbleRepository.insertScribble(match {
-                it.rawText == text && it.status == ScribbleStatus.RAW
+                it.rawText == text && it.status == ScribbleStatus.PENDING
             })
         }
     }

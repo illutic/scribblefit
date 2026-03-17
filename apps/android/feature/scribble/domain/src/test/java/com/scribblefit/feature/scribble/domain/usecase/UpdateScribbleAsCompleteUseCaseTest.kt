@@ -37,7 +37,7 @@ class UpdateScribbleAsCompleteUseCaseTest {
             id = scribbleId,
             rawText = "raw text",
             parsedJson = null,
-            status = ScribbleStatus.PARSED,
+            status = ScribbleStatus.SUCCESS,
             createdAt = 123456789L,
             exercises = listOf(exercise1, exercise2)
         )

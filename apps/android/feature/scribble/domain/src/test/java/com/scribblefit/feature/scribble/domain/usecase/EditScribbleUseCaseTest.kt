@@ -31,7 +31,7 @@ class EditScribbleUseCaseTest {
             id = scribbleId,
             rawText = oldText,
             parsedJson = null,
-            status = ScribbleStatus.RAW,
+            status = ScribbleStatus.PENDING,
             createdAt = 123456789L,
             exercises = emptyList()
         )
@@ -46,7 +46,7 @@ class EditScribbleUseCaseTest {
         assertTrue(result.isSuccess)
         coVerify(exactly = 1) {
             scribbleRepository.updateScribble(match {
-                it.id == scribbleId && it.rawText == newText && it.status == ScribbleStatus.RAW
+                it.id == scribbleId && it.rawText == newText && it.status == ScribbleStatus.PENDING
             })
         }
     }
@@ -74,7 +74,7 @@ class EditScribbleUseCaseTest {
             id = scribbleId,
             rawText = "Old text",
             parsedJson = null,
-            status = ScribbleStatus.RAW,
+            status = ScribbleStatus.PENDING,
             createdAt = 123456789L,
             exercises = emptyList()
         )

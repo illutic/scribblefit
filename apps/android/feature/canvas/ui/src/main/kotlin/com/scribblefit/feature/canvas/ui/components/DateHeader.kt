@@ -14,8 +14,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import com.scribblefit.core.designsystem.ScribbleFitTheme
+import com.scribblefit.feature.canvas.ui.R
 
 @Composable
 internal fun DateHeader(
@@ -62,7 +64,7 @@ private fun PreviousDayButton(
     ) {
         Icon(
             imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowLeft,
-            contentDescription = "Previous Day",
+            contentDescription = stringResource(R.string.canvas_previous_day),
         )
     }
 }
@@ -87,7 +89,7 @@ private fun NextDayButton(
     ) {
         Icon(
             imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
-            contentDescription = "Next Day"
+            contentDescription = stringResource(R.string.canvas_next_day)
         )
     }
 }

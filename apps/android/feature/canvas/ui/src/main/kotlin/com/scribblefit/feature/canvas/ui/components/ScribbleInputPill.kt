@@ -22,6 +22,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.stateDescription
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -29,18 +35,25 @@ import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.scribblefit.core.designsystem.ScribbleFitTheme
+import com.scribblefit.feature.canvas.ui.R
 
 @Composable
-internal fun ScribbleTextInput(
+internal fun ScribbleInputPill(
     value: String,
     onValueChange: (String) -> Unit,
     onSendClick: () -> Unit,
     isLoading: Boolean,
     modifier: Modifier = Modifier,
-    placeholder: String = "What did you lift today?",
+    placeholder: String = stringResource(R.string.canvas_textfield_placeholder),
 ) {
     val colors = ScribbleFitTheme.colors
     val spacing = ScribbleFitTheme.spacing
+    val haptic = LocalHapticFeedback.current
+
+    val isSendEnabled = value.isNotBlank() && !isLoading
+    val workoutInputFieldLabel = stringResource(R.string.canvas_workout_input_field)
+    val inputEnabledLabel = stringResource(R.string.canvas_input_enabled)
+    val inputDisabledLabel = stringResource(R.string.canvas_input_disabled)
 
     Box(
         modifier = modifier
@@ -61,7 +74,10 @@ internal fun ScribbleTextInput(
                 onValueChange = onValueChange,
                 modifier = Modifier
                     .weight(1f)
-                    .padding(start = 18.dp),
+                    .padding(start = 18.dp)
+                    .semantics {
+                        contentDescription = workoutInputFieldLabel
+                    },
                 textStyle = TextStyle(
                     color = colors.richBlack,
                     fontSize = 15.sp,
@@ -74,7 +90,8 @@ internal fun ScribbleTextInput(
                 ),
                 keyboardActions = KeyboardActions(
                     onSend = {
-                        if (value.isNotBlank() && !isLoading) {
+                        if (isSendEnabled) {
+                            haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                             onSendClick()
                         }
                     }
@@ -96,20 +113,24 @@ internal fun ScribbleTextInput(
                 }
             )
 
-            val isSendEnabled = value.isNotBlank() && !isLoading
-
             IconButton(
-                onClick = onSendClick,
+                onClick = {
+                    haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                    onSendClick()
+                },
                 enabled = isSendEnabled,
                 modifier = Modifier
                     .padding(end = 10.dp)
                     .size(32.dp)
                     .clip(CircleShape)
                     .background(colors.softGray)
+                    .semantics {
+                        stateDescription = if (isSendEnabled) inputEnabledLabel else inputDisabledLabel
+                    }
             ) {
                 Icon(
                     imageVector = Icons.Rounded.KeyboardArrowUp,
-                    contentDescription = "Send workout",
+                    contentDescription = stringResource(R.string.canvas_send_workout),
                     tint = colors.richBlack,
                     modifier = Modifier
                         .size(20.dp)
@@ -122,10 +143,10 @@ internal fun ScribbleTextInput(
 
 @Composable
 @PreviewLightDark
-private fun ScribbleTextInputPreview() {
+private fun ScribbleInputPillPreview() {
     ScribbleFitTheme {
         Box(modifier = Modifier.background(ScribbleFitTheme.colors.background)) {
-            ScribbleTextInput(
+            ScribbleInputPill(
                 value = "",
                 onValueChange = {},
                 onSendClick = {},
@@ -137,10 +158,10 @@ private fun ScribbleTextInputPreview() {
 
 @Composable
 @PreviewLightDark
-private fun ScribbleTextInputActivePreview() {
+private fun ScribbleInputPillActivePreview() {
     ScribbleFitTheme {
         Box(modifier = Modifier.background(ScribbleFitTheme.colors.background)) {
-            ScribbleTextInput(
+            ScribbleInputPill(
                 value = "Bench 135x5x3",
                 onValueChange = {},
                 onSendClick = {},

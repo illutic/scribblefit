@@ -16,6 +16,11 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Text
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.style.TextAlign
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.scribblefit.core.designsystem.BottomBarContainer
@@ -25,7 +30,10 @@ import com.scribblefit.core.navigation.Screen
 import com.scribblefit.feature.canvas.ui.components.CanvasTopBar
 import com.scribblefit.feature.canvas.ui.components.DateHeader
 import com.scribblefit.feature.canvas.ui.components.Scribble
-import com.scribblefit.feature.canvas.ui.components.ScribbleTextInput
+import com.scribblefit.feature.canvas.ui.components.ScribbleBottomSheet
+import com.scribblefit.feature.canvas.ui.components.ScribbleInputPill
+
+import androidx.compose.material3.ExperimentalMaterial3Api
 
 @Composable
 fun CanvasRoute() {
@@ -38,11 +46,22 @@ fun CanvasRoute() {
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun CanvasScreen(
     state: CanvasState,
     onIntent: (CanvasIntent) -> Unit
 ) {
+    if (state.selectedScribble != null) {
+        ScribbleBottomSheet(
+            scribble = state.selectedScribble,
+            onConfirm = { onIntent(CanvasIntent.ConfirmScribble(state.selectedScribble)) },
+            onDismiss = { onIntent(CanvasIntent.DismissScribbleDialog) },
+            onDelete = { onIntent(CanvasIntent.DeleteScribble(state.selectedScribble)) },
+            onEdit = { onIntent(CanvasIntent.UpdateScribble(state.selectedScribble)) }
+        )
+    }
+
     Scaffold(
         topBar = {
             Column {
@@ -63,7 +82,7 @@ private fun CanvasScreen(
         },
         bottomBar = {
             Column {
-                ScribbleTextInput(
+                ScribbleInputPill(
                     value = state.currentScribbleText,
                     placeholder = state.textfieldPlaceholder,
                     onValueChange = { text -> onIntent(CanvasIntent.UpdateScribbleText(text)) },
@@ -84,18 +103,34 @@ private fun CanvasScreen(
         containerColor = ScribbleFitTheme.colors.background,
         contentColor = ScribbleFitTheme.colors.richBlack
     ) { padding ->
-        LazyColumn(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding),
-            contentPadding = PaddingValues(ScribbleFitTheme.spacing.medium),
-            verticalArrangement = Arrangement.spacedBy(ScribbleFitTheme.spacing.medium)
-        ) {
-            items(state.scribbles) { scribble ->
-                Scribble(
-                    scribble = scribble,
-                    onClick = { onIntent(CanvasIntent.ClickOnScribble(scribble)) }
+        if (state.scribbles.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = state.emptyScribbleText,
+                    style = ScribbleFitTheme.typography.bodyLarge,
+                    color = ScribbleFitTheme.colors.midGray,
+                    textAlign = TextAlign.Center
                 )
+            }
+        } else {
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(padding),
+                contentPadding = PaddingValues(ScribbleFitTheme.spacing.medium),
+                verticalArrangement = Arrangement.spacedBy(ScribbleFitTheme.spacing.medium)
+            ) {
+                items(state.scribbles) { scribble ->
+                    Scribble(
+                        scribble = scribble,
+                        onClick = { onIntent(CanvasIntent.ClickOnScribble(scribble)) }
+                    )
+                }
             }
         }
     }

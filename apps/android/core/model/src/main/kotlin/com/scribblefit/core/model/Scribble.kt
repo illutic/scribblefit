@@ -13,9 +13,9 @@ data class Scribble(
 )
 
 enum class ScribbleStatus {
-    RAW,
-    IN_PROGRESS,
-    PARSED,
-    COMPLETED,
-    FAILED
+    PENDING,
+    PARSING,
+    SUCCESS,
+    FAILED,
+    COMPLETED
 }

@@ -6,30 +6,24 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.Icon
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
@@ -38,21 +32,20 @@ import com.scribblefit.core.model.Exercise
 import com.scribblefit.core.model.Scribble
 import com.scribblefit.core.model.ScribbleStatus
 import com.scribblefit.core.model.Set
-
-// TODO - replace hardcoded strings with actual strings from resources
+import com.scribblefit.feature.canvas.ui.R
 
 @Composable
-fun Scribble(
+internal fun Scribble(
     scribble: Scribble,
-    onClick: () -> Unit,
+    onClick: (Scribble) -> Unit,
     modifier: Modifier = Modifier
 ) {
     when (scribble.status) {
-        ScribbleStatus.RAW -> PendingScribble(scribble, modifier)
-        ScribbleStatus.IN_PROGRESS -> InProgressScribble(scribble, modifier)
-        ScribbleStatus.PARSED -> ParsedScribble(scribble, onClick, modifier)
-        ScribbleStatus.COMPLETED -> CompletedScribble(scribble, onClick, modifier)
-        ScribbleStatus.FAILED -> FailedScribble(scribble, modifier)
+        ScribbleStatus.PENDING -> PendingScribble(scribble, modifier)
+        ScribbleStatus.PARSING -> ParsingScribble(scribble, modifier)
+        ScribbleStatus.SUCCESS -> SuccessScribble(scribble, { onClick(scribble) }, modifier)
+        ScribbleStatus.COMPLETED -> CompletedScribble(scribble, modifier)
+        ScribbleStatus.FAILED -> FailedScribble(scribble, { onClick(scribble) }, modifier)
     }
 }
 
@@ -74,7 +67,7 @@ private fun PendingScribble(
                 modifier = Modifier.weight(1f)
             )
             Text(
-                text = "Pending",
+                text = stringResource(R.string.canvas_status_pending),
                 style = ScribbleFitTheme.typography.labelSmall,
                 color = ScribbleFitTheme.colors.strongGray
             )
@@ -84,7 +77,7 @@ private fun PendingScribble(
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-private fun InProgressScribble(
+private fun ParsingScribble(
     scribble: Scribble,
     modifier: Modifier = Modifier
 ) {
@@ -103,7 +96,7 @@ private fun InProgressScribble(
             )
 
             CircularProgressIndicator(
-                modifier = Modifier.size(ScribbleFitTheme.shapes.large),
+                modifier = Modifier.size(ScribbleFitTheme.spacing.large),
                 color = ScribbleFitTheme.colors.richBlack,
             )
         }
@@ -111,7 +104,7 @@ private fun InProgressScribble(
 }
 
 @Composable
-private fun ParsedScribble(
+private fun SuccessScribble(
     scribble: Scribble,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -127,16 +120,15 @@ private fun ParsedScribble(
 @Composable
 private fun CompletedScribble(
     scribble: Scribble,
-    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     ScribbleCard(
-        modifier = modifier.clickable { onClick() },
+        modifier = modifier,
         border = BorderStroke(1.dp, ScribbleFitTheme.colors.successGreen.copy(alpha = 0.3f))
     ) {
         Box {
             Badge(
-                text = "Completed",
+                text = stringResource(R.string.canvas_status_completed),
                 backgroundColor = ScribbleFitTheme.colors.successGreen.copy(alpha = 0.2f),
                 contentColor = ScribbleFitTheme.colors.successGreen,
                 modifier = Modifier.align(Alignment.TopEnd)
@@ -150,40 +142,32 @@ private fun CompletedScribble(
 @Composable
 private fun FailedScribble(
     scribble: Scribble,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     ScribbleCard(
-        modifier = modifier,
-        border = BorderStroke(1.dp, ScribbleFitTheme.colors.dangerRed.copy(alpha = 0.5f))
+        modifier = modifier.clickable { onClick() },
+        border = BorderStroke(1.dp, ScribbleFitTheme.colors.dangerRed.copy(alpha = 0.3f))
     ) {
         Row(
             modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Icon(
-                imageVector = Icons.Default.Warning,
-                contentDescription = "Failed",
-                tint = ScribbleFitTheme.colors.dangerRed,
-                modifier = Modifier.size(20.dp)
+            Text(
+                text = scribble.rawText,
+                style = ScribbleFitTheme.typography.bodyLarge,
+                color = ScribbleFitTheme.colors.richBlack
             )
-            Spacer(modifier = Modifier.width(ScribbleFitTheme.spacing.medium))
-            Column {
-                Text(
-                    text = scribble.rawText,
-                    style = ScribbleFitTheme.typography.bodyLarge,
-                    color = ScribbleFitTheme.colors.richBlack
-                )
-                Text(
-                    text = "Failed to parse. Tap to retry or edit.",
-                    style = ScribbleFitTheme.typography.labelSmall,
-                    color = ScribbleFitTheme.colors.dangerRed
-                )
-            }
+
+            Badge(
+                text = stringResource(R.string.canvas_status_failed),
+                backgroundColor = ScribbleFitTheme.colors.dangerRed.copy(alpha = 0.2f),
+                contentColor = ScribbleFitTheme.colors.dangerRed
+            )
         }
     }
 }
-
-// -- -- Common Card Layout for Scribble States -- --
 
 @Composable
 private fun ScribbleCard(
@@ -191,59 +175,37 @@ private fun ScribbleCard(
     border: BorderStroke? = null,
     content: @Composable () -> Unit
 ) {
-    Card(
+    Surface(
         modifier = modifier.fillMaxWidth(),
-        shape = RoundedCornerShape(ScribbleFitTheme.shapes.medium),
-        colors = CardDefaults.cardColors(
-            containerColor = ScribbleFitTheme.colors.background
-        ),
-        border = border ?: BorderStroke(1.dp, ScribbleFitTheme.colors.softGray),
-        elevation = CardDefaults.cardElevation(defaultElevation = 0.dp)
+        shape = RoundedCornerShape(12.dp),
+        color = ScribbleFitTheme.colors.background,
+        border = border,
+        shadowElevation = 2.dp
     ) {
-        Box(modifier = Modifier.padding(ScribbleFitTheme.spacing.medium)) {
+        Box(modifier = Modifier.padding(16.dp)) {
             content()
         }
     }
 }
 
 @Composable
-private fun ExerciseItems(
-    exercises: List<Exercise>,
-    modifier: Modifier = Modifier
-) {
-    Column(
-        modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(ScribbleFitTheme.spacing.medium),
-    ) {
+private fun ExerciseItems(exercises: List<Exercise>) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         exercises.forEach { exercise ->
-            ExerciseItem(exercise = exercise)
-        }
-    }
-}
-
-@Composable
-private fun ExerciseItem(
-    exercise: Exercise,
-    modifier: Modifier = Modifier,
-) {
-    Column(modifier = modifier) {
-        Text(
-            text = exercise.canonicalName,
-            style = ScribbleFitTheme.typography.titleMedium,
-            color = ScribbleFitTheme.colors.richBlack,
-            fontWeight = FontWeight.SemiBold
-        )
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        FlowRow {
-            exercise.sets.forEach { set ->
+            Column {
                 Text(
-                    text = "${set.setNumber} • ${set.weight}kg x ${set.reps}${if (set.rpe != null) " @ RPE ${set.rpe}" else ""}",
-                    style = ScribbleFitTheme.typography.bodyMedium,
-                    color = ScribbleFitTheme.colors.strongGray,
-                    modifier = Modifier.padding(end = ScribbleFitTheme.spacing.medium)
+                    text = exercise.canonicalName,
+                    style = ScribbleFitTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = ScribbleFitTheme.colors.richBlack
                 )
+                exercise.sets.forEach { set ->
+                    Text(
+                        text = "${set.setNumber}. ${set.weight}kg x ${set.reps}",
+                        style = ScribbleFitTheme.typography.bodyMedium,
+                        color = ScribbleFitTheme.colors.strongGray
+                    )
+                }
             }
         }
     }
@@ -277,21 +239,21 @@ private fun ScribblePreview() {
         Scribble(
             id = 1,
             rawText = "Bench Press 3x10 @ 70kg",
-            status = ScribbleStatus.RAW,
+            status = ScribbleStatus.PENDING,
             exercises = emptyList(),
             createdAt = System.currentTimeMillis()
         ),
         Scribble(
             id = 2,
             rawText = "Squat 4x8 @ 80kg",
-            status = ScribbleStatus.IN_PROGRESS,
+            status = ScribbleStatus.PARSING,
             exercises = emptyList(),
             createdAt = System.currentTimeMillis()
         ),
         Scribble(
             id = 3,
             rawText = "Deadlift 5x5 @ 100kg",
-            status = ScribbleStatus.PARSED,
+            status = ScribbleStatus.SUCCESS,
             createdAt = System.currentTimeMillis(),
             exercises = listOf(
                 Exercise(
@@ -306,90 +268,11 @@ private fun ScribblePreview() {
                             reps = 5,
                             rpe = null,
                             notes = null
-                        ),
-                        Set(
-                            id = 2,
-                            setNumber = 2,
-                            weight = 100f,
-                            reps = 5,
-                            rpe = null,
-                            notes = null
-                        ),
-                        Set(
-                            id = 3,
-                            setNumber = 3,
-                            weight = 100f,
-                            reps = 5,
-                            rpe = null,
-                            notes = null
-                        ),
-                        Set(
-                            id = 4,
-                            setNumber = 4,
-                            weight = 100f,
-                            reps = 5,
-                            rpe = null,
-                            notes = null
-                        ),
-                        Set(
-                            id = 5,
-                            setNumber = 5,
-                            weight = 100f,
-                            reps = 5,
-                            rpe = null,
-                            notes = null
                         )
                     ),
                     isDraft = false,
                 )
             )
-        ),
-        Scribble(
-            id = 4,
-            rawText = "Overhead Press 3x12 @ 40kg",
-            status = ScribbleStatus.COMPLETED,
-            createdAt = System.currentTimeMillis(),
-            exercises = listOf(
-                Exercise(
-                    id = 2,
-                    canonicalName = "Overhead Press",
-                    muscleGroup = "Shoulders",
-                    sets = listOf(
-                        Set(
-                            id = 6,
-                            setNumber = 1,
-                            weight = 40f,
-                            reps = 12,
-                            rpe = null,
-                            notes = null
-                        ),
-                        Set(
-                            id = 7,
-                            setNumber = 2,
-                            weight = 40f,
-                            reps = 12,
-                            rpe = null,
-                            notes = null
-                        ),
-                        Set(
-                            id = 8,
-                            setNumber = 3,
-                            weight = 40f,
-                            reps = 12,
-                            rpe = null,
-                            notes = null
-                        )
-                    ),
-                    isDraft = false,
-                )
-            )
-        ),
-        Scribble(
-            id = 5,
-            rawText = "Pull-ups 4xFailure",
-            status = ScribbleStatus.FAILED,
-            exercises = emptyList(),
-            createdAt = System.currentTimeMillis()
         )
     )
     ScribbleFitTheme {

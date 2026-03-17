@@ -1,27 +1,26 @@
 # ScribbleFit Core Guidelines (iOS)
 
-## 1. Architectural Pattern: MVI (Model-View-Intent)
-- **Store/ViewModel:** Autonomous `@Observable` classes (no base inheritance).
-- **State:** Immutable `struct`. String resolution MUST happen here via computed properties.
-- **Intent:** `enum` for user actions.
-- **Business Logic:** Zero logic in Store; all logic resides in Use Cases (SRP).
+## 1. Architectural Pattern: Pure SwiftUI MVI (Model-View-Intent)
+- **No UIKit:** Specifications MUST design UI solely for native SwiftUI.
+- **Store/ViewModel:** Autonomous `@Observable` @MainActor classes.
+- **Dynamic Theming:** All specifications MUST define light and dark mode mappings that maintain parity with the Android design system.
+- **Modern Native Parity:** Balance Android parity with iOS-native aesthetics. For iOS 26+, utilize `.glassEffect(.regular.interactive())` for inputs and buttons.
 
-## 2. Domain & Data Layers (SOLID)
-- **Repository Protocol:** Defined in `Domain` (Dependency Inversion).
-- **Implementation:** Defined in `Data` (Protocol based).
-- **Use Cases:** The only place for business logic. Single responsibility.
-- **Mappers:** Extensions or pure functions to isolate database models from domain logic.
+## 2. Domain & Data Layers (Reactive & SOLID)
+- **Swift 6 Concurrency:** Enforce `Sendable` domain models, `Sendable` theme structures, and `@MainActor` stores.
+- **Reactive Contracts:** Any repository method returning a stream MUST be reactive, ensuring data changes trigger immediate UI updates.
+- **Implementation:** Mandate `SwiftData` from the start.
 
 ## 3. UI & Design System (DRY)
-- **Design System:** Use `CoreDesignSystem` tokens (colors, spacing, typography).
-- **Composable Structure:** Small, single-responsibility Views in `Components/`.
-- **Resources:** All strings must come from `Localizable.xcstrings`. No hardcoded text.
+- **Design System:** Pure SwiftUI `Color` extensions only.
+- **Centralized Theming:** Use a `ThemeProvider` to inject dynamic brand colors into the environment.
+- **Native Materials:** Use `.glassEffect()` for overlays to ensure a high-fidelity, OS-native feel.
+- **Custom Shapes:** Use `UnevenRoundedRectangle`.
 
 ## 4. Modularity & Infrastructure
-- **Feature Modules:** Independent SPM targets (`Domain`, `Data`, `UI`).
-- **Core Modules:** Shared targets (`CoreDatabase`, `CoreNetwork`).
-- **Dependency Injection:** Container-based or constructor injection (DIP).
-- **Concurrency:** `Task` priorities (Domain logic) and `async/await` (I/O).
+- **Feature Modules:** Independent SPM targets.
+- **Target Versions:** Target iOS 26.0+ to support modern native design modifiers.
+- **No Mocks in Production:** Specs must guide the implementation to configure real dependencies in the `App.swift` entry point immediately.
 
 ## 5. Navigation
 - **Custom Navigator:** Centralized logic in `CoreNavigation`. No side effects.

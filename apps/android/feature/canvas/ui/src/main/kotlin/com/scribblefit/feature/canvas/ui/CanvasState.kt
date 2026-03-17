@@ -8,6 +8,8 @@ import com.scribblefit.core.navigation.BottomBarState
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
+import androidx.compose.ui.res.stringResource
+
 private val dateFormatter =
     DateTimeFormatter.ofPattern("MMMM d, yyyy", Locale.current.platformLocale)
 
@@ -16,6 +18,7 @@ data class CanvasState(
     val currentDate: LocalDate = LocalDate.now(),
     val error: Throwable? = null,
     val currentScribbleText: String = "",
+    val editingScribbleId: Long? = null,
     val scribbles: List<Scribble> = emptyList(),
     val selectedScribble: Scribble? = null,
     val bottomBarState: BottomBarState = BottomBarState()
@@ -23,18 +26,16 @@ data class CanvasState(
     val isCurrentDate = currentDate == LocalDate.now()
     val dateString: String by lazy { currentDate.format(dateFormatter) }
 
-    // TODO - Add strings to resources
-
     val emptyScribbleText: String
-        @Composable @ReadOnlyComposable get() = "Start scribbling.\n Type your first set below."
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.canvas_empty_scribble_text)
 
     val errorMessage: String
         @Composable @ReadOnlyComposable get() = error?.localizedMessage
-            ?: "An unknown error occurred."
+            ?: stringResource(R.string.canvas_error_unknown)
 
     val textfieldPlaceholder: String
-        @Composable @ReadOnlyComposable get() = "What did you lift today?"
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.canvas_textfield_placeholder)
 
     val appName: String
-        @Composable @ReadOnlyComposable get() = "ScribbleFit"
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.canvas_app_name)
 }
