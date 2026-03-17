@@ -13,7 +13,7 @@ Native Android application built with Jetpack Compose, focusing on offline-first
 
 ## 📝 Development Conventions
 - **Build Logic:** Use **Gradle Convention Plugins** (located in a `build-logic` or `gradle/plugins` directory) to share build configuration across modules, ensuring a clean and maintainable build setup.
-- **Minimalism First:** Avoid third-party UI libraries. Stick to standard Jetpack Compose components styled according to the `UI_UX_SPEC.md`.
+- **Minimalism First:** Avoid third-party UI libraries. Stick to standard Jetpack Compose components.
 - **Offline-First:** No UI action should ever block on a network request. All data-changing operations must be written to the local database first.
 
 ## 🛠️ Development Guidelines
