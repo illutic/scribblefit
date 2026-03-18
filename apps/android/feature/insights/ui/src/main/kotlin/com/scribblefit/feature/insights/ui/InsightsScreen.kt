@@ -20,7 +20,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.scribblefit.core.designsystem.BottomBarContainer
 import com.scribblefit.core.designsystem.ScribbleFitTheme
 import com.scribblefit.core.designsystem.TopBar
-import com.scribblefit.core.navigation.Screen
 import com.scribblefit.feature.insights.domain.model.MuscleGroupDistribution
 
 @Composable
@@ -35,6 +34,7 @@ fun InsightsRoute(
     )
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 internal fun InsightsScreen(
     state: InsightsState,
@@ -54,7 +54,7 @@ internal fun InsightsScreen(
 
 @Composable
 private fun InsightsHeader(state: InsightsState) {
-    TopBar(title = state.getTitle())
+    TopBar(title = { Text(state.getTitle()) })
 }
 
 @Composable
@@ -70,7 +70,7 @@ private fun InsightsBody(
     ) {
         when {
             state.isLoading -> {
-                CircularProgressIndicator(color = ScribbleFitTheme.colors.primary)
+                CircularProgressIndicator(color = ScribbleFitTheme.colors.richBlack)
             }
             state.isEmpty -> {
                 Column(
@@ -80,14 +80,14 @@ private fun InsightsBody(
                 ) {
                     Text(
                         text = state.getEmptyTitle(),
-                        style = ScribbleFitTheme.typography.h6,
-                        color = ScribbleFitTheme.colors.onBackground
+                        style = ScribbleFitTheme.typography.titleLarge,
+                        color = ScribbleFitTheme.colors.richBlack
                     )
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(
                         text = state.getEmptyDescription(),
-                        style = ScribbleFitTheme.typography.body1,
-                        color = ScribbleFitTheme.colors.onBackground.copy(alpha = 0.6f),
+                        style = ScribbleFitTheme.typography.bodyLarge,
+                        color = ScribbleFitTheme.colors.midGray,
                         textAlign = TextAlign.Center
                     )
                 }
@@ -133,29 +133,29 @@ private fun FrequencySection(state: InsightsState) {
                     text = state.frequency?.totalWorkouts?.toString() ?: "0",
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
-                    color = ScribbleFitTheme.colors.primary
+                    color = ScribbleFitTheme.colors.richBlack
                 )
                 Text(
                     text = state.getTotalWorkoutsLabel(),
-                    style = ScribbleFitTheme.typography.caption
+                    style = ScribbleFitTheme.typography.labelSmall
                 )
             }
             Box(
                 modifier = Modifier
                     .height(40.dp)
                     .width(1.dp)
-                    .background(Color.LightGray)
+                    .background(ScribbleFitTheme.colors.lightGray)
             )
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     text = "%.1f".format(state.frequency?.workoutsPerWeek ?: 0f),
                     fontSize = 24.sp,
                     fontWeight = FontWeight.Bold,
-                    color = ScribbleFitTheme.colors.primary
+                    color = ScribbleFitTheme.colors.richBlack
                 )
                 Text(
                     text = state.getWorkoutsPerWeekLabel(),
-                    style = ScribbleFitTheme.typography.caption
+                    style = ScribbleFitTheme.typography.labelSmall
                 )
             }
         }
@@ -172,7 +172,7 @@ private fun VolumeSection(state: InsightsState) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
                 text = state.getVolumeChartTitle(),
-                style = ScribbleFitTheme.typography.subtitle1,
+                style = ScribbleFitTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -180,10 +180,10 @@ private fun VolumeSection(state: InsightsState) {
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(150.dp)
-                    .background(Color(0xFFF7F7F8), RoundedCornerShape(8.dp)),
+                    .background(ScribbleFitTheme.colors.softGray, RoundedCornerShape(8.dp)),
                 contentAlignment = Alignment.Center
             ) {
-                Text("Volume Chart coming soon", color = Color.Gray)
+                Text("Volume Chart coming soon", color = ScribbleFitTheme.colors.midGray)
             }
         }
     }
@@ -199,7 +199,7 @@ private fun MuscleDistributionSection(state: InsightsState) {
         Column(modifier = Modifier.padding(16.dp)) {
             Text(
                 text = state.getMuscleDistributionTitle(),
-                style = ScribbleFitTheme.typography.subtitle1,
+                style = ScribbleFitTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.height(16.dp))
@@ -218,8 +218,8 @@ private fun MuscleGroupItem(item: MuscleGroupDistribution) {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(text = item.muscleGroup, style = ScribbleFitTheme.typography.body2)
-            Text(text = "${(item.percentage * 100).toInt()}%", style = ScribbleFitTheme.typography.body2)
+            Text(text = item.muscleGroup, style = ScribbleFitTheme.typography.bodyMedium)
+            Text(text = "${(item.percentage * 100).toInt()}%", style = ScribbleFitTheme.typography.bodyMedium)
         }
         Spacer(modifier = Modifier.height(4.dp))
         Box(
@@ -227,13 +227,13 @@ private fun MuscleGroupItem(item: MuscleGroupDistribution) {
                 .fillMaxWidth()
                 .height(8.dp)
                 .clip(RoundedCornerShape(4.dp))
-                .background(Color(0xFFF0F0F0))
+                .background(ScribbleFitTheme.colors.softGray)
         ) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth(item.percentage)
                     .fillMaxHeight()
-                    .background(ScribbleFitTheme.colors.primary)
+                    .background(ScribbleFitTheme.colors.richBlack)
             )
         }
     }

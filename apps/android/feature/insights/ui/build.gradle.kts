@@ -17,6 +17,7 @@ dependencies {
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.viewmodel.compose)
+    implementation("androidx.hilt:hilt-navigation-compose:1.2.0")
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
 
