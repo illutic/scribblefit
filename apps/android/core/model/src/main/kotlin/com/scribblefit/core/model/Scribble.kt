@@ -17,5 +17,5 @@ enum class ScribbleStatus {
     PARSING,
     SUCCESS,
     FAILED,
-    COMPLETED
+    COMPLETED,
 }

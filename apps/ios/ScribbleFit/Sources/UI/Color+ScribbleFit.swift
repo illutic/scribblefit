@@ -1,43 +1,7 @@
 import SwiftUI
 
 extension Color {
-    static func scribbleFitBackground(for scheme: ColorScheme) -> Color {
-        scheme == .dark ? Color(hex: "000000") : Color(hex: "FFFFFF")
-    }
-    
-    static func scribbleFitSoftGray(for scheme: ColorScheme) -> Color {
-        scheme == .dark ? Color(hex: "1A1A1A") : Color(hex: "F7F7F8")
-    }
-    
-    static func scribbleFitRichBlack(for scheme: ColorScheme) -> Color {
-        scheme == .dark ? Color(hex: "FFFFFF") : Color(hex: "101010")
-    }
-    
-    static func scribbleFitMidGray(for scheme: ColorScheme) -> Color {
-        Color(hex: "8E8EA0") // Same for both in Android spec
-    }
-    
-    static func scribbleFitLightGray(for scheme: ColorScheme) -> Color {
-        scheme == .dark ? Color(hex: "2C2C2E") : Color(hex: "E5E5EA")
-    }
-    
-    static func scribbleFitStrongGray(for scheme: ColorScheme) -> Color {
-        Color(hex: "636366") // Same for both in Android spec
-    }
-    
-    static func scribbleFitDangerRed(for scheme: ColorScheme) -> Color {
-        scheme == .dark ? Color(hex: "FF453A") : Color(hex: "FF3B30")
-    }
-    
-    static func scribbleFitSuccessGreen(for scheme: ColorScheme) -> Color {
-        scheme == .dark ? Color(hex: "30D158") : Color(hex: "34C759")
-    }
-    
-    static func scribbleFitBlue(for scheme: ColorScheme) -> Color {
-        Color(hex: "2B8CEE")
-    }
-    
-    init(hex: String) {
+    public init(hex: String) {
         let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
         var int: UInt64 = 0
         Scanner(string: hex).scanHexInt64(&int)

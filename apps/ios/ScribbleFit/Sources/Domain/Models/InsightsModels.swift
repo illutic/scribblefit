@@ -30,14 +30,33 @@ public struct MuscleGroupDistribution: Equatable, Sendable {
     }
 }
 
+public struct AIOverview: Equatable, Sendable {
+    public let summary: String
+    public let trends: String
+    public let advice: String
+
+    public init(summary: String, trends: String, advice: String) {
+        self.summary = summary
+        self.trends = trends
+        self.advice = advice
+    }
+}
+
 public struct Insights: Equatable, Sendable {
     public let volumePoints: [VolumeDataPoint]
     public let frequency: FrequencyData
     public let distribution: [MuscleGroupDistribution]
+    public let aiOverview: AIOverview?
 
-    public init(volumePoints: [VolumeDataPoint], frequency: FrequencyData, distribution: [MuscleGroupDistribution]) {
+    public init(
+        volumePoints: [VolumeDataPoint],
+        frequency: FrequencyData,
+        distribution: [MuscleGroupDistribution],
+        aiOverview: AIOverview? = nil
+    ) {
         self.volumePoints = volumePoints
         self.frequency = frequency
         self.distribution = distribution
+        self.aiOverview = aiOverview
     }
 }

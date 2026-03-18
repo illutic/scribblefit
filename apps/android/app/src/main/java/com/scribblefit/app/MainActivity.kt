@@ -25,15 +25,17 @@ class MainActivity : ComponentActivity() {
         setContent {
             val appState by viewModel.appState.collectAsStateWithLifecycle()
             ScribbleFitTheme(
-                isSystemInDarkTheme = when (appState.themePreference) {
-                    ThemePreference.SYSTEM -> isSystemInDarkTheme()
-                    ThemePreference.LIGHT -> false
-                    ThemePreference.DARK -> true
-                }
+                isSystemInDarkTheme =
+                    when (appState.themePreference) {
+                        ThemePreference.SYSTEM -> isSystemInDarkTheme()
+                        ThemePreference.LIGHT -> false
+                        ThemePreference.DARK -> true
+                    },
             ) {
                 MainNavigation(
                     navState = appState.navState,
-                    modifier = Modifier.fillMaxSize()
+                    onBack = { viewModel.onIntent(AppIntent.NavigateBack) },
+                    modifier = Modifier.fillMaxSize(),
                 )
             }
         }

@@ -16,12 +16,12 @@ import com.scribblefit.core.database.entity.exercise.WorkoutExercise
             entity = WorkoutExercise::class,
             parentColumns = ["workoutExerciseId"],
             childColumns = ["workoutExerciseId"],
-            onDelete = ForeignKey.CASCADE
-        )
+            onDelete = ForeignKey.CASCADE,
+        ),
     ],
     indices = [
-        Index(value = ["workoutExerciseId"])
-    ]
+        Index(value = ["workoutExerciseId"]),
+    ],
 )
 data class WorkoutSet(
     @PrimaryKey(autoGenerate = true)
@@ -31,5 +31,5 @@ data class WorkoutSet(
     val reps: Int,
     val weight: Float,
     val rpe: Float? = null,
-    val notes: String? = null
+    val notes: String? = null,
 )

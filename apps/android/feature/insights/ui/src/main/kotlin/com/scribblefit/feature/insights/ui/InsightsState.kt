@@ -5,17 +5,20 @@ import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.res.stringResource
 import com.scribblefit.core.navigation.BottomBarState
 import com.scribblefit.core.navigation.Screen
+import com.scribblefit.feature.insights.domain.model.AIOverview
 import com.scribblefit.feature.insights.domain.model.FrequencyData
 import com.scribblefit.feature.insights.domain.model.MuscleGroupDistribution
 import com.scribblefit.feature.insights.domain.model.VolumeDataPoint
 
 data class InsightsState(
     val isLoading: Boolean = true,
+    val isGeneratingAI: Boolean = false,
     val volumePoints: List<VolumeDataPoint> = emptyList(),
     val frequency: FrequencyData? = null,
     val distribution: List<MuscleGroupDistribution> = emptyList(),
+    val aiOverview: AIOverview? = null,
     val errorMessage: String? = null,
-    val bottomBarState: BottomBarState = BottomBarState(selectedTab = Screen.Insights)
+    val bottomBarState: BottomBarState = BottomBarState(selectedTab = Screen.Insights),
 ) {
     val isEmpty: Boolean
         get() = !isLoading && (frequency == null || frequency.totalWorkouts < 2)
@@ -28,6 +31,8 @@ data class InsightsState(
     val workoutsPerWeekRes: Int = R.string.insights_workouts_per_week
     val volumeChartTitleRes: Int = R.string.insights_volume_chart_title
     val muscleDistributionTitleRes: Int = R.string.insights_muscle_distribution_title
+    val aiOverviewTitleRes: Int = R.string.insights_ai_overview_title
+    val aiOverviewGeneratingRes: Int = R.string.insights_ai_overview_generating
 }
 
 @Composable
@@ -61,3 +66,11 @@ fun InsightsState.getVolumeChartTitle(): String = stringResource(volumeChartTitl
 @Composable
 @ReadOnlyComposable
 fun InsightsState.getMuscleDistributionTitle(): String = stringResource(muscleDistributionTitleRes)
+
+@Composable
+@ReadOnlyComposable
+fun InsightsState.getAIOverviewTitle(): String = stringResource(aiOverviewTitleRes)
+
+@Composable
+@ReadOnlyComposable
+fun InsightsState.getAIOverviewGeneratingText(): String = stringResource(aiOverviewGeneratingRes)

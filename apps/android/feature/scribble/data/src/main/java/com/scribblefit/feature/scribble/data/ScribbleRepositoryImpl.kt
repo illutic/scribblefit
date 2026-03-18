@@ -20,31 +20,35 @@ import kotlinx.coroutines.withContext
 internal class ScribbleRepositoryImpl(
     private val scribbleDao: ScribbleDao,
     private val scribbleTrackerDao: ScribbleTrackerDao,
-    private val coroutineDispatcher: CoroutineDispatcher
+    private val coroutineDispatcher: CoroutineDispatcher,
 ) : ScribbleRepository {
     override suspend fun insertScribble(scribble: Scribble): Long =
         withContext(coroutineDispatcher) {
             scribbleDao.insertScribble(scribble.toEntity())
         }
 
-    override suspend fun updateScribble(scribble: Scribble) = withContext(coroutineDispatcher) {
-        scribbleDao.updateScribble(scribble.toEntity())
-    }
+    override suspend fun updateScribble(scribble: Scribble) =
+        withContext(coroutineDispatcher) {
+            scribbleDao.updateScribble(scribble.toEntity())
+        }
 
-    override suspend fun deleteScribble(scribbleId: Long) = withContext(coroutineDispatcher) {
-        scribbleDao.deleteScribble(scribbleId)
-    }
+    override suspend fun deleteScribble(scribbleId: Long) =
+        withContext(coroutineDispatcher) {
+            scribbleDao.deleteScribble(scribbleId)
+        }
 
     override suspend fun addExerciseToScribble(
         scribbleId: Long,
-        workoutExerciseId: Long
-    ): Long = withContext(coroutineDispatcher) {
-        val entity = ScribbleExercise(
-            scribbleId = scribbleId,
-            workoutExerciseId = workoutExerciseId
-        )
-        scribbleTrackerDao.insertScribbleExercise(entity)
-    }
+        workoutExerciseId: Long,
+    ): Long =
+        withContext(coroutineDispatcher) {
+            val entity =
+                ScribbleExercise(
+                    scribbleId = scribbleId,
+                    workoutExerciseId = workoutExerciseId,
+                )
+            scribbleTrackerDao.insertScribbleExercise(entity)
+        }
 
     override fun getScribble(scribbleId: Long): Flow<Scribble> =
         scribbleDao

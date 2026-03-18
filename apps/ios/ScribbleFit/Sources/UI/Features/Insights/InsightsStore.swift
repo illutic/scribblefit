@@ -9,15 +9,23 @@ public final class InsightsStore {
     private let getVolumeInsights: GetVolumeInsightsUseCase
     private let getFrequencyInsights: GetFrequencyInsightsUseCase
     private let getMuscleDistributionInsights: GetMuscleDistributionInsightsUseCase
+    private let getAIOverview: GetAIOverviewUseCase
+    
+    private var volumeTask: Task<Void, Never>?
+    private var frequencyTask: Task<Void, Never>?
+    private var distributionTask: Task<Void, Never>?
+    private var aiTask: Task<Void, Never>?
     
     public init(
         getVolumeInsights: GetVolumeInsightsUseCase,
         getFrequencyInsights: GetFrequencyInsightsUseCase,
-        getMuscleDistributionInsights: GetMuscleDistributionInsightsUseCase
+        getMuscleDistributionInsights: GetMuscleDistributionInsightsUseCase,
+        getAIOverview: GetAIOverviewUseCase
     ) {
         self.getVolumeInsights = getVolumeInsights
         self.getFrequencyInsights = getFrequencyInsights
         self.getMuscleDistributionInsights = getMuscleDistributionInsights
+        self.getAIOverview = getAIOverview
         
         loadInsights()
     }
@@ -35,23 +43,45 @@ public final class InsightsStore {
         let endDate = Date()
         let startDate = Calendar.current.date(byAdding: .month, value: -1, to: endDate)!
         
-        Task {
+        volumeTask?.cancel()
+        volumeTask = Task {
             for await volume in getVolumeInsights.execute(startDate: startDate, endDate: endDate) {
                 state.volumePoints = volume
             }
         }
         
-        Task {
+        frequencyTask?.cancel()
+        frequencyTask = Task {
             for await frequency in getFrequencyInsights.execute() {
                 state.frequency = frequency
                 state.isLoading = false
+                
+                if frequency.totalWorkouts >= 2 {
+                    loadAIOverview()
+                }
             }
         }
         
-        Task {
+        distributionTask?.cancel()
+        distributionTask = Task {
             for await distribution in getMuscleDistributionInsights.execute() {
                 state.distribution = distribution
             }
+        }
+    }
+    
+    private func loadAIOverview() {
+        guard !state.isGeneratingAI else { return }
+        
+        aiTask?.cancel()
+        aiTask = Task {
+            state.isGeneratingAI = true
+            do {
+                state.aiOverview = try await getAIOverview.execute()
+            } catch {
+                state.errorMessage = error.localizedDescription
+            }
+            state.isGeneratingAI = false
         }
     }
 }

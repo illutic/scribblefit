@@ -2,15 +2,11 @@ package com.scribblefit.feature.ai.data.engine
 
 import com.scribblefit.core.config.domain.ConfigRepository
 import com.scribblefit.core.config.domain.LLMProvider
-import com.scribblefit.feature.ai.domain.LLMEngine
-import com.scribblefit.feature.ai.domain.ParsedWorkoutResult
-import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.CoroutineName
-import kotlinx.coroutines.CoroutineScope
+import com.scribblefit.feature.ai.domain.*
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
-import kotlinx.coroutines.withContext
 
 internal class DynamicLLMEngine(
     private val geminiEngine: LLMEngine,
@@ -29,5 +25,10 @@ internal class DynamicLLMEngine(
     override suspend fun parseWorkout(rawText: String): Result<ParsedWorkoutResult> =
         withContext(coroutineContext) {
             activeEngine.value.parseWorkout(rawText)
+        }
+
+    override suspend fun generateInsightsSummary(input: SummaryInput): Result<SummaryResult> =
+        withContext(coroutineContext) {
+            activeEngine.value.generateInsightsSummary(input)
         }
 }

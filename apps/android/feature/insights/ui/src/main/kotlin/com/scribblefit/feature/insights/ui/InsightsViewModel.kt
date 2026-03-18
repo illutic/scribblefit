@@ -2,17 +2,10 @@ package com.scribblefit.feature.insights.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.scribblefit.feature.insights.domain.usecase.GetFrequencyInsightsUseCase
-import com.scribblefit.feature.insights.domain.usecase.GetMuscleDistributionInsightsUseCase
-import com.scribblefit.feature.insights.domain.usecase.GetVolumeInsightsUseCase
 import com.scribblefit.core.navigation.Navigator
+import com.scribblefit.feature.insights.domain.usecase.*
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
@@ -22,6 +15,7 @@ class InsightsViewModel @Inject constructor(
     private val getVolumeInsightsUseCase: GetVolumeInsightsUseCase,
     private val getFrequencyInsightsUseCase: GetFrequencyInsightsUseCase,
     private val getMuscleDistributionInsightsUseCase: GetMuscleDistributionInsightsUseCase,
+    private val getAIOverviewUseCase: GetAIOverviewUseCase,
     private val navigator: Navigator
 ) : ViewModel() {
 
@@ -70,7 +64,36 @@ class InsightsViewModel @Inject constructor(
                             distribution = distribution
                         )
                     }
+                    if (frequency.totalWorkouts >= 2) {
+                        loadAIOverview()
+                    }
                 }
+        }
+    }
+
+    private fun loadAIOverview() {
+        if (_state.value.isGeneratingAI) return
+
+        viewModelScope.launch {
+            _state.update { it.copy(isGeneratingAI = true) }
+            getAIOverviewUseCase().fold(
+                onSuccess = { overview ->
+                    _state.update {
+                        it.copy(
+                            isGeneratingAI = false,
+                            aiOverview = overview
+                        )
+                    }
+                },
+                onFailure = { error ->
+                    _state.update {
+                        it.copy(
+                            isGeneratingAI = false,
+                            errorMessage = error.message
+                        )
+                    }
+                }
+            )
         }
     }
 }

@@ -21,9 +21,12 @@ interface ScribbleTrackerDao {
         """
         DELETE FROM scribble_exercise WHERE scribbleId = :scribbleId
         AND workoutExerciseId = :workoutExerciseId
-        """
+        """,
     )
-    suspend fun deleteScribbleExercise(scribbleId: Long, workoutExerciseId: Long)
+    suspend fun deleteScribbleExercise(
+        scribbleId: Long,
+        workoutExerciseId: Long,
+    )
 
     /**
      * Gets a scribble with all its associated exercises and their sets.
@@ -46,6 +49,6 @@ interface ScribbleTrackerDao {
     @Query("SELECT * FROM scribbles WHERE status = :status AND createdAt = :date")
     fun getScribblesWithExercisesByStatusAndDate(
         status: String,
-        date: Long
+        date: Long,
     ): Flow<List<ScribbleWithExercises>>
 }

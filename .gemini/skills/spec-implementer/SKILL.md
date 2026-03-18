@@ -15,6 +15,9 @@ This skill guides you through implementing a technical feature specification int
 5. **No Base Classes:** Every ViewModel/Store and Repository must be autonomous. Do not use or look for "Base" classes.
 6. **No Hardcoded Strings:** Strictly forbid hardcoded strings in UI components. All UI text MUST be resolved via `strings.xml` (Android) or `Localizable.xcstrings` (iOS), preferably via the `State` class.
 7. **Project Guidelines:** Strictly adhere to `references/android-guidelines.md` or `references/ios-guidelines.md`.
+8. **Contextual UI Splitting:** Major screens MUST be split into contextual components (e.g., `Header`, `Body`, `Footer`) implemented as separate functions/views within the same layer.
+9. **Explicit DI (Android):** Use Cases in the `:domain` layer should NOT use `@Inject`. Instead, they must be explicitly provided in a Hilt `@Module` within the `:data` layer.
+10. **Dynamic Theme (iOS):** Theme providers MUST store content as an `@escaping` closure to ensure dynamic re-evaluation during environment changes (e.g., Dark Mode).
 
 ## Workflow
 
@@ -49,7 +52,15 @@ This skill guides you through implementing a technical feature specification int
 - **Validation:** Integration tests for repositories if possible.
 - **Commit:** `feat(data): [feature] repository implementation`
 
-### 5. UI Implementation
+### 5. AI Integration (Optional)
+- **Goal:** Implement AI-driven logic (parsing, summaries).
+- **Tasks:**
+  - Integrate with `:feature:ai` (Android) or equivalent LLM integration (iOS).
+  - Implement `LLMEngine`-based Use Cases.
+- **Validation:** Unit tests for AI parsing/summary logic.
+- **Commit:** `feat(ai): [feature] AI integration and logic`
+
+### 6. UI Implementation
 - **Goal:** Implement the user interface using MVI.
 - **Tasks:**
   - Define State and Intent (Android).

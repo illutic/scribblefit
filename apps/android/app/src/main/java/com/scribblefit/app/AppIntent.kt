@@ -1,4 +1,5 @@
 package com.scribblefit.app
 
-interface AppIntent {
+sealed interface AppIntent {
+    data object NavigateBack : AppIntent
 }

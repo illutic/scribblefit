@@ -114,7 +114,7 @@ public final class InsightsRepositoryImpl: InsightsRepository {
                             
                             let distribution = counts.map { (muscleGroup, count) in
                                 MuscleGroupDistribution(
-                                    muscleGroup = muscleGroup,
+                                    muscleGroup: muscleGroup,
                                     percentage: Double(count) / Double(totalExercises)
                                 )
                             }.sorted { $0.percentage > $1.percentage }
@@ -130,5 +130,15 @@ public final class InsightsRepositoryImpl: InsightsRepository {
                 cancellable.cancel()
             }
         }
+    }
+
+    public func getAIOverview() async throws -> AIOverview {
+        // Mock AI overview for now since there is no LLM client in iOS yet
+        try await Task.sleep(nanoseconds: 1_500_000_000) // 1.5 seconds delay
+        return AIOverview(
+            summary: "Your training volume has increased by 15% over the last two weeks, showing great progress in strength.",
+            trends: "Consistency is high with an average of 3.5 workouts per week. Chest and back are your most frequently trained muscle groups.",
+            advice: "Consider increasing your lower body focus to maintain a balanced routine. Try adding one more leg-focused session per week."
+        )
     }
 }

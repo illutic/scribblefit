@@ -5,6 +5,8 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -26,45 +28,70 @@ import com.scribblefit.core.navigation.BottomBarItem
 import com.scribblefit.core.navigation.BottomBarState
 import com.scribblefit.core.navigation.Screen
 
-
 // TODO - Replace with actual icons
 private val BottomBarItem.icon: Painter
     @Composable
-    get() = when (screen) {
-        Screen.Canvas -> rememberVectorPainter(Icons.Rounded.Home)
-        Screen.Insights -> rememberVectorPainter(Icons.Rounded.Star)
-        Screen.Ledger -> rememberVectorPainter(Icons.Rounded.Person)
-        else -> {
-            throw IllegalArgumentException("No icon defined for screen: $screen")
+    get() =
+        when (screen) {
+            Screen.Canvas -> {
+                rememberVectorPainter(Icons.Rounded.Home)
+            }
+
+            Screen.Insights -> {
+                rememberVectorPainter(Icons.Rounded.Star)
+            }
+
+            Screen.Ledger -> {
+                rememberVectorPainter(Icons.Rounded.Person)
+            }
+
+            else -> {
+                throw IllegalArgumentException("No icon defined for screen: $screen")
+            }
         }
-    }
 
 // TODO - Replace with actual strings from resources
 private val BottomBarItem.string: String
     @Composable
-    get() = when (screen) {
-        Screen.Canvas -> "Canvas"
-        Screen.Insights -> "Insights"
-        Screen.Ledger -> "Ledger"
-        else -> {
-            throw IllegalArgumentException("No string defined for screen: $screen")
+    get() =
+        when (screen) {
+            Screen.Canvas -> {
+                "Canvas"
+            }
+
+            Screen.Insights -> {
+                "Insights"
+            }
+
+            Screen.Ledger -> {
+                "Ledger"
+            }
+
+            else -> {
+                throw IllegalArgumentException("No string defined for screen: $screen")
+            }
         }
-    }
 
 @Composable
 fun BottomBarContainer(
     bottomBarState: BottomBarState,
     onClick: (Screen) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
-    Box(modifier = modifier) {
+    Box(
+        modifier =
+            modifier
+                .navigationBarsPadding()
+                .fillMaxWidth(),
+    ) {
         if (bottomBarState.isVisible) {
             BottomBar(
                 bottomBarState = bottomBarState,
                 onClick = onClick,
-                modifier = Modifier
-                    .animateContentSize()
-                    .align(Alignment.BottomCenter)
+                modifier =
+                    Modifier
+                        .animateContentSize()
+                        .align(Alignment.BottomCenter),
             )
         }
     }
@@ -75,16 +102,17 @@ fun BottomBarContainer(
 private fun BottomBar(
     bottomBarState: BottomBarState,
     onClick: (Screen) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
-    val colors = FloatingToolbarDefaults.vibrantFloatingToolbarColors(
-        toolbarContainerColor = ScribbleFitTheme.colors.softGray,
-    )
+    val colors =
+        FloatingToolbarDefaults.vibrantFloatingToolbarColors(
+            toolbarContainerColor = ScribbleFitTheme.colors.softGray,
+        )
 
     HorizontalFloatingToolbar(
         expanded = bottomBarState.isVisible,
         colors = colors,
-        modifier = modifier
+        modifier = modifier,
     ) {
         bottomBarState.items.forEach { item ->
             BottomBarItem(
@@ -101,20 +129,21 @@ private fun BottomBarItem(
     item: BottomBarItem,
     isSelected: Boolean,
     onClick: (Screen) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Column(
-        modifier = modifier
-            .clip(RoundedCornerShape(ScribbleFitTheme.shapes.large))
-            .clickable(onClick = { onClick(item.screen) })
-            .padding(horizontal = ScribbleFitTheme.spacing.medium),
+        modifier =
+            modifier
+                .clip(RoundedCornerShape(ScribbleFitTheme.shapes.large))
+                .clickable(onClick = { onClick(item.screen) })
+                .padding(horizontal = ScribbleFitTheme.spacing.medium),
         verticalArrangement = Arrangement.spacedBy(ScribbleFitTheme.spacing.small),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Icon(
             painter = item.icon,
             contentDescription = item.string,
-            tint = if (isSelected) ScribbleFitTheme.colors.richBlack else ScribbleFitTheme.colors.midGray
+            tint = if (isSelected) ScribbleFitTheme.colors.richBlack else ScribbleFitTheme.colors.midGray,
         )
     }
 }
@@ -125,7 +154,7 @@ private fun BottomBarPreview() {
     ScribbleFitTheme {
         BottomBar(
             bottomBarState = BottomBarState(),
-            onClick = {}
+            onClick = {},
         )
     }
 }

@@ -13,20 +13,22 @@ class UpdateScribbleAsFailedUseCase(
     private val scribbleRepository: ScribbleRepository,
     private val coroutineDispatcher: CoroutineDispatcher,
 ) {
-    suspend operator fun invoke(id: Long): Result<Unit> = withContext(coroutineDispatcher) {
-        runCatchingWithCancellation {
-            val scribble = scribbleRepository.getScribbleWithExercises(id).firstOrNull()
-                ?: throw ScribbleNotFoundException(id)
+    suspend operator fun invoke(id: Long): Result<Unit> =
+        withContext(coroutineDispatcher) {
+            runCatchingWithCancellation {
+                val scribble =
+                    scribbleRepository.getScribbleWithExercises(id).firstOrNull()
+                        ?: throw ScribbleNotFoundException(id)
 
-            updateScribbleStatusToFailed(scribble)
+                updateScribbleStatusToFailed(scribble)
+            }
         }
-    }
 
     private suspend fun updateScribbleStatusToFailed(scribble: Scribble) {
         scribbleRepository.updateScribble(
             scribble.copy(
-                status = ScribbleStatus.FAILED
-            )
+                status = ScribbleStatus.FAILED,
+            ),
         )
     }
 }

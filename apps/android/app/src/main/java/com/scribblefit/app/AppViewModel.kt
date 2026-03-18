@@ -11,17 +11,25 @@ import kotlinx.coroutines.flow.stateIn
 import javax.inject.Inject
 
 @HiltViewModel
-class AppViewModel @Inject constructor(
-    navigator: Navigator,
-    configRepository: ConfigRepository
-) : ViewModel() {
-    val appState = combine(
-        navigator.navState,
-        configRepository.config
-    ) { navState, config ->
-        AppState(
-            navState = navState,
-            themePreference = config.themePreference
-        )
-    }.stateIn(viewModelScope, SharingStarted.Eagerly, AppState())
-}
+class AppViewModel
+    @Inject
+    constructor(
+        private val navigator: Navigator,
+        configRepository: ConfigRepository,
+    ) : ViewModel() {
+        val appState =
+            combine(
+                navigator.navState,
+                configRepository.config,
+            ) { navState, config ->
+                AppState(
+                    navState = navState,
+                    themePreference = config.themePreference,
+                )
+            }.stateIn(viewModelScope, SharingStarted.Eagerly, AppState())
+
+        fun onIntent(appIntent: AppIntent) =
+            when (appIntent) {
+                AppIntent.NavigateBack -> navigator.goBack()
+            }
+    }

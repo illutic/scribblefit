@@ -24,20 +24,24 @@ Each ViewModel must be autonomous. Do not inherit from a `BaseViewModel`.
     - **Coroutines:** Use `Dispatchers.Default`.
     - **Error Handling:** Return `Result<T>` using `runCatchingWithCancellation`.
     - **Reuse:** Use Cases can depend on other Use Cases (DRY).
+    - **Dependency Injection:** Use Cases in `:domain` MUST NOT use `@Inject` if the module does not include the Hilt plugin; they must be explicitly provided via a Hilt `@Module` in the `:data` layer.
 
 ### 3. Data Layer (The Implementation)
 - **Repository Implementation:** Implements the Domain interface.
 - **Coroutines:** Use `Dispatchers.IO` for I/O operations.
 - **DI:** Hilt `@Module` classes reside here to bind implementations (DIP).
 - **Mappers:** Pure functions to map between Entities and Domain Models.
+- **AI Integration:** For AI-driven features (parsing, summaries), integrate with `:feature:ai:domain`'s `LLMEngine`. Use dedicated Use Cases for AI operations (e.g., `GetAIOverviewUseCase`).
 
 ### 4. UI Layer (The View)
 - **Design System:** Use `:core:designsystem` tokens (colors, spacing, typography).
-- **Composable Structure:** Small, single-responsibility components in a `components/` sub-package.
-- **Composition over Inheritance:** Build screens by composing these small parts.
+- **Contextual Splitting:** Screens MUST be split into contextual components (e.g., `Header`, `Body`, `Footer`).
+- **Component Isolation:** Each major contextual area should be implemented as a separate Composable function within the same file or a `components/` sub-package.
+- **Composition over Inheritance:** Build screens by composing these small, single-responsibility parts.
 
 ## Committing Workflow
 1. `feat(domain): [feature] models and logic (verified with unit tests)`
 2. `feat(core): [feature] shared infra (database/network)`
 3. `feat(data): [feature] implementation and DI`
-4. `feat(ui): [feature] MVI screen and components`
+4. `feat(ai): [feature] AI integration and logic`
+5. `feat(ui): [feature] MVI screen and components`

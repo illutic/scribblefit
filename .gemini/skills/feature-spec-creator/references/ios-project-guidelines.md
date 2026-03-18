@@ -7,12 +7,14 @@
 - **Modern Native Parity:** Balance Android parity with iOS-native aesthetics. For iOS 26+, utilize `.glassEffect(.regular.interactive())` for inputs and buttons.
 
 ## 2. Domain & Data Layers (Reactive & SOLID)
-- **Swift 6 Concurrency:** Enforce `Sendable` domain models, `Sendable` theme structures, and `@MainActor` stores.
+- **Swift 6 Concurrency:** Enforce `Sendable` domain models, `Sendable` theme structures, and `@MainActor` stores, repositories, and use cases.
 - **Reactive Contracts:** Any repository method returning a stream MUST be reactive, ensuring data changes trigger immediate UI updates.
 - **Implementation:** Mandate `SwiftData` from the start.
 
 ## 3. UI & Design System (DRY)
 - **Design System:** Pure SwiftUI `Color` extensions only.
+- **Contextual Splitting:** Views MUST be split into contextual components (e.g., `HeaderView`, `BodyView`, `FooterView`).
+- **Component Isolation:** Each major contextual area should be implemented as a separate SwiftUI `View` to ensure focus and testability.
 - **Centralized Theming:** Use a `ThemeProvider` to inject dynamic brand colors into the environment.
 - **Native Materials:** Use `.glassEffect()` for overlays to ensure a high-fidelity, OS-native feel.
 - **Custom Shapes:** Use `UnevenRoundedRectangle`.
@@ -20,6 +22,7 @@
 ## 4. Modularity & Infrastructure
 - **Feature Modules:** Independent SPM targets.
 - **Target Versions:** Target iOS 26.0+ to support modern native design modifiers.
+- **AI Integration:** For AI-driven features (parsing, summaries), integrate with equivalent LLM services via async/await. Define protocols like `LLMProvider` in the domain for decoupled integration.
 - **No Mocks in Production:** Specs must guide the implementation to configure real dependencies in the `App.swift` entry point immediately.
 
 ## 5. Navigation

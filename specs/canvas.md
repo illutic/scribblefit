@@ -18,24 +18,27 @@ The Canvas is the home screen of ScribbleFit, designed for rapid, low-friction w
 ## 4. Design & UI Components
 The UI must strictly adhere to the "The Input Canvas (Home)" design project.
 
+### Contextual UI Splitting:
+- **Header (`CanvasHeader`)**:
+    - **Top Bar**: Title "ScribbleFit" (Left) and Settings/Profile button (Right).
+    - **Date Navigation**: Current date (e.g., "Monday, March 16") with Left/Right arrows to navigate between days.
+- **Body (`CanvasBody`)**:
+    - **Scribble List**: Scrollable list of `ScribbleCard` components.
+    - **Empty State**: Displays "Start scribbling. Type your first set below." (Mid Gray `#8E8EA0`) when no scribbles exist for the selected date.
+- **Footer (`CanvasFooter`)**:
+    - **Scribble Input**: 52pt height, fully rounded capsule (Background: `#F7F7F8`) with a circular "Send" button.
+    - **Navigation**: Bottom navigation bar (shared across the app).
+
 ### Core Components:
-- **`CanvasTopBar`**:
-    - **Title**: "ScribbleFit" (Left-aligned).
-    - **Action**: Settings/Profile button (Right-aligned icon).
-- **`DateHeader`**:
-    - **Display**: Current date (e.g., "Monday, March 16").
-    - **Interaction**: Left/Right arrows to navigate between days.
-- **`ScribbleList`**:
-    - **Empty State**: Displays "Start scribbling. Type your first set below." (Mid Gray `#8E8EA0`).
-    - **Populated State**: List of `ScribbleCard` components.
+- **`ScribbleCard`**:
+    - Displays structured data (exercises, sets, reps, weight).
+    - Visual indicator for parsing status.
 - **`ScribbleInputPill`**:
-    - **Visual**: 52pt height, fully rounded capsule (Background: `#F7F7F8`).
     - **Placeholder**: "What did you lift today?" (Mid Gray `#8E8EA0`).
     - **Action Button**: Circular 32pt "Send" button (Up-arrow icon).
     - **Behavior**: 
         - Send button at 0.5 opacity when empty, 1.0 when typing.
         - Triggers `onSubmit()` and clears immediately on tap.
-        - Optional light impact haptic feedback on submission.
 
 ### Visual Styling:
 - **Background**: Very Soft Gray (`#F7F7F8`).
@@ -45,25 +48,25 @@ The UI must strictly adhere to the "The Input Canvas (Home)" design project.
 
 ## 5. Development Guidelines (Android)
 - **Architecture**: MVI (Autonomous `CanvasViewModel`, `CanvasState`, `CanvasIntent`).
-    - **State-Driven UI**: All strings and placeholders MUST be resolved in `CanvasState` via `@Composable @ReadOnlyComposable` getters (e.g., `textfieldPlaceholder`, `emptyScribbleText`). No hardcoded text in Composables.
-- **Modularity**: Autonomous `:feature:canvas` module. Communicate with other features via `:core` modules only.
+    - **State-Driven UI**: All strings and placeholders MUST be resolved in `CanvasState` via `@Composable @ReadOnlyComposable` getters.
+- **UI Structure**:
+    - **Contextual Splitting**: Implement `CanvasHeader`, `CanvasBody`, and `CanvasFooter` as separate contextual Composables.
+    - **Component Isolation**: Each major contextual area should be implemented as a separate Composable function to ensure focus and testability.
+- **Modularity**: Autonomous `:feature:canvas` module.
 - **SOLID Domain Layer**:
     - **SRP Use Cases**: `AddRawScribbleUseCase`, `GetScribblesByDateUseCase`, `ParsePendingScribblesUseCase`.
-    - **Error Handling**: Use `runCatchingWithCancellation` and return `Result<T>`.
-    - **Coroutines**: `Dispatchers.Default` for Use Cases, `Dispatchers.IO` for Repositories.
-- **Data Layer**: Hilt `@Module` bindings for Repositories and DataSources. Mappers for Entity -> Domain isolation.
-- **UI**: Composable structure with small, single-responsibility components in `components/`. Strictly use `:core:designsystem` tokens.
+- **Data Layer**: Hilt bindings and Mappers for Entity -> Domain isolation.
 
 ## 6. Development Guidelines (iOS)
 - **Architecture**: MVI (Autonomous `@Observable CanvasStore`, `CanvasState` struct, `CanvasIntent` enum).
-    - **State-Driven UI**: All strings MUST be resolved in `CanvasState` via computed properties and `String(localized: "...")`. No hardcoded text in Views.
+    - **State-Driven UI**: All strings MUST be resolved in `CanvasState` via computed properties and `String(localized: "...")`.
+- **UI Structure**:
+    - **Contextual Splitting**: Implement `CanvasHeaderView`, `CanvasBodyView`, and `CanvasFooterView` as separate contextual SwiftUI Views.
+    - **Component Isolation**: Each major contextual area should be implemented as a separate SwiftUI `View` to ensure focus and testability.
 - **Modularity**: Independent `CanvasFeature` SPM target.
 - **SOLID Domain Layer**:
     - **SRP Use Cases**: `AddRawScribbleUseCase`, `GetScribblesByDateUseCase`, `ParsePendingScribblesUseCase`.
-    - **Error Handling**: Return `Result<T, Error>`. Call `Task.checkCancellation()`.
-    - **Concurrency**: `Task` priorities for Domain, `async/await` for I/O.
-- **Data Layer**: DI registration for Repository protocols. Mappers for SwiftData isolation.
-- **UI**: Composable structure with small Views in `Components/`. Strictly use `CoreDesignSystem` tokens.
+- **Data Layer**: DI registration and Mappers for SwiftData isolation.
 
 ## 7. Validation
 - **Unit Tests**:

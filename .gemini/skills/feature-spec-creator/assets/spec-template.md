@@ -10,11 +10,16 @@
 ## 3. Acceptance Criteria
 - [ ] Criterion 1
 - [ ] Criterion 2
+- [ ] **Contextual UI Splitting:**
+    - [ ] **Header:** [Describe header content/behavior]
+    - [ ] **Body:** [Describe body content/behavior]
+    - [ ] **Footer:** [Describe footer content/behavior]
 
 ## 4. Development Guidelines (Android)
 - **Architecture:** MVI (State, Intent, ViewModel).
 - **Package Structure:** `:feature:[feature-name]` with `:data`, `:domain`, `:ui`.
 - **UI:** 100% Jetpack Compose using `ScribbleFitTheme`.
+- **AI (Optional):** Integration with `:feature:ai`'s `LLMEngine` for summaries/parsing.
 - **Database:** Room with `Flow<T>` for reactivity.
 - **Dependency Injection:** Hilt.
 
@@ -22,6 +27,7 @@
 - **Architecture:** MVI (State, Intent, @Observable Store).
 - **Package Structure:** SPM target `[FeatureName]Feature` with `Data`, `Domain`, `UI`.
 - **UI:** 100% SwiftUI with `ScribbleFitTheme`.
+- **AI (Optional):** Integration with local/remote LLM via Swift Concurrency.
 - **Database:** SwiftData with `AsyncSequence` for reactivity.
 - **Background Tasks:** `BGTaskScheduler` and Swift Concurrency.
 

@@ -17,6 +17,8 @@ This skill generates comprehensive technical specification documents for Scribbl
     *   **Overview:** Provide a clear, technical description.
     *   **User Stories:** Use the "As a... I want to... so that..." format.
     *   **Acceptance Criteria:** Include specific, measurable goals.
+    *   **Contextual UI Splitting:** Mandate that the UI must be designed and specified as separate `Header`, `Body`, and `Footer` components.
+    *   **AI-First Features:** If a feature involves AI (summaries, parsing, insights), specify integration with `:feature:ai`'s `LLMEngine` (Android) or equivalent LLM integration (iOS). Mandate specific loading and empty states for AI-generated content.
     *   **Design Alignment:** Ensure the "Acceptance Criteria" and "UI" sections reflect the specific components and layouts found in the Stitch designs.
     *   **Development Guidelines:** Specify the tech stack and architectural details (e.g., State/Intent/ViewModel for Android).
     *   **Validation:** Detail a testing strategy that covers unit, integration, and UI tests.

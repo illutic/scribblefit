@@ -4,15 +4,11 @@ import com.scribblefit.core.config.domain.ConfigRepository
 import com.scribblefit.core.config.domain.SecureKeyStorage
 import com.scribblefit.feature.ai.data.entity.WorkoutDto
 import com.scribblefit.feature.ai.data.entity.toDomain
-import com.scribblefit.feature.ai.domain.LLMEngine
-import com.scribblefit.feature.ai.domain.ParsedWorkoutResult
-import com.scribblefit.feature.ai.domain.ParsingStatus
-import io.ktor.client.HttpClient
-import io.ktor.client.call.body
-import io.ktor.client.request.post
-import io.ktor.client.request.setBody
-import io.ktor.http.ContentType
-import io.ktor.http.contentType
+import com.scribblefit.feature.ai.domain.*
+import io.ktor.client.*
+import io.ktor.client.call.*
+import io.ktor.client.request.*
+import io.ktor.http.*
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
@@ -39,6 +35,26 @@ internal class GeminiAIEngine(
             status = ParsingStatus.SUCCESS,
             processingTimeMs = System.currentTimeMillis() - startMs
         )
+    }
+
+    override suspend fun generateInsightsSummary(input: SummaryInput): Result<SummaryResult> = runCatching {
+        val prompt = """
+            You are a fitness expert. Analyze the following workout data and provide a concise summary, trends, and actionable advice.
+            Output your response in JSON format:
+            {
+              "summary": "...",
+              "trends": "...",
+              "advice": "..."
+            }
+            
+            Data:
+            Volume: ${input.volumeTrend}
+            Frequency: ${input.frequencyStats}
+            Muscle Distribution: ${input.muscleDistribution}
+        """.trimIndent()
+
+        val responseText = callGemini(apiKey, prompt)
+        json.decodeFromString<SummaryResult>(responseText)
     }
 
     private suspend fun callGemini(apiKey: String, userPrompt: String): String {

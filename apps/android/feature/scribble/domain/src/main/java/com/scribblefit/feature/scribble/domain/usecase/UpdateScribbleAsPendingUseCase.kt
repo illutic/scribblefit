@@ -13,20 +13,22 @@ class UpdateScribbleAsPendingUseCase(
     private val scribbleRepository: ScribbleRepository,
     private val coroutineDispatcher: CoroutineDispatcher,
 ) {
-    suspend operator fun invoke(id: Long): Result<Unit> = withContext(coroutineDispatcher) {
-        runCatchingWithCancellation {
-            val scribble = scribbleRepository.getScribble(id).firstOrNull()
-                ?: throw ScribbleNotFoundException(id)
+    suspend operator fun invoke(id: Long): Result<Unit> =
+        withContext(coroutineDispatcher) {
+            runCatchingWithCancellation {
+                val scribble =
+                    scribbleRepository.getScribble(id).firstOrNull()
+                        ?: throw ScribbleNotFoundException(id)
 
-            updateScribbleStatusToParsing(scribble)
+                updateScribbleStatusToParsing(scribble)
+            }
         }
-    }
 
     private suspend fun updateScribbleStatusToParsing(scribble: Scribble) {
         scribbleRepository.updateScribble(
             scribble.copy(
-                status = ScribbleStatus.PARSING
-            )
+                status = ScribbleStatus.PARSING,
+            ),
         )
     }
 }

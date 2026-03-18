@@ -1,28 +1,50 @@
 import SwiftUI
 
 public struct ScribbleFitColors: Sendable {
+    public let background: Color
+    public let softGray: Color
+    public let richBlack: Color
+    public let midGray: Color
+    public let lightGray: Color
+    public let strongGray: Color
+    public let dangerRed: Color
+    public let successGreen: Color
+    public let blue: Color
     public let scheme: ColorScheme
-    
-    public var background: Color { Color.scribbleFitBackground(for: scheme) }
-    public var softGray: Color { Color.scribbleFitSoftGray(for: scheme) }
-    public var richBlack: Color { Color.scribbleFitRichBlack(for: scheme) }
-    public var midGray: Color { Color.scribbleFitMidGray(for: scheme) }
-    public var lightGray: Color { Color.scribbleFitLightGray(for: scheme) }
-    public var strongGray: Color { Color.scribbleFitStrongGray(for: scheme) }
-    public var dangerRed: Color { Color.scribbleFitDangerRed(for: scheme) }
-    public var successGreen: Color { Color.scribbleFitSuccessGreen(for: scheme) }
-    public var blue: Color { Color.scribbleFitBlue(for: scheme) }
-}
 
-public struct ScribbleFitTheme {
-    public static func colors(for scheme: ColorScheme) -> ScribbleFitColors {
-        ScribbleFitColors(scheme: scheme)
+    public static func light() -> ScribbleFitColors {
+        ScribbleFitColors(
+            background: Color(hex: "FFFFFF"),
+            softGray: Color(hex: "F7F7F8"),
+            richBlack: Color(hex: "101010"),
+            midGray: Color(hex: "8E8EA0"),
+            lightGray: Color(hex: "E5E5EA"),
+            strongGray: Color(hex: "636366"),
+            dangerRed: Color(hex: "FF3B30"),
+            successGreen: Color(hex: "34C759"),
+            blue: Color(hex: "2B8CEE"),
+            scheme: .light
+        )
+    }
+
+    public static func dark() -> ScribbleFitColors {
+        ScribbleFitColors(
+            background: Color(hex: "000000"),
+            softGray: Color(hex: "1A1A1A"),
+            richBlack: Color(hex: "FFFFFF"),
+            midGray: Color(hex: "8E8EA0"),
+            lightGray: Color(hex: "2C2C2E"),
+            strongGray: Color(hex: "636366"),
+            dangerRed: Color(hex: "FF453A"),
+            successGreen: Color(hex: "30D158"),
+            blue: Color(hex: "2B8CEE"),
+            scheme: .dark
+        )
     }
 }
 
-// Environment Key for easier access
 private struct ScribbleFitColorsKey: EnvironmentKey {
-    static let defaultValue = ScribbleFitColors(scheme: .light)
+    static let defaultValue = ScribbleFitColors.light()
 }
 
 extension EnvironmentValues {
@@ -32,16 +54,23 @@ extension EnvironmentValues {
     }
 }
 
-public struct ScribbleFitThemeProvider<Content: View>: View {
-    @Environment(\.colorScheme) var scheme
-    let content: Content
-    
-    public init(@ViewBuilder content: () -> Content) {
-        self.content = content()
+public struct ScribbleFitTheme<Content: View>: View {
+    @Environment(\.colorScheme) var colorScheme
+    let content: () -> Content
+
+    public init(@ViewBuilder content: @escaping () -> Content) {
+        self.content = content
     }
-    
+
     public var body: some View {
-        content
-            .environment(\.scribbleFitColors, ScribbleFitColors(scheme: scheme))
+        let colors = colorScheme == .dark ? ScribbleFitColors.dark() : ScribbleFitColors.light()
+        content()
+            .environment(\.scribbleFitColors, colors)
+    }
+}
+
+extension View {
+    public func scribbleFitTheme() -> some View {
+        ScribbleFitTheme { self }
     }
 }

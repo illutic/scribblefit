@@ -15,7 +15,6 @@ import dagger.hilt.components.SingletonComponent
 @Module
 @InstallIn(SingletonComponent::class)
 internal object CanvasModule {
-
     @Provides
     fun provideParsePendingScribblesUseCase(
         getPendingScribblesByDateUseCase: GetPendingScribblesByDateUseCase,
@@ -23,13 +22,14 @@ internal object CanvasModule {
         updateScribbleAsFailedUseCase: UpdateScribbleAsFailedUseCase,
         updateScribbleAsPendingUseCase: UpdateScribbleAsPendingUseCase,
         llmEngine: LLMEngine,
-        coroutineDispatcherProvider: CoroutineDispatcherProvider
-    ): ParsePendingScribblesUseCase = ParsePendingScribblesUseCase(
-        getPendingScribblesByDateUseCase = getPendingScribblesByDateUseCase,
-        updateScribbleWithWorkoutUseCase = updateScribbleWithWorkoutUseCase,
-        updateScribbleAsFailedUseCase = updateScribbleAsFailedUseCase,
-        updateScribbleAsPendingUseCase = updateScribbleAsPendingUseCase,
-        llmEngine = llmEngine,
-        coroutineDispatcher = coroutineDispatcherProvider.io()
-    )
+        coroutineDispatcherProvider: CoroutineDispatcherProvider,
+    ): ParsePendingScribblesUseCase =
+        ParsePendingScribblesUseCase(
+            getPendingScribblesByDateUseCase = getPendingScribblesByDateUseCase,
+            updateScribbleWithWorkoutUseCase = updateScribbleWithWorkoutUseCase,
+            updateScribbleAsFailedUseCase = updateScribbleAsFailedUseCase,
+            updateScribbleAsPendingUseCase = updateScribbleAsPendingUseCase,
+            llmEngine = llmEngine,
+            coroutineDispatcher = coroutineDispatcherProvider.io(),
+        )
 }

@@ -22,57 +22,52 @@ import com.scribblefit.core.model.Workout as DomainWorkout
  * Mapper extension functions to convert Room entities into domain objects.
  */
 
-fun Exercise.toDomain(): DomainExercise {
-    return DomainExercise(
+fun Exercise.toDomain(): DomainExercise =
+    DomainExercise(
         id = exerciseId,
         canonicalName = name,
         muscleGroup = muscleGroup,
         sets = emptyList(),
-        isDraft = isDraft
+        isDraft = isDraft,
     )
-}
 
-fun Workout.toDomain(): DomainWorkout {
-    return DomainWorkout(
+fun Workout.toDomain(): DomainWorkout =
+    DomainWorkout(
         id = workoutId,
         date = workoutDate,
         exercises = emptyList(),
-        notes = notes?.split("\n")
+        notes = notes?.split("\n"),
     )
-}
 
-fun WorkoutSet.toDomain(): DomainSet {
-    return DomainSet(
+fun WorkoutSet.toDomain(): DomainSet =
+    DomainSet(
         id = setId,
         setNumber = setNumber,
         weight = weight,
         reps = reps,
         rpe = rpe,
-        notes = notes
+        notes = notes,
     )
-}
 
-fun WorkoutExerciseWithDetails.toDomain(): DomainExercise {
-    return DomainExercise(
+fun WorkoutExerciseWithDetails.toDomain(): DomainExercise =
+    DomainExercise(
         id = exercise.exerciseId,
         canonicalName = exercise.name,
         muscleGroup = exercise.muscleGroup,
         sets = sets.map { it.toDomain() },
-        isDraft = exercise.isDraft
+        isDraft = exercise.isDraft,
     )
-}
 
-fun WorkoutWithAllDetails.toDomain(): DomainWorkout {
-    return DomainWorkout(
+fun WorkoutWithAllDetails.toDomain(): DomainWorkout =
+    DomainWorkout(
         id = workout.workoutId,
         date = workout.workoutDate,
         exercises = exercises.map { it.toDomain() },
-        notes = workout.notes?.split("\n")
+        notes = workout.notes?.split("\n"),
     )
-}
 
-fun SystemConfig.toDomain(): DomainSystemConfig {
-    return DomainSystemConfig(
+fun SystemConfig.toDomain(): DomainSystemConfig =
+    DomainSystemConfig(
         summaryPrompt = summaryPrompt,
         suggestionPrompt = suggestionPrompt,
         insightPrompt = insightPrompt,
@@ -81,76 +76,69 @@ fun SystemConfig.toDomain(): DomainSystemConfig {
         preferredModel = preferredModel,
         weightUnit = Weight.valueOf(weightUnit),
         preferredLlmProvider = LLMProvider.valueOf(preferredLlmProvider),
-        themePreference = ThemePreference.valueOf(themePreference)
+        themePreference = ThemePreference.valueOf(themePreference),
     )
-}
 
-fun ScribbleEntity.toDomain(): Scribble {
-    return Scribble(
+fun ScribbleEntity.toDomain(): Scribble =
+    Scribble(
         id = scribbleId,
         rawText = rawText,
         parsedJson = parsedJson,
         status = ScribbleStatus.valueOf(status),
-        createdAt = createdAt
+        createdAt = createdAt,
     )
-}
 
-fun ScribbleWithExercises.toDomain(): Scribble {
-    return Scribble(
+fun ScribbleWithExercises.toDomain(): Scribble =
+    Scribble(
         id = scribble.scribbleId,
         rawText = scribble.rawText,
         parsedJson = scribble.parsedJson,
         status = ScribbleStatus.valueOf(scribble.status),
         createdAt = scribble.createdAt,
-        exercises = exercises.map { it.toDomain() }
+        exercises = exercises.map { it.toDomain() },
     )
-}
 
 /**
  * Mapper extension functions to convert domain objects into Room entities.
  */
 
-fun Scribble.toEntity(): ScribbleEntity {
-    return ScribbleEntity(
+fun Scribble.toEntity(): ScribbleEntity =
+    ScribbleEntity(
         scribbleId = id,
         rawText = rawText,
         parsedJson = parsedJson,
         status = status.name,
-        createdAt = createdAt
+        createdAt = createdAt,
     )
-}
 
-fun DomainSet.toEntity(workoutExerciseId: Long): WorkoutSet {
-    return WorkoutSet(
+fun DomainSet.toEntity(workoutExerciseId: Long): WorkoutSet =
+    WorkoutSet(
         setId = id,
         workoutExerciseId = workoutExerciseId,
         setNumber = setNumber,
         weight = weight,
         reps = reps,
         rpe = rpe,
-        notes = notes
+        notes = notes,
     )
-}
 
-fun DomainExercise.toEntity(): Exercise {
-    return Exercise(
+fun DomainExercise.toEntity(): Exercise =
+    Exercise(
         exerciseId = id,
         name = canonicalName,
         muscleGroup = muscleGroup,
-        isDraft = isDraft
+        isDraft = isDraft,
     )
-}
 
-fun DomainWorkout.toEntity(): Workout {
-    return Workout(
+fun DomainWorkout.toEntity(): Workout =
+    Workout(
         workoutId = id,
         workoutDate = date,
-        notes = notes?.joinToString("\n")
+        notes = notes?.joinToString("\n"),
     )
-}
 
-fun DomainSystemConfig.toEntity(): SystemConfig {
-    return SystemConfig(
+fun DomainSystemConfig.toEntity(): SystemConfig =
+    SystemConfig(
         id = 0, // Single row with fixed key
         summaryPrompt = summaryPrompt,
         suggestionPrompt = suggestionPrompt,
@@ -160,6 +148,5 @@ fun DomainSystemConfig.toEntity(): SystemConfig {
         updatedAt = updatedAt,
         preferredModel = preferredModel,
         weightUnit = weightUnit.name,
-        themePreference = themePreference.name
+        themePreference = themePreference.name,
     )
-}

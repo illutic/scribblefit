@@ -38,6 +38,7 @@ public struct CanvasView: View {
                         Image(systemName: "chevron.left")
                             .font(.system(size: 20, weight: .medium))
                             .foregroundColor(colors.richBlack)
+                            .padding(8)
                     }
                     .glassEffect(.regular.interactive(), in: .circle)
                     
@@ -53,6 +54,7 @@ public struct CanvasView: View {
                         Image(systemName: "chevron.right")
                             .font(.system(size: 20, weight: .medium))
                             .foregroundColor(store.state.isCurrentDate ? colors.midGray : colors.richBlack)
+                            .padding(8)
                     }
                     .glassEffect(.regular.interactive(), in: .circle)
                     .disabled(store.state.isCurrentDate)

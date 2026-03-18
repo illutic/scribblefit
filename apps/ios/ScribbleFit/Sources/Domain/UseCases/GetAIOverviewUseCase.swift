@@ -1,14 +1,14 @@
 import Foundation
 
 @MainActor
-public struct GetFrequencyInsightsUseCase: Sendable {
+public struct GetAIOverviewUseCase: Sendable {
     private let repository: InsightsRepository
 
     public init(repository: InsightsRepository) {
         self.repository = repository
     }
 
-    public func execute() -> AsyncStream<FrequencyData> {
-        repository.getFrequencyInsights()
+    public func execute() async throws -> AIOverview {
+        try await repository.getAIOverview()
     }
 }

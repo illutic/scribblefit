@@ -1,13 +1,15 @@
 package com.scribblefit.feature.insights.data
 
 import com.scribblefit.core.database.dao.WorkoutDao
-import com.scribblefit.feature.insights.domain.model.FrequencyData
-import com.scribblefit.feature.insights.domain.model.MuscleGroupDistribution
-import com.scribblefit.feature.insights.domain.model.VolumeDataPoint
+import com.scribblefit.feature.ai.domain.LLMEngine
+import com.scribblefit.feature.ai.domain.SummaryInput
+import com.scribblefit.feature.insights.domain.model.*
 import com.scribblefit.feature.insights.domain.repository.InsightsRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
 import java.time.Instant
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -16,6 +18,7 @@ import javax.inject.Inject
 
 class InsightsRepositoryImpl @Inject constructor(
     private val workoutDao: WorkoutDao,
+    private val llmEngine: LLMEngine,
     private val coroutineDispatcher: CoroutineDispatcher
 ) : InsightsRepository {
 
@@ -81,6 +84,35 @@ class InsightsRepositoryImpl @Inject constructor(
                     percentage = count.toFloat() / totalExercises.toFloat()
                 )
             }.sortedByDescending { it.percentage }
+        }
+    }
+
+    override suspend fun getAIOverview(): Result<AIOverview> = withContext(coroutineDispatcher) {
+        try {
+            val volume = getVolumeInsights(LocalDate.now().minusMonths(1), LocalDate.now()).first()
+            val frequency = getFrequencyInsights().first()
+            val distribution = getMuscleDistributionInsights().first()
+
+            val input = SummaryInput(
+                volumeTrend = volume.joinToString { "${it.date}: ${it.volume}" },
+                frequencyStats = "Total: ${frequency.totalWorkouts}, Per week: ${frequency.workoutsPerWeek}",
+                muscleDistribution = distribution.joinToString { "${it.muscleGroup}: ${it.percentage}" }
+            )
+
+            llmEngine.generateInsightsSummary(input).fold(
+                onSuccess = { result ->
+                    Result.success(
+                        AIOverview(
+                            summary = result.summary,
+                            trends = result.trends,
+                            advice = result.advice
+                        )
+                    )
+                },
+                onFailure = { Result.failure(it) }
+            )
+        } catch (e: Exception) {
+            Result.failure(e)
         }
     }
 }

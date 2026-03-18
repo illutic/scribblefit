@@ -30,16 +30,16 @@ internal fun DateHeader(
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
     ) {
         PreviousDayButton(
             onClick = onPreviousDayClick,
-            enabled = true
+            enabled = true,
         )
         DateText(currentDate)
         NextDayButton(
             onClick = onNextDayClick,
-            enabled = !isCurrentDate
+            enabled = !isCurrentDate,
         )
     }
 }
@@ -48,19 +48,20 @@ internal fun DateHeader(
 private fun PreviousDayButton(
     onClick: () -> Unit,
     enabled: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
-    val colors = IconButtonDefaults.iconButtonColors(
-        disabledContainerColor = Color.Transparent,
-        disabledContentColor = ScribbleFitTheme.colors.midGray,
-        containerColor = Color.Transparent,
-        contentColor = ScribbleFitTheme.colors.richBlack
-    )
+    val colors =
+        IconButtonDefaults.iconButtonColors(
+            disabledContainerColor = Color.Transparent,
+            disabledContentColor = ScribbleFitTheme.colors.midGray,
+            containerColor = Color.Transparent,
+            contentColor = ScribbleFitTheme.colors.richBlack,
+        )
     IconButton(
         onClick = onClick,
         enabled = enabled,
         colors = colors,
-        modifier = modifier
+        modifier = modifier,
     ) {
         Icon(
             imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowLeft,
@@ -73,23 +74,24 @@ private fun PreviousDayButton(
 private fun NextDayButton(
     onClick: () -> Unit,
     enabled: Boolean,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
-    val colors = IconButtonDefaults.iconButtonColors(
-        disabledContainerColor = Color.Transparent,
-        disabledContentColor = ScribbleFitTheme.colors.midGray,
-        containerColor = Color.Transparent,
-        contentColor = ScribbleFitTheme.colors.richBlack
-    )
+    val colors =
+        IconButtonDefaults.iconButtonColors(
+            disabledContainerColor = Color.Transparent,
+            disabledContentColor = ScribbleFitTheme.colors.midGray,
+            containerColor = Color.Transparent,
+            contentColor = ScribbleFitTheme.colors.richBlack,
+        )
     IconButton(
         onClick = onClick,
         enabled = enabled,
         colors = colors,
-        modifier = modifier
+        modifier = modifier,
     ) {
         Icon(
             imageVector = Icons.AutoMirrored.Rounded.KeyboardArrowRight,
-            contentDescription = stringResource(R.string.canvas_next_day)
+            contentDescription = stringResource(R.string.canvas_next_day),
         )
     }
 }
@@ -97,13 +99,13 @@ private fun NextDayButton(
 @Composable
 private fun DateText(
     date: String,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     Text(
         text = date,
         style = ScribbleFitTheme.typography.labelMedium,
         color = ScribbleFitTheme.colors.midGray,
-        modifier = modifier
+        modifier = modifier,
     )
 }
 
@@ -114,7 +116,7 @@ private fun DateHeaderPreview() {
         DateHeader(
             currentDate = "June 24, 2024",
             isCurrentDate = true,
-            modifier = Modifier.fillMaxWidth()
+            modifier = Modifier.fillMaxWidth(),
         )
     }
 }

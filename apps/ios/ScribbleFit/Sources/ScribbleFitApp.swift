@@ -10,7 +10,7 @@ struct ScribbleFitApp: App {
 
     init() {
         do {
-            let container = try ModelContainer(for: ScribbleEntity.self, ExerciseEntity.self, SetEntity.self)
+            let container = try ModelContainer(for: ScribbleEntity.self, ExerciseEntity.self, SetEntity.self, ScribbleEntity.self) // Ensure all are here
             self.modelContainer = container
             
             let scribbleRepository = ScribbleRepositoryImpl(modelContainer: container)
@@ -22,6 +22,7 @@ struct ScribbleFitApp: App {
             let getVolumeInsights = GetVolumeInsightsUseCase(repository: insightsRepository)
             let getFrequencyInsights = GetFrequencyInsightsUseCase(repository: insightsRepository)
             let getMuscleDistributionInsights = GetMuscleDistributionInsightsUseCase(repository: insightsRepository)
+            let getAIOverview = GetAIOverviewUseCase(repository: insightsRepository)
             
             self.canvasStore = CanvasStore(
                 getScribblesByDateUseCase: getScribblesByDateUseCase,
@@ -31,7 +32,8 @@ struct ScribbleFitApp: App {
             self.insightsStore = InsightsStore(
                 getVolumeInsights: getVolumeInsights,
                 getFrequencyInsights: getFrequencyInsights,
-                getMuscleDistributionInsights: getMuscleDistributionInsights
+                getMuscleDistributionInsights: getMuscleDistributionInsights,
+                getAIOverview: getAIOverview
             )
         } catch {
             fatalError("Could not initialize SwiftData: \(error.localizedDescription)")
@@ -40,25 +42,40 @@ struct ScribbleFitApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ScribbleFitThemeProvider {
-                TabView {
-                    CanvasView(store: canvasStore)
-                        .tabItem {
-                            Label("Canvas", systemImage: "pencil.and.outline")
-                        }
-                    
-                    InsightsView(store: insightsStore)
-                        .tabItem {
-                            Label("Insights", systemImage: "chart.bar.fill")
-                        }
-                    
-                    Text("Ledger Coming Soon")
-                        .tabItem {
-                            Label("Ledger", systemImage: "list.bullet.rectangle.portrait")
-                        }
-                }
+            ScribbleFitTheme {
+                MainTabView(canvasStore: canvasStore, insightsStore: insightsStore)
             }
         }
         .modelContainer(modelContainer)
+    }
+}
+
+struct MainTabView: View {
+    let canvasStore: CanvasStore
+    let insightsStore: InsightsStore
+    @Environment(\.scribbleFitColors) var colors
+    
+    var body: some View {
+        TabView {
+            CanvasView(store: canvasStore)
+                .tabItem {
+                    Label("Canvas", systemImage: "pencil.and.outline")
+                }
+            
+            InsightsView(store: insightsStore)
+                .tabItem {
+                    Label("Insights", systemImage: "chart.bar.fill")
+                }
+            
+            Text("Ledger Coming Soon")
+                .tabItem {
+                    Label("Ledger", systemImage: "list.bullet.rectangle.portrait")
+                }
+        }
+        .tint(colors.richBlack)
+        #if os(iOS)
+        .toolbarBackground(colors.background, for: .tabBar)
+        .toolbarBackground(.visible, for: .tabBar)
+        #endif
     }
 }

@@ -1,5 +1,6 @@
 import Foundation
 
+@MainActor
 public struct GetMuscleDistributionInsightsUseCase: Sendable {
     private let repository: InsightsRepository
 

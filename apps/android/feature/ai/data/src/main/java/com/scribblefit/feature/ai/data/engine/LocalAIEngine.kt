@@ -6,9 +6,7 @@ import com.google.mlkit.genai.prompt.GenerativeModel
 import com.scribblefit.core.config.domain.ConfigRepository
 import com.scribblefit.feature.ai.data.entity.WorkoutDto
 import com.scribblefit.feature.ai.data.entity.toDomain
-import com.scribblefit.feature.ai.domain.LLMEngine
-import com.scribblefit.feature.ai.domain.ParsedWorkoutResult
-import com.scribblefit.feature.ai.domain.ParsingStatus
+import com.scribblefit.feature.ai.domain.*
 import kotlinx.serialization.json.Json
 import org.slf4j.LoggerFactory
 
@@ -24,8 +22,7 @@ internal class LocalAIEngine(
         val startMs = System.currentTimeMillis()
         ensureModelIsReady()
         val prompt = "${config.parsePrompt}\n\nInput: $rawText"
-        val response = generativeModel.generateContent(prompt).candidates.firstOrNull()
-        val responseText = response?.text ?: error("No response from LLM")
+        val responseText = callLocalLLM(prompt)
         val workout = json.decodeFromString<WorkoutDto>(responseText)
 
         ParsedWorkoutResult(
@@ -35,6 +32,33 @@ internal class LocalAIEngine(
             modelUsed = "gemini-nano",
             processingTimeMs = System.currentTimeMillis() - startMs
         )
+    }
+
+    override suspend fun generateInsightsSummary(input: SummaryInput): Result<SummaryResult> = runCatching {
+        ensureModelIsReady()
+        val prompt = """
+            You are a fitness expert. Analyze the following workout data and provide a concise summary, trends, and actionable advice.
+            Output your response in JSON format:
+            {
+              "summary": "...",
+              "trends": "...",
+              "advice": "..."
+            }
+            
+            Data:
+            Volume: ${input.volumeTrend}
+            Frequency: ${input.frequencyStats}
+            Muscle Distribution: ${input.muscleDistribution}
+        """.trimIndent()
+
+        val responseText = callLocalLLM(prompt)
+        json.decodeFromString<SummaryResult>(responseText)
+    }
+
+    private suspend fun callLocalLLM(prompt: String): String {
+        val response = generativeModel.generateContent(prompt).candidates.firstOrNull()
+        val responseText = response?.text ?: error("No response from LLM")
+        return responseText.replaceFirst("```json", "").replaceFirst("```", "").trim()
     }
 
     private suspend fun ensureModelIsReady() {

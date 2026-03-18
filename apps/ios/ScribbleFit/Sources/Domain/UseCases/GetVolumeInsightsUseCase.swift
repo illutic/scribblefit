@@ -1,5 +1,6 @@
 import Foundation
 
+@MainActor
 public struct GetVolumeInsightsUseCase: Sendable {
     private let repository: InsightsRepository
 

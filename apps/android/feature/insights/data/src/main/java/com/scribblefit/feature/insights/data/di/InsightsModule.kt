@@ -2,11 +2,10 @@ package com.scribblefit.feature.insights.data.di
 
 import com.scribblefit.core.coroutines.CoroutineDispatcherProvider
 import com.scribblefit.core.database.dao.WorkoutDao
+import com.scribblefit.feature.ai.domain.LLMEngine
 import com.scribblefit.feature.insights.data.InsightsRepositoryImpl
 import com.scribblefit.feature.insights.domain.repository.InsightsRepository
-import com.scribblefit.feature.insights.domain.usecase.GetFrequencyInsightsUseCase
-import com.scribblefit.feature.insights.domain.usecase.GetMuscleDistributionInsightsUseCase
-import com.scribblefit.feature.insights.domain.usecase.GetVolumeInsightsUseCase
+import com.scribblefit.feature.insights.domain.usecase.*
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -21,10 +20,12 @@ object InsightsModule {
     @Singleton
     fun provideInsightsRepository(
         workoutDao: WorkoutDao,
+        llmEngine: LLMEngine,
         coroutineDispatcherProvider: CoroutineDispatcherProvider
     ): InsightsRepository {
         return InsightsRepositoryImpl(
             workoutDao = workoutDao,
+            llmEngine = llmEngine,
             coroutineDispatcher = coroutineDispatcherProvider.io()
         )
     }
@@ -51,5 +52,12 @@ object InsightsModule {
         coroutineDispatcherProvider: CoroutineDispatcherProvider
     ): GetMuscleDistributionInsightsUseCase {
         return GetMuscleDistributionInsightsUseCase(repository, coroutineDispatcherProvider.default())
+    }
+
+    @Provides
+    fun provideGetAIOverviewUseCase(
+        repository: InsightsRepository
+    ): GetAIOverviewUseCase {
+        return GetAIOverviewUseCase(repository)
     }
 }

@@ -26,16 +26,16 @@ internal fun CanvasTopBar(
         },
         actions = {
             ProfileIconButton(
-                onClick = onProfileClick
+                onClick = onProfileClick,
             )
-        }
+        },
     )
 }
 
 @Composable
 private fun ProfileIconButton(
     onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
 ) {
     FilledIconButton(
         modifier = modifier,
@@ -43,7 +43,7 @@ private fun ProfileIconButton(
     ) {
         Icon(
             imageVector = Icons.Rounded.Person,
-            contentDescription = stringResource(R.string.canvas_profile_button)
+            contentDescription = stringResource(R.string.canvas_profile_button),
         )
     }
 }
@@ -53,7 +53,7 @@ private fun ProfileIconButton(
 private fun CanvasTopBarPreview() {
     ScribbleFitTheme {
         CanvasTopBar(
-            appName = "ScribbleFit"
+            appName = "ScribbleFit",
         )
     }
 }

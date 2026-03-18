@@ -12,25 +12,33 @@ import com.scribblefit.feature.insights.ui.InsightsRoute
 @Composable
 fun MainNavigation(
     navState: NavState,
-    modifier: Modifier = Modifier
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
 ) {
     NavDisplay(
         backStack = navState.backStack,
-        modifier = modifier
+        onBack = onBack,
+        modifier = modifier,
     ) { screen ->
         when (screen) {
-            Screen.Canvas -> NavEntry(screen) { CanvasRoute() }
-
-            Screen.Insights -> NavEntry(screen) {
-                InsightsRoute()
+            Screen.Canvas -> {
+                NavEntry(screen) { CanvasRoute() }
             }
 
-            Screen.Ledger -> NavEntry(screen) {
-
+            Screen.Insights -> {
+                NavEntry(screen) {
+                    InsightsRoute()
+                }
             }
 
-            Screen.Profile -> NavEntry(screen) {
+            Screen.Ledger -> {
+                NavEntry(screen) {
+                }
+            }
 
+            Screen.Profile -> {
+                NavEntry(screen) {
+                }
             }
         }
     }

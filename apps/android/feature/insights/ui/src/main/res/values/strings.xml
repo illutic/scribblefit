@@ -7,4 +7,6 @@
     <string name="insights_workouts_per_week">Workouts per Week</string>
     <string name="insights_volume_chart_title">Training Volume</string>
     <string name="insights_muscle_distribution_title">Muscle Group Distribution</string>
+    <string name="insights_ai_overview_title">AI Progress Overview</string>
+    <string name="insights_ai_overview_generating">Generating your summary...</string>
 </resources>

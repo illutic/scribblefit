@@ -17,8 +17,16 @@ data class MuscleGroupDistribution(
     val percentage: Float
 )
 
+data class AIOverview(
+    val summary: String,
+    val trends: String,
+    val advice: String
+)
+
 data class Insights(
     val volumePoints: List<VolumeDataPoint>,
     val frequency: FrequencyData,
-    val distribution: List<MuscleGroupDistribution>
+    val distribution: List<MuscleGroupDistribution>,
+    val aiOverview: AIOverview? = null
 )
+

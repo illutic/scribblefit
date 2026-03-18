@@ -9,6 +9,7 @@ android {
 
 dependencies {
     implementation(project(":feature:insights:domain"))
+    implementation(project(":feature:ai:domain"))
     implementation(project(":core:database"))
     implementation(project(":core:model"))
     implementation(project(":core:common"))

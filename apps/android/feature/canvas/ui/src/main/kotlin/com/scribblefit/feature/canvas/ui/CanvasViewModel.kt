@@ -23,126 +23,137 @@ import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
-class CanvasViewModel @Inject constructor(
-    getScribblesByDateUseCase: GetScribblesByDateUseCase,
-    private val parsePendingScribblesUseCase: ParsePendingScribblesUseCase,
-    private val addRawScribbleUseCase: AddRawScribbleUseCase,
-    private val editScribbleUseCase: EditScribbleUseCase,
-    private val removeScribbleUseCase: RemoveScribbleUseCase,
-    private val updateScribbleAsCompleteUseCase: UpdateScribbleAsCompleteUseCase,
-    private val navigator: Navigator,
-) : ViewModel() {
-    private val _state = MutableStateFlow(CanvasState())
-    private val currentDate = _state
-        .map { it.currentDate }
-        .distinctUntilChanged()
+class CanvasViewModel
+    @Inject
+    constructor(
+        getScribblesByDateUseCase: GetScribblesByDateUseCase,
+        private val parsePendingScribblesUseCase: ParsePendingScribblesUseCase,
+        private val addRawScribbleUseCase: AddRawScribbleUseCase,
+        private val editScribbleUseCase: EditScribbleUseCase,
+        private val removeScribbleUseCase: RemoveScribbleUseCase,
+        private val updateScribbleAsCompleteUseCase: UpdateScribbleAsCompleteUseCase,
+        private val navigator: Navigator,
+    ) : ViewModel() {
+        private val _state = MutableStateFlow(CanvasState())
+        private val currentDate =
+            _state
+                .map { it.currentDate }
+                .distinctUntilChanged()
 
-    val state = combine(
-        _state,
-        getScribblesByDateUseCase(currentDate)
-    ) { state, scribbles -> state.copy(scribbles = scribbles) }
-        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), CanvasState())
+        val state =
+            combine(
+                _state,
+                getScribblesByDateUseCase(currentDate),
+            ) { state, scribbles -> state.copy(scribbles = scribbles) }
+                .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), CanvasState())
 
-    fun onIntent(intent: CanvasIntent) {
-        when (intent) {
-            is CanvasIntent.UpdateScribbleText -> {
-                _state.update { it.copy(currentScribbleText = intent.text) }
+        fun onIntent(intent: CanvasIntent) {
+            when (intent) {
+                is CanvasIntent.UpdateScribbleText -> {
+                    _state.update { it.copy(currentScribbleText = intent.text) }
+                }
+
+                is CanvasIntent.AddScribble -> {
+                    addScribble(intent.scribble)
+                }
+
+                is CanvasIntent.NavigateToScreen -> {
+                    navigator.navigateTo(intent.screen)
+                }
+
+                is CanvasIntent.ClickOnScribble -> {
+                    scribbleClicked(intent.scribble)
+                }
+
+                is CanvasIntent.ConfirmScribble -> {
+                    completeScribble(intent.scribble)
+                }
+
+                is CanvasIntent.DeleteScribble -> {
+                    deleteScribble(intent.scribble)
+                }
+
+                CanvasIntent.DismissScribbleDialog -> {
+                    dismissScribbleDialog()
+                }
+
+                CanvasIntent.NavigateBack -> {
+                    navigator.goBack()
+                }
+
+                is CanvasIntent.UpdateScribble -> {
+                    editScribble(intent.scribble)
+                }
+
+                CanvasIntent.OnPreviousDayClick -> {
+                    _state.update { it.copy(currentDate = it.currentDate.minusDays(1)) }
+                }
+
+                CanvasIntent.OnNextDayClick -> {
+                    _state.update { it.copy(currentDate = it.currentDate.plusDays(1)) }
+                }
             }
+        }
 
-            is CanvasIntent.AddScribble -> {
-                addScribble(intent.scribble)
+        private fun addScribble(text: String) {
+            viewModelScope.launch {
+                val editingId = _state.value.editingScribbleId
+                _state.update { it.copy(currentScribbleText = "", editingScribbleId = null) }
+
+                val result =
+                    if (editingId != null) {
+                        editScribbleUseCase(editingId, text)
+                    } else {
+                        addRawScribbleUseCase(text, _state.value.currentDate)
+                    }
+
+                result.onFailure { e ->
+                    _state.update { it.copy(error = e) }
+                }
             }
+        }
 
-            is CanvasIntent.NavigateToScreen -> {
-                navigator.navigateTo(intent.screen)
+        private fun scribbleClicked(scribble: Scribble) {
+            viewModelScope.launch {
+                when (scribble.status) {
+                    ScribbleStatus.FAILED -> {
+                        parsePendingScribblesUseCase(_state.value.currentDate)
+                    }
+
+                    ScribbleStatus.SUCCESS -> {
+                        _state.update { it.copy(selectedScribble = scribble) }
+                    }
+
+                    else -> {}
+                }
             }
+        }
 
-            is CanvasIntent.ClickOnScribble -> {
-                scribbleClicked(intent.scribble)
-            }
-
-            is CanvasIntent.ConfirmScribble -> {
-                completeScribble(intent.scribble)
-            }
-
-            is CanvasIntent.DeleteScribble -> {
-                deleteScribble(intent.scribble)
-            }
-
-            CanvasIntent.DismissScribbleDialog -> {
+        private fun completeScribble(scribble: Scribble) {
+            viewModelScope.launch {
+                updateScribbleAsCompleteUseCase(scribble.id)
                 dismissScribbleDialog()
             }
+        }
 
-            CanvasIntent.NavigateBack -> {
-                navigator.goBack()
+        private fun deleteScribble(scribble: Scribble) {
+            viewModelScope.launch {
+                removeScribbleUseCase(scribble.id)
+                dismissScribbleDialog()
             }
+        }
 
-            is CanvasIntent.UpdateScribble -> {
-                editScribble(intent.scribble)
-            }
+        private fun dismissScribbleDialog() {
+            _state.update { it.copy(selectedScribble = null) }
+        }
 
-            CanvasIntent.OnPreviousDayClick -> {
-                _state.update { it.copy(currentDate = it.currentDate.minusDays(1)) }
-            }
-
-            CanvasIntent.OnNextDayClick -> {
-                _state.update { it.copy(currentDate = it.currentDate.plusDays(1)) }
+        private fun editScribble(scribble: Scribble) {
+            _state.update {
+                it.copy(
+                    currentScribbleText = scribble.rawText,
+                    editingScribbleId = scribble.id,
+                    selectedScribble = null,
+                )
             }
         }
     }
-
-    private fun addScribble(text: String) {
-        viewModelScope.launch {
-            val editingId = _state.value.editingScribbleId
-            _state.update { it.copy(currentScribbleText = "", editingScribbleId = null) }
-
-            val result = if (editingId != null) {
-                editScribbleUseCase(editingId, text)
-            } else {
-                addRawScribbleUseCase(text, _state.value.currentDate)
-            }
-
-            result.onFailure { e ->
-                _state.update { it.copy(error = e) }
-            }
-        }
-    }
-
-    private fun scribbleClicked(scribble: Scribble) {
-        viewModelScope.launch {
-            when (scribble.status) {
-                ScribbleStatus.FAILED -> parsePendingScribblesUseCase(_state.value.currentDate)
-                ScribbleStatus.SUCCESS -> _state.update { it.copy(selectedScribble = scribble) }
-                else -> {}
-            }
-        }
-    }
-
-    private fun completeScribble(scribble: Scribble) {
-        viewModelScope.launch {
-            updateScribbleAsCompleteUseCase(scribble.id)
-            dismissScribbleDialog()
-        }
-    }
-
-    private fun deleteScribble(scribble: Scribble) {
-        viewModelScope.launch {
-            removeScribbleUseCase(scribble.id)
-            dismissScribbleDialog()
-        }
-    }
-
-    private fun dismissScribbleDialog() {
-        _state.update { it.copy(selectedScribble = null) }
-    }
-
-    private fun editScribble(scribble: Scribble) {
-        _state.update {
-            it.copy(
-                currentScribbleText = scribble.rawText,
-                editingScribbleId = scribble.id,
-                selectedScribble = null
-            )
-        }
-    }
-}
