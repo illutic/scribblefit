@@ -40,6 +40,9 @@ public final class InsightsStore {
         switch intent {
         case .refresh:
             loadInsights()
+        case .selectPeriod(let period):
+            state.selectedPeriod = period
+            loadInsights()
         }
     }
 
@@ -51,7 +54,7 @@ public final class InsightsStore {
         loadTask = Task {
             let calendar = Calendar.current
             let endDate = Date()
-            let startDate = calendar.date(byAdding: .day, value: -27, to: endDate) ?? endDate
+            let startDate = calendar.date(byAdding: .day, value: -state.selectedPeriod.dayCount, to: endDate) ?? endDate
 
             // Load volume, frequency, and distribution in parallel
             async let volumeResult = getVolumeInsightsUseCase.execute(startDate: startDate, endDate: endDate)

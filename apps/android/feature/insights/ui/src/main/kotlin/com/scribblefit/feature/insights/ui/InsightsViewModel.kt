@@ -33,7 +33,25 @@ class InsightsViewModel @Inject constructor(
         when (intent) {
             InsightsIntent.Refresh -> loadInsights()
             is InsightsIntent.NavigateToScreen -> navigator.navigateTo(intent.screen)
+            is InsightsIntent.SelectPeriod -> selectPeriod(intent.period)
         }
+    }
+
+    private fun selectPeriod(period: InsightsPeriod) {
+        val now = LocalDate.now()
+        val startDate = when (period) {
+            InsightsPeriod.DAILY -> now.minusDays(1)
+            InsightsPeriod.WEEKLY -> now.minusWeeks(1)
+            InsightsPeriod.MONTHLY -> now.minusMonths(1)
+        }
+        _state.update {
+            it.copy(
+                selectedPeriod = period,
+                startDate = startDate,
+                endDate = now
+            )
+        }
+        loadInsights()
     }
 
     private fun loadInsights() {

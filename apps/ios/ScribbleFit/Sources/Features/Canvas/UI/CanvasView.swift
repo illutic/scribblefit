@@ -241,10 +241,12 @@ private struct AIInsightsLoadingView: View {
 
 private struct AIInsightsList: View {
     let insights: [AIInsight]
+    @State private var expandedIds: Set<UUID> = []
 
     var body: some View {
         VStack(spacing: 16) {
             ForEach(insights) { insight in
+                let isExpanded = expandedIds.contains(insight.id)
                 HStack(alignment: .top, spacing: 16) {
                     Image(systemName: insight.iconName)
                         .font(.system(size: 18, weight: .bold))
@@ -252,25 +254,36 @@ private struct AIInsightsList: View {
                         .frame(width: 32, height: 32)
                         .background(Color.scribblePrimary.opacity(0.1))
                         .clipShape(Circle())
-                    
+
                     VStack(alignment: .leading, spacing: 4) {
                         Text(insight.insightType.rawValue.uppercased())
                             .font(.scribbleLabelMedium)
                             .fontWeight(.bold)
                             .kerning(1)
                             .foregroundStyle(Color.scribbleMidGray)
-                        
+
                         Text(insight.text)
                             .font(.scribbleBodyMedium)
                             .fontWeight(.medium)
                             .foregroundStyle(Color.scribblePrimary)
                             .lineSpacing(4)
+                            .lineLimit(isExpanded ? nil : 2)
                     }
-                    
+
                     Spacer()
                 }
                 .padding(16)
                 .scribbleGlass(cornerRadius: 16)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                        if isExpanded {
+                            expandedIds.remove(insight.id)
+                        } else {
+                            expandedIds.insert(insight.id)
+                        }
+                    }
+                }
             }
         }
     }

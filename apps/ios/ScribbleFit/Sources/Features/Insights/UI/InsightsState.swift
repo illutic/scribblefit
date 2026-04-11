@@ -3,6 +3,28 @@ import Foundation
 import CoreModel
 #endif
 
+public enum InsightsPeriod: String, CaseIterable, Sendable {
+    case daily
+    case weekly
+    case monthly
+
+    public var label: String {
+        switch self {
+        case .daily: return String(localized: "Daily")
+        case .weekly: return String(localized: "Weekly")
+        case .monthly: return String(localized: "Monthly")
+        }
+    }
+
+    public var dayCount: Int {
+        switch self {
+        case .daily: return 1
+        case .weekly: return 7
+        case .monthly: return 30
+        }
+    }
+}
+
 public struct InsightsState: Equatable, Sendable {
     public var isLoading: Bool = true
     public var isGeneratingAI: Bool = false
@@ -10,6 +32,7 @@ public struct InsightsState: Equatable, Sendable {
     public var frequency: FrequencyData? = nil
     public var distribution: [MuscleGroupDistribution] = []
     public var aiOverview: AIOverview? = nil
+    public var selectedPeriod: InsightsPeriod = .weekly
     public var errorMessage: String? = nil
     public var weightUnit: WeightUnit = .kgs
 

@@ -19,6 +19,17 @@ public struct InsightsView: View {
 
                 ScrollView {
                     VStack(spacing: ScribbleFitSpacing.large) {
+                        Picker(String(localized: "Period"), selection: Binding(
+                            get: { store.state.selectedPeriod },
+                            set: { store.onIntent(.selectPeriod($0)) }
+                        )) {
+                            ForEach(InsightsPeriod.allCases, id: \.self) { period in
+                                Text(period.label).tag(period)
+                            }
+                        }
+                        .pickerStyle(.segmented)
+                        .accessibilityIdentifier("periodPicker")
+
                         if store.state.isLoading {
                             InsightsLoadingView(state: store.state)
                         } else if store.state.isEmpty {

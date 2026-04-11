@@ -37,6 +37,7 @@ import com.scribblefit.core.config.domain.LLMProvider
 import com.scribblefit.core.config.domain.ThemePreference
 import com.scribblefit.core.config.domain.Weight
 import com.scribblefit.core.designsystem.ScribbleFitTheme
+import com.scribblefit.core.designsystem.SegmentedSelector
 
 @Composable
 internal fun AppearanceSection(
@@ -516,47 +517,6 @@ private fun SettingsSection(
     }
 }
 
-@Composable
-private fun <T> SegmentedSelector(
-    options: List<Pair<T, String>>,
-    selectedOption: T,
-    onOptionSelected: (T) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    Surface(
-        color = ScribbleFitTheme.colors.surfaceContainer,
-        shape = CircleShape,
-        modifier = modifier
-    ) {
-        Row(
-            modifier = Modifier.padding(2.dp),
-            horizontalArrangement = Arrangement.spacedBy(2.dp)
-        ) {
-            options.forEach { (option, label) ->
-                val isSelected = option == selectedOption
-                Surface(
-                    modifier = Modifier
-                        .weight(1f)
-                        .clip(CircleShape)
-                        .clickable { onOptionSelected(option) },
-                    color = if (isSelected) ScribbleFitTheme.colors.surfaceContainerLowest else Color.Transparent,
-                    shape = CircleShape,
-                    shadowElevation = if (isSelected) 1.dp else 0.dp
-                ) {
-                    Text(
-                        text = label,
-                        modifier = Modifier.padding(vertical = 6.dp),
-                        style = ScribbleFitTheme.typography.labelMedium,
-                        textAlign = TextAlign.Center,
-                        color = if (isSelected) ScribbleFitTheme.colors.primary else ScribbleFitTheme.colors.midGray,
-                        fontWeight = if (isSelected) FontWeight.SemiBold else FontWeight.Normal,
-                        fontSize = 10.sp
-                    )
-                }
-            }
-        }
-    }
-}
 
 @Composable
 private fun Divider(

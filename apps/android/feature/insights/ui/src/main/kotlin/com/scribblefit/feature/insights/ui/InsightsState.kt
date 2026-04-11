@@ -11,6 +11,10 @@ import com.scribblefit.feature.insights.domain.model.MuscleGroupDistribution
 import com.scribblefit.feature.insights.domain.model.VolumeDataPoint
 import java.time.LocalDate
 
+enum class InsightsPeriod {
+    DAILY, WEEKLY, MONTHLY
+}
+
 data class InsightsState(
     val isLoading: Boolean = true,
     val isGeneratingAI: Boolean = false,
@@ -19,7 +23,8 @@ data class InsightsState(
     val distribution: List<MuscleGroupDistribution> = emptyList(),
     val aiOverview: AIOverview? = null,
     val errorMessage: String? = null,
-    val startDate: LocalDate = LocalDate.now().minusMonths(1),
+    val selectedPeriod: InsightsPeriod = InsightsPeriod.WEEKLY,
+    val startDate: LocalDate = LocalDate.now().minusWeeks(1),
     val endDate: LocalDate = LocalDate.now(),
     val bottomBarState: BottomBarState = BottomBarState(selectedTab = Screen.Insights),
 ) {
@@ -44,6 +49,9 @@ data class InsightsState(
     val nothingToShowRes: Int = R.string.insights_nothing_to_show
     val noDataRes: Int = R.string.insights_no_data
     val thisWeekRes: Int = R.string.insights_this_week
+    val periodDailyRes: Int = R.string.insights_period_daily
+    val periodWeeklyRes: Int = R.string.insights_period_weekly
+    val periodMonthlyRes: Int = R.string.insights_period_monthly
 }
 
 @Composable
@@ -117,3 +125,15 @@ fun InsightsState.getNoData(): String = stringResource(noDataRes)
 @Composable
 @ReadOnlyComposable
 fun InsightsState.getThisWeek(): String = stringResource(thisWeekRes)
+
+@Composable
+@ReadOnlyComposable
+fun InsightsState.getDailyLabel(): String = stringResource(periodDailyRes)
+
+@Composable
+@ReadOnlyComposable
+fun InsightsState.getWeeklyLabel(): String = stringResource(periodWeeklyRes)
+
+@Composable
+@ReadOnlyComposable
+fun InsightsState.getMonthlyLabel(): String = stringResource(periodMonthlyRes)

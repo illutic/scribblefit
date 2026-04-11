@@ -17,4 +17,7 @@
     <string name="insights_nothing_to_show">Nothing to show yet</string>
     <string name="insights_no_data">NO DATA YET</string>
     <string name="insights_this_week">This Week</string>
+    <string name="insights_period_daily">Daily</string>
+    <string name="insights_period_weekly">Weekly</string>
+    <string name="insights_period_monthly">Monthly</string>
 </resources>
