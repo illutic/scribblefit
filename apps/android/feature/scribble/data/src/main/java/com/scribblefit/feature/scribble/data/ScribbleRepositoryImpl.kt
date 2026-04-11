@@ -37,6 +37,11 @@ internal class ScribbleRepositoryImpl(
             scribbleDao.deleteScribble(scribbleId)
         }
 
+    override suspend fun clearScribbleExercises(scribbleId: Long) =
+        withContext(coroutineDispatcher) {
+            scribbleTrackerDao.clearScribbleExercises(scribbleId)
+        }
+
     override suspend fun addExerciseToScribble(
         scribbleId: Long,
         workoutExerciseId: Long,
@@ -71,6 +76,12 @@ internal class ScribbleRepositoryImpl(
     override fun getScribblesByDate(date: Long): Flow<List<Scribble>> =
         scribbleDao
             .getAllScribblesByDate(date)
+            .flowOn(coroutineDispatcher)
+            .map { list -> list.map { it.toDomain() } }
+
+    override fun getScribblesInRange(startDate: Long, endDate: Long): Flow<List<Scribble>> =
+        scribbleDao
+            .getScribblesInRange(startDate, endDate)
             .flowOn(coroutineDispatcher)
             .map { list -> list.map { it.toDomain() } }
 }

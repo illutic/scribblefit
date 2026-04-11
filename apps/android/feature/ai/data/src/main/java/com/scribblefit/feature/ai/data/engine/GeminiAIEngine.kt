@@ -2,13 +2,23 @@ package com.scribblefit.feature.ai.data.engine
 
 import com.scribblefit.core.config.domain.ConfigRepository
 import com.scribblefit.core.config.domain.SecureKeyStorage
+import com.scribblefit.core.model.AIInsight
+import com.scribblefit.core.model.Exercise
+import com.scribblefit.feature.ai.data.entity.AIInsightDto
 import com.scribblefit.feature.ai.data.entity.WorkoutDto
 import com.scribblefit.feature.ai.data.entity.toDomain
-import com.scribblefit.feature.ai.domain.*
-import io.ktor.client.*
-import io.ktor.client.call.*
-import io.ktor.client.request.*
-import io.ktor.http.*
+import com.scribblefit.feature.ai.domain.CloudLLMEngine
+import com.scribblefit.feature.ai.domain.LLMEngine
+import com.scribblefit.feature.ai.domain.ParsedWorkoutResult
+import com.scribblefit.feature.ai.domain.ParsingStatus
+import io.ktor.client.HttpClient
+import io.ktor.client.call.body
+import io.ktor.client.request.get
+import io.ktor.client.request.post
+import io.ktor.client.request.setBody
+import io.ktor.http.ContentType
+import io.ktor.http.HttpStatusCode
+import io.ktor.http.contentType
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
@@ -19,7 +29,7 @@ internal class GeminiAIEngine(
     private val secureKeyStorage: SecureKeyStorage,
     private val configRepository: ConfigRepository,
     private val json: Json
-) : LLMEngine {
+) : LLMEngine, CloudLLMEngine {
     private val config get() = configRepository.config.value
     private val apiKey get() = secureKeyStorage.getApiKey() ?: error("API Key is not provided")
 
@@ -37,48 +47,39 @@ internal class GeminiAIEngine(
         )
     }
 
-    override suspend fun generateInsightsSummary(input: SummaryInput): Result<SummaryResult> = runCatching {
-        val prompt = """
-            You are a fitness expert. Analyze the following workout data and provide a concise summary, trends, and actionable advice.
-            Output your response in JSON format:
-            {
-              "summary": "...",
-              "trends": "...",
-              "advice": "..."
+    override suspend fun generateInsightsSummary(exercises: List<Exercise>): Result<List<AIInsight>> =
+        runCatching {
+            val context = exercises.joinToString("\n") { exercise ->
+                val sets = exercise.sets.joinToString(", ") { "${it.weight}x${it.reps}" }
+                "${exercise.canonicalName} (${exercise.muscleGroup}): $sets"
             }
-            
-            Data:
-            Volume: ${input.volumeTrend}
-            Frequency: ${input.frequencyStats}
-            Muscle Distribution: ${input.muscleDistribution}
-        """.trimIndent()
 
-        val responseText = callGemini(apiKey, prompt)
-        json.decodeFromString<SummaryResult>(responseText)
+            val prompt = "${config.summaryPrompt}\n\nData:\n$context"
+
+            val responseText = callGemini(apiKey, prompt)
+            val dtos = json.decodeFromString<List<AIInsightDto>>(responseText)
+            dtos.map { it.toDomain() }
+        }
+
+    override suspend fun validateApiKey(apiKey: String): Result<Unit> = runCatching {
+        val response = httpClient.get("$GEMINI_BASE_URL/models?key=$apiKey")
+        if (response.status != HttpStatusCode.OK) {
+            error("Invalid API Key: ${response.status}")
+        }
+    }
+
+    override suspend fun getAvailableModels(apiKey: String): Result<List<String>> = runCatching {
+        val response = httpClient.get("$GEMINI_BASE_URL/models?key=$apiKey")
+        if (response.status != HttpStatusCode.OK) {
+            error("Failed to fetch models: ${response.status}")
+        }
+        val modelList = response.body<ModelListResponse>()
+        modelList.models
+            .filter { it.supportedGenerationMethods.contains("generateContent") }
+            .map { it.name.removePrefix("models/") }
     }
 
     private suspend fun callGemini(apiKey: String, userPrompt: String): String {
-        @Serializable
-        data class Part(val text: String)
-
-        @Serializable
-        data class Content(val parts: List<Part>)
-
-        @Serializable
-        data class GenerationConfig(val responseMimeType: String)
-
-        @Serializable
-        data class GeminiRequest(
-            val contents: List<Content>,
-            val generationConfig: GenerationConfig
-        )
-
-        @Serializable
-        data class Candidate(val content: Content)
-
-        @Serializable
-        data class GeminiResponse(val candidates: List<Candidate>)
-
         val request = GeminiRequest(
             contents = listOf(Content(parts = listOf(Part(userPrompt)))),
             generationConfig = GenerationConfig(responseMimeType = "")
@@ -95,3 +96,35 @@ internal class GeminiAIEngine(
         return resultText.replaceFirst("```json", "").replaceFirst("```", "").trim()
     }
 }
+
+@Serializable
+private data class ModelDto(
+    val name: String,
+    val supportedGenerationMethods: List<String>
+)
+
+@Serializable
+private data class ModelListResponse(
+    val models: List<ModelDto>
+)
+
+@Serializable
+data class Part(val text: String)
+
+@Serializable
+data class Content(val parts: List<Part>)
+
+@Serializable
+data class GenerationConfig(val responseMimeType: String)
+
+@Serializable
+data class GeminiRequest(
+    val contents: List<Content>,
+    val generationConfig: GenerationConfig
+)
+
+@Serializable
+data class Candidate(val content: Content)
+
+@Serializable
+data class GeminiResponse(val candidates: List<Candidate>)

@@ -20,7 +20,12 @@ class ExerciseRepositoryImpl(
 ) : ExerciseRepository {
 
     override suspend fun addExercise(exercise: Exercise): Long = withContext(coroutineDispatcher) {
-        exerciseDao.insertExercise(exercise.toEntity())
+        val result = exerciseDao.insertExercise(exercise.toEntity())
+        if (result == -1L) {
+            exerciseDao.getExerciseIdByName(exercise.canonicalName) ?: -1L
+        } else {
+            result
+        }
     }
 
     override suspend fun updateExercise(exercise: Exercise) = withContext(coroutineDispatcher) {
@@ -29,6 +34,10 @@ class ExerciseRepositoryImpl(
 
     override suspend fun deleteExercise(exerciseId: Long) = withContext(coroutineDispatcher) {
         exerciseDao.deleteExercise(exerciseId)
+    }
+
+    override suspend fun deleteWorkoutExercise(workoutExerciseId: Long) = withContext(coroutineDispatcher) {
+        workoutExerciseDao.deleteWorkoutExercise(workoutExerciseId)
     }
 
     override fun searchExercises(query: String): Flow<List<Exercise>> =

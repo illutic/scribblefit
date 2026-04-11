@@ -31,4 +31,11 @@ internal class WorkoutRepositoryImpl(
             .getWorkoutWithAllDetails(workoutId)
             .flowOn(coroutineDispatcher)
             .map { it.toDomain() }
+
+    override fun getWorkoutsInRange(startDate: Long, endDate: Long): Flow<List<Workout>> =
+        workoutDao
+            .getWorkoutsWithAllDetailsInRange(startDate, endDate)
+            .flowOn(coroutineDispatcher)
+            .map { list -> list.map { it.toDomain() } }
+
 }

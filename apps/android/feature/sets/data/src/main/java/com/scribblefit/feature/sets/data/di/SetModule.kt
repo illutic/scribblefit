@@ -6,6 +6,7 @@ import com.scribblefit.feature.sets.data.SetRepositoryImpl
 import com.scribblefit.feature.sets.domain.SetRepository
 import com.scribblefit.feature.sets.domain.usecase.GetSetsForExerciseUseCase
 import com.scribblefit.feature.sets.domain.usecase.InsertSetToExerciseUseCase
+import com.scribblefit.feature.sets.domain.usecase.RemoveSetUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -42,5 +43,12 @@ internal object SetModule {
     ): GetSetsForExerciseUseCase = GetSetsForExerciseUseCase(
         repository = setRepository,
         coroutineDispatcher = coroutineDispatcherProvider.default()
+    )
+
+    @Provides
+    fun provideRemoveSetUseCase(
+        setRepository: SetRepository
+    ): RemoveSetUseCase = RemoveSetUseCase(
+        setRepository = setRepository
     )
 }

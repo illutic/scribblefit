@@ -1,9 +1,13 @@
 package com.scribblefit.feature.insights.data
 
 import com.scribblefit.core.database.dao.WorkoutDao
-import com.scribblefit.feature.ai.domain.LLMEngine
-import com.scribblefit.feature.ai.domain.SummaryInput
-import com.scribblefit.feature.insights.domain.model.*
+import com.scribblefit.core.model.AIInsight
+import com.scribblefit.core.model.Exercise
+import com.scribblefit.core.model.InsightType
+import com.scribblefit.feature.ai.domain.LLMEngineProxy
+import com.scribblefit.feature.insights.domain.model.FrequencyData
+import com.scribblefit.feature.insights.domain.model.MuscleGroupDistribution
+import com.scribblefit.feature.insights.domain.model.VolumeDataPoint
 import com.scribblefit.feature.insights.domain.repository.InsightsRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
@@ -11,22 +15,21 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import java.time.Instant
-import java.time.LocalDate
 import java.time.ZoneOffset
 import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 
 class InsightsRepositoryImpl @Inject constructor(
     private val workoutDao: WorkoutDao,
-    private val llmEngine: LLMEngine,
+    private val llmEngineProxy: LLMEngineProxy,
     private val coroutineDispatcher: CoroutineDispatcher
 ) : InsightsRepository {
 
-    override fun getVolumeInsights(startDate: LocalDate, endDate: LocalDate): Flow<List<VolumeDataPoint>> {
-        val startMillis = startDate.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
-        val endMillis = endDate.atTime(23, 59, 59).atZone(ZoneOffset.UTC).toInstant().toEpochMilli()
-
-        return workoutDao.getWorkoutsWithAllDetailsInRange(startMillis, endMillis).map { workouts ->
+    override fun getVolumeInsights(
+        startDate: Long,
+        endDate: Long
+    ): Flow<List<VolumeDataPoint>> {
+        return workoutDao.getWorkoutsWithAllDetailsInRange(startDate, endDate).map { workouts ->
             workouts.map { workoutWithDetails ->
                 val totalVolume = workoutWithDetails.exercises.sumOf { exerciseWithDetails ->
                     exerciseWithDetails.sets.sumOf { set ->
@@ -44,8 +47,11 @@ class InsightsRepositoryImpl @Inject constructor(
         }
     }
 
-    override fun getFrequencyInsights(): Flow<FrequencyData> {
-        return workoutDao.getAllWorkoutsWithAllDetails().map { workouts ->
+    override fun getFrequencyInsights(
+        startDate: Long,
+        endDate: Long
+    ): Flow<FrequencyData> {
+        return workoutDao.getWorkoutsWithAllDetailsInRange(startDate, endDate).map { workouts ->
             if (workouts.isEmpty()) return@map FrequencyData(0, 0f)
 
             val totalWorkouts = workouts.size
@@ -56,22 +62,27 @@ class InsightsRepositoryImpl @Inject constructor(
                 .atZone(ZoneOffset.UTC)
                 .toLocalDate()
 
-            val weeks = ChronoUnit.WEEKS.between(firstWorkoutDate, lastWorkoutDate).coerceAtLeast(1L)
+            val weeks =
+                ChronoUnit.WEEKS.between(firstWorkoutDate, lastWorkoutDate).coerceAtLeast(1L)
             val workoutsPerWeek = totalWorkouts.toFloat() / weeks.toFloat()
 
             FrequencyData(totalWorkouts, workoutsPerWeek)
         }
     }
 
-    override fun getMuscleDistributionInsights(): Flow<List<MuscleGroupDistribution>> {
-        return workoutDao.getAllWorkoutsWithAllDetails().map { workouts ->
+    override fun getMuscleDistributionInsights(
+        startDate: Long,
+        endDate: Long
+    ): Flow<List<MuscleGroupDistribution>> {
+        return workoutDao.getWorkoutsWithAllDetailsInRange(startDate, endDate).map { workouts ->
             val muscleGroupCounts = mutableMapOf<String, Int>()
             var totalExercises = 0
 
             workouts.forEach { workoutWithDetails ->
                 workoutWithDetails.exercises.forEach { exerciseWithDetails ->
                     val muscleGroup = exerciseWithDetails.exercise.muscleGroup
-                    muscleGroupCounts[muscleGroup] = muscleGroupCounts.getOrDefault(muscleGroup, 0) + 1
+                    muscleGroupCounts[muscleGroup] =
+                        muscleGroupCounts.getOrDefault(muscleGroup, 0) + 1
                     totalExercises++
                 }
             }
@@ -87,32 +98,24 @@ class InsightsRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getAIOverview(): Result<AIOverview> = withContext(coroutineDispatcher) {
-        try {
-            val volume = getVolumeInsights(LocalDate.now().minusMonths(1), LocalDate.now()).first()
-            val frequency = getFrequencyInsights().first()
-            val distribution = getMuscleDistributionInsights().first()
-
-            val input = SummaryInput(
-                volumeTrend = volume.joinToString { "${it.date}: ${it.volume}" },
-                frequencyStats = "Total: ${frequency.totalWorkouts}, Per week: ${frequency.workoutsPerWeek}",
-                muscleDistribution = distribution.joinToString { "${it.muscleGroup}: ${it.percentage}" }
-            )
-
-            llmEngine.generateInsightsSummary(input).fold(
-                onSuccess = { result ->
-                    Result.success(
-                        AIOverview(
-                            summary = result.summary,
-                            trends = result.trends,
-                            advice = result.advice
+    override suspend fun getAIOverview(exercises: List<Exercise>): Result<List<AIInsight>> =
+        withContext(coroutineDispatcher) {
+            try {
+                val llmEngine = llmEngineProxy.underlyingEngine.first()
+                if (exercises.isEmpty()) {
+                    return@withContext Result.success(
+                        listOf(
+                            AIInsight(
+                                InsightType.SUMMARY,
+                                "Start your session by scribbling your first workout!"
+                            )
                         )
                     )
-                },
-                onFailure = { Result.failure(it) }
-            )
-        } catch (e: Exception) {
-            Result.failure(e)
+                }
+
+                llmEngine.generateInsightsSummary(exercises)
+            } catch (e: Exception) {
+                Result.failure(e)
+            }
         }
-    }
 }

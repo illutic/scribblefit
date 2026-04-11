@@ -8,8 +8,8 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 internal data class WorkoutDto(
-    val date: Long,
     val exercises: List<ExerciseDto>,
+    val date: Long = System.currentTimeMillis(),
 )
 
 @Serializable
@@ -19,6 +19,10 @@ internal data class ExerciseDto(
     @SerialName("muscle_group")
     val muscleGroup: String,
     val sets: List<SetDto>,
+    @SerialName("estimated_1rm")
+    val estimated1RM: Float? = null,
+    val intensity: Float? = null,
+    val improvement: Float? = null,
 )
 
 @Serializable
@@ -43,6 +47,9 @@ internal fun ExerciseDto.toDomain(): Exercise =
         canonicalName = canonicalName,
         muscleGroup = muscleGroup,
         sets = sets.map { it.toDomain() },
+        estimated1RM = estimated1RM,
+        intensity = intensity,
+        improvement = improvement,
     )
 
 internal fun SetDto.toDomain(): Set =

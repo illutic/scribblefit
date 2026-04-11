@@ -4,11 +4,11 @@ import com.google.mlkit.genai.prompt.Generation
 import com.google.mlkit.genai.prompt.GenerativeModel
 import com.scribblefit.core.config.domain.ConfigRepository
 import com.scribblefit.core.config.domain.SecureKeyStorage
-import com.scribblefit.core.coroutines.CoroutineDispatcherProvider
-import com.scribblefit.feature.ai.data.engine.DynamicLLMEngine
+import com.scribblefit.feature.ai.data.engine.LLMEngineProxyImpl
 import com.scribblefit.feature.ai.data.engine.GeminiAIEngine
 import com.scribblefit.feature.ai.data.engine.LocalAIEngine
-import com.scribblefit.feature.ai.domain.LLMEngine
+import com.scribblefit.feature.ai.domain.LLMEngineProxy
+import com.scribblefit.feature.ai.domain.LocalLLMEngine
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -47,7 +47,7 @@ internal object AIModule {
         generativeModel: GenerativeModel,
         json: Json,
         configRepository: ConfigRepository
-    ): LocalAIEngine =
+    ): LocalLLMEngine =
         LocalAIEngine(
             generativeModel = generativeModel,
             json = json,
@@ -58,13 +58,11 @@ internal object AIModule {
     @Singleton
     fun provideLLMEngine(
         geminiEngine: GeminiAIEngine,
-        localEngine: LocalAIEngine,
+        localEngine: LocalLLMEngine,
         configRepository: ConfigRepository,
-        coroutineDispatcherProvider: CoroutineDispatcherProvider
-    ): LLMEngine = DynamicLLMEngine(
+    ): LLMEngineProxy = LLMEngineProxyImpl(
         geminiEngine = geminiEngine,
         localEngine = localEngine,
-        configRepository = configRepository,
-        coroutineDispatcher = coroutineDispatcherProvider.io()
+        configRepository = configRepository
     )
 }

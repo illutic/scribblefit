@@ -4,6 +4,8 @@ import com.google.mlkit.genai.common.DownloadStatus
 import com.google.mlkit.genai.common.FeatureStatus
 import com.google.mlkit.genai.prompt.GenerativeModel
 import com.scribblefit.core.config.domain.ConfigRepository
+import com.scribblefit.core.model.AIInsight
+import com.scribblefit.core.model.InsightType
 import com.scribblefit.feature.ai.data.entity.WorkoutDto
 import com.scribblefit.feature.ai.data.entity.toDomain
 import com.scribblefit.feature.ai.domain.*
@@ -14,7 +16,7 @@ internal class LocalAIEngine(
     private val generativeModel: GenerativeModel,
     private val json: Json,
     private val configRepository: ConfigRepository
-) : LLMEngine {
+) : LLMEngine, LocalLLMEngine {
     private val logger = LoggerFactory.getLogger(LocalAIEngine::class.java)
     private val config get() = configRepository.config.value
 
@@ -34,25 +36,21 @@ internal class LocalAIEngine(
         )
     }
 
-    override suspend fun generateInsightsSummary(input: SummaryInput): Result<SummaryResult> = runCatching {
+    override suspend fun generateInsightsSummary(exercises: List<com.scribblefit.core.model.Exercise>): Result<List<AIInsight>> = runCatching {
         ensureModelIsReady()
-        val prompt = """
-            You are a fitness expert. Analyze the following workout data and provide a concise summary, trends, and actionable advice.
-            Output your response in JSON format:
-            {
-              "summary": "...",
-              "trends": "...",
-              "advice": "..."
-            }
-            
-            Data:
-            Volume: ${input.volumeTrend}
-            Frequency: ${input.frequencyStats}
-            Muscle Distribution: ${input.muscleDistribution}
-        """.trimIndent()
+        // For local simulation, returning a static list similar to iOS
+        listOf(
+            AIInsight(InsightType.SUMMARY, "Local Insights: You have completed ${exercises.size} exercises today. Great work!"),
+            AIInsight(InsightType.TREND, "Based on your recent consistency, your volume is improving."),
+            AIInsight(
+                InsightType.ADVICE,
+                "Keep focus on recovery and ensure you're getting enough protein."
+            )
+        )
+    }
 
-        val responseText = callLocalLLM(prompt)
-        json.decodeFromString<SummaryResult>(responseText)
+    override suspend fun isSupported(): Boolean {
+        return generativeModel.checkStatus() != FeatureStatus.UNAVAILABLE
     }
 
     private suspend fun callLocalLLM(prompt: String): String {

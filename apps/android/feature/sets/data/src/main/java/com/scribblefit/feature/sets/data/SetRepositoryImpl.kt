@@ -21,6 +21,11 @@ internal class SetRepositoryImpl(
             workoutExerciseDao.insertWorkoutSet(set.toEntity(workoutExerciseId))
         }
 
+    override suspend fun deleteSet(setId: Long) =
+        withContext(coroutineDispatcher) {
+            workoutExerciseDao.deleteWorkoutSet(setId)
+        }
+
     override fun getSetsForExercise(workoutExerciseId: Long): Flow<List<Set>> =
         workoutExerciseDao
             .getSetsForWorkoutExercise(workoutExerciseId)
