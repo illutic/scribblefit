@@ -11,6 +11,7 @@ import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Test
 import java.time.LocalDate
+import java.time.ZoneOffset
 
 class GetVolumeInsightsUseCaseTest {
 
@@ -19,20 +20,23 @@ class GetVolumeInsightsUseCaseTest {
     private val useCase = GetVolumeInsightsUseCase(repository, testDispatcher)
 
     @Test
-    fun `when called, should return flow from repository`() = runTest(testDispatcher) {
-        // Given
-        val startDate = LocalDate.of(2026, 3, 1)
-        val endDate = LocalDate.of(2026, 3, 17)
-        val expectedData = listOf(
-            VolumeDataPoint(startDate, 1000f),
-            VolumeDataPoint(endDate, 1200f)
-        )
-        every { repository.getVolumeInsights(startDate, endDate) } returns flowOf(expectedData)
+    fun `when called, should convert dates to millis and return flow from repository`() =
+        runTest(testDispatcher) {
+            // Given
+            val startDate = LocalDate.of(2026, 3, 1)
+            val endDate = LocalDate.of(2026, 3, 17)
+            val startMillis = startDate.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli()
+            val endMillis = endDate.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli()
+            val expectedData = listOf(
+                VolumeDataPoint(startDate, 1000f),
+                VolumeDataPoint(endDate, 1200f)
+            )
+            every { repository.getVolumeInsights(startMillis, endMillis) } returns flowOf(expectedData)
 
-        // When & Then
-        useCase(startDate, endDate).test {
-            assertEquals(expectedData, awaitItem())
-            awaitComplete()
+            // When & Then
+            useCase(startDate, endDate).test {
+                assertEquals(expectedData, awaitItem())
+                awaitComplete()
+            }
         }
-    }
 }

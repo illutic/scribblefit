@@ -36,6 +36,14 @@ data class InsightsState(
     val muscleDistributionTitleRes: Int = R.string.insights_muscle_distribution_title
     val aiOverviewTitleRes: Int = R.string.insights_ai_overview_title
     val aiOverviewGeneratingRes: Int = R.string.insights_ai_overview_generating
+    val loadingSubtitleRes: Int = R.string.insights_loading_subtitle
+    val sessionsRes: Int = R.string.insights_sessions
+    val totalVolumeRes: Int = R.string.insights_total_volume
+    val exercisesRes: Int = R.string.insights_exercises
+    val updatedJustNowRes: Int = R.string.insights_updated_just_now
+    val nothingToShowRes: Int = R.string.insights_nothing_to_show
+    val noDataRes: Int = R.string.insights_no_data
+    val thisWeekRes: Int = R.string.insights_this_week
 }
 
 @Composable
@@ -77,3 +85,35 @@ fun InsightsState.getAIOverviewTitle(): String = stringResource(aiOverviewTitleR
 @Composable
 @ReadOnlyComposable
 fun InsightsState.getAIOverviewGeneratingText(): String = stringResource(aiOverviewGeneratingRes)
+
+@Composable
+@ReadOnlyComposable
+fun InsightsState.getLoadingSubtitle(): String = stringResource(loadingSubtitleRes)
+
+@Composable
+@ReadOnlyComposable
+fun InsightsState.getSessionsLabel(): String = stringResource(sessionsRes)
+
+@Composable
+@ReadOnlyComposable
+fun InsightsState.getTotalVolumeLabel(): String = stringResource(totalVolumeRes)
+
+@Composable
+@ReadOnlyComposable
+fun InsightsState.getExercisesLabel(): String = stringResource(exercisesRes)
+
+@Composable
+@ReadOnlyComposable
+fun InsightsState.getUpdatedJustNow(): String = stringResource(updatedJustNowRes)
+
+@Composable
+@ReadOnlyComposable
+fun InsightsState.getNothingToShow(): String = stringResource(nothingToShowRes)
+
+@Composable
+@ReadOnlyComposable
+fun InsightsState.getNoData(): String = stringResource(noDataRes)
+
+@Composable
+@ReadOnlyComposable
+fun InsightsState.getThisWeek(): String = stringResource(thisWeekRes)

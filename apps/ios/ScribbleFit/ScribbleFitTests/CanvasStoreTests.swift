@@ -9,7 +9,6 @@ import Combine
 @testable import FeatureCanvas
 @testable import FeatureInsights
 #endif
-@testable import ScribbleFit
 
 // MARK: - Mock Repositories
 
@@ -93,6 +92,10 @@ final class MockWorkoutRepository: WorkoutRepository {
         return AsyncStream { continuation in
             continuation.yield(current)
         }
+    }
+
+    func getWorkoutsInRange(startDate: Date, endDate: Date) async throws -> [Workout] {
+        workouts
     }
 }
 
@@ -270,7 +273,7 @@ final class CanvasStoreTests: XCTestCase {
     func testAddScribbleClearsTextOnSuccess() async throws {
         store.state.currentScribbleText = "Squat 140kg 5x5"
 
-        store.onIntent(.addScribble("Squat 140kg 5x5"))
+        store.onIntent(CanvasIntent.addScribble("Squat 140kg 5x5"))
 
         // Wait for the async Task inside addScribble to complete.
         try await Task.sleep(for: .milliseconds(200))
@@ -283,9 +286,9 @@ final class CanvasStoreTests: XCTestCase {
 
     @MainActor
     func testClickOnScribbleWithSuccessStatusSetsSelectedScribble() async {
-        let scribble = TestFixtures.makeScribble(status: .success)
+        let scribble = TestFixtures.makeScribble(status: ScribbleStatus.success)
 
-        store.onIntent(.clickOnScribble(scribble))
+        store.onIntent(CanvasIntent.clickOnScribble(scribble))
 
         XCTAssertEqual(store.state.selectedScribble, scribble, "selectedScribble should be set for SUCCESS status")
     }
@@ -294,9 +297,9 @@ final class CanvasStoreTests: XCTestCase {
 
     @MainActor
     func testClickOnScribbleWithFailedStatusDoesNotSetSelectedScribble() async {
-        let scribble = TestFixtures.makeScribble(status: .failed)
+        let scribble = TestFixtures.makeScribble(status: ScribbleStatus.failed)
 
-        store.onIntent(.clickOnScribble(scribble))
+        store.onIntent(CanvasIntent.clickOnScribble(scribble))
 
         XCTAssertNil(
             store.state.selectedScribble,
@@ -308,10 +311,10 @@ final class CanvasStoreTests: XCTestCase {
 
     @MainActor
     func testConfirmScribbleDismissesDialogOnSuccess() async throws {
-        let scribble = TestFixtures.makeScribble(status: .success)
+        let scribble = TestFixtures.makeScribble(status: ScribbleStatus.success)
         store.state.selectedScribble = scribble
 
-        store.onIntent(.confirmScribble(scribble))
+        store.onIntent(CanvasIntent.confirmScribble(scribble))
 
         // Wait for the async Task inside confirmScribble to complete.
         try await Task.sleep(for: .milliseconds(200))
@@ -325,10 +328,10 @@ final class CanvasStoreTests: XCTestCase {
     @MainActor
     func testUpdateExerciseNameUpdatesSelectedScribble() async {
         let exerciseId = TestFixtures.exerciseId
-        let scribble = TestFixtures.makeScribble(status: .success)
+        let scribble = TestFixtures.makeScribble(status: ScribbleStatus.success)
         store.state.selectedScribble = scribble
 
-        store.onIntent(.updateExerciseName(exerciseId, "Incline Bench Press"))
+        store.onIntent(CanvasIntent.updateExerciseName(exerciseId, "Incline Bench Press"))
 
         let updatedExercise = store.state.selectedScribble?.exercises.first { $0.id == exerciseId }
         XCTAssertEqual(
@@ -344,12 +347,13 @@ final class CanvasStoreTests: XCTestCase {
     func testUpdateSetWeightUpdatesWeightForValidFloat() async {
         let exerciseId = TestFixtures.exerciseId
         let setId = TestFixtures.setId
-        let scribble = TestFixtures.makeScribble(status: .success)
+        let scribble = TestFixtures.makeScribble(status: ScribbleStatus.success)
         store.state.selectedScribble = scribble
 
-        store.onIntent(.updateSetWeight(exerciseId, setId, "120.5"))
+        store.onIntent(CanvasIntent.updateSetWeight(exerciseId, setId, "120.5"))
 
-        let updatedSet = store.state.selectedScribble?
+        let selected1 = store.state.selectedScribble
+        let updatedSet = selected1?
             .exercises.first { $0.id == exerciseId }?
             .sets.first { $0.id == setId }
         XCTAssertEqual(updatedSet?.weight, 120.5, "Weight should be updated to 120.5")
@@ -359,12 +363,13 @@ final class CanvasStoreTests: XCTestCase {
     func testUpdateSetWeightIgnoresInvalidFloat() async {
         let exerciseId = TestFixtures.exerciseId
         let setId = TestFixtures.setId
-        let scribble = TestFixtures.makeScribble(status: .success)
+        let scribble = TestFixtures.makeScribble(status: ScribbleStatus.success)
         store.state.selectedScribble = scribble
 
-        store.onIntent(.updateSetWeight(exerciseId, setId, "not-a-number"))
+        store.onIntent(CanvasIntent.updateSetWeight(exerciseId, setId, "not-a-number"))
 
-        let updatedSet = store.state.selectedScribble?
+        let selected2 = store.state.selectedScribble
+        let updatedSet = selected2?
             .exercises.first { $0.id == exerciseId }?
             .sets.first { $0.id == setId }
         XCTAssertEqual(updatedSet?.weight, 100.0, "Weight should remain unchanged for invalid input")
@@ -376,12 +381,13 @@ final class CanvasStoreTests: XCTestCase {
     func testUpdateSetRepsUpdatesRepsForValidInt() async {
         let exerciseId = TestFixtures.exerciseId
         let setId = TestFixtures.setId
-        let scribble = TestFixtures.makeScribble(status: .success)
+        let scribble = TestFixtures.makeScribble(status: ScribbleStatus.success)
         store.state.selectedScribble = scribble
 
-        store.onIntent(.updateSetReps(exerciseId, setId, "12"))
+        store.onIntent(CanvasIntent.updateSetReps(exerciseId, setId, "12"))
 
-        let updatedSet = store.state.selectedScribble?
+        let selected3 = store.state.selectedScribble
+        let updatedSet = selected3?
             .exercises.first { $0.id == exerciseId }?
             .sets.first { $0.id == setId }
         XCTAssertEqual(updatedSet?.reps, 12, "Reps should be updated to 12")
@@ -391,12 +397,13 @@ final class CanvasStoreTests: XCTestCase {
     func testUpdateSetRepsIgnoresInvalidInt() async {
         let exerciseId = TestFixtures.exerciseId
         let setId = TestFixtures.setId
-        let scribble = TestFixtures.makeScribble(status: .success)
+        let scribble = TestFixtures.makeScribble(status: ScribbleStatus.success)
         store.state.selectedScribble = scribble
 
-        store.onIntent(.updateSetReps(exerciseId, setId, "abc"))
+        store.onIntent(CanvasIntent.updateSetReps(exerciseId, setId, "abc"))
 
-        let updatedSet = store.state.selectedScribble?
+        let selectedScribble = store.state.selectedScribble
+        let updatedSet = selectedScribble?
             .exercises.first { $0.id == exerciseId }?
             .sets.first { $0.id == setId }
         XCTAssertEqual(updatedSet?.reps, 10, "Reps should remain unchanged for invalid input")
@@ -406,11 +413,11 @@ final class CanvasStoreTests: XCTestCase {
 
     @MainActor
     func testDeleteScribbleClearsSelectedScribble() async throws {
-        let scribble = TestFixtures.makeScribble(status: .success)
+        let scribble = TestFixtures.makeScribble(status: ScribbleStatus.success)
         scribbleRepo.scribbles = [scribble]
         store.state.selectedScribble = scribble
 
-        store.onIntent(.deleteScribble(scribble.id))
+        store.onIntent(CanvasIntent.deleteScribble(scribble.id))
 
         // Wait for the async Task inside deleteScribble to complete.
         try await Task.sleep(for: .milliseconds(200))

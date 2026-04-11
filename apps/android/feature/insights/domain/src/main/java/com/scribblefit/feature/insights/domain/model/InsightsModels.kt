@@ -10,7 +10,8 @@ data class VolumeDataPoint(
 
 data class FrequencyData(
     val totalWorkouts: Int,
-    val workoutsPerWeek: Float
+    val workoutsPerWeek: Float,
+    val totalExercises: Int = 0
 )
 
 data class MuscleGroupDistribution(

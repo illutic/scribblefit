@@ -61,6 +61,24 @@ public final class WorkoutRepositoryImpl: WorkoutRepository {
         changeSubject.send()
     }
 
+    public func getWorkoutsInRange(startDate: Date, endDate: Date) async throws -> [Workout] {
+        let calendar = Calendar.current
+        let rangeStart = calendar.startOfDay(for: startDate)
+        let rangeEnd = calendar.date(byAdding: .day, value: 1, to: calendar.startOfDay(for: endDate))!
+
+        let predicate = #Predicate<WorkoutEntity> { workout in
+            workout.date >= rangeStart && workout.date < rangeEnd
+        }
+
+        let descriptor = FetchDescriptor<WorkoutEntity>(
+            predicate: predicate,
+            sortBy: [SortDescriptor(\.date)]
+        )
+
+        let entities = try modelContext.fetch(descriptor)
+        return entities.map { $0.toDomain() }
+    }
+
     public func getWorkouts(for date: Date) -> AsyncStream<[Workout]> {
         let (stream, continuation) = AsyncStream.makeStream(of: [Workout].self)
         

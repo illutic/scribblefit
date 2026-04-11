@@ -1,4 +1,4 @@
 import Foundation
 
-// Placeholder to ensure SPM can compile the FeatureInsights target.
-// This will be replaced with the full Insights UI implementation.
+// This file is kept for backward compatibility with SPM.
+// The actual Insights UI is implemented in InsightsView.swift.

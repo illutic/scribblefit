@@ -52,9 +52,10 @@ class InsightsRepositoryImpl @Inject constructor(
         endDate: Long
     ): Flow<FrequencyData> {
         return workoutDao.getWorkoutsWithAllDetailsInRange(startDate, endDate).map { workouts ->
-            if (workouts.isEmpty()) return@map FrequencyData(0, 0f)
+            if (workouts.isEmpty()) return@map FrequencyData(0, 0f, 0)
 
             val totalWorkouts = workouts.size
+            val totalExercises = workouts.sumOf { it.exercises.size }
             val firstWorkoutDate = Instant.ofEpochMilli(workouts.first().workout.workoutDate)
                 .atZone(ZoneOffset.UTC)
                 .toLocalDate()
@@ -66,7 +67,7 @@ class InsightsRepositoryImpl @Inject constructor(
                 ChronoUnit.WEEKS.between(firstWorkoutDate, lastWorkoutDate).coerceAtLeast(1L)
             val workoutsPerWeek = totalWorkouts.toFloat() / weeks.toFloat()
 
-            FrequencyData(totalWorkouts, workoutsPerWeek)
+            FrequencyData(totalWorkouts, workoutsPerWeek, totalExercises)
         }
     }
 
@@ -92,7 +93,7 @@ class InsightsRepositoryImpl @Inject constructor(
             muscleGroupCounts.map { (muscleGroup, count) ->
                 MuscleGroupDistribution(
                     muscleGroup = muscleGroup,
-                    percentage = count.toFloat() / totalExercises.toFloat()
+                    percentage = (count.toFloat() / totalExercises.toFloat()) * 100f
                 )
             }.sortedByDescending { it.percentage }
         }

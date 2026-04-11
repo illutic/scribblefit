@@ -42,10 +42,14 @@ struct ScribbleFitApp: App {
     private let getAvailableModelsUseCase: GetAvailableModelsUseCase
     private let checkLocalSupportUseCase: CheckLocalSupportUseCase
     private let exportUserDataUseCase: ExportUserDataUseCase
+    private let getVolumeInsightsUseCase: GetVolumeInsightsUseCase
+    private let getFrequencyInsightsUseCase: GetFrequencyInsightsUseCase
+    private let getMuscleDistributionInsightsUseCase: GetMuscleDistributionInsightsUseCase
 
     // Stores
     private let canvasStore: CanvasStore
     private let settingsStore: SettingsStore
+    private let insightsStore: InsightsStore
 
     init() {
         do {
@@ -90,6 +94,9 @@ struct ScribbleFitApp: App {
             self.getAvailableModelsUseCase = GetAvailableModelsUseCase(llmService: routingLLM)
             self.checkLocalSupportUseCase = CheckLocalSupportUseCase(localLLM: localLLM)
             self.exportUserDataUseCase = ExportUserDataUseCase(repository: settingsRepo)
+            self.getVolumeInsightsUseCase = GetVolumeInsightsUseCase(workoutRepository: workoutRepo)
+            self.getFrequencyInsightsUseCase = GetFrequencyInsightsUseCase(workoutRepository: workoutRepo)
+            self.getMuscleDistributionInsightsUseCase = GetMuscleDistributionInsightsUseCase(workoutRepository: workoutRepo)
 
             // Stores
             self.canvasStore = CanvasStore(
@@ -113,6 +120,14 @@ struct ScribbleFitApp: App {
                 exportUserDataUseCase: exportUserDataUseCase
             )
 
+            self.insightsStore = InsightsStore(
+                getAIOverviewUseCase: getAIOverviewUseCase,
+                getVolumeInsightsUseCase: getVolumeInsightsUseCase,
+                getFrequencyInsightsUseCase: getFrequencyInsightsUseCase,
+                getMuscleDistributionInsightsUseCase: getMuscleDistributionInsightsUseCase,
+                configRepository: configRepo
+            )
+
         } catch {
             print("ERROR INITIALIZING SWIFTDATA: \(error)")
             fatalError("Could not initialize SwiftData: \(error)")
@@ -123,7 +138,8 @@ struct ScribbleFitApp: App {
         WindowGroup {
             ContentView(
                 canvasStore: canvasStore,
-                settingsStore: settingsStore
+                settingsStore: settingsStore,
+                insightsStore: insightsStore
             )
         }
         .modelContainer(modelContainer)
@@ -133,6 +149,7 @@ struct ScribbleFitApp: App {
 struct ContentView: View {
     @Bindable var canvasStore: CanvasStore
     @Bindable var settingsStore: SettingsStore
+    @Bindable var insightsStore: InsightsStore
 
     var body: some View {
         TabView {
@@ -144,7 +161,7 @@ struct ContentView: View {
                 Label(String(localized: "Today"), systemImage: "house.fill")
             }
 
-            InsightsPlaceholderView()
+            InsightsView(store: insightsStore)
                 .tabItem {
                     Label(String(localized: "Insights"), systemImage: "star.fill")
                 }
@@ -163,15 +180,6 @@ struct ContentView: View {
         case .light: return .light
         case .dark: return .dark
         case .system: return nil
-        }
-    }
-}
-
-struct InsightsPlaceholderView: View {
-    var body: some View {
-        NavigationStack {
-            Text(String(localized: "Insights coming soon"))
-                .navigationTitle(String(localized: "Insights"))
         }
     }
 }
