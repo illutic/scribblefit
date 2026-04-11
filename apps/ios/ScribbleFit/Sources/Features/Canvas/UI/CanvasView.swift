@@ -1,7 +1,9 @@
 import SwiftUI
+#if SWIFT_PACKAGE
 import CoreModel
 import CoreDesignSystem
 import FeatureSettings
+#endif
 
 public struct CanvasView: View {
     @Bindable var store: CanvasStore

@@ -1,9 +1,11 @@
 import Foundation
 import SwiftData
 import Security
+#if SWIFT_PACKAGE
 import CoreModel
 import CoreDatabase
 import CoreCommon
+#endif
 
 @MainActor
 public final class SettingsRepositoryImpl: SettingsRepository {

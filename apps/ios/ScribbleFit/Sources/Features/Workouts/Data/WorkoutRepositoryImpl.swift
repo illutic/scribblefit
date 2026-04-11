@@ -1,8 +1,10 @@
 import Foundation
 import SwiftData
 @preconcurrency import Combine
+#if SWIFT_PACKAGE
 import CoreModel
 import CoreDatabase
+#endif
 
 @MainActor
 public final class WorkoutRepositoryImpl: WorkoutRepository {

@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+#if SWIFT_PACKAGE
 import CoreModel
 import CoreDatabase
 import CoreDesignSystem
@@ -11,6 +12,7 @@ import FeatureConfig
 import FeatureCanvas
 import FeatureSettings
 import FeatureInsights
+#endif
 
 @main
 @MainActor

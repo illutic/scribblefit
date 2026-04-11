@@ -1,5 +1,7 @@
 import Foundation
+#if SWIFT_PACKAGE
 import CoreModel
+#endif
 
 public struct SettingsState: Equatable, Sendable {
     public var config: SystemConfig = SystemConfig()

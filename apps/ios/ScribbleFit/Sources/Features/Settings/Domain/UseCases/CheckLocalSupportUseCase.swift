@@ -1,6 +1,8 @@
 import Foundation
+#if SWIFT_PACKAGE
 import CoreModel
 import FeatureAI
+#endif
 
 @MainActor
 public final class CheckLocalSupportUseCase {

@@ -1,9 +1,11 @@
 import Foundation
 import Observation
 import Combine
+#if SWIFT_PACKAGE
 import CoreModel
 import FeatureScribble
 import FeatureInsights
+#endif
 
 @Observable
 @MainActor

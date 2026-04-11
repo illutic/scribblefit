@@ -1,6 +1,8 @@
 import Foundation
 import Combine
+#if SWIFT_PACKAGE
 import CoreModel
+#endif
 
 @MainActor
 public final class ConfigRepositoryImpl: ConfigRepository, @unchecked Sendable {

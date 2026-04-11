@@ -1,6 +1,8 @@
 import SwiftUI
+#if SWIFT_PACKAGE
 import CoreModel
 import CoreDesignSystem
+#endif
 
 struct ScribbleCard: View {
     let scribble: Scribble

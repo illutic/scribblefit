@@ -1,7 +1,9 @@
 import Foundation
 import Observation
 import Combine
+#if SWIFT_PACKAGE
 import CoreModel
+#endif
 
 @Observable
 @MainActor

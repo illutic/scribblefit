@@ -1,6 +1,8 @@
 import Foundation
 import SwiftData
+#if SWIFT_PACKAGE
 import CoreModel
+#endif
 
 @Model
 public final class ScribbleEntity {

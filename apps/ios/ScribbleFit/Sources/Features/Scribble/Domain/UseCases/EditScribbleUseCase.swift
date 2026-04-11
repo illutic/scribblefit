@@ -1,5 +1,7 @@
 import Foundation
+#if SWIFT_PACKAGE
 import CoreModel
+#endif
 
 @MainActor
 public final class EditScribbleUseCase {

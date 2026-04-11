@@ -1,5 +1,7 @@
 import SwiftUI
+#if SWIFT_PACKAGE
 import CoreModel
+#endif
 #if canImport(UIKit)
 import UIKit
 #endif

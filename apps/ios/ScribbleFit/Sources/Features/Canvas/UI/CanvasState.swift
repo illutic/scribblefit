@@ -1,5 +1,7 @@
 import Foundation
+#if SWIFT_PACKAGE
 import CoreModel
+#endif
 
 public struct CanvasState: Equatable, Sendable {
     public var isLoading: Bool = false
