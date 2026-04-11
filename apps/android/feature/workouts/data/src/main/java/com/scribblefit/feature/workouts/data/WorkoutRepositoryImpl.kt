@@ -1,6 +1,7 @@
 package com.scribblefit.feature.workouts.data
 
 import com.scribblefit.core.database.dao.WorkoutDao
+import com.scribblefit.core.database.entity.set.WorkoutSet
 import com.scribblefit.core.database.mapper.toDomain
 import com.scribblefit.core.database.mapper.toEntity
 import com.scribblefit.core.model.Workout
@@ -18,6 +19,24 @@ internal class WorkoutRepositoryImpl(
 
     override suspend fun saveWorkout(workout: Workout): Long = withContext(coroutineDispatcher) {
         workoutDao.insertWorkout(workout.toEntity())
+    }
+
+    override suspend fun saveWorkoutWithDetails(workout: Workout): Long = withContext(coroutineDispatcher) {
+        val workoutEntity = workout.toEntity()
+        val exerciseEntities = workout.exercises.map { it.toEntity() }
+        val setsPerExercise = workout.exercises.map { exercise ->
+            exercise.sets.map { set ->
+                WorkoutSet(
+                    workoutExerciseId = 0,
+                    setNumber = set.setNumber,
+                    weight = set.weight,
+                    reps = set.reps,
+                    rpe = set.rpe,
+                    notes = set.notes,
+                )
+            }
+        }
+        workoutDao.insertWorkoutWithDetails(workoutEntity, exerciseEntities, setsPerExercise)
     }
 
     override fun getWorkoutByDate(date: Long): Flow<Workout?> =

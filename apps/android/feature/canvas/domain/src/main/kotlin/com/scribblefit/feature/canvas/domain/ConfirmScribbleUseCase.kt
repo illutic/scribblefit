@@ -10,8 +10,10 @@ class ConfirmScribbleUseCase(
     private val scribbleRepository: ScribbleRepository,
     private val insertWorkoutUseCase: InsertWorkoutUseCase,
 ) {
-    suspend operator fun invoke(scribble: Scribble) {
-        if (scribble.status != ScribbleStatus.SUCCESS) return
+    suspend operator fun invoke(scribble: Scribble): Result<Unit> = runCatching {
+        require(scribble.status == ScribbleStatus.SUCCESS) {
+            "Cannot confirm scribble with status ${scribble.status}"
+        }
 
         val workout = Workout(
             id = 0,
@@ -20,7 +22,7 @@ class ConfirmScribbleUseCase(
             notes = listOf("Imported from scribble: ${scribble.rawText}")
         )
 
-        insertWorkoutUseCase(workout)
+        insertWorkoutUseCase(workout).getOrThrow()
 
         scribbleRepository.updateScribble(scribble.copy(status = ScribbleStatus.COMPLETED))
     }
