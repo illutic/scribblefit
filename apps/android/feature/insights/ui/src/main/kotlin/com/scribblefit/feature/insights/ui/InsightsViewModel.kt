@@ -3,11 +3,14 @@ package com.scribblefit.feature.insights.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.scribblefit.core.navigation.Navigator
+import com.scribblefit.feature.insights.domain.model.AIOverview
 import com.scribblefit.feature.insights.domain.usecase.*
+import com.scribblefit.feature.scribble.domain.ScribbleRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.ZoneOffset
 import javax.inject.Inject
 
 @HiltViewModel
@@ -35,13 +38,12 @@ class InsightsViewModel @Inject constructor(
 
     private fun loadInsights() {
         _state.update { it.copy(isLoading = true) }
-
-        val startDate = LocalDate.now().minusMonths(1)
-        val endDate = LocalDate.now()
+        val startDate = _state.value.startDate
+        val endDate = _state.value.endDate
 
         val volumeFlow = getVolumeInsightsUseCase(startDate, endDate)
-        val frequencyFlow = getFrequencyInsightsUseCase()
-        val distributionFlow = getMuscleDistributionInsightsUseCase()
+        val frequencyFlow = getFrequencyInsightsUseCase(startDate, endDate)
+        val distributionFlow = getMuscleDistributionInsightsUseCase(startDate, endDate)
 
         viewModelScope.launch {
             combine(volumeFlow, frequencyFlow, distributionFlow) { volume, frequency, distribution ->
@@ -76,12 +78,13 @@ class InsightsViewModel @Inject constructor(
 
         viewModelScope.launch {
             _state.update { it.copy(isGeneratingAI = true) }
+
             getAIOverviewUseCase().fold(
-                onSuccess = { overview ->
+                onSuccess = { insights ->
                     _state.update {
                         it.copy(
                             isGeneratingAI = false,
-                            aiOverview = overview
+                            aiOverview = AIOverview(insights = insights)
                         )
                     }
                 },

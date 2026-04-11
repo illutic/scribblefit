@@ -9,6 +9,7 @@ import com.scribblefit.feature.insights.domain.model.AIOverview
 import com.scribblefit.feature.insights.domain.model.FrequencyData
 import com.scribblefit.feature.insights.domain.model.MuscleGroupDistribution
 import com.scribblefit.feature.insights.domain.model.VolumeDataPoint
+import java.time.LocalDate
 
 data class InsightsState(
     val isLoading: Boolean = true,
@@ -18,6 +19,8 @@ data class InsightsState(
     val distribution: List<MuscleGroupDistribution> = emptyList(),
     val aiOverview: AIOverview? = null,
     val errorMessage: String? = null,
+    val startDate: LocalDate = LocalDate.now().minusMonths(1),
+    val endDate: LocalDate = LocalDate.now(),
     val bottomBarState: BottomBarState = BottomBarState(selectedTab = Screen.Insights),
 ) {
     val isEmpty: Boolean

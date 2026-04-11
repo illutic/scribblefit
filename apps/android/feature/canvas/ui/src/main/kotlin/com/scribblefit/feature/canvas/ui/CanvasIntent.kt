@@ -13,6 +13,12 @@ sealed interface CanvasIntent {
         val scribble: String,
     ) : CanvasIntent
 
+    data class RetryScribbleParsing(
+        val scribble: Scribble,
+    ) : CanvasIntent
+
+    data object ToggleInputExpansion : CanvasIntent
+
     data class ClickOnScribble(
         val scribble: Scribble,
     ) : CanvasIntent
@@ -21,12 +27,14 @@ sealed interface CanvasIntent {
 
     data object OnNextDayClick : CanvasIntent
 
+    data object ShowDatePicker : CanvasIntent
+
+    data object DismissDatePicker : CanvasIntent
+
+    data class OnDateSelected(val date: java.time.LocalDate) : CanvasIntent
+
     // Scribble Dialog
     data class UpdateScribble(
-        val scribble: Scribble,
-    ) : CanvasIntent
-
-    data class DeleteScribble(
         val scribble: Scribble,
     ) : CanvasIntent
 
@@ -34,7 +42,17 @@ sealed interface CanvasIntent {
         val scribble: Scribble,
     ) : CanvasIntent
 
+    data class DeleteScribble(
+        val scribbleId: Long,
+    ) : CanvasIntent
+
     data object DismissScribbleDialog : CanvasIntent
+
+    // Manual Editing
+    data class UpdateExerciseName(val exerciseId: Long, val newName: String) : CanvasIntent
+    data class UpdateSetWeight(val exerciseId: Long, val setId: Long, val newWeight: String) : CanvasIntent
+    data class UpdateSetReps(val exerciseId: Long, val setId: Long, val newReps: String) : CanvasIntent
+    data class DeleteSet(val exerciseId: Long, val setId: Long) : CanvasIntent
 
     // Navigation
     data object NavigateBack : CanvasIntent

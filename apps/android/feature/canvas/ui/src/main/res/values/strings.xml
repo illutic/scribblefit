@@ -18,7 +18,29 @@
     <string name="canvas_dialog_delete">Delete</string>
     <string name="canvas_dialog_edit">Edit</string>
     <string name="canvas_weight_unit_kg">kg</string>
+    <string name="canvas_weight_unit_lb">lb</string>
     <string name="canvas_profile_button">Profile</string>
     <string name="canvas_previous_day">Previous Day</string>
     <string name="canvas_next_day">Next Day</string>
+    <string name="canvas_settings_button">Settings</string>
+
+    <!-- Canvas Feature Strings -->
+    <string name="canvas_ai_insights">AI INSIGHTS</string>
+    <string name="canvas_close">Close</string>
+    <string name="canvas_parsing_workout_data">Parsing workout data…</string>
+    <string name="canvas_tap_to_confirm">Tap to confirm &amp; save</string>
+    <string name="canvas_logged">Logged</string>
+    <string name="canvas_estimated_1rm">Estimated 1RM</string>
+    <string name="canvas_intensity">Intensity</string>
+    <string name="canvas_last_session_improvement_format">%1$s %2$s from last session</string>
+    <string name="canvas_failed_to_parse_workout">Failed to parse workout</string>
+    <string name="canvas_edit">Edit</string>
+    <string name="canvas_retry">Retry</string>
+    <string name="canvas_remove">Remove</string>
+    <string name="canvas_workout_summary_format">%1$.1f %2$s • %3$d sets • %4$d reps</string>
+    <string name="canvas_set_format">%1$s %2$dx%3$d</string>
+    <string name="canvas_collapse">Collapse</string>
+    <string name="canvas_expand_search">Expand search</string>
+    <string name="canvas_estimated_1rm_value_format">%1$d %2$s</string>
+    <string name="canvas_intensity_value_format">%1$d%%</string>
 </resources>
