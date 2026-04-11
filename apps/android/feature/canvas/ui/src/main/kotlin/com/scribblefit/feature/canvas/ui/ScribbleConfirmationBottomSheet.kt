@@ -1,6 +1,5 @@
 package com.scribblefit.feature.canvas.ui
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -22,7 +21,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material.icons.Icons
@@ -49,7 +47,6 @@ internal fun ScribbleConfirmationBottomSheet(
     scribble: Scribble,
     weightUnit: Weight,
     onConfirm: (Scribble) -> Unit,
-    onEdit: (Scribble) -> Unit,
     onDelete: (Scribble) -> Unit,
     onDismiss: () -> Unit,
     onUpdateExerciseName: (Long, String) -> Unit,
@@ -213,46 +210,25 @@ internal fun ScribbleConfirmationBottomSheet(
                 )
             }
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            Button(
+                onClick = { onDelete(scribble) },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(56.dp),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = ScribbleFitTheme.colors.dangerRed.copy(
+                        alpha = 0.1f
+                    )
+                ),
+                shape = CircleShape,
+                elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
             ) {
-                OutlinedButton(
-                    onClick = { onEdit(scribble) },
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(56.dp),
-                    shape = CircleShape,
-                    border = BorderStroke(1.dp, ScribbleFitTheme.colors.surfaceContainerHigh)
-                ) {
-                    Text(
-                        text = stringResource(R.string.canvas_dialog_edit),
-                        style = ScribbleFitTheme.typography.bodyMedium,
-                        color = ScribbleFitTheme.colors.primary,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
-
-                Button(
-                    onClick = { onDelete(scribble) },
-                    modifier = Modifier
-                        .weight(1f)
-                        .height(56.dp),
-                    colors = ButtonDefaults.buttonColors(
-                        containerColor = ScribbleFitTheme.colors.dangerRed.copy(
-                            alpha = 0.1f
-                        )
-                    ),
-                    shape = CircleShape,
-                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 0.dp)
-                ) {
-                    Text(
-                        text = stringResource(R.string.canvas_dialog_delete),
-                        style = ScribbleFitTheme.typography.bodyMedium,
-                        color = ScribbleFitTheme.colors.dangerRed,
-                        fontWeight = FontWeight.SemiBold
-                    )
-                }
+                Text(
+                    text = stringResource(R.string.canvas_dialog_delete),
+                    style = ScribbleFitTheme.typography.bodyMedium,
+                    color = ScribbleFitTheme.colors.dangerRed,
+                    fontWeight = FontWeight.SemiBold
+                )
             }
         }
     }

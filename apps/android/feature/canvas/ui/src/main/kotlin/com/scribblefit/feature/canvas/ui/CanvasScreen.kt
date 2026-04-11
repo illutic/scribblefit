@@ -83,7 +83,6 @@ internal fun CanvasScreen(
             scribble = scribble,
             weightUnit = state.weightUnit,
             onConfirm = { onIntent(CanvasIntent.ConfirmScribble(it)) },
-            onEdit = { onIntent(CanvasIntent.UpdateScribble(it)) },
             onDelete = { onIntent(CanvasIntent.DeleteScribble(it.id)) },
             onDismiss = { onIntent(CanvasIntent.DismissScribbleDialog) },
             onUpdateExerciseName = { id, name -> onIntent(CanvasIntent.UpdateExerciseName(id, name)) },

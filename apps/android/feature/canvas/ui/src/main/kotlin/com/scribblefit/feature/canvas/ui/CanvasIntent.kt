@@ -34,10 +34,6 @@ sealed interface CanvasIntent {
     data class OnDateSelected(val date: java.time.LocalDate) : CanvasIntent
 
     // Scribble Dialog
-    data class UpdateScribble(
-        val scribble: Scribble,
-    ) : CanvasIntent
-
     data class ConfirmScribble(
         val scribble: Scribble,
     ) : CanvasIntent

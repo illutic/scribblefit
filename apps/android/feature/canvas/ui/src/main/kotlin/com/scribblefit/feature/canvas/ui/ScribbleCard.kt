@@ -441,14 +441,6 @@ private fun FailedScribbleCard(
                 modifier = Modifier.padding(top = 8.dp)
             ) {
                 Text(
-                    text = stringResource(R.string.canvas_edit).uppercase(),
-                    style = ScribbleFitTheme.typography.labelMedium,
-                    color = ScribbleFitTheme.colors.midGray,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp,
-                    modifier = Modifier.clickable { onIntent(CanvasIntent.UpdateScribble(scribble)) }
-                )
-                Text(
                     text = stringResource(R.string.canvas_retry).uppercase(),
                     style = ScribbleFitTheme.typography.labelMedium,
                     color = ScribbleFitTheme.colors.primary,

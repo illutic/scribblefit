@@ -20,7 +20,6 @@ data class CanvasState(
     val currentDate: LocalDate = LocalDate.now(),
     val error: Throwable? = null,
     val currentScribbleText: String = "",
-    val editingScribbleId: Long? = null,
     val scribbles: List<Scribble> = emptyList(),
     val selectedScribble: Scribble? = null,
     val bottomBarState: BottomBarState = BottomBarState(),

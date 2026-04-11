@@ -12,7 +12,6 @@ import com.scribblefit.feature.canvas.domain.DeleteScribbleUseCase
 import com.scribblefit.feature.canvas.domain.GetScribblesForDateUseCase
 import com.scribblefit.feature.canvas.domain.ParsePendingScribblesUseCase
 import com.scribblefit.feature.insights.domain.usecase.GetAIOverviewUseCase
-import com.scribblefit.feature.scribble.domain.usecase.EditScribbleUseCase
 import com.scribblefit.feature.sets.domain.usecase.RemoveSetUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -23,6 +22,8 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onCompletion
+import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -36,7 +37,6 @@ constructor(
     private val getScribblesForDateUseCase: GetScribblesForDateUseCase,
     private val parsePendingScribblesUseCase: ParsePendingScribblesUseCase,
     private val addScribbleUseCase: AddScribbleUseCase,
-    private val editScribbleUseCase: EditScribbleUseCase,
     private val confirmScribbleUseCase: ConfirmScribbleUseCase,
     private val deleteScribbleUseCase: DeleteScribbleUseCase,
     private val getAIOverviewUseCase: GetAIOverviewUseCase,
@@ -46,31 +46,24 @@ constructor(
 ) : ViewModel() {
     private val _state = MutableStateFlow(CanvasState())
     private val currentDate = _state.map { it.currentDate }.distinctUntilChanged()
+
     @OptIn(ExperimentalCoroutinesApi::class)
     private val scribblesForDate = currentDate.flatMapLatest { date ->
-        _state.update { it.copy(isLoading = true) }
-        getScribblesForDateUseCase(date).also {
-            _state.update { it.copy(isLoading = false) }
-        }
+        getScribblesForDateUseCase(date)
+            .onStart { _state.update { it.copy(isLoading = true) } }
+            .onCompletion { _state.update { it.copy(isLoading = false) } }
     }
+
     private val preferredWeight = configRepository.config.map { it.weightUnit }.distinctUntilChanged()
-    private val aiInsights = currentDate.map { date ->
-        _state.update { it.copy(isGeneratingInsights = true) }
-        getAIOverviewUseCase(date).also {
-            _state.update { it.copy(isGeneratingInsights = false) }
-        }
-    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), Result.success(emptyList()))
 
     val state = combine(
         _state,
         preferredWeight,
         scribblesForDate,
-        aiInsights
-    ) { currentState, weightUnit, scribbles, aiInsights ->
+    ) { currentState, weightUnit, scribbles ->
         currentState.copy(
             weightUnit = weightUnit,
             scribbles = scribbles,
-            aiInsights = aiInsights.getOrNull() ?: emptyList(),
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), _state.value)
 
@@ -78,6 +71,22 @@ constructor(
         viewModelScope.launch {
             currentDate.collectLatest {
                 parsePendingScribblesUseCase(_state.value.currentDate)
+            }
+        }
+        loadAIInsights()
+    }
+
+    private fun loadAIInsights() {
+        viewModelScope.launch {
+            currentDate.collectLatest { date ->
+                _state.update { it.copy(isGeneratingInsights = true) }
+                val result = getAIOverviewUseCase(date)
+                _state.update {
+                    it.copy(
+                        isGeneratingInsights = false,
+                        aiInsights = result.getOrNull() ?: emptyList(),
+                    )
+                }
             }
         }
     }
@@ -124,10 +133,6 @@ constructor(
 
             CanvasIntent.NavigateBack -> {
                 navigator.goBack()
-            }
-
-            is CanvasIntent.UpdateScribble -> {
-                editScribble(intent.scribble)
             }
 
             CanvasIntent.OnPreviousDayClick -> {
@@ -183,8 +188,7 @@ constructor(
     private fun deleteSet(exerciseId: Long, setId: Long) {
         _state.update { currentState ->
             val selectedScribble = currentState.selectedScribble ?: return@update currentState
-            
-            // If COMPLETED, delete from database too
+
             if (selectedScribble.status == ScribbleStatus.COMPLETED) {
                 viewModelScope.launch {
                     removeSetUseCase(setId)
@@ -265,25 +269,15 @@ constructor(
 
     private fun addScribble(text: String) {
         if (text.isBlank()) return
-        val editingId = _state.value.editingScribbleId
         viewModelScope.launch {
-            if (editingId != null) {
-                editScribbleUseCase(editingId, text)
-            } else {
-                addScribbleUseCase(text, _state.value.currentDate)
-            }
-            _state.update {
-                it.copy(
-                    currentScribbleText = "",
-                    editingScribbleId = null
-                )
-            }
+            addScribbleUseCase(text, _state.value.currentDate)
+            _state.update { it.copy(currentScribbleText = "") }
         }
     }
 
     private fun scribbleClicked(scribble: Scribble) {
         when (scribble.status) {
-            ScribbleStatus.FAILED -> {} // TODO - Introduce a mechanism to selectively retry parsing scribbles.
+            ScribbleStatus.FAILED -> {}
             ScribbleStatus.SUCCESS, ScribbleStatus.COMPLETED -> _state.update { it.copy(selectedScribble = scribble) }
             else -> {}
         }
@@ -291,8 +285,10 @@ constructor(
 
     private fun confirmScribble(scribble: Scribble) {
         viewModelScope.launch {
-            confirmScribbleUseCase(scribble)
-            dismissScribbleDialog()
+            confirmScribbleUseCase(scribble).fold(
+                onSuccess = { dismissScribbleDialog() },
+                onFailure = { /* Dialog stays open — user can retry or dismiss */ }
+            )
         }
     }
 
@@ -305,16 +301,5 @@ constructor(
 
     private fun dismissScribbleDialog() {
         _state.update { it.copy(selectedScribble = null) }
-    }
-
-    private fun editScribble(scribble: Scribble) {
-        _state.update {
-            it.copy(
-                currentScribbleText = scribble.rawText,
-                editingScribbleId = scribble.id,
-                selectedScribble = null,
-                isInputExpanded = true
-            )
-        }
     }
 }

@@ -42,7 +42,6 @@ class ScribbleConfirmationBottomSheetTest {
     private fun setContent(
         scribble: Scribble = testScribble(),
         onConfirm: (Scribble) -> Unit = {},
-        onEdit: (Scribble) -> Unit = {},
         onDelete: (Scribble) -> Unit = {},
         onDismiss: () -> Unit = {},
         onUpdateExerciseName: (Long, String) -> Unit = { _, _ -> },
@@ -56,7 +55,6 @@ class ScribbleConfirmationBottomSheetTest {
                     scribble = scribble,
                     weightUnit = Weight.KGS,
                     onConfirm = onConfirm,
-                    onEdit = onEdit,
                     onDelete = onDelete,
                     onDismiss = onDismiss,
                     onUpdateExerciseName = onUpdateExerciseName,
