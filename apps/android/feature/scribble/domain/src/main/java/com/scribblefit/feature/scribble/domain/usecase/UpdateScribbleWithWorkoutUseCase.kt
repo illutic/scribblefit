@@ -20,6 +20,7 @@ class UpdateScribbleWithWorkoutUseCase(
     suspend operator fun invoke(id: Long, workout: Workout) =
         runCatchingWithCancellation {
             withContext(coroutineDispatcher) {
+                scribbleRepository.clearScribbleExercises(id)
                 val workoutId = insertWorkoutUseCase(workout).getOrThrow()
                 insertExercisesToScribble(id, workoutId)
                 updateScribbleStatusToSuccess(id)

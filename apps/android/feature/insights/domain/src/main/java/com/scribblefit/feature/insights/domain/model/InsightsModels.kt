@@ -1,5 +1,6 @@
 package com.scribblefit.feature.insights.domain.model
 
+import com.scribblefit.core.model.AIInsight
 import java.time.LocalDate
 
 data class VolumeDataPoint(
@@ -18,9 +19,7 @@ data class MuscleGroupDistribution(
 )
 
 data class AIOverview(
-    val summary: String,
-    val trends: String,
-    val advice: String
+    val insights: List<AIInsight>
 )
 
 data class Insights(

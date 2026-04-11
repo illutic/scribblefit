@@ -12,7 +12,7 @@ class RemoveExerciseUseCase(
 ) {
     suspend operator fun invoke(exercise: Exercise): Result<Unit> = withContext(coroutineDispatcher) {
         runCatchingWithCancellation {
-            repository.deleteExercise(exercise.id)
+            repository.deleteWorkoutExercise(exercise.id)
         }
     }
 }

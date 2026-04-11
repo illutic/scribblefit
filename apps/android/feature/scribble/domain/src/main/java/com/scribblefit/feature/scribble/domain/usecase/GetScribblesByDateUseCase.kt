@@ -5,7 +5,7 @@ import com.scribblefit.feature.scribble.domain.ScribbleRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flatMapMerge
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.flowOn
 import java.time.LocalDate
 import java.time.ZoneOffset
@@ -16,7 +16,7 @@ class GetScribblesByDateUseCase(
 ) {
     @OptIn(ExperimentalCoroutinesApi::class)
     operator fun invoke(date: Flow<LocalDate>): Flow<List<Scribble>> =
-        date.flatMapMerge {
+        date.flatMapLatest {
             val startOfDayMillis = it.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
             scribbleRepository
                 .getScribblesByDate(startOfDayMillis)

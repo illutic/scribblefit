@@ -17,21 +17,8 @@ class RemoveScribbleUseCase(
 ) {
     suspend operator fun invoke(id: Long): Result<Unit> = withContext(coroutineDispatcher) {
         runCatchingWithCancellation {
-            val scribble = scribbleRepository.getScribbleWithExercises(id).firstOrNull()
-                ?: throw ScribbleNotFoundException(id)
-
-            removeScribbleExercises(scribble)
-            removeScribble(scribble)
+            scribbleRepository.clearScribbleExercises(id)
+            scribbleRepository.deleteScribble(id)
         }
-    }
-
-    private suspend fun removeScribbleExercises(scribble: Scribble) {
-        scribble.exercises.forEach { exercise ->
-            removeExerciseUseCase(exercise).getOrThrow()
-        }
-    }
-
-    private suspend fun removeScribble(scribble: Scribble) {
-        scribbleRepository.deleteScribble(scribble.id)
     }
 }
