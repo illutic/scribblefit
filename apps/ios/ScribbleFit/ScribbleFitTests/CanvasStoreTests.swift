@@ -1,6 +1,12 @@
 import XCTest
 import Combine
-@testable import ScribbleFit
+@testable import CoreModel
+@testable import FeatureAI
+@testable import FeatureScribble
+@testable import FeatureWorkouts
+@testable import FeatureConfig
+@testable import FeatureCanvas
+@testable import FeatureInsights
 
 // MARK: - Mock Repositories
 
@@ -282,10 +288,6 @@ final class CanvasStoreTests: XCTestCase {
     }
 
     // MARK: - 3. clickOnScribble with FAILED status does NOT set selectedScribble
-    // NOTE: The current CanvasStore implementation sets selectedScribble unconditionally
-    // for any status. This test documents the expected guard behavior. If it fails,
-    // a guard clause filtering out non-success statuses should be added to
-    // CanvasStore.onIntent(.clickOnScribble).
 
     @MainActor
     func testClickOnScribbleWithFailedStatusDoesNotSetSelectedScribble() async {
