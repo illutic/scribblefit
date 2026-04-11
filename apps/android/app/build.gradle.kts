@@ -47,6 +47,8 @@ dependencies {
 
     implementation(project(":feature:canvas:ui"))
     implementation(project(":feature:canvas:data"))
+    implementation(project(":feature:settings:ui"))
+    implementation(project(":feature:settings:data"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

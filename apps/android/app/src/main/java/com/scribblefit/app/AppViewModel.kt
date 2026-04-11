@@ -25,6 +25,7 @@ class AppViewModel
                 AppState(
                     navState = navState,
                     themePreference = config.themePreference,
+                    isDynamicTheme = config.isDynamicTheme,
                 )
             }.stateIn(viewModelScope, SharingStarted.Eagerly, AppState())
 

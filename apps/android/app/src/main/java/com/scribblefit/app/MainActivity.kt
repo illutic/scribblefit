@@ -25,6 +25,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             val appState by viewModel.appState.collectAsStateWithLifecycle()
             ScribbleFitTheme(
+                isDynamicTheme = appState.isDynamicTheme,
                 isSystemInDarkTheme =
                     when (appState.themePreference) {
                         ThemePreference.SYSTEM -> isSystemInDarkTheme()
