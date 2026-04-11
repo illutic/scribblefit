@@ -13,7 +13,13 @@ interface WorkoutExerciseDao {
     suspend fun insertWorkoutExercise(workoutExercise: WorkoutExercise): Long
 
     @Insert
+    suspend fun insertWorkoutExercises(workoutExercises: List<WorkoutExercise>): List<Long>
+
+    @Insert
     suspend fun insertWorkoutSet(workoutSet: WorkoutSet): Long
+
+    @Insert
+    suspend fun insertWorkoutSets(workoutSets: List<WorkoutSet>)
 
     @Query("DELETE FROM workout_exercise WHERE workoutExerciseId = :id")
     suspend fun deleteWorkoutExercise(id: Long)

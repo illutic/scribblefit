@@ -88,7 +88,7 @@ fun ScribbleEntity.toDomain(): Scribble =
         id = scribbleId,
         rawText = rawText,
         parsedJson = parsedJson,
-        status = ScribbleStatus.valueOf(status.uppercase()),
+        status = runCatching { ScribbleStatus.valueOf(status.uppercase()) }.getOrDefault(ScribbleStatus.FAILED),
         createdAt = createdAt,
     )
 
@@ -97,7 +97,7 @@ fun ScribbleWithExercises.toDomain(): Scribble =
         id = scribble.scribbleId,
         rawText = scribble.rawText,
         parsedJson = scribble.parsedJson,
-        status = ScribbleStatus.valueOf(scribble.status.uppercase()),
+        status = runCatching { ScribbleStatus.valueOf(scribble.status.uppercase()) }.getOrDefault(ScribbleStatus.FAILED),
         createdAt = scribble.createdAt,
         exercises = exercises.map { it.toDomain() },
     )

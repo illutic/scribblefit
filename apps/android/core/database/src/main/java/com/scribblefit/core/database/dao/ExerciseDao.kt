@@ -14,6 +14,9 @@ interface ExerciseDao {
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertExercise(exercise: Exercise): Long
 
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertExercises(exercises: List<Exercise>): List<Long>
+
     @Query("SELECT exerciseId FROM exercise WHERE name = :name")
     suspend fun getExerciseIdByName(name: String): Long?
 

@@ -29,13 +29,20 @@ interface ScribbleTrackerDao {
     )
 
     @Transaction
-    @Query(
-        """
-        DELETE FROM workout_exercise 
-        WHERE workoutExerciseId IN (SELECT workoutExerciseId FROM scribble_exercise WHERE scribbleId = :scribbleId)
-        """,
-    )
-    suspend fun clearScribbleExercises(scribbleId: Long)
+    suspend fun clearScribbleExercises(scribbleId: Long) {
+        val workoutExerciseIds = getWorkoutExerciseIdsForScribble(scribbleId)
+        deleteScribbleExercisesByScribbleId(scribbleId)
+        workoutExerciseIds.forEach { deleteWorkoutExerciseById(it) }
+    }
+
+    @Query("SELECT workoutExerciseId FROM scribble_exercise WHERE scribbleId = :scribbleId")
+    suspend fun getWorkoutExerciseIdsForScribble(scribbleId: Long): List<Long>
+
+    @Query("DELETE FROM scribble_exercise WHERE scribbleId = :scribbleId")
+    suspend fun deleteScribbleExercisesByScribbleId(scribbleId: Long)
+
+    @Query("DELETE FROM workout_exercise WHERE workoutExerciseId = :id")
+    suspend fun deleteWorkoutExerciseById(id: Long)
 
     /**
      * Gets a scribble with all its associated exercises and their sets.
