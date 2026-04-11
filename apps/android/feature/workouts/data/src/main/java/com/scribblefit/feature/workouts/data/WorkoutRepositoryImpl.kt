@@ -1,5 +1,6 @@
 package com.scribblefit.feature.workouts.data
 
+import com.scribblefit.core.database.dao.ExerciseStats
 import com.scribblefit.core.database.dao.WorkoutDao
 import com.scribblefit.core.database.entity.set.WorkoutSet
 import com.scribblefit.core.database.mapper.toDomain
@@ -36,7 +37,14 @@ internal class WorkoutRepositoryImpl(
                 )
             }
         }
-        workoutDao.insertWorkoutWithDetails(workoutEntity, exerciseEntities, setsPerExercise)
+        val exerciseStats = workout.exercises.map { exercise ->
+            ExerciseStats(
+                estimated1RM = exercise.estimated1RM,
+                intensity = exercise.intensity,
+                improvement = exercise.improvement,
+            )
+        }
+        workoutDao.insertWorkoutWithDetails(workoutEntity, exerciseEntities, setsPerExercise, exerciseStats)
     }
 
     override fun getWorkoutByDate(date: Long): Flow<Workout?> =

@@ -32,12 +32,16 @@ interface WorkoutDao {
     /**
      * Atomically inserts a workout with all its exercises and sets.
      * Resolves exercise IDs by name (IGNORE on conflict) before linking.
+     *
+     * @param exerciseStats optional per-exercise stats (estimated1RM, intensity, improvement)
+     *   aligned by index with [exercises]. When null, all stats default to null.
      */
     @Transaction
     suspend fun insertWorkoutWithDetails(
         workout: Workout,
         exercises: List<Exercise>,
         setsPerExercise: List<List<WorkoutSet>>,
+        exerciseStats: List<ExerciseStats> = emptyList(),
     ): Long {
         val workoutId = insertWorkout(workout)
 
@@ -46,8 +50,15 @@ interface WorkoutDao {
             if (id == -1L) getExerciseIdByName(exercises[index].name) ?: -1L else id
         }
 
-        val workoutExercises = exerciseIds.map { exerciseId ->
-            WorkoutExercise(workoutId = workoutId, exerciseId = exerciseId)
+        val workoutExercises = exerciseIds.mapIndexed { index, exerciseId ->
+            val stats = exerciseStats.getOrNull(index)
+            WorkoutExercise(
+                workoutId = workoutId,
+                exerciseId = exerciseId,
+                estimated1RM = stats?.estimated1RM,
+                intensity = stats?.intensity,
+                improvement = stats?.improvement,
+            )
         }
         val workoutExerciseIds = insertWorkoutExercises(workoutExercises)
 
