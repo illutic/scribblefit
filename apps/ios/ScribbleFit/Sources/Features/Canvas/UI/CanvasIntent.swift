@@ -20,6 +20,7 @@ public enum CanvasIntent: Sendable {
     case updateExerciseName(UUID, String)
     case updateSetWeight(UUID, UUID, String)
     case updateSetReps(UUID, UUID, String)
+    case deleteSet(UUID, UUID) // exerciseId, setId
 
     // Scribble Dialog
     case confirmScribble(Scribble)

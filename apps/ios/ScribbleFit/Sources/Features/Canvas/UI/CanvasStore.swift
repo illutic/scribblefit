@@ -88,6 +88,8 @@ public final class CanvasStore {
             updateSetWeight(exerciseId: exerciseId, setId: setId, newWeight: newWeight)
         case .updateSetReps(let exerciseId, let setId, let newReps):
             updateSetReps(exerciseId: exerciseId, setId: setId, newReps: newReps)
+        case .deleteSet(let exerciseId, let setId):
+            deleteSet(exerciseId: exerciseId, setId: setId)
         default:
             break
         }
@@ -177,6 +179,46 @@ public final class CanvasStore {
             return exercise
         }
         state.selectedScribble?.exercises = updatedExercises
+    }
+
+    private func deleteSet(exerciseId: UUID, setId: UUID) {
+        guard let selectedScribble = state.selectedScribble else { return }
+        let updatedExercises = selectedScribble.exercises.map { exercise in
+            if exercise.id == exerciseId {
+                let updatedSets = exercise.sets
+                    .filter { $0.id != setId }
+                    .enumerated()
+                    .map { index, set in
+                        ExerciseSet(
+                            id: set.id,
+                            setNumber: index + 1,
+                            weight: set.weight,
+                            reps: set.reps,
+                            rpe: set.rpe,
+                            notes: set.notes
+                        )
+                    }
+                return Exercise(
+                    id: exercise.id,
+                    canonicalName: exercise.canonicalName,
+                    muscleGroup: exercise.muscleGroup,
+                    sets: updatedSets,
+                    isDraft: exercise.isDraft,
+                    estimated1RM: exercise.estimated1RM,
+                    intensity: exercise.intensity,
+                    improvement: exercise.improvement
+                )
+            }
+            return exercise
+        }
+        state.selectedScribble = Scribble(
+            id: selectedScribble.id,
+            rawText: selectedScribble.rawText,
+            status: selectedScribble.status,
+            createdAt: selectedScribble.createdAt,
+            parsedJson: selectedScribble.parsedJson,
+            exercises: updatedExercises
+        )
     }
 
     private func addScribble(_ text: String) {

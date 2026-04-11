@@ -13,6 +13,7 @@ struct ScribbleConfirmationBottomSheet: View {
     let onUpdateExerciseName: (UUID, String) -> Void
     let onUpdateSetWeight: (UUID, UUID, String) -> Void
     let onUpdateSetReps: (UUID, UUID, String) -> Void
+    let onDeleteSet: (UUID, UUID) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 24) {
@@ -62,7 +63,8 @@ struct ScribbleConfirmationBottomSheet: View {
                     weightUnit: weightUnit,
                     onUpdateName: { onUpdateExerciseName(exercise.id, $0) },
                     onUpdateSetWeight: { setId, value in onUpdateSetWeight(exercise.id, setId, value) },
-                    onUpdateSetReps: { setId, value in onUpdateSetReps(exercise.id, setId, value) }
+                    onUpdateSetReps: { setId, value in onUpdateSetReps(exercise.id, setId, value) },
+                    onDeleteSet: { setId in onDeleteSet(exercise.id, setId) }
                 )
             }
         }
@@ -101,6 +103,7 @@ private struct ExerciseEditCard: View {
     let onUpdateName: (String) -> Void
     let onUpdateSetWeight: (UUID, String) -> Void
     let onUpdateSetReps: (UUID, String) -> Void
+    let onDeleteSet: (UUID) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -117,7 +120,8 @@ private struct ExerciseEditCard: View {
                     set: set,
                     weightUnit: weightUnit,
                     onUpdateWeight: { onUpdateSetWeight(set.id, $0) },
-                    onUpdateReps: { onUpdateSetReps(set.id, $0) }
+                    onUpdateReps: { onUpdateSetReps(set.id, $0) },
+                    onDelete: { onDeleteSet(set.id) }
                 )
             }
         }
@@ -133,6 +137,7 @@ private struct SetEditRow: View {
     let weightUnit: WeightUnit
     let onUpdateWeight: (String) -> Void
     let onUpdateReps: (String) -> Void
+    let onDelete: () -> Void
 
     @State private var weightText: String = ""
     @State private var repsText: String = ""
@@ -190,6 +195,13 @@ private struct SetEditRow: View {
             Text(String(localized: "reps"))
                 .font(.scribbleBodyMedium)
                 .foregroundStyle(Color.scribbleMidGray)
+
+            Button(action: onDelete) {
+                Image(systemName: "xmark.circle.fill")
+                    .font(.system(size: 20))
+                    .foregroundStyle(Color.scribbleDanger)
+            }
+            .buttonStyle(.plain)
 
             Spacer()
         }

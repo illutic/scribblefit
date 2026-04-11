@@ -95,7 +95,8 @@ public struct CanvasView: View {
                     onDismiss: { store.onIntent(.dismissScribbleDialog) },
                     onUpdateExerciseName: { id, name in store.onIntent(.updateExerciseName(id, name)) },
                     onUpdateSetWeight: { exId, setId, weight in store.onIntent(.updateSetWeight(exId, setId, weight)) },
-                    onUpdateSetReps: { exId, setId, reps in store.onIntent(.updateSetReps(exId, setId, reps)) }
+                    onUpdateSetReps: { exId, setId, reps in store.onIntent(.updateSetReps(exId, setId, reps)) },
+                    onDeleteSet: { exId, setId in store.onIntent(.deleteSet(exId, setId)) }
                 )
             }
             #if os(iOS)
