@@ -64,7 +64,9 @@ public final class CanvasStore {
         case .toggleInputExpansion:
             state.isInputExpanded.toggle()
         case .clickOnScribble(let scribble):
-            state.selectedScribble = scribble
+            if scribble.status == .success || scribble.status == .completed {
+                state.selectedScribble = scribble
+            }
         case .dismissScribbleDialog:
             state.selectedScribble = nil
         case .confirmScribble(let scribble):
