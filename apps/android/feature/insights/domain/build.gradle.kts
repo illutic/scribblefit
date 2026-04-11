@@ -1,5 +1,6 @@
 plugins {
     id("scribblefit.android.library")
+    id("scribblefit.android.unit.test")
 }
 
 android {
@@ -10,9 +11,5 @@ dependencies {
     implementation(project(":core:model"))
     implementation(project(":core:common"))
     implementation(project(":core:coroutines"))
-
-    testImplementation(libs.junit)
-    testImplementation(libs.mockk)
-    testImplementation(libs.kotlinx.coroutines.test)
-    testImplementation(libs.turbine)
+    implementation(project(":feature:scribble:domain"))
 }

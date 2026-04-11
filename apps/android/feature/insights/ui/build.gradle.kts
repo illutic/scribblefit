@@ -1,6 +1,7 @@
 plugins {
     id("scribblefit.android.library.compose")
     id("scribblefit.android.hilt")
+    id("scribblefit.android.unit.test")
 }
 
 android {
@@ -9,6 +10,7 @@ android {
 
 dependencies {
     implementation(project(":feature:insights:domain"))
+    implementation(project(":feature:scribble:domain"))
     implementation(project(":core:designsystem"))
     implementation(project(":core:navigation"))
     implementation(project(":core:common"))
@@ -21,8 +23,4 @@ dependencies {
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
 
-    testImplementation(libs.junit)
-    testImplementation(libs.mockk)
-    testImplementation(libs.kotlinx.coroutines.test)
-    testImplementation(libs.turbine)
 }
