@@ -1,11 +1,6 @@
----
-name: spec-implementer
-description: Implements a feature specification from `specs/` into the codebase layer-by-layer (Domain -> Data -> UI). Focuses on one platform at a time (Android or iOS) and ensures architectural consistency without base classes.
----
-
 # Spec Implementer
 
-This skill guides you through implementing a technical feature specification into the ScribbleFit codebase.
+Implement the feature specification described in $ARGUMENTS into the ScribbleFit codebase, layer-by-layer.
 
 ## Core Mandates
 1. **Layer-by-Layer:** Implement layers in order: Domain -> Data -> UI.
@@ -22,7 +17,7 @@ This skill guides you through implementing a technical feature specification int
 ## Workflow
 
 ### 1. Research & Preparation
-- Read the target spec in `specs/`.
+- Read the target spec in `specs/` that matches $ARGUMENTS.
 - Identify the target platform (Android or iOS).
 - Check the current state of the codebase to see if any parts are already implemented.
 
@@ -71,11 +66,6 @@ This skill guides you through implementing a technical feature specification int
 - **Validation:** Manual verification or UI tests.
 - **Commit:** `feat(ui): [feature] MVI and screens`
 
-## Triggers
-- When the user uses `/build [feature description]`.
-
 ## Reference Material
-- **Android:** [android-guidelines.md](../../../guidelines/specification/android-guidelines.md)
-- **iOS:** [ios-guidelines.md](../../../guidelines/specification/ios-guidelines.md)
-- **Feature Specs:** Located in `specs/` directory (e.g., `canvas.md`).
-- **Core Guidelines:** Located in `guidelines/` directory (e.g., `android-project-guidelines.md`, `ios-project-guidelines.md`, `DESIGN.md`).
+- **Android:** `guidelines/specification/android-guidelines.md`
+- **iOS:** `guidelines/specification/ios-guidelines.md`

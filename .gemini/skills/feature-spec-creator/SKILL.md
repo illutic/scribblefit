@@ -11,7 +11,7 @@ This skill generates comprehensive technical specification documents for Scribbl
 
 1.  **Analyze the Feature:** Understand the feature's purpose and its impact on the Android and iOS apps.
 2.  **Check Designs:** Search for and review relevant UI designs using the **Stitch MCP** tools (`list_projects`, `list_screens`, `get_screen`). Incorporate visual requirements and component hierarchies from these designs into the specification.
-3.  **Load Project Context:** Always reference `references/android-project-guidelines.md` and `references/ios-project-guidelines.md` to ensure the "Development Guidelines" section aligns with ScribbleFit's codebase-verified architecture (MVI, Compose, SwiftData, etc.).
+3.  **Load Project Context:** Always reference `guidelines/project/android-project-guidelines.md` and `guidelines/project/ios-project-guidelines.md` to ensure the "Development Guidelines" section aligns with ScribbleFit's codebase-verified architecture (MVI, Compose, SwiftData, etc.).
 4.  **Generate Spec:** Use `assets/spec-template.md` to structure the document.
 5.  **Adhere to Principles:**
     *   **Overview:** Provide a clear, technical description.
@@ -29,3 +29,7 @@ This skill generates comprehensive technical specification documents for Scribbl
 
 ## Output
 - A Markdown file (usually stored in `specs/[feature-name].md`) with the sections: Overview, User Stories, Acceptance Criteria, Development Guidelines, and Validation.
+
+## References
+- **Feature Specs:** Located in `specs/` directory (e.g., `canvas.md`).
+- **Core Guidelines:** Located in `guidelines/` directory (e.g., `android-project-guidelines.md`, `ios-project-guidelines.md`, `DESIGN.md`).

@@ -19,8 +19,8 @@ This skill helps maintain the ScribbleFit project's technical excellence by form
     *   **Clarifications:** Any part of the guidelines that was ambiguous or caused confusion?
     *   **Stricter Mandates:** Any areas where more discipline is needed (e.g., zero hardcoding, testing)?
 4.  **Update Project Guidelines:**
-    *   Update `.gemini/skills/feature-spec-creator/references/android-project-guidelines.md` or `ios-project-guidelines.md`.
-    *   Update `.gemini/skills/spec-implementer/references/android-guidelines.md` or `ios-guidelines.md`.
+    *   Update `guidelines/project/android-project-guidelines.md` or `guidelines/project/ios-project-guidelines.md`.
+    *   Update `guidelines/specification/android-guidelines.md` or `guidelines/specification/ios-guidelines.md`.
 5.  **Sync Expert Subagents:**
     *   Update `.gemini/agents/android-expert.md` or `.gemini/agents/ios-expert.md` to reflect the refined mandates.
 6.  **Verify Updates:** Ensure the guidelines remain concise, actionable, and consistent across skills.
@@ -36,3 +36,7 @@ This skill helps maintain the ScribbleFit project's technical excellence by form
 - When the user asks to "retrospect on the [feature] implementation".
 - When the user asks to "update guidelines based on our recent work".
 - When you identify a repeatable pattern that isn't yet formalized in the project standards.
+
+## References
+- **Feature Specs:** Located in `specs/` directory (e.g., `canvas.md`).
+- **Core Guidelines:** Located in `guidelines/` directory (e.g., `android-project-guidelines.md`, `ios-project-guidelines.md`, `DESIGN.md`).
