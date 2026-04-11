@@ -22,7 +22,6 @@ struct ScribbleFitApp: App {
     private let deleteScribbleUseCase: DeleteScribbleUseCase
     private let parsePendingScribblesUseCase: ParsePendingScribblesUseCase
     private let getAIOverviewUseCase: GetAIOverviewUseCase
-    private let editScribbleUseCase: EditScribbleUseCase
     private let getWorkoutsByDateUseCase: GetWorkoutsByDateUseCase
     private let clearAllDataUseCase: ClearAllDataUseCase
     private let updateApiKeyUseCase: UpdateApiKeyUseCase
@@ -70,7 +69,6 @@ struct ScribbleFitApp: App {
             self.deleteScribbleUseCase = DeleteScribbleUseCase(repository: scribbleRepo)
             self.parsePendingScribblesUseCase = ParsePendingScribblesUseCase(scribbleRepository: scribbleRepo, llmProvider: routingLLM)
             self.getAIOverviewUseCase = GetAIOverviewUseCase(workoutRepository: workoutRepo, llmProvider: routingLLM)
-            self.editScribbleUseCase = EditScribbleUseCase(repository: scribbleRepo)
             self.getWorkoutsByDateUseCase = GetWorkoutsByDateUseCase(repository: workoutRepo)
             
             self.clearAllDataUseCase = ClearAllDataUseCase(repository: settingsRepo)
@@ -88,7 +86,6 @@ struct ScribbleFitApp: App {
                 deleteScribbleUseCase: deleteScribbleUseCase,
                 parsePendingScribblesUseCase: parsePendingScribblesUseCase,
                 getAIOverviewUseCase: getAIOverviewUseCase,
-                editScribbleUseCase: editScribbleUseCase,
                 configRepository: configRepo
             )
             

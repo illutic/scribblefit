@@ -19,7 +19,6 @@ public enum CanvasIntent: Sendable {
     case updateSetReps(UUID, UUID, String)
 
     // Scribble Dialog
-    case updateScribble(Scribble)
     case confirmScribble(Scribble)
     case deleteScribble(UUID)
     case dismissScribbleDialog

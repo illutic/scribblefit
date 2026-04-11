@@ -86,7 +86,6 @@ public struct CanvasView: View {
                     scribble: scribble,
                     weightUnit: store.state.weightUnit,
                     onConfirm: { store.onIntent(.confirmScribble($0)) },
-                    onEdit: { store.onIntent(.retryScribbleParsing($0)) },
                     onDelete: { store.onIntent(.deleteScribble($0.id)) },
                     onDismiss: { store.onIntent(.dismissScribbleDialog) },
                     onUpdateExerciseName: { id, name in store.onIntent(.updateExerciseName(id, name)) },

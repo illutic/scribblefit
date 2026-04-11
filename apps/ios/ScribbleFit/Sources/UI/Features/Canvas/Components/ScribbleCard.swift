@@ -256,14 +256,6 @@ private struct FailedScribbleCard: View {
             }
             
             HStack(spacing: 16) {
-                Button(action: { /* onIntent(.updateScribble(scribble)) */ }) {
-                    Text(String(localized: "EDIT").uppercased())
-                        .font(.scribbleLabelMedium)
-                        .fontWeight(.bold)
-                        .kerning(1)
-                        .foregroundStyle(Color.scribbleMidGray)
-                }
-                
                 Button(action: { onIntent(.retryScribbleParsing(scribble)) }) {
                     Text(String(localized: "RETRY").uppercased())
                         .font(.scribbleLabelMedium)

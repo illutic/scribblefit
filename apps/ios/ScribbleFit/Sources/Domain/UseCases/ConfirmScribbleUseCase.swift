@@ -11,7 +11,9 @@ public final class ConfirmScribbleUseCase {
     }
 
     public func execute(scribble: Scribble) async throws {
-        guard scribble.status == .success else { return }
+        guard scribble.status == .success else {
+            throw ConfirmScribbleError.invalidStatus(scribble.status)
+        }
 
         let workout = Workout(
             id: UUID(),
@@ -26,4 +28,8 @@ public final class ConfirmScribbleUseCase {
         completedScribble.status = .completed
         try await scribbleRepository.updateScribble(completedScribble)
     }
+}
+
+public enum ConfirmScribbleError: Error {
+    case invalidStatus(ScribbleStatus)
 }

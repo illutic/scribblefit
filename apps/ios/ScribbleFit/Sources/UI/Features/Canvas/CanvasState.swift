@@ -5,7 +5,6 @@ public struct CanvasState: Equatable, Sendable {
     public var currentDate: Date = Date()
     public var error: String? = nil
     public var currentScribbleText: String = ""
-    public var editingScribbleId: UUID? = nil
     public var scribbles: [Scribble] = []
     public var selectedScribble: Scribble? = nil
     public var aiInsights: [AIInsight] = []
@@ -38,7 +37,6 @@ public struct CanvasState: Equatable, Sendable {
     public let estimated1rmLabel = String(localized: "Est. 1RM")
     public let intensityLabel = String(localized: "Intensity")
     public let failedToParseText = String(localized: "Failed to parse workout")
-    public let editLabel = String(localized: "Edit")
     public let retryLabel = String(localized: "Retry")
     public let removeLabel = String(localized: "Remove")
     

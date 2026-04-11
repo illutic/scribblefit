@@ -13,7 +13,6 @@ public final class CanvasStore {
     private let deleteScribbleUseCase: DeleteScribbleUseCase
     private let parsePendingScribblesUseCase: ParsePendingScribblesUseCase
     private let getAIOverviewUseCase: GetAIOverviewUseCase
-    private let editScribbleUseCase: EditScribbleUseCase
     private let configRepository: ConfigRepository
     
     private var observationTask: Task<Void, Never>?
@@ -28,7 +27,6 @@ public final class CanvasStore {
         deleteScribbleUseCase: DeleteScribbleUseCase,
         parsePendingScribblesUseCase: ParsePendingScribblesUseCase,
         getAIOverviewUseCase: GetAIOverviewUseCase,
-        editScribbleUseCase: EditScribbleUseCase,
         configRepository: ConfigRepository
     ) {
         self.getScribblesForDateUseCase = getScribblesForDateUseCase
@@ -37,7 +35,6 @@ public final class CanvasStore {
         self.deleteScribbleUseCase = deleteScribbleUseCase
         self.parsePendingScribblesUseCase = parsePendingScribblesUseCase
         self.getAIOverviewUseCase = getAIOverviewUseCase
-        self.editScribbleUseCase = editScribbleUseCase
         self.configRepository = configRepository
         
         setupConfigObservation()
@@ -74,8 +71,6 @@ public final class CanvasStore {
             confirmScribble(scribble)
         case .deleteScribble(let id):
             deleteScribble(id)
-        case .updateScribble(let scribble):
-            updateScribble(scribble)
         case .retryScribbleParsing(let scribble):
             retryParsing(scribble)
         case .navigateToSettings:
@@ -211,18 +206,6 @@ public final class CanvasStore {
                 try await deleteScribbleUseCase.execute(id: id)
                 state.selectedScribble = nil
                 // We don't refresh insights here anymore, only on date change
-            } catch {
-                state.error = error.localizedDescription
-            }
-        }
-    }
-
-    private func updateScribble(_ scribble: Scribble) {
-        Task {
-            do {
-                try await editScribbleUseCase.execute(id: scribble.id, newText: scribble.rawText)
-                state.selectedScribble = nil
-                triggerParsing()
             } catch {
                 state.error = error.localizedDescription
             }
