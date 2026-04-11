@@ -1,34 +1,34 @@
 import Foundation
 
-public struct Scribble: Identifiable, Equatable, Sendable {
+public struct Scribble: Identifiable, Equatable, Sendable, Codable {
     public let id: UUID
-    public let rawText: String
-    public let parsedJson: String?
-    public let status: ScribbleStatus
+    public var rawText: String
+    public var status: ScribbleStatus
     public let createdAt: Date
-    public let exercises: [Exercise]
+    public var parsedJson: String?
+    public var exercises: [Exercise]
 
     public init(
         id: UUID = UUID(),
         rawText: String,
-        parsedJson: String? = nil,
-        status: ScribbleStatus = .raw,
+        status: ScribbleStatus,
         createdAt: Date = Date(),
+        parsedJson: String? = nil,
         exercises: [Exercise] = []
     ) {
         self.id = id
         self.rawText = rawText
-        self.parsedJson = parsedJson
         self.status = status
         self.createdAt = createdAt
+        self.parsedJson = parsedJson
         self.exercises = exercises
     }
 }
 
 public enum ScribbleStatus: String, Codable, Sendable {
-    case raw
-    case inProgress
-    case parsed
-    case completed
-    case failed
+    case pending = "PENDING"
+    case parsing = "PARSING"
+    case success = "SUCCESS"
+    case failed = "FAILED"
+    case completed = "COMPLETED"
 }

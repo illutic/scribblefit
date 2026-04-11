@@ -6,8 +6,8 @@ import PackageDescription
 let package = Package(
     name: "ScribbleFit",
     platforms: [
-        .iOS("26.0"),
-        .macOS("26.0")
+        .iOS(.v17),
+        .macOS(.v14)
     ],
     products: [
         .library(

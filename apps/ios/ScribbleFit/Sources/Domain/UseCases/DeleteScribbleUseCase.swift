@@ -1,14 +1,14 @@
 import Foundation
 
 @MainActor
-public struct GetScribblesByDateUseCase: Sendable {
+public final class DeleteScribbleUseCase {
     private let repository: ScribbleRepository
 
     public init(repository: ScribbleRepository) {
         self.repository = repository
     }
 
-    public func execute(date: Date) -> AsyncStream<[Scribble]> {
-        repository.getScribbles(for: date)
+    public func execute(id: UUID) async throws {
+        try await repository.deleteScribble(id: id)
     }
 }

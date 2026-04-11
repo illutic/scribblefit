@@ -1,13 +1,19 @@
 import Foundation
 
-public struct CanvasState: Equatable {
+public struct CanvasState: Equatable, Sendable {
     public var isLoading: Bool = false
     public var currentDate: Date = Date()
-    public var error: Error? = nil
+    public var error: String? = nil
     public var currentScribbleText: String = ""
     public var editingScribbleId: UUID? = nil
     public var scribbles: [Scribble] = []
     public var selectedScribble: Scribble? = nil
+    public var aiInsights: [AIInsight] = []
+    public var isGeneratingInsights: Bool = false
+    public var isDatePickerVisible: Bool = false
+    public var weightUnit: WeightUnit = .kgs
+    public var isInputExpanded: Bool = false
+    public var isSettingsVisible: Bool = false
 
     public init() {}
 
@@ -17,28 +23,26 @@ public struct CanvasState: Equatable {
 
     public var dateString: String {
         let formatter = DateFormatter()
-        formatter.dateFormat = "MMMM d, yyyy"
+        formatter.dateFormat = "EEEE, MMMM d"
         return formatter.string(from: currentDate)
     }
 
-    public var emptyScribbleText: String {
-        "Start scribbling.\nType your first set below."
-    }
-
-    public var textfieldPlaceholder: String {
-        "Enter workout (e.g., Bench 100kg 3x5)"
-    }
-
-    public var appName: String {
-        "ScribbleFit"
-    }
-
-    public static func == (lhs: CanvasState, rhs: CanvasState) -> Bool {
-        lhs.isLoading == rhs.isLoading &&
-        lhs.currentDate == rhs.currentDate &&
-        lhs.currentScribbleText == rhs.currentScribbleText &&
-        lhs.editingScribbleId == rhs.editingScribbleId &&
-        lhs.scribbles == rhs.scribbles &&
-        lhs.selectedScribble == rhs.selectedScribble
+    // Pre-resolved strings matching Android resources
+    public let emptyScribbleText = String(localized: "What did you lift today?")
+    public let textfieldPlaceholder = String(localized: "Enter workout (e.g., Bench 100kg 3x5)")
+    public let appName = String(localized: "ScribbleFit")
+    public let aiInsightsLabel = String(localized: "AI Insights")
+    public let parsingWorkoutText = String(localized: "Parsing workout data...")
+    public let tapToConfirmText = String(localized: "Tap to confirm")
+    public let loggedLabel = String(localized: "LOGGED")
+    public let estimated1rmLabel = String(localized: "Est. 1RM")
+    public let intensityLabel = String(localized: "Intensity")
+    public let failedToParseText = String(localized: "Failed to parse workout")
+    public let editLabel = String(localized: "Edit")
+    public let retryLabel = String(localized: "Retry")
+    public let removeLabel = String(localized: "Remove")
+    
+    public var weightUnitLabel: String {
+        weightUnit == .kgs ? String(localized: "kg") : String(localized: "lbs")
     }
 }

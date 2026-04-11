@@ -1,247 +1,334 @@
 import SwiftUI
 
 public struct CanvasView: View {
-    @State private var store: CanvasStore
-    @Environment(\.scribbleFitColors) var colors
+    @Bindable var store: CanvasStore
+    let settingsStore: SettingsStore
     
-    public init(store: CanvasStore) {
-        _store = State(initialValue: store)
+    public init(store: CanvasStore, settingsStore: SettingsStore) {
+        self.store = store
+        self.settingsStore = settingsStore
     }
 
     public var body: some View {
-        ZStack {
-            colors.background
-                .ignoresSafeArea()
-
-            VStack(spacing: 0) {
-                // Top Bar
-                HStack {
-                    Text(store.state.appName)
-                        .font(.system(size: 22, weight: .bold))
-                        .foregroundColor(colors.richBlack)
-                    Spacer()
-                    Button(action: { store.onIntent(.navigateToProfile) }) {
-                        Image(systemName: "person.fill")
-                            .font(.system(size: 16, weight: .bold))
-                            .foregroundColor(colors.background)
-                            .padding(8)
-                            .background(colors.richBlack)
-                            .clipShape(Circle())
-                    }
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 12)
-
-                // Date Header
-                HStack {
-                    Button(action: { store.onIntent(.onPreviousDayClick) }) {
-                        Image(systemName: "chevron.left")
-                            .font(.system(size: 20, weight: .medium))
-                            .foregroundColor(colors.richBlack)
-                            .padding(8)
-                    }
-                    .glassEffect(.regular.interactive(), in: .circle)
-                    
-                    Spacer()
-                    
-                    Text(store.state.dateString.uppercased())
-                        .font(.system(size: 12, weight: .medium))
-                        .foregroundColor(colors.midGray)
-                    
-                    Spacer()
-                    
-                    Button(action: { store.onIntent(.onNextDayClick) }) {
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 20, weight: .medium))
-                            .foregroundColor(store.state.isCurrentDate ? colors.midGray : colors.richBlack)
-                            .padding(8)
-                    }
-                    .glassEffect(.regular.interactive(), in: .circle)
-                    .disabled(store.state.isCurrentDate)
-                }
-                .padding(.horizontal, 16)
-                .padding(.vertical, 8)
-
-                // Scribbles List
-                ScrollView {
-                    LazyVStack(spacing: 16) {
-                        if store.state.scribbles.isEmpty {
-                            Box {
-                                Text(store.state.emptyScribbleText)
-                                    .font(.system(size: 16))
-                                    .foregroundColor(colors.midGray)
-                                    .multilineTextAlignment(.center)
-                                    .padding(.horizontal, 32)
-                            }
-                            .frame(minHeight: 400)
-                        } else {
-                            ForEach(store.state.scribbles) { scribble in
-                                ScribbleRow(scribble: scribble) {
-                                    store.onIntent(.clickOnScribble(scribble))
-                                }
-                            }
-                        }
-                    }
-                    .padding(16)
-                }
-
-                // Input Area (Native .glassEffect)
-                VStack(spacing: 0) {
-                    HStack(alignment: .center) {
-                        TextField(store.state.textfieldPlaceholder, text: Binding(
-                            get: { store.state.currentScribbleText },
-                            set: { store.onIntent(.updateScribbleText($0)) }
-                        ))
-                        .font(.system(size: 15))
-                        .padding(.leading, 18)
-                        .foregroundColor(colors.richBlack)
-                        
-                        Button(action: { store.onIntent(.addScribble(store.state.currentScribbleText)) }) {
-                            Image(systemName: "arrow.up")
-                                .font(.system(size: 20, weight: .bold))
-                                .foregroundColor(colors.background)
-                                .padding(6)
-                                .background(store.state.currentScribbleText.isEmpty ? colors.midGray : colors.richBlack)
-                                .clipShape(Circle())
-                        }
-                        .disabled(store.state.currentScribbleText.isEmpty)
-                        .padding(.trailing, 10)
-                    }
-                    .frame(height: 52)
-                    .glassEffect(.regular.interactive(), in: .capsule)
-                    .padding(.horizontal, 16)
-                    .padding(.bottom, 16)
-                }
-            }
-            .blur(radius: store.state.selectedScribble != nil ? 10 : 0)
-            .disabled(store.state.selectedScribble != nil)
-
-            if let scribble = store.state.selectedScribble {
-                Color.black.opacity(0.4)
-                    .ignoresSafeArea()
-                    .onTapGesture {
-                        store.onIntent(.dismissScribbleDialog)
-                    }
+        NavigationStack {
+            ZStack(alignment: .bottom) {
+                Color.scribbleBackground.ignoresSafeArea()
                 
-                ScribbleDialog(
-                    scribble: scribble,
-                    onConfirm: { store.onIntent(.confirmScribble(scribble)) },
-                    onDismiss: { store.onIntent(.dismissScribbleDialog) },
-                    onDelete: { store.onIntent(.deleteScribble(scribble)) },
-                    onEdit: { store.onIntent(.updateScribble(scribble)) }
+                BodyView(
+                    scribbles: store.state.scribbles,
+                    aiInsights: store.state.aiInsights,
+                    isGeneratingInsights: store.state.isGeneratingInsights,
+                    weightUnit: store.state.weightUnit,
+                    emptyText: store.state.emptyScribbleText,
+                    onScribbleClick: { store.onIntent(.clickOnScribble($0)) },
+                    onIntent: store.onIntent
                 )
-                .transition(.move(edge: .bottom).combined(with: .opacity))
-            }
-        }
-        .animation(.spring(), value: store.state.selectedScribble)
-    }
-}
-
-struct Box<Content: View>: View {
-    let content: Content
-    init(@ViewBuilder content: () -> Content) {
-        self.content = content()
-    }
-    var body: some View {
-        content
-    }
-}
-
-struct ScribbleRow: View {
-    let scribble: Scribble
-    let onClick: () -> Void
-    @Environment(\.scribbleFitColors) var colors
-
-    var body: some View {
-        Button(action: { onClick() }) {
-            VStack(alignment: .leading, spacing: 8) {
-                if scribble.status == .completed {
-                    HStack {
-                        Spacer()
-                        Badge(text: "COMPLETED", backgroundColor: colors.successGreen.opacity(0.2), contentColor: colors.successGreen)
-                    }
-                } else if scribble.status == .failed {
-                    HStack {
-                        Text(scribble.rawText)
-                            .font(.system(size: 16))
-                            .foregroundColor(colors.richBlack)
-                        Spacer()
-                        Badge(text: "FAILED", backgroundColor: colors.dangerRed.opacity(0.2), contentColor: colors.dangerRed)
-                    }
-                } else if scribble.status == .raw {
-                    HStack {
-                        Text(scribble.rawText)
-                            .font(.system(size: 16))
-                            .foregroundColor(colors.richBlack)
-                        Spacer()
-                        Text("PENDING")
-                            .font(.system(size: 11, weight: .bold))
-                            .foregroundColor(colors.strongGray)
-                    }
-                }
-
-                if scribble.status == .completed || scribble.status == .parsed {
-                    ExerciseItems(exercises: scribble.exercises)
+                
+                VStack(spacing: 0) {
+                    Spacer()
+                    ScribbleInputBar(
+                        text: $store.state.currentScribbleText,
+                        placeholder: store.state.textfieldPlaceholder,
+                        onSend: { store.onIntent(.addScribble(store.state.currentScribbleText)) }
+                    )
+                    .padding(.horizontal, 16)
+                    .padding(.bottom, 12)
                 }
             }
-            .padding(16)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(colors.background)
-            .cornerRadius(12)
-            .shadow(color: Color.black.opacity(colors.scheme == .dark ? 0.3 : 0.1), radius: 2, x: 0, y: 1)
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(borderColor, lineWidth: 1)
-            )
-        }
-        .buttonStyle(.plain)
-    }
-    
-    private var borderColor: Color {
-        switch scribble.status {
-        case .completed: return colors.successGreen.opacity(0.3)
-        case .failed: return colors.dangerRed.opacity(0.3)
-        case .parsed: return colors.lightGray
-        default: return .clear
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    HStack(spacing: 12) {
+                        Button(action: { store.onIntent(.onPreviousDayClick) }) {
+                            Image(systemName: "chevron.left")
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundStyle(Color.scribbleMidGray)
+                        }
+                        
+                        Button(action: { store.onIntent(.showDatePicker) }) {
+                            Text(store.state.dateString)
+                                .font(.scribbleBodyMedium)
+                                .fontWeight(.semibold)
+                                .foregroundStyle(Color.scribblePrimary)
+                        }
+                        
+                        Button(action: { store.onIntent(.onNextDayClick) }) {
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 14, weight: .bold))
+                                .foregroundStyle(Color.scribbleMidGray)
+                        }
+                        .disabled(store.state.isCurrentDate)
+                        .opacity(store.state.isCurrentDate ? 0.3 : 1.0)
+                    }
+                }
+                
+                #if os(iOS)
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(action: { store.onIntent(.navigateToSettings) }) {
+                        Image(systemName: "gearshape")
+                            .font(.system(size: 20))
+                            .foregroundStyle(Color.scribblePrimary)
+                    }
+                }
+                #endif
+            }
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .sheet(isPresented: $store.state.isDatePickerVisible) {
+                DatePickerView(
+                    initialDate: store.state.currentDate,
+                    onDateSelected: { store.onIntent(.onDateSelected($0)) },
+                    onDismiss: { store.onIntent(.dismissDatePicker) }
+                )
+            }
+            .sheet(item: $store.state.selectedScribble) { scribble in
+                ScribbleConfirmationBottomSheet(
+                    scribble: scribble,
+                    weightUnit: store.state.weightUnit,
+                    onConfirm: { store.onIntent(.confirmScribble($0)) },
+                    onEdit: { store.onIntent(.retryScribbleParsing($0)) },
+                    onDelete: { store.onIntent(.deleteScribble($0.id)) },
+                    onDismiss: { store.onIntent(.dismissScribbleDialog) },
+                    onUpdateExerciseName: { id, name in store.onIntent(.updateExerciseName(id, name)) },
+                    onUpdateSetWeight: { exId, setId, weight in store.onIntent(.updateSetWeight(exId, setId, weight)) },
+                    onUpdateSetReps: { exId, setId, reps in store.onIntent(.updateSetReps(exId, setId, reps)) }
+                )
+            }
+            #if os(iOS)
+            .fullScreenCover(isPresented: $store.state.isSettingsVisible) {
+                SettingsView(store: settingsStore) {
+                    store.state.isSettingsVisible = false
+                }
+            }
+            #endif
         }
     }
 }
 
-struct ExerciseItems: View {
-    let exercises: [Exercise]
-    @Environment(\.scribbleFitColors) var colors
+struct ScribbleInputBar: View {
+    @Binding var text: String
+    let placeholder: String
+    let onSend: () -> Void
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            ForEach(exercises) { exercise in
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(exercise.name)
-                        .font(.system(size: 16, weight: .bold))
-                        .foregroundColor(colors.richBlack)
+        HStack(spacing: 12) {
+            TextField(placeholder, text: $text)
+                .font(.scribbleBodyMedium)
+                .padding(.leading, 16)
+                .submitLabel(.send)
+                .onSubmit(onSend)
+            
+            if !text.isEmpty {
+                Button(action: onSend) {
+                    Image(systemName: "arrow.up.circle.fill")
+                        .font(.system(size: 32))
+                        .foregroundStyle(Color.scribblePrimary)
+                }
+                .padding(.trailing, 4)
+                .transition(.scale.combined(with: .opacity))
+            }
+        }
+        .frame(height: 52)
+        .scribbleGlass()
+        .clipShape(Capsule())
+        .overlay {
+            Capsule()
+                .stroke(Color.scribblePrimary.opacity(0.1), lineWidth: 0.5)
+        }
+        .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 5)
+        .animation(.spring(response: 0.3, dampingFraction: 0.7), value: text.isEmpty)
+    }
+}
+
+private struct BodyView: View {
+    let scribbles: [Scribble]
+    let aiInsights: [AIInsight]
+    let isGeneratingInsights: Bool
+    let weightUnit: WeightUnit
+    let emptyText: String
+    let onScribbleClick: (Scribble) -> Void
+    let onIntent: (CanvasIntent) -> Void
+    
+    var body: some View {
+        ScrollView {
+            VStack(spacing: 40) {
+                if isGeneratingInsights {
+                    AIInsightsLoadingView()
+                } else if !aiInsights.isEmpty {
+                    AIInsightsList(insights: aiInsights)
+                }
+                
+                if scribbles.isEmpty {
+                    VStack(spacing: 24) {
+                        Spacer().frame(height: 60)
+                        Text(emptyText)
+                            .font(.scribbleHeadlineSmall)
+                            .multilineTextAlignment(.center)
+                            .foregroundStyle(Color.scribbleMidGray)
+                            .lineSpacing(8)
+                    }
+                    .padding(.horizontal, 40)
+                } else {
+                    LazyVStack(spacing: 24) {
+                        ForEach(scribbles) { scribble in
+                            ScribbleCard(
+                                scribble: scribble,
+                                weightUnit: weightUnit,
+                                onClick: { onScribbleClick(scribble) },
+                                onIntent: onIntent
+                            )
+                        }
+                    }
+                }
+                
+                Spacer().frame(height: 80) // Bottom padding for floating input bar
+            }
+            .padding(.horizontal, 24)
+            .padding(.top, 24)
+        }
+        .scrollDismissesKeyboard(.interactively)
+    }
+}
+
+private struct AIInsightsLoadingView: View {
+    @State private var isAnimating = false
+    
+    var body: some View {
+        VStack(spacing: 16) {
+            ForEach(0..<1, id: \.self) { _ in
+                HStack(alignment: .top, spacing: 16) {
+                    Circle()
+                        .fill(Color.scribblePrimary.opacity(0.1))
+                        .frame(width: 32, height: 32)
                     
-                    ForEach(Array(exercise.sets.enumerated()), id: \.offset) { index, set in
-                        Text("\(index + 1). \(String(format: "%.1f", set.weight))kg x \(set.reps)")
-                            .font(.system(size: 14))
-                            .foregroundColor(colors.strongGray)
+                    VStack(alignment: .leading, spacing: 8) {
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(Color.scribbleMidGray.opacity(0.2))
+                            .frame(width: 80, height: 12)
+                        
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(Color.scribblePrimary.opacity(0.1))
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 16)
+                        
+                        RoundedRectangle(cornerRadius: 4)
+                            .fill(Color.scribblePrimary.opacity(0.1))
+                            .frame(width: 200, height: 16)
                     }
                 }
+                .padding(16)
+                .scribbleGlass(cornerRadius: 16)
+                .opacity(isAnimating ? 0.5 : 1.0)
+            }
+        }
+        .onAppear {
+            withAnimation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true)) {
+                isAnimating = true
             }
         }
     }
 }
 
-struct Badge: View {
-    let text: String
-    let backgroundColor: Color
-    let contentColor: Color
+private struct AIInsightsList: View {
+    let insights: [AIInsight]
+
+    var body: some View {
+        VStack(spacing: 16) {
+            ForEach(insights) { insight in
+                HStack(alignment: .top, spacing: 16) {
+                    Image(systemName: insight.iconName)
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundStyle(Color.scribblePrimary)
+                        .frame(width: 32, height: 32)
+                        .background(Color.scribblePrimary.opacity(0.1))
+                        .clipShape(Circle())
+                    
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(insight.insightType.rawValue.uppercased())
+                            .font(.scribbleLabelMedium)
+                            .fontWeight(.bold)
+                            .kerning(1)
+                            .foregroundStyle(Color.scribbleMidGray)
+                        
+                        Text(insight.text)
+                            .font(.scribbleBodyMedium)
+                            .fontWeight(.medium)
+                            .foregroundStyle(Color.scribblePrimary)
+                            .lineSpacing(4)
+                    }
+                    
+                    Spacer()
+                }
+                .padding(16)
+                .scribbleGlass(cornerRadius: 16)
+            }
+        }
+    }
+}
+
+extension AIInsight {
+    var iconName: String {
+        switch insightType {
+        case .summary: return "sparkles"
+        case .trend: return "chart.line.uptrend.xyaxis"
+        case .advice: return "lightbulb.fill"
+        }
+    }
+}
+
+private struct DatePickerView: View {
+    let initialDate: Date
+    let onDateSelected: (Date) -> Void
+    let onDismiss: () -> Void
+    
+    @State private var selection: Date
+    
+    init(initialDate: Date, onDateSelected: @escaping (Date) -> Void, onDismiss: @escaping () -> Void) {
+        self.initialDate = initialDate
+        self.onDateSelected = onDateSelected
+        self.onDismiss = onDismiss
+        self._selection = State(initialValue: initialDate)
+    }
     
     var body: some View {
-        Text(text)
-            .font(.system(size: 11, weight: .bold))
-            .padding(.horizontal, 6)
-            .padding(.vertical, 2)
-            .background(backgroundColor)
-            .foregroundColor(contentColor)
-            .cornerRadius(4)
+        NavigationStack {
+            ScrollView {
+                VStack {
+                    DatePicker(
+                        String(localized: "Select Date"),
+                        selection: $selection,
+                        in: ...Date(),
+                        displayedComponents: .date
+                    )
+                    .datePickerStyle(.graphical)
+                    .tint(.scribblePrimary)
+                    .padding()
+                    
+                    Spacer()
+                }
+            }
+            .navigationTitle(String(localized: "Calendar"))
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
+            .toolbar {
+                #if os(iOS)
+                ToolbarItem(placement: .topBarLeading) {
+                    Button(String(localized: "Cancel")) { onDismiss() }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(String(localized: "Done")) { onDateSelected(selection) }
+                }
+                #else
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(String(localized: "Cancel")) { onDismiss() }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(String(localized: "Done")) { onDateSelected(selection) }
+                }
+                #endif
+            }
+        }
+        .presentationDetents([.medium])
     }
 }

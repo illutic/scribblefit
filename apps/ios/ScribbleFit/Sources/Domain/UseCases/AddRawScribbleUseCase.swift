@@ -9,11 +9,12 @@ public struct AddRawScribbleUseCase: Sendable {
     }
 
     public func execute(text: String, date: Date) async throws {
-        guard !text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else { return }
+        let trimmedText = text.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedText.isEmpty else { return }
         
         let scribble = Scribble(
-            rawText: text,
-            status: .raw,
+            rawText: trimmedText,
+            status: .pending,
             createdAt: date,
             exercises: []
         )
