@@ -83,6 +83,7 @@ struct ScribbleConfirmationBottomSheet: View {
                 .background(Color.scribblePrimary)
                 .clipShape(Capsule())
         }
+        .accessibilityIdentifier("confirmWorkoutButton")
     }
 
     private var deleteButton: some View {
@@ -96,6 +97,7 @@ struct ScribbleConfirmationBottomSheet: View {
                 .background(Color.scribbleDanger.opacity(0.1))
                 .clipShape(Capsule())
         }
+        .accessibilityIdentifier("deleteScribbleButton")
     }
 }
 
@@ -204,6 +206,7 @@ private struct SetEditRow: View {
                     .foregroundStyle(Color.scribbleDanger)
             }
             .buttonStyle(.plain)
+            .accessibilityIdentifier("deleteSetButton")
 
             Spacer()
         }

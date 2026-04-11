@@ -133,6 +133,7 @@ private struct ParsedScribbleCard: View {
             }
         }
         .buttonStyle(.plain)
+        .accessibilityIdentifier("parsedScribbleCard")
     }
 }
 
@@ -220,6 +221,7 @@ private struct LoggedScribbleCard: View {
             .opacity(0.8)
         }
         .buttonStyle(.plain)
+        .accessibilityIdentifier("loggedScribbleCard")
     }
 }
 

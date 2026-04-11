@@ -1,5 +1,6 @@
 import XCTest
 import Combine
+#if SWIFT_PACKAGE
 @testable import CoreModel
 @testable import FeatureAI
 @testable import FeatureScribble
@@ -7,6 +8,8 @@ import Combine
 @testable import FeatureConfig
 @testable import FeatureCanvas
 @testable import FeatureInsights
+#endif
+@testable import ScribbleFit
 
 // MARK: - Mock Repositories
 
