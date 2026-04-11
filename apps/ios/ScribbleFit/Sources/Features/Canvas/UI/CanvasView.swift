@@ -86,18 +86,23 @@ public struct CanvasView: View {
                     onDismiss: { store.onIntent(.dismissDatePicker) }
                 )
             }
-            .sheet(item: $store.state.selectedScribble) { scribble in
-                ScribbleConfirmationBottomSheet(
-                    scribble: scribble,
-                    weightUnit: store.state.weightUnit,
-                    onConfirm: { store.onIntent(.confirmScribble($0)) },
-                    onDelete: { store.onIntent(.deleteScribble($0.id)) },
-                    onDismiss: { store.onIntent(.dismissScribbleDialog) },
-                    onUpdateExerciseName: { id, name in store.onIntent(.updateExerciseName(id, name)) },
-                    onUpdateSetWeight: { exId, setId, weight in store.onIntent(.updateSetWeight(exId, setId, weight)) },
-                    onUpdateSetReps: { exId, setId, reps in store.onIntent(.updateSetReps(exId, setId, reps)) },
-                    onDeleteSet: { exId, setId in store.onIntent(.deleteSet(exId, setId)) }
-                )
+            .sheet(isPresented: Binding(
+                get: { store.state.selectedScribble != nil },
+                set: { if !$0 { store.onIntent(.dismissScribbleDialog) } }
+            )) {
+                if let scribble = store.state.selectedScribble {
+                    ScribbleConfirmationBottomSheet(
+                        scribble: scribble,
+                        weightUnit: store.state.weightUnit,
+                        onConfirm: { store.onIntent(.confirmScribble($0)) },
+                        onDelete: { store.onIntent(.deleteScribble($0.id)) },
+                        onDismiss: { store.onIntent(.dismissScribbleDialog) },
+                        onUpdateExerciseName: { id, name in store.onIntent(.updateExerciseName(id, name)) },
+                        onUpdateSetWeight: { exId, setId, weight in store.onIntent(.updateSetWeight(exId, setId, weight)) },
+                        onUpdateSetReps: { exId, setId, reps in store.onIntent(.updateSetReps(exId, setId, reps)) },
+                        onDeleteSet: { exId, setId in store.onIntent(.deleteSet(exId, setId)) }
+                    )
+                }
             }
             #if os(iOS)
             .fullScreenCover(isPresented: $store.state.isSettingsVisible) {

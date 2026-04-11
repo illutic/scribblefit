@@ -32,7 +32,9 @@ struct ScribbleConfirmationBottomSheet: View {
             .scrollDismissesKeyboard(.interactively)
             .frame(maxHeight: 400)
 
-            confirmButton
+            if scribble.status == .success {
+                confirmButton
+            }
             deleteButton
         }
         .padding(.horizontal, 24)
