@@ -36,6 +36,11 @@ partial refactors. No features beyond scope.
 
 Always state level + proof when reporting changes.
 
+**Prove It With Tests:** If you are not certain that an implementation works correctly, write a
+test for it before reporting it as done. Use unit tests for domain/data logic, Compose UI tests
+(Android) or XCUITests (iOS) for UI behaviour, or both. A certainty level of WEAK or INSUFFICIENT
+is not acceptable for merged code — escalate to STRONG by adding automated tests.
+
 **Session Learning:** Suggest `/retrospection` at the end of substantive sessions.
 
 ## Guidelines
