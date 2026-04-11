@@ -9,5 +9,6 @@ android {
 dependencies {
     implementation(project(":core:navigation"))
     implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.ui.text.google.fonts)
     api(libs.androidx.material.icons)
 }

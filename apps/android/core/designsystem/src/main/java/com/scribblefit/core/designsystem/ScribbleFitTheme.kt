@@ -1,20 +1,80 @@
 package com.scribblefit.core.designsystem
 
+import android.app.Activity
+import android.app.LocalActivityManager
+import android.content.Context
+import android.content.ContextWrapper
 import android.os.Build
+import android.util.Log
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
+import androidx.compose.material3.LocalContentColor
 import androidx.compose.material3.MaterialExpressiveTheme
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalFontFamilyResolver
+import androidx.compose.ui.platform.LocalView
+import androidx.compose.ui.platform.LocalWindowInfo
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.font.createFontFamilyResolver
+import androidx.compose.ui.unit.sp
+import androidx.core.view.WindowCompat
+import kotlinx.coroutines.CoroutineExceptionHandler
+
+private val InterFontFamily = FontFamily(
+    Font(
+        R.font.inter_regular
+    ),
+    Font(
+        R.font.inter_italic
+    )
+)
+
+private val ScribbleFitTypography = Typography(
+    displayLarge = TextStyle(
+        fontFamily = InterFontFamily,
+        fontWeight = FontWeight.Bold,
+        fontSize = 56.sp, // ~3.5rem
+        letterSpacing = (-0.04).sp
+    ),
+    headlineSmall = TextStyle(
+        fontFamily = InterFontFamily,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 24.sp, // ~1.5rem
+        letterSpacing = (-0.02).sp
+    ),
+    titleMedium = TextStyle(
+        fontFamily = InterFontFamily,
+        fontWeight = FontWeight.Medium,
+        fontSize = 18.sp, // ~1.125rem
+        letterSpacing = (-0.01).sp
+    ),
+    bodyMedium = TextStyle(
+        fontFamily = InterFontFamily,
+        fontWeight = FontWeight.Normal,
+        fontSize = 14.sp, // ~0.875rem
+        letterSpacing = 0.sp
+    ),
+    labelMedium = TextStyle(
+        fontFamily = InterFontFamily,
+        fontWeight = FontWeight.SemiBold,
+        fontSize = 12.sp, // ~0.75rem
+        letterSpacing = 0.05.sp
+    )
+)
 
 data object ScribbleFitTheme {
     val colors: ScribbleFitColors
@@ -23,7 +83,7 @@ data object ScribbleFitTheme {
 
     val typography: Typography
         @Composable @ReadOnlyComposable
-        get() = MaterialTheme.typography
+        get() = ScribbleFitTypography
 
     val shapes: ScribbleFitShapes
         @Composable @ReadOnlyComposable
@@ -41,27 +101,38 @@ fun ScribbleFitTheme(
     isSystemInDarkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
+    val scribbleFitColors =
+        if (isSystemInDarkTheme) darkScribbleFitColors else lightScribbleFitColors
+
     val colorScheme = when {
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && isDynamicTheme -> if (isSystemInDarkTheme) {
-            dynamicLightColorScheme(LocalContext.current)
-        } else {
-            dynamicLightColorScheme(LocalContext.current)
+        Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && isDynamicTheme -> {
+            val context = LocalContext.current
+            if (isSystemInDarkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
 
         else -> if (isSystemInDarkTheme) {
-            darkScribbleFitColorScheme
+            darkScribbleFitColorScheme(scribbleFitColors)
         } else {
-            lightScribbleFitColorScheme
+            lightScribbleFitColorScheme(scribbleFitColors)
         }
     }
 
-    val scribbleFitColors =
-        if (isSystemInDarkTheme) darkScribbleFitColors else lightScribbleFitColors
+    val localView = LocalView.current
+
+    LaunchedEffect(localView, isSystemInDarkTheme) {
+        val activity = localView.context.findActivity()
+        val window = activity?.window ?: return@LaunchedEffect
+        val decorView = window.decorView
+        val windowInsetController = WindowCompat.getInsetsController(window, decorView)
+        windowInsetController.isAppearanceLightStatusBars = !isSystemInDarkTheme
+        windowInsetController.isAppearanceLightNavigationBars = !isSystemInDarkTheme
+    }
 
     CompositionLocalProvider(
         LocalColors provides scribbleFitColors,
         LocalShapes provides ScribbleFitShapes,
-        LocalSpacing provides ScribbleFitSpacing
+        LocalSpacing provides ScribbleFitSpacing,
+        LocalContentColor provides colorScheme.primary,
     ) {
         MaterialExpressiveTheme(
             colorScheme = colorScheme,
@@ -71,34 +142,25 @@ fun ScribbleFitTheme(
     }
 }
 
+private fun lightScribbleFitColorScheme(colors: ScribbleFitColors) = lightColorScheme(
+    primary = colors.primary,
+    onPrimary = colors.onPrimary,
+    surface = colors.surface,
+    onSurface = colors.primary,
+    background = colors.surface,
+    onBackground = colors.primary,
+    error = colors.dangerRed,
+)
 
-private val lightScribbleFitColorScheme
-    @Composable
-    @ReadOnlyComposable
-    get() = lightColorScheme(
-        background = ScribbleFitTheme.colors.background,
-        surface = ScribbleFitTheme.colors.background,
-        onBackground = ScribbleFitTheme.colors.richBlack,
-        onSurface = ScribbleFitTheme.colors.richBlack,
-        primary = ScribbleFitTheme.colors.richBlack,
-        onPrimary = ScribbleFitTheme.colors.background,
-        error = ScribbleFitTheme.colors.errorText,
-        errorContainer = ScribbleFitTheme.colors.errorBackground,
-    )
-
-private val darkScribbleFitColorScheme
-    @Composable
-    @ReadOnlyComposable
-    get() = darkColorScheme(
-        background = ScribbleFitTheme.colors.background,
-        surface = ScribbleFitTheme.colors.softGray,
-        onBackground = ScribbleFitTheme.colors.richBlack,
-        onSurface = ScribbleFitTheme.colors.richBlack,
-        primary = ScribbleFitTheme.colors.richBlack,
-        onPrimary = ScribbleFitTheme.colors.background,
-        error = ScribbleFitTheme.colors.errorText,
-        errorContainer = ScribbleFitTheme.colors.errorBackground,
-    )
+private fun darkScribbleFitColorScheme(colors: ScribbleFitColors) = darkColorScheme(
+    primary = colors.primary,
+    onPrimary = colors.onPrimary,
+    surface = colors.surface,
+    onSurface = colors.primary,
+    background = colors.surface,
+    onBackground = colors.primary,
+    error = colors.dangerRed,
+)
 
 private val ScribbleFitShapesTheme
     @Composable @ReadOnlyComposable
@@ -107,3 +169,9 @@ private val ScribbleFitShapesTheme
         medium = RoundedCornerShape(ScribbleFitTheme.shapes.medium),
         large = RoundedCornerShape(ScribbleFitTheme.shapes.large)
     )
+
+private tailrec fun Context.findActivity(): Activity? = when (this) {
+    is Activity -> this
+    is ContextWrapper -> baseContext.findActivity()
+    else -> null
+}

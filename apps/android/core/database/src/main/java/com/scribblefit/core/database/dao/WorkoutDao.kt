@@ -28,4 +28,32 @@ fun getWorkoutsWithAllDetailsInRange(startDate: Long, endDate: Long): Flow<List<
 @Transaction
 @Query("SELECT * FROM workout ORDER BY workoutDate ASC")
 fun getAllWorkoutsWithAllDetails(): Flow<List<WorkoutWithAllDetails>>
+
+@Transaction
+suspend fun clearAllUserData() {
+    deleteWorkoutSets()
+    deleteScribbleExercises()
+    deleteWorkoutExercises()
+    deleteWorkouts()
+    deleteExercises()
+    deleteScribbles()
+}
+
+@Query("DELETE FROM workout_set")
+suspend fun deleteWorkoutSets()
+
+@Query("DELETE FROM scribble_exercise")
+suspend fun deleteScribbleExercises()
+
+@Query("DELETE FROM workout_exercise")
+suspend fun deleteWorkoutExercises()
+
+@Query("DELETE FROM workout")
+suspend fun deleteWorkouts()
+
+@Query("DELETE FROM exercise")
+suspend fun deleteExercises()
+
+@Query("DELETE FROM scribbles")
+suspend fun deleteScribbles()
 }

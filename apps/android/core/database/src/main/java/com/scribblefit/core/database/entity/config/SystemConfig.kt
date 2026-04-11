@@ -15,4 +15,5 @@ data class SystemConfig(
     val preferredModel: String?,
     val weightUnit: String,
     val themePreference: String,
+    val isDynamicTheme: Boolean,
 )

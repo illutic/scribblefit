@@ -28,6 +28,15 @@ interface ScribbleTrackerDao {
         workoutExerciseId: Long,
     )
 
+    @Transaction
+    @Query(
+        """
+        DELETE FROM workout_exercise 
+        WHERE workoutExerciseId IN (SELECT workoutExerciseId FROM scribble_exercise WHERE scribbleId = :scribbleId)
+        """,
+    )
+    suspend fun clearScribbleExercises(scribbleId: Long)
+
     /**
      * Gets a scribble with all its associated exercises and their sets.
      */
@@ -37,10 +46,17 @@ interface ScribbleTrackerDao {
 
     /**
      * Gets all scribbles for a specific date with their associated exercises.
+     * Includes fuzzy date matching and excludes completed ones if needed, 
+     * but usually for Canvas we want all of them for that date.
+     * Let's stick to the fuzzy range logic but allow all statuses.
      */
     @Transaction
-    @Query("SELECT * FROM scribbles WHERE createdAt = :date")
+    @Query("SELECT * FROM scribbles WHERE ABS(createdAt - :date) < 86400000")
     fun getAllScribblesWithExercisesByDate(date: Long): Flow<List<ScribbleWithExercises>>
+
+    @Transaction
+    @Query("SELECT * FROM scribbles")
+    fun getAllScribblesWithExercises(): Flow<List<ScribbleWithExercises>>
 
     /**
      * Gets pending scribbles for a specific date with their associated exercises.

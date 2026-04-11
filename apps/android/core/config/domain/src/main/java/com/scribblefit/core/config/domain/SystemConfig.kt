@@ -10,6 +10,7 @@ data class SystemConfig(
     val preferredModel: String?,
     val weightUnit: Weight,
     val themePreference: ThemePreference,
+    val isDynamicTheme: Boolean,
 ) {
     companion object {
         const val SUGGESTION_PROMPT = """
@@ -26,22 +27,23 @@ data class SystemConfig(
 
         const val SUMMARY_PROMPT = """
             You are ScribbleFit AI, a fitness analysis assistant.
-            Analyze the workout data below and generate a training summary.
-            Output ONLY this JSON (no markdown, no extra text):
-            {
-              "summaryText": "2-3 sentence summary",
-              "highlights": ["highlight 1", "highlight 2"],
-              "muscleDistribution": [
-                {
-                  "muscleGroup": "name", 
-                  "volumePercentage":number
-                }
-              ],
-              "focusArea": "primary muscle group",
-              "volumeDelta":number
-            }
-            muscleDistribution percentages must sum to 100. 
-            volumeDelta is percentage change vs previous period.
+            Analyze the workout data below and generate a list of structured insights.
+            Output ONLY this JSON schema (no markdown, no extra text):
+            [
+              {
+                "insightType": "summary",
+                "text": "A brief overall summary of the workout session."
+              },
+              {
+                "insightType": "trend",
+                "text": "An observation about progress, consistency, or volume patterns."
+              },
+              {
+                "insightType": "advice",
+                "text": "One actionable tip for recovery, technique, or future progression."
+              }
+            ]
+            The list should contain at least one of each type if possible.
             """
 
         const val INSIGHT_PROMPT = """
@@ -62,9 +64,18 @@ data class SystemConfig(
             You are ScribbleFit AI, a fitness parsing assistant.
             Parse raw gym shorthand into this JSON schema:
             {
-              "date": "YYYY-MM-DD",
-              "exercises": [{ "canonical_name": "String", "muscle_group": "String", "sets": [{ "weight": number, "reps": integer, "rpe": number|null, "notes": "String|null" }] }]
+              "exercises": [{ 
+                "canonical_name": "String", 
+                "muscle_group": "String", 
+                "sets": [{ "weight": number, "reps": integer, "setNumber": integer, "rpe": number|null, "notes": "String|null" }],
+                "estimated_1rm": number|null,
+                "intensity": number|null,
+                "improvement": number|null
+              }]
             }
+            Use Epley formula (weight * (1 + reps/30)) for 1RM estimate if possible. 
+            Intensity should be a decimal (e.g. 0.85 for 85%).
+            Improvement is the weight change vs a previous session (if detectable from context, otherwise null).
             Output ONLY valid JSON. No markdown, no extra text.
         """
     }

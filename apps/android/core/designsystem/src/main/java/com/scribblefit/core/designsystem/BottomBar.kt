@@ -12,6 +12,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Home
 import androidx.compose.material.icons.rounded.Person
+import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingToolbarDefaults
@@ -24,6 +25,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.tooling.preview.PreviewLightDark
+import androidx.compose.ui.unit.dp
 import com.scribblefit.core.navigation.BottomBarItem
 import com.scribblefit.core.navigation.BottomBarState
 import com.scribblefit.core.navigation.Screen
@@ -45,8 +47,12 @@ private val BottomBarItem.icon: Painter
                 rememberVectorPainter(Icons.Rounded.Person)
             }
 
-            else -> {
-                throw IllegalArgumentException("No icon defined for screen: $screen")
+            Screen.Profile -> {
+                rememberVectorPainter(Icons.Rounded.Person)
+            }
+
+            Screen.Settings -> {
+                rememberVectorPainter(Icons.Rounded.Settings)
             }
         }
 
@@ -67,52 +73,33 @@ private val BottomBarItem.string: String
                 "Ledger"
             }
 
-            else -> {
-                throw IllegalArgumentException("No string defined for screen: $screen")
+            Screen.Profile -> {
+                "Profile"
+            }
+
+            Screen.Settings -> {
+                "Settings"
             }
         }
 
-@Composable
-fun BottomBarContainer(
-    bottomBarState: BottomBarState,
-    onClick: (Screen) -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Box(
-        modifier =
-            modifier
-                .navigationBarsPadding()
-                .fillMaxWidth(),
-    ) {
-        if (bottomBarState.isVisible) {
-            BottomBar(
-                bottomBarState = bottomBarState,
-                onClick = onClick,
-                modifier =
-                    Modifier
-                        .animateContentSize()
-                        .align(Alignment.BottomCenter),
-            )
-        }
-    }
-}
-
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
-private fun BottomBar(
+fun BottomBar(
     bottomBarState: BottomBarState,
     onClick: (Screen) -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val colors =
         FloatingToolbarDefaults.vibrantFloatingToolbarColors(
-            toolbarContainerColor = ScribbleFitTheme.colors.softGray,
+            toolbarContainerColor = ScribbleFitTheme.colors.surfaceContainerLow,
         )
 
     HorizontalFloatingToolbar(
         expanded = bottomBarState.isVisible,
         colors = colors,
         modifier = modifier,
+        expandedShadowElevation = 8.dp,
+        collapsedShadowElevation = 8.dp,
     ) {
         bottomBarState.items.forEach { item ->
             BottomBarItem(
@@ -143,7 +130,7 @@ private fun BottomBarItem(
         Icon(
             painter = item.icon,
             contentDescription = item.string,
-            tint = if (isSelected) ScribbleFitTheme.colors.richBlack else ScribbleFitTheme.colors.midGray,
+            tint = if (isSelected) ScribbleFitTheme.colors.primary else ScribbleFitTheme.colors.midGray,
         )
     }
 }

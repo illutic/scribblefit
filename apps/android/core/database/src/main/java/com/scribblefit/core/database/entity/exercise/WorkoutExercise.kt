@@ -36,4 +36,7 @@ data class WorkoutExercise(
     val workoutExerciseId: Long = 0,
     val workoutId: Long,
     val exerciseId: Long,
+    val estimated1RM: Float? = null,
+    val intensity: Float? = null,
+    val improvement: Float? = null,
 )

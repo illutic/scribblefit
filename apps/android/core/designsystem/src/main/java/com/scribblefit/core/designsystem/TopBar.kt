@@ -23,11 +23,11 @@ fun TopBar(
         title = title,
         navigationIcon = navigationIcon,
         colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = ScribbleFitTheme.colors.background,
-            scrolledContainerColor = ScribbleFitTheme.colors.lightGray,
-            navigationIconContentColor = ScribbleFitTheme.colors.richBlack,
-            titleContentColor = ScribbleFitTheme.colors.richBlack,
-            actionIconContentColor = ScribbleFitTheme.colors.richBlack
+            containerColor = ScribbleFitTheme.colors.surface,
+            scrolledContainerColor = ScribbleFitTheme.colors.surfaceContainerLow,
+            navigationIconContentColor = ScribbleFitTheme.colors.primary,
+            titleContentColor = ScribbleFitTheme.colors.primary,
+            actionIconContentColor = ScribbleFitTheme.colors.primary
         ),
         actions = actions
     )

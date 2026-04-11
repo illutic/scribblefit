@@ -15,6 +15,12 @@ interface WorkoutExerciseDao {
     @Insert
     suspend fun insertWorkoutSet(workoutSet: WorkoutSet): Long
 
+    @Query("DELETE FROM workout_exercise WHERE workoutExerciseId = :id")
+    suspend fun deleteWorkoutExercise(id: Long)
+
+    @Query("DELETE FROM workout_set WHERE setId = :setId")
+    suspend fun deleteWorkoutSet(setId: Long)
+
     @Query("SELECT * FROM workout_set WHERE workoutExerciseId = :workoutExerciseId ORDER BY setNumber ASC")
     fun getSetsForWorkoutExercise(workoutExerciseId: Long): Flow<List<WorkoutSet>>
 }

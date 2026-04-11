@@ -3,67 +3,62 @@ package com.scribblefit.core.designsystem
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
-private val BackgroundColor = Color(0xFFFFFFFF)
-private val DarkBackgroundColor = Color(0xFF000000)
+private val PrimaryColor = Color(0xFF000000)
+private val OnPrimaryColor = Color(0xFFE5E2E1)
+private val DarkPrimaryColor = Color(0xFFFFFFFF)
+private val DarkOnPrimaryColor = Color(0xFF000000)
 
-private val RichBlackColor = Color(0xFF101010)
-private val DarkRichBlackColor = Color(0xFFFFFFFF)
+private val SurfaceColor = Color(0xFFF9F9F9)
+private val DarkSurfaceColor = Color(0xFF101010)
 
-private val SoftGrayColor = Color(0xFFF7F7F8)
-private val DarkSoftGrayColor = Color(0xFF1A1A1A)
+private val SurfaceContainerLowestColor = Color(0xFFFFFFFF)
+private val DarkSurfaceContainerLowestColor = Color(0xFF1A1A1A)
 
-private val LightGrayColor = Color(0xFFE5E5EA)
-private val DarkLightGrayColor = Color(0xFF2C2C2E)
+private val SurfaceContainerLowColor = Color(0xFFF3F3F4)
+private val DarkSurfaceContainerLowColor = Color(0xFF242424)
+
+private val SurfaceContainerColor = Color(0xFFEEEEEE)
+private val DarkSurfaceContainerColor = Color(0xFF2C2C2E)
+
+private val SurfaceContainerHighColor = Color(0xFFE8E8E8)
+private val DarkSurfaceContainerHighColor = Color(0xFF3C3C3E)
 
 private val MidGrayColor = Color(0xFF8E8EA0)
 private val DarkMidGrayColor = Color(0xFF8E8EA0)
 
-private val StrongGrayColor = Color(0xFF636366)
-private val DarkStrongGrayColor = Color(0xFF636366)
-
 private val DangerRedColor = Color(0xFFFF3B30)
 private val DarkDangerRedColor = Color(0xFFFF453A)
-
-private val ErrorBackgroundColor = Color(0xFFFEE2E2)
-private val DarkErrorBackgroundColor = Color(0xFF5A1E1E)
-
-private val ErrorTextColor = Color(0xFF991B1B)
-private val DarkErrorTextColor = Color(0xFFFFB3B3)
 
 private val SuccessGreenColor = Color(0xFF34C759)
 private val DarkSuccessGreenColor = Color(0xFF30D158)
 
-private val SuccessGreenBackgroundColor = Color(0xFFE6F4EA)
-private val DarkSuccessGreenBackgroundColor = Color(0xFF1C3E1C)
-
 data class ScribbleFitColors(
-    val background: Color = BackgroundColor,
-    val softGray: Color = SoftGrayColor,
-    val richBlack: Color = RichBlackColor,
+    val primary: Color = PrimaryColor,
+    val onPrimary: Color = OnPrimaryColor,
+    val surface: Color = SurfaceColor,
+    val surfaceContainerLowest: Color = SurfaceContainerLowestColor,
+    val surfaceContainerLow: Color = SurfaceContainerLowColor,
+    val surfaceContainer: Color = SurfaceContainerColor,
+    val surfaceContainerHigh: Color = SurfaceContainerHighColor,
     val midGray: Color = MidGrayColor,
-    val strongGray: Color = StrongGrayColor,
-    val lightGray: Color = LightGrayColor,
     val dangerRed: Color = DangerRedColor,
-    val errorBackground: Color = ErrorBackgroundColor,
-    val errorText: Color = ErrorTextColor,
     val successGreen: Color = SuccessGreenColor,
-    val successGreenBackground: Color = SuccessGreenBackgroundColor
+    val background: Color = surface,
 )
 
 internal val lightScribbleFitColors = ScribbleFitColors()
 
 internal val darkScribbleFitColors = ScribbleFitColors(
-    background = DarkBackgroundColor,
-    softGray = DarkSoftGrayColor,
-    richBlack = DarkRichBlackColor,
-    strongGray = DarkStrongGrayColor,
+    primary = DarkPrimaryColor,
+    onPrimary = DarkOnPrimaryColor,
+    surface = DarkSurfaceColor,
+    surfaceContainerLowest = DarkSurfaceContainerLowestColor,
+    surfaceContainerLow = DarkSurfaceContainerLowColor,
+    surfaceContainer = DarkSurfaceContainerColor,
+    surfaceContainerHigh = DarkSurfaceContainerHighColor,
     midGray = DarkMidGrayColor,
-    lightGray = DarkLightGrayColor,
     dangerRed = DarkDangerRedColor,
-    errorBackground = DarkErrorBackgroundColor,
-    errorText = DarkErrorTextColor,
-    successGreen = DarkSuccessGreenColor,
-    successGreenBackground = DarkSuccessGreenBackgroundColor
+    successGreen = DarkSuccessGreenColor
 )
 
 internal val LocalColors = staticCompositionLocalOf { lightScribbleFitColors }

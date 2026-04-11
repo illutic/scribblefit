@@ -11,8 +11,11 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ExerciseDao {
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertExercise(exercise: Exercise): Long
+
+    @Query("SELECT exerciseId FROM exercise WHERE name = :name")
+    suspend fun getExerciseIdByName(name: String): Long?
 
     @Update
     suspend fun updateExercise(exercise: Exercise)

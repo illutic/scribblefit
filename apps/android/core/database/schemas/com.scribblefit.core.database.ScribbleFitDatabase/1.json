@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "dfb85d9aa483b6e4ec15319add2dbbfe",
+    "identityHash": "ecf2bbc70b0300269d56f4ebd1094586",
     "entities": [
       {
         "tableName": "workout",
@@ -262,7 +262,7 @@
       },
       {
         "tableName": "system_config",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `summaryPrompt` TEXT NOT NULL, `suggestionPrompt` TEXT NOT NULL, `insightPrompt` TEXT NOT NULL, `parsePrompt` TEXT NOT NULL, `preferredLlmProvider` TEXT NOT NULL, `updatedAt` INTEGER NOT NULL, `preferredModel` TEXT, `weightUnit` TEXT NOT NULL, `themePreference` TEXT NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `summaryPrompt` TEXT NOT NULL, `suggestionPrompt` TEXT NOT NULL, `insightPrompt` TEXT NOT NULL, `parsePrompt` TEXT NOT NULL, `preferredLlmProvider` TEXT NOT NULL, `updatedAt` INTEGER NOT NULL, `preferredModel` TEXT, `weightUnit` TEXT NOT NULL, `themePreference` TEXT NOT NULL, `isDynamicTheme` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -321,6 +321,12 @@
             "fieldPath": "themePreference",
             "columnName": "themePreference",
             "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "isDynamicTheme",
+            "columnName": "isDynamicTheme",
+            "affinity": "INTEGER",
             "notNull": true
           }
         ],
@@ -408,7 +414,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'dfb85d9aa483b6e4ec15319add2dbbfe')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'ecf2bbc70b0300269d56f4ebd1094586')"
     ]
   }
 }

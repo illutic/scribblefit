@@ -30,6 +30,7 @@ class ConfigRepositoryImpl(
         preferredModel = null,
         weightUnit = Weight.KGS,
         themePreference = ThemePreference.SYSTEM,
+        isDynamicTheme = false,
         updatedAt = Clock.System.now().toEpochMilliseconds()
     )
 

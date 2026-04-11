@@ -51,11 +51,14 @@ fun WorkoutSet.toDomain(): DomainSet =
 
 fun WorkoutExerciseWithDetails.toDomain(): DomainExercise =
     DomainExercise(
-        id = exercise.exerciseId,
+        id = workoutExercise.workoutExerciseId,
         canonicalName = exercise.name,
         muscleGroup = exercise.muscleGroup,
         sets = sets.map { it.toDomain() },
         isDraft = exercise.isDraft,
+        estimated1RM = workoutExercise.estimated1RM,
+        intensity = workoutExercise.intensity,
+        improvement = workoutExercise.improvement,
     )
 
 fun WorkoutWithAllDetails.toDomain(): DomainWorkout =
@@ -77,6 +80,7 @@ fun SystemConfig.toDomain(): DomainSystemConfig =
         weightUnit = Weight.valueOf(weightUnit),
         preferredLlmProvider = LLMProvider.valueOf(preferredLlmProvider),
         themePreference = ThemePreference.valueOf(themePreference),
+        isDynamicTheme = isDynamicTheme,
     )
 
 fun ScribbleEntity.toDomain(): Scribble =
@@ -84,7 +88,7 @@ fun ScribbleEntity.toDomain(): Scribble =
         id = scribbleId,
         rawText = rawText,
         parsedJson = parsedJson,
-        status = ScribbleStatus.valueOf(status),
+        status = ScribbleStatus.valueOf(status.uppercase()),
         createdAt = createdAt,
     )
 
@@ -93,7 +97,7 @@ fun ScribbleWithExercises.toDomain(): Scribble =
         id = scribble.scribbleId,
         rawText = scribble.rawText,
         parsedJson = scribble.parsedJson,
-        status = ScribbleStatus.valueOf(scribble.status),
+        status = ScribbleStatus.valueOf(scribble.status.uppercase()),
         createdAt = scribble.createdAt,
         exercises = exercises.map { it.toDomain() },
     )
@@ -149,4 +153,5 @@ fun DomainSystemConfig.toEntity(): SystemConfig =
         preferredModel = preferredModel,
         weightUnit = weightUnit.name,
         themePreference = themePreference.name,
+        isDynamicTheme = isDynamicTheme,
     )
