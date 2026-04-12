@@ -6,7 +6,7 @@ let package = Package(
     platforms: [.iOS(.v17), .macOS(.v14)],
     products: [
         .library(name: "ScribbleFit", targets: [
-            "FeatureCanvas", "FeatureSettings", "FeatureInsights"
+            "FeatureCanvas", "FeatureSettings", "FeatureInsights", "FeatureLedger"
         ])
     ],
     dependencies: [],
@@ -31,7 +31,7 @@ let package = Package(
         .target(name: "FeatureCanvas", dependencies: [
             "CoreModel", "CoreDatabase", "CoreDesignSystem",
             "FeatureScribble", "FeatureWorkouts", "FeatureAI", "FeatureConfig",
-            "FeatureSettings", "FeatureInsights"
+            "FeatureSettings", "FeatureInsights", "FeatureLedger"
         ], path: "Sources/Features/Canvas"),
         .target(name: "FeatureSettings", dependencies: [
             "CoreModel", "CoreDatabase", "CoreDesignSystem", "CoreCommon",
@@ -41,10 +41,13 @@ let package = Package(
             "CoreModel", "CoreDesignSystem",
             "FeatureWorkouts", "FeatureAI"
         ], path: "Sources/Features/Insights"),
+        .target(name: "FeatureLedger", dependencies: [
+            "CoreModel", "CoreDesignSystem", "FeatureWorkouts"
+        ], path: "Sources/Features/Ledger"),
 
         // Tests
         .testTarget(name: "ScribbleFitTests", dependencies: [
-            "FeatureCanvas", "FeatureSettings", "FeatureInsights",
+            "FeatureCanvas", "FeatureSettings", "FeatureInsights", "FeatureLedger",
             "CoreModel", "CoreDatabase", "FeatureAI", "FeatureScribble",
             "FeatureWorkouts", "FeatureConfig"
         ], path: "ScribbleFitTests"),
