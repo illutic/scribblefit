@@ -17,8 +17,6 @@ sealed interface CanvasIntent {
         val scribble: Scribble,
     ) : CanvasIntent
 
-    data object ToggleInputExpansion : CanvasIntent
-
     data class ClickOnScribble(
         val scribble: Scribble,
     ) : CanvasIntent

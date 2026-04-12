@@ -107,10 +107,6 @@ constructor(
                 }
             }
 
-            CanvasIntent.ToggleInputExpansion -> {
-                _state.update { it.copy(isInputExpanded = !it.isInputExpanded) }
-            }
-
             is CanvasIntent.NavigateToScreen -> {
                 navigator.navigateTo(intent.screen)
             }

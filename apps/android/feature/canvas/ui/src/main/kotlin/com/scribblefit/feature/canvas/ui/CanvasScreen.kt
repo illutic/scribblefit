@@ -56,13 +56,7 @@ internal fun CanvasScreen(
                     closeContentDescription = state.closeContentDescription,
                     modifier = Modifier
                         .fillMaxSize()
-                        .then(
-                            if (state.isInputExpanded) {
-                                Modifier.imeNestedScroll()
-                            } else {
-                                Modifier
-                            }
-                        )
+                        .imeNestedScroll()
                 )
 
                 CanvasFooter(
@@ -70,7 +64,6 @@ internal fun CanvasScreen(
                     onIntent = onIntent,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .imePadding()
                         .navigationBarsPadding()
                         .align(Alignment.BottomCenter)
                 )

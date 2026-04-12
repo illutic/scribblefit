@@ -27,7 +27,6 @@ data class CanvasState(
     val isGeneratingInsights: Boolean = false,
     val isDatePickerVisible: Boolean = false,
     val weightUnit: Weight = Weight.KGS,
-    val isInputExpanded: Boolean = false,
 ) {
     val isCurrentDate = currentDate == LocalDate.now()
     val dateString: String by lazy { currentDate.format(dateFormatter) }

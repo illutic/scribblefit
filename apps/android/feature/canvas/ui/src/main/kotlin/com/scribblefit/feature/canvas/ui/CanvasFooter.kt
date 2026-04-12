@@ -1,16 +1,12 @@
 package com.scribblefit.feature.canvas.ui
 
-import androidx.compose.animation.AnimatedContent
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -19,8 +15,6 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowUpward
-import androidx.compose.material.icons.rounded.Edit
-import androidx.compose.material.icons.rounded.KeyboardArrowDown
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -61,82 +55,47 @@ internal fun CanvasFooter(
 
     Box(
         modifier = modifier
+            .imePadding()
             .background(gradientBrush)
             .padding(16.dp),
         contentAlignment = Alignment.Center
     ) {
-        if (isWide) {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            if (isWide) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    CanvasInputFooter(
+                        initialText = state.currentScribbleText,
+                        onTextChange = { onIntent(CanvasIntent.UpdateScribbleText(it)) },
+                        onSendClick = { onIntent(CanvasIntent.AddScribble(state.currentScribbleText)) },
+                        placeholder = state.textfieldPlaceholder,
+                        modifier = Modifier.widthIn(max = 300.dp)
+                    )
+                    BottomBar(
+                        bottomBarState = state.bottomBarState,
+                        onClick = { onIntent(CanvasIntent.NavigateToScreen(it)) }
+                    )
+                }
+            } else {
                 CanvasInputFooter(
                     initialText = state.currentScribbleText,
                     onTextChange = { onIntent(CanvasIntent.UpdateScribbleText(it)) },
                     onSendClick = { onIntent(CanvasIntent.AddScribble(state.currentScribbleText)) },
                     placeholder = state.textfieldPlaceholder,
-                    modifier = Modifier.widthIn(max = 300.dp)
+                    modifier = Modifier.fillMaxWidth()
                 )
+
                 BottomBar(
                     bottomBarState = state.bottomBarState,
                     onClick = { onIntent(CanvasIntent.NavigateToScreen(it)) }
                 )
-            }
-        } else {
-            AnimatedContent(
-                targetState = state.isInputExpanded,
-                transitionSpec = {
-                    fadeIn(tween(300)) togetherWith fadeOut(tween(300))
-                },
-                label = "InputExpansion"
-            ) { expanded ->
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(
-                        12.dp,
-                        Alignment.CenterHorizontally
-                    ),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    if (!expanded) {
-                        BottomBar(
-                            bottomBarState = state.bottomBarState,
-                            onClick = { onIntent(CanvasIntent.NavigateToScreen(it)) }
-                        )
-                    }
-
-                    if (expanded) {
-                        CanvasInputFooter(
-                            initialText = state.currentScribbleText,
-                            onTextChange = { onIntent(CanvasIntent.UpdateScribbleText(it)) },
-                            onSendClick = { onIntent(CanvasIntent.AddScribble(state.currentScribbleText)) },
-                            placeholder = state.textfieldPlaceholder,
-                            modifier = Modifier.weight(1f)
-                        )
-                    }
-
-                    Surface(
-                        color = ScribbleFitTheme.colors.surfaceContainerLow,
-                        shape = CircleShape,
-                        shadowElevation = 4.dp,
-                        modifier = Modifier
-                            .size(56.dp)
-                            .clickable { onIntent(CanvasIntent.ToggleInputExpansion) }
-                    ) {
-                        Box(contentAlignment = Alignment.Center) {
-                            Icon(
-                                imageVector = if (expanded) Icons.Rounded.KeyboardArrowDown else Icons.Rounded.Edit,
-                                contentDescription = if (expanded) {
-                                    state.collapseContentDescription
-                                } else {
-                                    state.expandSearchContentDescription
-                                },
-                                tint = ScribbleFitTheme.colors.primary
-                            )
-                        }
-                    }
-                }
             }
         }
     }
