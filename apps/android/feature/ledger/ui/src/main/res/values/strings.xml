@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="ledger_title">Ledger</string>
+    <string name="ledger_empty_title">Your history is empty</string>
+    <string name="ledger_empty_cta">Start your first session on the Canvas</string>
+    <string name="ledger_loading">Loading history...</string>
+    <string name="ledger_workout_details_navigation">View details</string>
+    <string name="ledger_date_range_format">%1$s – %2$s</string>
+</resources>
