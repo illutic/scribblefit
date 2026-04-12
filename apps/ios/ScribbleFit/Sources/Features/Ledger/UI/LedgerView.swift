@@ -76,7 +76,7 @@ public struct LedgerView: View {
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Text(String(localized: "ScribbleFit"))
-                        .font(.scribbleHeadline)
+                        .font(.scribbleHeadlineSmall)
                         .foregroundStyle(.scribblePrimary)
                 }
             }

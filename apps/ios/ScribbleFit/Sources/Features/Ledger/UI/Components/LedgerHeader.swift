@@ -15,7 +15,7 @@ public struct LedgerHeader: View {
     public var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(String(localized: "Ledger"))
-                .font(.scribbleTitle)
+                .font(.scribbleHeadlineSmall)
                 .foregroundStyle(.scribblePrimary)
             
             Button(action: onDateRangeTapped) {
@@ -25,8 +25,7 @@ public struct LedgerHeader: View {
                     Spacer()
                 }
                 .padding()
-                .background(.ultraThinMaterial)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .scribbleGlass(cornerRadius: 12)
                 .foregroundStyle(.scribblePrimary)
             }
         }

@@ -25,16 +25,16 @@ public struct EmptyLedgerContent: View {
                 .foregroundStyle(.scribblePrimary.opacity(0.4))
             
             Text(message)
-                .font(.headline)
+                .font(.scribbleHeadlineSmall)
                 .foregroundStyle(.scribblePrimary)
                 .multilineTextAlignment(.center)
             
             Button(action: onCTATapped) {
                 Text(ctaLabel)
-                    .font(.headline)
+                    .font(.scribbleTitleMedium)
                     .padding()
                     .background(Color.scribblePrimary)
-                    .foregroundStyle(.scribbleBackground)
+                    .foregroundStyle(.scribbleOnPrimary)
                     .clipShape(Capsule())
             }
         }

@@ -24,7 +24,7 @@ public struct WorkoutItem: View {
             VStack(alignment: .leading, spacing: 12) {
                 HStack {
                     Text(dateString)
-                        .font(.headline)
+                        .font(.scribbleTitleMedium)
                         .foregroundStyle(.scribblePrimary)
                     Spacer()
                     Image(systemName: "chevron.right")
@@ -35,19 +35,18 @@ public struct WorkoutItem: View {
                     ForEach(exercises) { exercise in
                         HStack {
                             Text(exercise.name)
-                                .font(.body)
+                                .font(.scribbleBodyMedium)
                                 .foregroundStyle(.scribblePrimary)
                             Spacer()
                             Text(formatMetrics(for: exercise))
-                                .font(.caption)
+                                .font(.scribbleLabelMedium)
                                 .foregroundStyle(.scribblePrimary.opacity(0.6))
                         }
                     }
                 }
             }
             .padding()
-            .background(.ultraThinMaterial)
-            .clipShape(RoundedRectangle(cornerRadius: 16))
+            .scribbleGlass(cornerRadius: 16)
         }
     }
 
