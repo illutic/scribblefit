@@ -12,6 +12,7 @@ import FeatureConfig
 import FeatureCanvas
 import FeatureSettings
 import FeatureInsights
+import FeatureLedger
 #endif
 
 @main
@@ -36,6 +37,7 @@ struct ScribbleFitApp: App {
     private let parsePendingScribblesUseCase: ParsePendingScribblesUseCase
     private let getAIOverviewUseCase: GetAIOverviewUseCase
     private let getWorkoutsByDateUseCase: GetWorkoutsByDateUseCase
+    private let getWorkoutsInRangeUseCase: GetWorkoutsInRangeUseCase
     private let clearAllDataUseCase: ClearAllDataUseCase
     private let updateApiKeyUseCase: UpdateApiKeyUseCase
     private let testConnectionUseCase: TestConnectionUseCase
@@ -50,6 +52,7 @@ struct ScribbleFitApp: App {
     private let canvasStore: CanvasStore
     private let settingsStore: SettingsStore
     private let insightsStore: InsightsStore
+    private let ledgerStore: LedgerStore
 
     init() {
         do {
@@ -87,6 +90,7 @@ struct ScribbleFitApp: App {
             self.parsePendingScribblesUseCase = ParsePendingScribblesUseCase(scribbleRepository: scribbleRepo, llmProvider: routingLLM)
             self.getAIOverviewUseCase = GetAIOverviewUseCase(workoutRepository: workoutRepo, llmProvider: routingLLM)
             self.getWorkoutsByDateUseCase = GetWorkoutsByDateUseCase(repository: workoutRepo)
+            self.getWorkoutsInRangeUseCase = GetWorkoutsInRangeUseCase(repository: workoutRepo)
 
             self.clearAllDataUseCase = ClearAllDataUseCase(repository: settingsRepo)
             self.updateApiKeyUseCase = UpdateApiKeyUseCase(repository: settingsRepo)
@@ -128,6 +132,10 @@ struct ScribbleFitApp: App {
                 configRepository: configRepo
             )
 
+            self.ledgerStore = LedgerStore(
+                getWorkoutsInRangeUseCase: getWorkoutsInRangeUseCase
+            )
+
         } catch {
             print("ERROR INITIALIZING SWIFTDATA: \(error)")
             fatalError("Could not initialize SwiftData: \(error)")
@@ -139,7 +147,8 @@ struct ScribbleFitApp: App {
             ContentView(
                 canvasStore: canvasStore,
                 settingsStore: settingsStore,
-                insightsStore: insightsStore
+                insightsStore: insightsStore,
+                ledgerStore: ledgerStore
             )
         }
         .modelContainer(modelContainer)
@@ -150,9 +159,12 @@ struct ContentView: View {
     @Bindable var canvasStore: CanvasStore
     @Bindable var settingsStore: SettingsStore
     @Bindable var insightsStore: InsightsStore
+    @Bindable var ledgerStore: LedgerStore
+
+    @State private var selectedTab = 0
 
     var body: some View {
-        TabView {
+        TabView(selection: $selectedTab) {
             CanvasView(
                 store: canvasStore,
                 settingsStore: settingsStore
@@ -160,16 +172,23 @@ struct ContentView: View {
             .tabItem {
                 Label(String(localized: "Today"), systemImage: "house.fill")
             }
+            .tag(0)
 
             InsightsView(store: insightsStore)
                 .tabItem {
                     Label(String(localized: "Insights"), systemImage: "star.fill")
                 }
+                .tag(1)
 
-            LedgerPlaceholder()
-                .tabItem {
-                    Label(String(localized: "Ledger"), systemImage: "person.fill")
-                }
+            LedgerView(
+                store: ledgerStore,
+                onNavigateToCanvas: { selectedTab = 0 },
+                onNavigateToWorkoutDetails: { _ in /* TODO: Implement navigation */ }
+            )
+            .tabItem {
+                Label(String(localized: "Ledger"), systemImage: "person.fill")
+            }
+            .tag(2)
         }
         .tint(.scribblePrimary)
         .preferredColorScheme(colorScheme)
@@ -180,15 +199,6 @@ struct ContentView: View {
         case .light: return .light
         case .dark: return .dark
         case .system: return nil
-        }
-    }
-}
-
-struct LedgerPlaceholder: View {
-    var body: some View {
-        NavigationStack {
-            Text(String(localized: "Ledger coming soon"))
-                .navigationTitle(String(localized: "Ledger"))
         }
     }
 }
