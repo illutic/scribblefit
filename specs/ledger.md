@@ -1,51 +1,84 @@
 # Feature Specification: Ledger (Workout History)
 
 ## 1. Overview
-The Ledger feature provides a comprehensive, scrollable history of all past workouts recorded by the user. It serves as the primary log for reviewing progress and accessing detailed information about individual training sessions.
+The Ledger is a comprehensive, chronological log of all physical activity recorded by the user. It allows users to browse their training history, filter by date ranges, and drill down into specific session details. It serves as the primary source of truth for past performance.
 
 ## 2. User Stories
-- **As a User**, I want to see a list of my past workouts **so that** I can track my consistency over time.
-- **As a User**, I want to see a summary of each workout (date, exercises performed) **so that** I can quickly identify a specific session.
-- **As a User**, I want to be informed when I haven't recorded any workouts yet **so that** I know the app is ready for my first entry.
-- **As a User**, I want to see a loading state **so that** I know the app is fetching my history from the local database.
+- **As a User**, I want to see a chronological list of my past workouts **so that** I can track my consistency.
+- **As a User**, I want to filter my history by date range **so that** I can focus on a specific period (e.g., this month).
+- **As a User**, I want to see a summary of each workout (date, exercises, and total volume) **so that** I can quickly identify sessions.
+- **As a User**, I want to tap a workout entry **so that** I can view the full Workout Details.
+- **As a User**, I want to see a clear empty state **so that** I know I haven't recorded anything yet.
+- **As a User**, I want to see a loading state (skeleton loaders) **so that** I know my history is being fetched.
 
 ## 3. Acceptance Criteria
-- [ ] The Ledger screen must be accessible via the bottom navigation bar.
-- [ ] **Empty State:** If no workouts exist, display a clear empty state with a call-to-action to start a new workout.
-- [ ] **Loading State:** Display a progress indicator while fetching workout data.
-- [ ] **Data State:**
-    - [ ] Display a scrollable list of workouts ordered by date (newest first).
-    - [ ] Each list item must show the workout date (e.g., "Monday, March 16").
-    - [ ] Each list item must show a summary of exercises (e.g., "Bench Press, Squat, Pull-ups").
-    - [ ] Tapping a workout item should (potentially) navigate to a detailed view (out of scope for this initial spec, but planned).
-- [ ] **Contextual UI Splitting:**
-    - [ ] **Header:** Title "Ledger".
-    - [ ] **Body:** The workout list, empty state, or loading indicator.
-    - [ ] **Footer:** Bottom navigation bar (shared across the app).
+
+### 3.1 Header
+- [ ] **Title:** "Ledger" (Large, bold).
+- [ ] **Date Range Selector:**
+    - [ ] Displays the current filter range (e.g., "Mar 1, 2026 – Mar 31, 2026").
+    - [ ] Includes a calendar icon (`calendar_today`).
+    - [ ] Tapping the selector opens a native Date Range Picker.
+    - [ ] Default range: Current Month.
+
+### 3.2 Workout List (Chronological History)
+- [ ] **Grouping:** Workouts are grouped by date, displayed in descending order (newest first).
+- [ ] **Workout Card/Item:**
+    - [ ] **Header:** Displays the day and date (e.g., "Monday, March 16").
+    - [ ] **Interactivity Indicator:** A trailing chevron-right (`chevron_right`) suggesting navigation to details.
+    - [ ] **Exercise Summary:** A list of exercises performed in that session.
+    - [ ] **Metrics:** Displays the total volume or specific stats for each exercise (e.g., "Bench Press 2,450 lbs").
+- [ ] **Navigation:** Tapping any part of a workout entry navigates to the **Workout Details** screen for that session.
+
+### 3.3 States
+- [ ] **Loading State:**
+    - [ ] Display skeleton loaders that match the layout of the workout cards.
+    - [ ] Reference: `Ledger (Loading State)` design.
+- [ ] **Empty State:**
+    - [ ] Displayed when no workouts are found in the selected range or at all.
+    - [ ] Includes a clear message (e.g., "Your history is empty") and a call-to-action (e.g., "Start your first session on the Canvas").
+    - [ ] Reference: `Ledger (Minimal Empty State)` design.
+
+### 3.4 UI Design Tokens
+- **Background:** Minimalist, following `DESIGN.md`.
+- **Card Styling:** Zero borders, glassmorphism or subtle elevation as per platform guidelines.
+- **Typography:** Inter (Android) / San Francisco (iOS).
 
 ## 4. Development Guidelines (Android)
 - **Architecture:** MVI (State, Intent, ViewModel).
 - **Package Structure:** `:feature:ledger` with `:data`, `:domain`, `:ui`.
-- **UI:** 100% Jetpack Compose using `ScribbleFitTheme`.
-    - Use `LazyColumn` for the workout list.
-    - Implement `LedgerHeader`, `LedgerBody`, and `LedgerFooter` as separate contextual Composables.
-- **Database:** Room with `Flow<List<Workout>>` for reactivity.
-- **Dependency Injection:** Hilt.
+- **UI:** 100% Jetpack Compose.
+    - Use `LazyColumn` for the scrollable list.
+    - Implement `LedgerHeader`, `WorkoutItem`, and `EmptyLedgerContent` as separate contextual Composables.
+    - Use skeleton loading library or custom shimmer effects.
+- **Database:** Room with `Flow<List<WorkoutWithAllDetails>>` for reactive updates.
+- **Navigation:** Use `workoutId` to navigate to the Workout Details screen.
 
 ## 4. Development Guidelines (iOS)
 - **Architecture:** MVI (State, Intent, @Observable Store).
 - **Package Structure:** SPM target `LedgerFeature` with `Data`, `Domain`, `UI`.
-- **UI:** 100% SwiftUI with `ScribbleFitTheme`.
-    - Use `List` or `ScrollView` with `LazyVStack` for the history.
-    - Implement `LedgerHeaderView`, `LedgerBodyView`, and `LedgerFooterView` as separate contextual Views.
-- **Database:** SwiftData with `@Query` or `AsyncSequence` for reactivity.
-- **Background Tasks:** Swift Concurrency for database operations.
+- **UI:** 100% SwiftUI.
+    - Use `List` or `ScrollView` with `LazyVStack`.
+    - Apply `.glassEffect()` or consistent spacing for cards.
+    - Implement skeleton loaders using overlaid shapes with opacity animation.
+- **Database:** SwiftData with `@Query` or `AsyncStream` repositories.
+- **Concurrency:** Swift 6 strict concurrency for repository fetching.
 
-## 5. Validation
+## 5. Stitch Design References
+
+| Screen | Description |
+|--------|-------------|
+| Ledger with Interactivity Indicators | Main chronological history with date range and chevrons |
+| Ledger (Minimal Empty State) | Empty state view when no workouts exist |
+| Ledger (Loading State) | Skeleton/Shimmer view during data fetch |
+
+## 6. Validation
 - **Unit Tests:**
-    - `LedgerViewModel`/`LedgerStore` tests for state transitions (Loading -> Data, Loading -> Empty).
-    - Use Case tests for fetching workouts from the repository.
-- **Integration Tests:** Verifying Room/SwiftData queries return the expected list of workouts.
+    - `LedgerViewModel`/`LedgerStore`: Verify state transitions (Loading -> Data -> Empty).
+    - `FilterWorkoutsUseCase`: Verify filtering logic for different date ranges.
+- **Integration Tests:** 
+    - Verifying Room/SwiftData queries return workouts correctly filtered and sorted.
 - **UI Tests:** 
-    - Verify the empty state is displayed when the database is empty.
-    - Verify the workout list displays the correct number of items and data.
+    - Verify the date range picker updates the displayed list.
+    - Verify navigation to Workout Details on item tap.
+    - Verify the empty state is visible when no data is provided.

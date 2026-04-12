@@ -1,62 +1,91 @@
 # Feature Specification: Insights (Data Visualization)
 
 ## 1. Overview
-The Insights feature provides a data-driven view of the user's progress. It aggregates workout data from the Ledger and visualizes it through charts and statistics, helping users understand their training volume, frequency, and overall progress.
+The Insights feature provides a data-driven view of the user's progress. It aggregates workout data from the Ledger and visualizes it through charts and statistics, helping users understand their training volume, frequency, and overall progress. It also includes AI-generated summaries for personalized coaching.
 
 ## 2. User Stories
-- **As a User**, I want to see an AI-generated overview of my progress **so that** I can get quick, personalized insights without analyzing charts myself.
-- **As a User**, I want to see my total training volume **so that** I can track my strength progress over time.
-- **As a User**, I want to see a chart of my workout frequency **so that** I can monitor my consistency.
-- **As a User**, I want to see which muscle groups I've trained most **so that** I can ensure a balanced routine.
-- **As a User**, I want to see a loading state **so that** I know the app is calculating my statistics.
-- **As a User**, I want a clear empty state **so that** I understand I need to record workouts to see insights.
+- **As a User**, I want to see an AI-generated overview of my progress **so that** I can get quick, personalized insights.
+- **As a User**, I want to see my weekly activity via a bar chart **so that** I can monitor my consistency.
+- **As a User**, I want to see my volume distribution across exercises **so that** I can identify my focus areas.
+- **As a User**, I want to see my monthly trends for volume and max weight **so that** I can visualize long-term strength gains.
+- **As a User**, I want to see progress for key exercises (e.g., Bench Press, Squat) **so that** I can track my 1RM improvements.
+- **As a User**, I want to filter these insights by month **so that** I can review past performance periods.
 
 ## 3. Acceptance Criteria
-- [ ] The Insights screen must be accessible via the bottom navigation bar.
-- [ ] **Empty State:** Displayed when fewer than two workouts are recorded. Provide encouragement to log more sessions.
-- [ ] **Loading State:** Display a progress indicator while stats are being calculated from the database.
-- [ ] **Data State:**
-    - [ ] **AI Overview:**
-        - [ ] A card at the top of the screen providing a natural language summary of progress.
-        - [ ] Displays trends in volume, frequency, and muscle group focus.
-        - [ ] Includes actionable advice based on the data (e.g., "Consider adding more leg volume").
-        - [ ] Loading state: Show a shimmer or placeholder while generating.
-        - [ ] Refresh capability: Users can trigger a re-generation of the summary.
-    - [ ] **Volume Chart:** A line chart showing total volume (sum of weight * reps) over a selectable time period (week/month/year).
-    - [ ] **Frequency Stats:** A grid or list showing workouts per week and total workouts.
-    - [ ] **Muscle Distribution:** A pie or bar chart showing the percentage of sets/exercises per muscle group.
-- [ ] **Contextual UI Splitting:**
-    - [ ] **Header:** Title "Insights".
-    - [ ] **Body:** The charts and metrics, empty state, or loading indicator.
-    - [ ] **Footer:** Bottom navigation bar (shared across the app).
+
+### 3.1 Header
+- [ ] **Title:** "Monthly Insights" (Large, bold).
+- [ ] **Month Selector:**
+    - [ ] Displays the currently selected month (e.g., "March 2026").
+    - [ ] Includes a calendar icon (`calendar_today`).
+    - [ ] Tapping the selector opens a Month Picker.
+
+### 3.2 AI Performance Summary
+- [ ] **AI Overview Card:**
+    - [ ] Positioned at the top of the insights list.
+    - [ ] Displays a natural language summary (e.g., "Your bench volume is up 8% this week. Consider increasing the weight by 2.5 lbs in your next session.").
+    - [ ] Uses a distinct background or border to highlight AI-generated content.
+    - [ ] Includes a "Refresh" or "Re-generate" action.
+
+### 3.3 Visualizations (Charts)
+- [ ] **Weekly Activity Chart:**
+    - [ ] Type: Bar Chart.
+    - [ ] X-axis: Days of the week (M, T, W, T, F, S, S).
+    - [ ] Y-axis: Number of sets or sessions.
+- [ ] **Volume Distribution Chart:**
+    - [ ] Type: Pie or Donut Chart.
+    - [ ] Shows the percentage of total volume contributed by different exercise categories or specific exercises.
+- [ ] **Monthly Trends Chart:**
+    - [ ] Type: Multi-line or Area Chart.
+    - [ ] Tracks "Total Volume" and "Max Weight" over the selected month.
+
+### 3.4 Key Exercises List
+- [ ] Displays a list of frequently performed exercises.
+- [ ] For each exercise:
+    - [ ] **Exercise Name:** (e.g., "Barbell Bench Press").
+    - [ ] **Current 1RM:** Displays the calculated One-Rep Max.
+    - [ ] **Progress Badge:** A status indicator (e.g., "IMPROVING" with a green upward arrow).
+    - [ ] **Navigation:** Tapping an exercise navigates to the **Exercise Details** screen.
+
+### 3.5 States
+- [ ] **Loading State:** Shimmer effects for charts and cards.
+- [ ] **Empty State:** Displayed when fewer than two sessions are recorded. Reference: `Insights (Empty State)` design.
 
 ## 4. Development Guidelines (Android)
 - **Architecture:** MVI (State, Intent, ViewModel).
 - **Package Structure:** `:feature:insights` with `:data`, `:domain`, `:ui`.
-- **UI:** 100% Jetpack Compose using `ScribbleFitTheme`.
-    - Use a charting library (e.g., Vico or custom Canvas) for visualizations.
-    - Implement `InsightsHeader`, `InsightsBody`, and `InsightsFooter` as separate contextual Composables.
-    - **AI Overview Card:** A dedicated component at the top of the `InsightsBody` that displays the AI summary.
-- **AI Integration:** Use `:feature:ai`'s `LLMEngine` to generate the summary based on workout statistics.
+- **UI:** 100% Jetpack Compose.
+    - Use **Vico** for the Weekly Activity and Monthly Trends charts.
+    - Use custom Canvas or a dedicated library for the Volume Distribution pie chart.
+    - Implement `InsightsHeader`, `AIOverviewCard`, and `ExerciseProgressList`.
+- **AI Integration:** Use `:feature:ai:domain`'s `LLMEngine` to generate the summary based on workout statistics.
 - **Database:** Room with `Flow` to reactively update stats as new workouts are added.
-- **Dependency Injection:** Hilt.
 
 ## 4. Development Guidelines (iOS)
 - **Architecture:** MVI (State, Intent, @Observable Store).
 - **Package Structure:** SPM target `InsightsFeature` with `Data`, `Domain`, `UI`.
-- **UI:** 100% SwiftUI with `ScribbleFitTheme`.
-    - Use `Swift Charts` for all visualizations.
-    - Implement `InsightsHeaderView`, `InsightsBodyView`, and `InsightsFooterView` as separate contextual Views.
-    - **AI Overview View:** A card-like view at the top of `InsightsBodyView` for the AI summary.
-- **AI Integration:** Integration with a local or remote LLM (e.g., via CoreML or an API) to generate the summary.
-- **Database:** SwiftData with `@Query` or `AsyncSequence`.
-- **Background Tasks:** Swift Concurrency for statistical calculations and AI generation.
+- **UI:** 100% SwiftUI.
+    - Use **Swift Charts** for all visualizations (Bar, Pie, Line charts).
+    - Apply `.glassEffect()` as per `DESIGN.md`.
+- **AI Integration:** Use `RoutingLLMService` to generate the summary.
+- **Database:** SwiftData with reactive `AsyncStream` repositories.
+- **Concurrency:** Swift 6 strict concurrency for calculating trends.
 
-## 5. Validation
+## 5. Stitch Design References
+
+| Screen | Description |
+|--------|-------------|
+| Insights (Populated State) | Main insights view with charts, AI summary, and key exercises |
+| Insights (Empty State) | Empty state view when insufficient data exists |
+| Insights (Loading State) | Shimmer/Skeleton view during calculations |
+| Exercise Details (Refined) | Detail screen for a single exercise accessed from the Key Exercises list |
+
+## 6. Validation
 - **Unit Tests:**
-    - Calculations logic (volume, frequency, muscle distribution) in Use Cases.
+    - Statistical calculation logic (Volume, 1RM, Weekly Distribution).
     - `InsightsViewModel`/`InsightsStore` state management.
-- **Integration Tests:** Verifying that the database queries return correct aggregated data.
+- **Integration Tests:** Verifying database aggregation queries return correct values.
 - **UI Tests:** 
-    - Verify charts are rendered correctly when data is present.
-    - Verify the empty state is displayed for new users.
+    - Verify charts are rendered correctly with mock data.
+    - Verify the Month Selector updates the insights.
+    - Verify navigation to Exercise Details on exercise item tap.
