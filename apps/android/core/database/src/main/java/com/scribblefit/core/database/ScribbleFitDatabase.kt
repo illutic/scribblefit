@@ -16,7 +16,7 @@ import com.scribblefit.core.database.entity.scribble.ScribbleExercise
 import com.scribblefit.core.database.entity.set.WorkoutSet
 import com.scribblefit.core.database.entity.workout.Workout
 
-private const val DATABASE_VERSION = 2
+private const val DATABASE_VERSION = 3
 
 @Database(
     entities = [

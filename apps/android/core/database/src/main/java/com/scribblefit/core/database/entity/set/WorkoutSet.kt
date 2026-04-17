@@ -29,7 +29,7 @@ data class WorkoutSet(
     val workoutExerciseId: Long,
     val setNumber: Int,
     val reps: Int,
-    val weight: Float,
+    val weight: Float? = null,
     val rpe: Float? = null,
     val notes: String? = null,
 )

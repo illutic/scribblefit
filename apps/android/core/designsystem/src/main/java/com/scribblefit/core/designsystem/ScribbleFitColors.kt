@@ -32,6 +32,9 @@ private val DarkDangerRedColor = Color(0xFFFF453A)
 private val SuccessGreenColor = Color(0xFF34C759)
 private val DarkSuccessGreenColor = Color(0xFF30D158)
 
+private val OutlineVariantColor = Color(0xFFC6C6C6)
+private val DarkOutlineVariantColor = Color(0xFF444446)
+
 data class ScribbleFitColors(
     val primary: Color = PrimaryColor,
     val onPrimary: Color = OnPrimaryColor,
@@ -43,6 +46,7 @@ data class ScribbleFitColors(
     val midGray: Color = MidGrayColor,
     val dangerRed: Color = DangerRedColor,
     val successGreen: Color = SuccessGreenColor,
+    val outlineVariant: Color = OutlineVariantColor,
     val background: Color = surface,
 )
 
@@ -58,7 +62,8 @@ internal val darkScribbleFitColors = ScribbleFitColors(
     surfaceContainerHigh = DarkSurfaceContainerHighColor,
     midGray = DarkMidGrayColor,
     dangerRed = DarkDangerRedColor,
-    successGreen = DarkSuccessGreenColor
+    successGreen = DarkSuccessGreenColor,
+    outlineVariant = DarkOutlineVariantColor
 )
 
 internal val LocalColors = staticCompositionLocalOf { lightScribbleFitColors }

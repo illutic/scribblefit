@@ -13,6 +13,7 @@ import com.scribblefit.core.database.entity.workout.Workout
 import com.scribblefit.core.database.entity.workout.WorkoutWithAllDetails
 import com.scribblefit.core.model.Scribble
 import com.scribblefit.core.model.ScribbleStatus
+import org.json.JSONObject
 import com.scribblefit.core.config.domain.SystemConfig as DomainSystemConfig
 import com.scribblefit.core.model.Exercise as DomainExercise
 import com.scribblefit.core.model.Set as DomainSet
@@ -83,24 +84,31 @@ fun SystemConfig.toDomain(): DomainSystemConfig =
         isDynamicTheme = isDynamicTheme,
     )
 
-fun ScribbleEntity.toDomain(): Scribble =
-    Scribble(
+fun ScribbleEntity.toDomain(): Scribble {
+    return Scribble(
         id = scribbleId,
         rawText = rawText,
         parsedJson = parsedJson,
-        status = runCatching { ScribbleStatus.valueOf(status.uppercase()) }.getOrDefault(ScribbleStatus.FAILED),
+        status = runCatching { ScribbleStatus.valueOf(status.uppercase()) }.getOrDefault(
+            ScribbleStatus.FAILED
+        ),
         createdAt = createdAt,
+        exercises = emptyList() // Base entity doesn't have exercises, use ScribbleWithExercises
     )
+}
 
-fun ScribbleWithExercises.toDomain(): Scribble =
-    Scribble(
+fun ScribbleWithExercises.toDomain(): Scribble {
+    return Scribble(
         id = scribble.scribbleId,
         rawText = scribble.rawText,
         parsedJson = scribble.parsedJson,
-        status = runCatching { ScribbleStatus.valueOf(scribble.status.uppercase()) }.getOrDefault(ScribbleStatus.FAILED),
+        status = runCatching { ScribbleStatus.valueOf(scribble.status.uppercase()) }.getOrDefault(
+            ScribbleStatus.FAILED
+        ),
         createdAt = scribble.createdAt,
         exercises = exercises.map { it.toDomain() },
     )
+}
 
 /**
  * Mapper extension functions to convert domain objects into Room entities.

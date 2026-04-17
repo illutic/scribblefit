@@ -2,6 +2,7 @@ package com.scribblefit.core.database.dao
 
 import androidx.room.Dao
 import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Transaction
 import com.scribblefit.core.database.entity.scribble.ScribbleExercise
@@ -15,6 +16,41 @@ interface ScribbleTrackerDao {
 
     @Insert
     suspend fun insertScribbleExercises(scribbleExercises: List<ScribbleExercise>)
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    suspend fun insertExercises(exercises: List<com.scribblefit.core.database.entity.exercise.Exercise>): List<Long>
+
+    @Query("SELECT exerciseId FROM exercise WHERE name = :name")
+    suspend fun getExerciseIdByName(name: String): Long?
+
+    @Insert
+    suspend fun insertWorkoutExercises(workoutExercises: List<com.scribblefit.core.database.entity.exercise.WorkoutExercise>): List<Long>
+
+    @Insert
+    suspend fun insertWorkoutSets(workoutSets: List<com.scribblefit.core.database.entity.set.WorkoutSet>)
+
+    @Transaction
+    suspend fun insertScribbleExercisesWithDetails(
+        scribbleId: Long,
+        exercises: List<com.scribblefit.core.database.entity.exercise.Exercise>,
+        workoutExercises: List<com.scribblefit.core.database.entity.exercise.WorkoutExercise>,
+        setsPerExercise: List<List<com.scribblefit.core.database.entity.set.WorkoutSet>>,
+    ) {
+        exercises.forEachIndexed { index, exercise ->
+            val existingId = getExerciseIdByName(exercise.name)
+            val exerciseId = existingId ?: insertExercises(listOf(exercise)).first()
+
+            val we = workoutExercises[index].copy(exerciseId = exerciseId)
+            val weId = insertWorkoutExercises(listOf(we)).first()
+
+            val sets = setsPerExercise.getOrNull(index)?.map { it.copy(workoutExerciseId = weId) }
+            if (!sets.isNullOrEmpty()) {
+                insertWorkoutSets(sets)
+            }
+
+            insertScribbleExercise(ScribbleExercise(scribbleId = scribbleId, workoutExerciseId = weId))
+        }
+    }
 
     @Transaction
     @Query(
@@ -32,7 +68,7 @@ interface ScribbleTrackerDao {
     suspend fun clearScribbleExercises(scribbleId: Long) {
         val workoutExerciseIds = getWorkoutExerciseIdsForScribble(scribbleId)
         deleteScribbleExercisesByScribbleId(scribbleId)
-        workoutExerciseIds.forEach { deleteWorkoutExerciseById(it) }
+        workoutExerciseIds.forEach { deleteOrphanedWorkoutExerciseById(it) }
     }
 
     @Query("SELECT workoutExerciseId FROM scribble_exercise WHERE scribbleId = :scribbleId")
@@ -41,8 +77,8 @@ interface ScribbleTrackerDao {
     @Query("DELETE FROM scribble_exercise WHERE scribbleId = :scribbleId")
     suspend fun deleteScribbleExercisesByScribbleId(scribbleId: Long)
 
-    @Query("DELETE FROM workout_exercise WHERE workoutExerciseId = :id")
-    suspend fun deleteWorkoutExerciseById(id: Long)
+    @Query("DELETE FROM workout_exercise WHERE workoutExerciseId = :id AND workoutId IS NULL")
+    suspend fun deleteOrphanedWorkoutExerciseById(id: Long)
 
     /**
      * Gets a scribble with all its associated exercises and their sets.
@@ -58,7 +94,7 @@ interface ScribbleTrackerDao {
      * Let's stick to the fuzzy range logic but allow all statuses.
      */
     @Transaction
-    @Query("SELECT * FROM scribbles WHERE ABS(createdAt - :date) < 86400000")
+    @Query("SELECT * FROM scribbles WHERE createdAt >= :date AND createdAt < :date + (24 * 60 * 60 * 1000)")
     fun getAllScribblesWithExercisesByDate(date: Long): Flow<List<ScribbleWithExercises>>
 
     @Transaction

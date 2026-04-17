@@ -34,7 +34,7 @@ import com.scribblefit.core.database.entity.workout.Workout
 data class WorkoutExercise(
     @PrimaryKey(autoGenerate = true)
     val workoutExerciseId: Long = 0,
-    val workoutId: Long,
+    val workoutId: Long? = null,
     val exerciseId: Long,
     val estimated1RM: Float? = null,
     val intensity: Float? = null,

@@ -29,7 +29,7 @@ interface ScribbleDao {
     fun getScribblesByStatusAndDate(status: String, date: Long): Flow<List<ScribbleWithExercises>>
 
     @Transaction
-    @Query("SELECT * FROM scribbles WHERE createdAt >= :date AND createdAt < :date + 86400000")
+    @Query("SELECT * FROM scribbles WHERE createdAt >= :date AND createdAt < :date + (24 * 60 * 60 * 1000)")
     fun getAllScribblesByDate(date: Long): Flow<List<ScribbleWithExercises>>
 
     @Transaction

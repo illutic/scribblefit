@@ -1,19 +1,15 @@
 package com.scribblefit.core.designsystem
 
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.AutoGraph
+import androidx.compose.material.icons.rounded.CalendarMonth
 import androidx.compose.material.icons.rounded.Home
-import androidx.compose.material.icons.rounded.Person
 import androidx.compose.material.icons.rounded.Settings
-import androidx.compose.material.icons.rounded.Star
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.FloatingToolbarDefaults
 import androidx.compose.material3.HorizontalFloatingToolbar
@@ -25,7 +21,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.tooling.preview.PreviewLightDark
-import androidx.compose.ui.unit.dp
 import com.scribblefit.core.navigation.BottomBarItem
 import com.scribblefit.core.navigation.BottomBarState
 import com.scribblefit.core.navigation.Screen
@@ -40,15 +35,11 @@ private val BottomBarItem.icon: Painter
             }
 
             Screen.Insights -> {
-                rememberVectorPainter(Icons.Rounded.Star)
+                rememberVectorPainter(Icons.Rounded.AutoGraph)
             }
 
             Screen.Ledger -> {
-                rememberVectorPainter(Icons.Rounded.Person)
-            }
-
-            Screen.Profile -> {
-                rememberVectorPainter(Icons.Rounded.Person)
+                rememberVectorPainter(Icons.Rounded.CalendarMonth)
             }
 
             Screen.Settings -> {
@@ -73,10 +64,6 @@ private val BottomBarItem.string: String
                 "Ledger"
             }
 
-            Screen.Profile -> {
-                "Profile"
-            }
-
             Screen.Settings -> {
                 "Settings"
             }
@@ -98,8 +85,8 @@ fun BottomBar(
         expanded = bottomBarState.isVisible,
         colors = colors,
         modifier = modifier,
-        expandedShadowElevation = 8.dp,
-        collapsedShadowElevation = 8.dp,
+        expandedShadowElevation = ScribbleFitTheme.spacing.small,
+        collapsedShadowElevation = ScribbleFitTheme.spacing.small,
     ) {
         bottomBarState.items.forEach { item ->
             BottomBarItem(

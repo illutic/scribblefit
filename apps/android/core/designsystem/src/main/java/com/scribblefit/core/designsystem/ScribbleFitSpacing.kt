@@ -5,7 +5,9 @@ import androidx.compose.ui.unit.dp
 
 data object ScribbleFitSpacing {
     val small = 8.dp
+    val smallLarger = 12.dp
     val medium = 16.dp
+    val mediumLarger = 18.dp
     val large = 24.dp
     val screenPadding = 24.dp
 }
