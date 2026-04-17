@@ -2,6 +2,9 @@
 
 Current status and upcoming features for ScribbleFit (Android & iOS).
 
+> [!IMPORTANT]
+> **Foundation Stabilized**: Critical data loss bugs and architectural gaps identified in [BUGS.md](BUGS.md) and [TECH_DEBT.md](TECH_DEBT.md) have been resolved. See those files for fix details.
+
 ## Phase 2: History & Detailed Tracking
 
 - [ ] **Ledger (Workout History)**

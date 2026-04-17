@@ -25,6 +25,9 @@ Always provide the certainty level and the proof when reporting on changes.
 **Boy Scout:** Fix completely with tests, or don't touch it. No TODOs without Jira tickets. No
 partial refactors. No features beyond scope.
 
+**Tech Debt:** Any code added that does not strictly adhere to these guidelines (due to time 
+constraints or technical blockers) MUST be documented in `TECH_DEBT.md`.
+
 **Certainty Levels** — never claim "fixed" without evidence:
 
 | Level        | Meaning         | Evidence                     |
