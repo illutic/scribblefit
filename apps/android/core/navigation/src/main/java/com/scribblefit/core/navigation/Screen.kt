@@ -1,9 +1,26 @@
 package com.scribblefit.core.navigation
 
-sealed class Screen(val route: String) {
-    data object Canvas : Screen("canvas")
-    data object Insights : Screen("insights")
-    data object Ledger : Screen("ledger")
-    data object Profile : Screen("profile")
-    data object Settings : Screen("settings")
+sealed interface Screen {
+    val route: String
+    val isTop: Boolean
+
+    data object Canvas : Screen {
+        override val route: String = "canvas"
+        override val isTop: Boolean = true
+    }
+
+    data object Insights : Screen {
+        override val route: String = "insights"
+        override val isTop: Boolean = true
+    }
+
+    data object Ledger : Screen {
+        override val route: String = "ledger"
+        override val isTop: Boolean = true
+    }
+
+    data object Settings : Screen {
+        override val route: String = "settings"
+        override val isTop: Boolean = false
+    }
 }

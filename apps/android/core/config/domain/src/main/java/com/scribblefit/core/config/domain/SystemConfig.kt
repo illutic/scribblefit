@@ -67,16 +67,15 @@ data class SystemConfig(
               "exercises": [{ 
                 "canonical_name": "String", 
                 "muscle_group": "String", 
-                "sets": [{ "weight": number, "reps": integer, "setNumber": integer, "rpe": number|null, "notes": "String|null" }],
+                "sets": [{ "weight": number|null, "reps": integer, "setNumber": integer, "rpe": number|null, "notes": "String|null" }],
                 "estimated_1rm": number|null,
-                "intensity": number|null,
-                "improvement": number|null
+                "intensity": number|null
               }]
             }
             Use Epley formula (weight * (1 + reps/30)) for 1RM estimate if possible. 
             Intensity should be a decimal (e.g. 0.85 for 85%).
-            Improvement is the weight change vs a previous session (if detectable from context, otherwise null).
-            Output ONLY valid JSON. No markdown, no extra text.
+            Reps are always required, weight can be null if not provided or not parsable. (e.g. "bench 3x5 @ 80kg" or "squat 5x5" or "deadlift 1x3 @ RPE9")
+            Output ONLY valid JSON. No extra text, no markdown, no apologies. If you can't parse any exercises, return {"exercises": []}.
         """
     }
 }
