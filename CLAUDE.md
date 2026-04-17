@@ -44,6 +44,18 @@ test for it before reporting it as done. Use unit tests for domain/data logic, C
 (Android) or XCUITests (iOS) for UI behaviour, or both. A certainty level of WEAK or INSUFFICIENT
 is not acceptable for merged code — escalate to STRONG by adding automated tests.
 
+**QA Verification:** ALWAYS run the `qa-agent` after proving your changes with tests. This agent 
+verifies that the implementation meets all acceptance criteria in the feature spec and updates the 
+`specs/[feature].md` file accordingly.
+
+**Critical Review:** ALWAYS consult the `critical-reviewer` subagent before finalizing any code 
+change. This agent assumes you are wrong and the codebase is wrong, helping identify hidden flaws 
+and architectural violations.
+
+**Post-Implementation Retrospection:** Run the `retrospection-agent` after every successful code 
+change (and after the `critical-reviewer` has passed). This agent formalizes learnings, refines 
+guidelines, and identifies repeatable patterns to improve future implementation efficiency.
+
 **Session Learning:** Suggest `/retrospection` at the end of substantive sessions.
 
 ## Guidelines
@@ -132,3 +144,6 @@ Entity -> Mapper -> Repository -> AppState -> AppViewModel -> MainActivity -> Se
 
 - `android-expert` -- Senior Android engineer for Kotlin/Compose/Room/Hilt work
 - `ios-expert` -- Senior iOS engineer for Swift/SwiftUI/SwiftData work
+- `critical-reviewer` -- Harsh senior architect who assumes everything is wrong and hunts for flaws
+- `retrospection-agent` -- Architect focused on formalizing patterns and refining guidelines after implementation
+- `qa-agent` -- Meticulous QA engineer who verifies implementations against acceptance criteria in specs
