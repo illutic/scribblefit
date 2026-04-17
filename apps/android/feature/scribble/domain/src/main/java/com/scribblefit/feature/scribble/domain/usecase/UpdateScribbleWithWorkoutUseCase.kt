@@ -1,47 +1,33 @@
 package com.scribblefit.feature.scribble.domain.usecase
 
 import com.scribblefit.core.common.runCatchingWithCancellation
+import com.scribblefit.core.model.Exercise
 import com.scribblefit.core.model.ScribbleStatus
-import com.scribblefit.core.model.Workout
 import com.scribblefit.feature.scribble.domain.ScribbleNotFoundException
 import com.scribblefit.feature.scribble.domain.ScribbleRepository
-import com.scribblefit.feature.workouts.domain.usecase.GetWorkoutUseCase
-import com.scribblefit.feature.workouts.domain.usecase.InsertWorkoutUseCase
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.withContext
 
 class UpdateScribbleWithWorkoutUseCase(
     private val scribbleRepository: ScribbleRepository,
-    private val insertWorkoutUseCase: InsertWorkoutUseCase,
-    private val getWorkoutUseCase: GetWorkoutUseCase,
     private val coroutineDispatcher: CoroutineDispatcher,
 ) {
-    suspend operator fun invoke(id: Long, workout: Workout) =
+    suspend operator fun invoke(id: Long, exercises: List<Exercise>) =
         runCatchingWithCancellation {
             withContext(coroutineDispatcher) {
+                val scribble = scribbleRepository.getScribble(id).firstOrNull()
+                    ?: throw ScribbleNotFoundException(id)
+                
                 scribbleRepository.clearScribbleExercises(id)
-                val workoutId = insertWorkoutUseCase(workout).getOrThrow()
-                insertExercisesToScribble(id, workoutId)
-                updateScribbleStatusToSuccess(id)
+                scribbleRepository.saveScribbleExercises(id, exercises)
+                
+                scribbleRepository.updateScribble(
+                    scribble.copy(
+                        status = ScribbleStatus.SUCCESS,
+                        parsedJson = null // We now store structured data instead of raw JSON
+                    )
+                )
             }
         }
-
-    private suspend fun insertExercisesToScribble(scribbleId: Long, workoutId: Long) {
-        val workout = getWorkoutUseCase(workoutId).getOrThrow()
-        val exerciseIds = workout?.exercises?.map { exercise -> exercise.id } ?: emptyList()
-        exerciseIds.forEach { exerciseId ->
-            scribbleRepository.addExerciseToScribble(scribbleId, exerciseId)
-        }
-    }
-
-    private suspend fun updateScribbleStatusToSuccess(scribbleId: Long) {
-        val scribble = scribbleRepository.getScribble(scribbleId).firstOrNull()
-            ?: throw ScribbleNotFoundException(scribbleId)
-        scribbleRepository.updateScribble(
-            scribble.copy(
-                status = ScribbleStatus.SUCCESS
-            )
-        )
-    }
 }

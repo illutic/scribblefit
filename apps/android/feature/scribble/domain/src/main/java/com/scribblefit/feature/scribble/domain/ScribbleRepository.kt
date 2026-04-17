@@ -11,6 +11,8 @@ interface ScribbleRepository {
     suspend fun updateScribble(scribble: Scribble)
     suspend fun deleteScribble(scribbleId: Long)
     suspend fun clearScribbleExercises(scribbleId: Long)
+    suspend fun saveScribbleExercises(scribbleId: Long, exercises: List<com.scribblefit.core.model.Exercise>)
+    suspend fun updateScribbleExercisesToWorkout(scribbleId: Long, workoutId: Long)
     suspend fun addExerciseToScribble(scribbleId: Long, workoutExerciseId: Long): Long
     fun getScribble(scribbleId: Long): Flow<Scribble>
     fun getScribbleWithExercises(scribbleId: Long): Flow<Scribble>

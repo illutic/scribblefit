@@ -18,7 +18,7 @@ class InsertSetToExerciseUseCase(
             runCatchingWithCancellation {
                 when {
                     set.reps <= 0 -> throw SetRepsNotValidException()
-                    set.weight < 0f -> throw SetWeightNotValidException()
+                    (set.weight ?: 0f) < 0f -> throw SetWeightNotValidException()
                     set.setNumber <= 0 -> throw SetNumberNotValidException()
                 }
                 repository.addSet(workoutExerciseId, set)
