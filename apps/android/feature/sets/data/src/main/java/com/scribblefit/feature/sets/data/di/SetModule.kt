@@ -7,6 +7,9 @@ import com.scribblefit.feature.sets.domain.SetRepository
 import com.scribblefit.feature.sets.domain.usecase.GetSetsForExerciseUseCase
 import com.scribblefit.feature.sets.domain.usecase.InsertSetToExerciseUseCase
 import com.scribblefit.feature.sets.domain.usecase.RemoveSetUseCase
+import com.scribblefit.feature.sets.domain.usecase.ReorderSetsUseCase
+import com.scribblefit.feature.sets.domain.usecase.UpdateSetRepsUseCase
+import com.scribblefit.feature.sets.domain.usecase.UpdateSetWeightUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -51,4 +54,25 @@ internal object SetModule {
     ): RemoveSetUseCase = RemoveSetUseCase(
         setRepository = setRepository
     )
+
+    @Provides
+    fun provideUpdateSetRepsUseCase(
+        setRepository: SetRepository,
+        coroutineDispatcherProvider: CoroutineDispatcherProvider
+    ): UpdateSetRepsUseCase = UpdateSetRepsUseCase(
+        repository = setRepository,
+        coroutineDispatcher = coroutineDispatcherProvider.default()
+    )
+
+    @Provides
+    fun provideUpdateSetWeightUseCase(
+        setRepository: SetRepository,
+        coroutineDispatcherProvider: CoroutineDispatcherProvider
+    ): UpdateSetWeightUseCase = UpdateSetWeightUseCase(
+        repository = setRepository,
+        coroutineDispatcher = coroutineDispatcherProvider.default()
+    )
+
+    @Provides
+    fun provideReorderSetsUseCase(): ReorderSetsUseCase = ReorderSetsUseCase()
 }

@@ -21,6 +21,16 @@ internal class SetRepositoryImpl(
             workoutExerciseDao.insertWorkoutSet(set.toEntity(workoutExerciseId))
         }
 
+    override suspend fun updateSetReps(setId: Long, reps: Int) =
+        withContext(coroutineDispatcher) {
+            workoutExerciseDao.updateSetReps(setId, reps)
+        }
+
+    override suspend fun updateSetWeight(setId: Long, weight: Float) =
+        withContext(coroutineDispatcher) {
+            workoutExerciseDao.updateSetWeight(setId, weight)
+        }
+
     override suspend fun deleteSet(setId: Long) =
         withContext(coroutineDispatcher) {
             workoutExerciseDao.deleteWorkoutSet(setId)

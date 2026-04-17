@@ -20,7 +20,8 @@ data class ScribbleExport(
 @Serializable
 data class ScribbleExerciseExport(
     val exerciseName: String,
-    val muscleGroup: String
+    val muscleGroup: String,
+    val sets: List<WorkoutSetExport>
 )
 
 @Serializable
@@ -42,7 +43,7 @@ data class WorkoutExerciseExport(
 data class WorkoutSetExport(
     val setNumber: Int,
     val reps: Int,
-    val weight: Float,
+    val weight: Float?,
     val rpe: Float?,
     val notes: String?
 )

@@ -43,6 +43,7 @@ internal class GeminiAIEngine(
             workout = workout.toDomain(),
             rawText = rawText,
             status = ParsingStatus.SUCCESS,
+            parsedJson = responseText,
             processingTimeMs = System.currentTimeMillis() - startMs
         )
     }

@@ -16,8 +16,6 @@ import com.scribblefit.feature.scribble.domain.usecase.UpdateScribbleAsCompleteU
 import com.scribblefit.feature.scribble.domain.usecase.UpdateScribbleAsFailedUseCase
 import com.scribblefit.feature.scribble.domain.usecase.UpdateScribbleAsPendingUseCase
 import com.scribblefit.feature.scribble.domain.usecase.UpdateScribbleWithWorkoutUseCase
-import com.scribblefit.feature.workouts.domain.usecase.GetWorkoutUseCase
-import com.scribblefit.feature.workouts.domain.usecase.InsertWorkoutUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -36,10 +34,14 @@ internal object ScribbleDataModule {
     fun provideScribbleRepository(
         scribbleDao: ScribbleDao,
         scribbleTrackerDao: ScribbleTrackerDao,
+        workoutDao: com.scribblefit.core.database.dao.WorkoutDao,
+        workoutExerciseDao: com.scribblefit.core.database.dao.WorkoutExerciseDao,
         coroutineDispatcherProvider: CoroutineDispatcherProvider
     ): ScribbleRepository = ScribbleRepositoryImpl(
         scribbleDao = scribbleDao,
         scribbleTrackerDao = scribbleTrackerDao,
+        workoutDao = workoutDao,
+        workoutExerciseDao = workoutExerciseDao,
         coroutineDispatcher = coroutineDispatcherProvider.io()
     )
 
@@ -104,13 +106,9 @@ internal object ScribbleDataModule {
     @Provides
     fun provideUpdateScribbleWithWorkoutUseCase(
         scribbleRepository: ScribbleRepository,
-        insertWorkoutUseCase: InsertWorkoutUseCase,
-        getWorkoutUseCase: GetWorkoutUseCase,
         coroutineDispatcherProvider: CoroutineDispatcherProvider
     ): UpdateScribbleWithWorkoutUseCase = UpdateScribbleWithWorkoutUseCase(
         scribbleRepository = scribbleRepository,
-        insertWorkoutUseCase = insertWorkoutUseCase,
-        getWorkoutUseCase = getWorkoutUseCase,
         coroutineDispatcher = coroutineDispatcherProvider.default()
     )
 

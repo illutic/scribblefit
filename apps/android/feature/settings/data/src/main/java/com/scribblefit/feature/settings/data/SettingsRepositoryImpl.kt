@@ -37,7 +37,16 @@ class SettingsRepositoryImpl @Inject constructor(
                         exercises = s.exercises.map { e ->
                             ScribbleExerciseExport(
                                 exerciseName = e.exercise.name,
-                                muscleGroup = e.exercise.muscleGroup
+                                muscleGroup = e.exercise.muscleGroup,
+                                sets = e.sets.map { s ->
+                                    WorkoutSetExport(
+                                        setNumber = s.setNumber,
+                                        reps = s.reps,
+                                        weight = s.weight,
+                                        rpe = s.rpe,
+                                        notes = s.notes
+                                    )
+                                }
                             )
                         }
                     )

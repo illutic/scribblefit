@@ -2,11 +2,17 @@ package com.scribblefit.feature.scribble.data
 
 import com.scribblefit.core.database.dao.ScribbleDao
 import com.scribblefit.core.database.dao.ScribbleTrackerDao
+import com.scribblefit.core.database.dao.WorkoutDao
+import com.scribblefit.core.database.dao.WorkoutExerciseDao
 import com.scribblefit.core.database.entity.scribble.ScribbleExercise
 import com.scribblefit.core.database.entity.scribble.ScribbleStatus
+import com.scribblefit.core.database.entity.exercise.Exercise as EntityExercise
+import com.scribblefit.core.database.entity.exercise.WorkoutExercise as EntityWorkoutExercise
+import com.scribblefit.core.database.entity.set.WorkoutSet as EntityWorkoutSet
 import com.scribblefit.core.database.mapper.toDomain
 import com.scribblefit.core.database.mapper.toEntity
 import com.scribblefit.core.model.Scribble
+import com.scribblefit.core.model.Exercise as DomainExercise
 import com.scribblefit.feature.scribble.domain.ScribbleRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
@@ -20,8 +26,54 @@ import kotlinx.coroutines.withContext
 internal class ScribbleRepositoryImpl(
     private val scribbleDao: ScribbleDao,
     private val scribbleTrackerDao: ScribbleTrackerDao,
+    private val workoutDao: WorkoutDao,
+    private val workoutExerciseDao: WorkoutExerciseDao,
     private val coroutineDispatcher: CoroutineDispatcher,
 ) : ScribbleRepository {
+    override suspend fun saveScribbleExercises(
+        scribbleId: Long,
+        exercises: List<DomainExercise>,
+    ) = withContext(coroutineDispatcher) {
+        val exerciseEntities = exercises.map { it.toEntity() }
+        val workoutExerciseEntities = exercises.map { domainExercise ->
+            EntityWorkoutExercise(
+                workoutId = null,
+                exerciseId = 0, // Assigned in transaction
+                estimated1RM = domainExercise.estimated1RM,
+                intensity = domainExercise.intensity,
+                improvement = domainExercise.improvement,
+            )
+        }
+        val setsPerExercise = exercises.map { domainExercise ->
+            domainExercise.sets.map { domainSet ->
+                EntityWorkoutSet(
+                    workoutExerciseId = 0, // Assigned in transaction
+                    setNumber = domainSet.setNumber,
+                    reps = domainSet.reps,
+                    weight = domainSet.weight,
+                    rpe = domainSet.rpe,
+                    notes = domainSet.notes,
+                )
+            }
+        }
+
+        scribbleTrackerDao.insertScribbleExercisesWithDetails(
+            scribbleId = scribbleId,
+            exercises = exerciseEntities,
+            workoutExercises = workoutExerciseEntities,
+            setsPerExercise = setsPerExercise,
+        )
+    }
+
+    override suspend fun updateScribbleExercisesToWorkout(
+        scribbleId: Long,
+        workoutId: Long,
+    ) = withContext(coroutineDispatcher) {
+        val exerciseIds = scribbleTrackerDao.getWorkoutExerciseIdsForScribble(scribbleId)
+        exerciseIds.forEach { workoutExerciseId ->
+            workoutExerciseDao.updateWorkoutId(workoutExerciseId, workoutId)
+        }
+    }
     override suspend fun insertScribble(scribble: Scribble): Long =
         withContext(coroutineDispatcher) {
             scribbleDao.insertScribble(scribble.toEntity())

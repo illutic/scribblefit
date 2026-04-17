@@ -27,9 +27,9 @@ internal data class ExerciseDto(
 
 @Serializable
 internal data class SetDto(
-    val weight: Float,
     val reps: Int,
     val setNumber: Int,
+    val weight: Float? = null,
     val rpe: Float? = null,
     val notes: String? = null,
 )

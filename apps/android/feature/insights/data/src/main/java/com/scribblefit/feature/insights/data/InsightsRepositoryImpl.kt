@@ -33,7 +33,7 @@ class InsightsRepositoryImpl @Inject constructor(
             workouts.map { workoutWithDetails ->
                 val totalVolume = workoutWithDetails.exercises.sumOf { exerciseWithDetails ->
                     exerciseWithDetails.sets.sumOf { set ->
-                        (set.weight * set.reps).toDouble()
+                        ((set.weight ?: 0f) * set.reps).toDouble()
                     }
                 }.toFloat()
 

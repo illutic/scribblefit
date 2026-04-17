@@ -1,14 +1,17 @@
 package com.scribblefit.feature.ai.data.engine
 
-import com.google.mlkit.genai.common.DownloadStatus
 import com.google.mlkit.genai.common.FeatureStatus
 import com.google.mlkit.genai.prompt.GenerativeModel
 import com.scribblefit.core.config.domain.ConfigRepository
 import com.scribblefit.core.model.AIInsight
-import com.scribblefit.core.model.InsightType
+import com.scribblefit.core.model.Exercise
+import com.scribblefit.feature.ai.data.entity.AIInsightDto
 import com.scribblefit.feature.ai.data.entity.WorkoutDto
 import com.scribblefit.feature.ai.data.entity.toDomain
-import com.scribblefit.feature.ai.domain.*
+import com.scribblefit.feature.ai.domain.LLMEngine
+import com.scribblefit.feature.ai.domain.LocalLLMEngine
+import com.scribblefit.feature.ai.domain.ParsedWorkoutResult
+import com.scribblefit.feature.ai.domain.ParsingStatus
 import kotlinx.serialization.json.Json
 import org.slf4j.LoggerFactory
 
@@ -31,26 +34,29 @@ internal class LocalAIEngine(
             workout = workout.toDomain(),
             rawText = rawText,
             status = ParsingStatus.SUCCESS,
+            parsedJson = responseText,
             modelUsed = "gemini-nano",
             processingTimeMs = System.currentTimeMillis() - startMs
         )
     }
 
-    override suspend fun generateInsightsSummary(exercises: List<com.scribblefit.core.model.Exercise>): Result<List<AIInsight>> = runCatching {
-        ensureModelIsReady()
-        // For local simulation, returning a static list similar to iOS
-        listOf(
-            AIInsight(InsightType.SUMMARY, "Local Insights: You have completed ${exercises.size} exercises today. Great work!"),
-            AIInsight(InsightType.TREND, "Based on your recent consistency, your volume is improving."),
-            AIInsight(
-                InsightType.ADVICE,
-                "Keep focus on recovery and ensure you're getting enough protein."
-            )
-        )
-    }
+    override suspend fun generateInsightsSummary(exercises: List<Exercise>): Result<List<AIInsight>> =
+        runCatching {
+            ensureModelIsReady()
+
+            val context = exercises.joinToString("\n") { exercise ->
+                val sets = exercise.sets.joinToString(", ") { "${it.weight}x${it.reps}" }
+                "${exercise.canonicalName} (${exercise.muscleGroup}): $sets"
+            }
+
+            val prompt = "${config.summaryPrompt}\n\nData:\n$context"
+            val responseText = callLocalLLM(prompt)
+            val dtos = json.decodeFromString<List<AIInsightDto>>(responseText)
+            dtos.map { it.toDomain() }
+        }
 
     override suspend fun isSupported(): Boolean {
-        return generativeModel.checkStatus() != FeatureStatus.UNAVAILABLE
+        return generativeModel.checkStatus() == FeatureStatus.AVAILABLE
     }
 
     private suspend fun callLocalLLM(prompt: String): String {
@@ -60,46 +66,8 @@ internal class LocalAIEngine(
     }
 
     private suspend fun ensureModelIsReady() {
-        when (generativeModel.checkStatus()) {
-            FeatureStatus.UNAVAILABLE -> {
-                error("Gemini Nano is Not available")
-            }
-
-            FeatureStatus.DOWNLOADABLE -> {
-                var totalBytesToDownload: Long = -1L
-                // Gemini Nano can be downloaded on this device, but is not currently downloaded
-                generativeModel.download().collect { status ->
-                    when (status) {
-                        is DownloadStatus.DownloadStarted -> {
-                            totalBytesToDownload = status.bytesToDownload
-                            logger.info("Gemini Nano download started $totalBytesToDownload bytes")
-                        }
-
-                        is DownloadStatus.DownloadProgress -> {
-                            val progress = (status.totalBytesDownloaded / totalBytesToDownload) * 100
-                            logger.info("Gemini Nano download progress: $progress%")
-                        }
-
-                        DownloadStatus.DownloadCompleted -> {
-                            logger.info("Gemini Nano download completed")
-                        }
-
-                        is DownloadStatus.DownloadFailed -> {
-                            logger.error("Gemini Nano download failed: ${status.e}")
-                        }
-                    }
-                }
-            }
-
-            FeatureStatus.DOWNLOADING -> {
-                // Gemini Nano is currently being downloaded on this device
-                logger.info("Gemini Nano is currently downloading")
-            }
-
-            FeatureStatus.AVAILABLE -> {
-                // Gemini Nano is downloaded and ready to use
-                logger.info("Gemini Nano is available and ready to use")
-            }
+        if (generativeModel.checkStatus() != FeatureStatus.AVAILABLE) {
+            error("Gemini Nano is not downloaded or ready. Current status: ${generativeModel.checkStatus()}")
         }
     }
 }
