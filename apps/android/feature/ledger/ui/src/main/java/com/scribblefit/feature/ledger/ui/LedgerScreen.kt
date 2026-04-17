@@ -1,86 +1,95 @@
 package com.scribblefit.feature.ledger.ui
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.scribblefit.core.designsystem.BottomBar
 import com.scribblefit.core.designsystem.ScribbleFitTheme
+import com.scribblefit.core.navigation.Screen
+import com.scribblefit.feature.ledger.ui.components.DatePickerDialog
+import com.scribblefit.feature.ledger.ui.components.DateRangePickerButton
 import com.scribblefit.feature.ledger.ui.components.EmptyLedgerContent
+import com.scribblefit.feature.ledger.ui.components.LedgerContent
 import com.scribblefit.feature.ledger.ui.components.LedgerHeader
-import com.scribblefit.feature.ledger.ui.components.WorkoutItem
+import com.scribblefit.feature.ledger.ui.components.LedgerLoadingContent
 
 @Composable
 internal fun LedgerScreen(
     viewModel: LedgerViewModel
 ) {
     val state by viewModel.state.collectAsState()
-    
-    LedgerContent(
-        state = state,
-        onIntent = viewModel::onIntent,
-        onCtaClick = viewModel::navigateToCanvas
-    )
-}
+    val onIntent by rememberUpdatedState(viewModel::onIntent)
 
-@Composable
-private fun LedgerContent(
-    state: LedgerState,
-    onIntent: (LedgerIntent) -> Unit,
-    onCtaClick: () -> Unit
-) {
+    DatePickerDialog(
+        state = state,
+        onIntent = onIntent
+    )
+
     Scaffold(
-        topBar = {
-            LedgerHeader(
-                title = state.ledgerTitle,
-                dateRange = state.dateRangeString,
-                onDateRangeClick = { /* TODO: Open Date Range Picker */ }
-            )
-        },
+        topBar = { LedgerHeader(title = state.ledgerTitle) },
         containerColor = ScribbleFitTheme.colors.surface
     ) { paddingValues ->
-        Box(
+        Column(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(paddingValues)
+                .padding(paddingValues),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if (state.isLoading && state.workouts.isEmpty()) {
-                Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                    CircularProgressIndicator(color = ScribbleFitTheme.colors.primary)
-                }
-            } else if (state.workouts.isEmpty()) {
-                EmptyLedgerContent(
-                    title = state.emptyTitle,
-                    cta = state.emptyCta,
-                    onCtaClick = onCtaClick
+            Column(
+                modifier = Modifier
+                    .widthIn(max = 600.dp)
+                    .fillMaxSize()
+            ) {
+                DateRangePickerButton(
+                    modifier = Modifier.padding(
+                        horizontal = ScribbleFitTheme.spacing.screenPadding,
+                        vertical = ScribbleFitTheme.spacing.small
+                    ),
+                    dateRange = state.dateRangeString,
+                    onDateRangeClick = { onIntent(LedgerIntent.ShowDatePicker) }
                 )
-            } else {
-                LazyColumn(
-                    modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(horizontal = 24.dp, vertical = 8.dp),
-                    verticalArrangement = Arrangement.spacedBy(24.dp)
-                ) {
-                    state.groupedWorkouts.forEach { (date, workouts) ->
-                        items(workouts, key = { it.id }) { workout ->
-                            WorkoutItem(
-                                workout = workout,
-                                dateHeader = state.getWorkoutDateHeader(date),
-                                onClick = { onIntent(LedgerIntent.WorkoutClicked(workout.id)) }
+
+                Box(modifier = Modifier.weight(1f)) {
+                    when {
+                        state.isLoading -> {
+                            LedgerLoadingContent(modifier = Modifier.fillMaxSize())
+                        }
+
+                        state.groupedWorkouts.isEmpty() -> {
+                            EmptyLedgerContent(
+                                modifier = Modifier.fillMaxSize(),
+                                title = state.emptyTitle,
+                                cta = state.emptyCta,
+                                onCtaClick = { onIntent(LedgerIntent.NavigateToScreen(Screen.Canvas)) }
+                            )
+                        }
+
+                        else -> {
+                            LedgerContent(
+                                state = state,
+                                onIntent = onIntent,
+                                modifier = Modifier.fillMaxSize()
                             )
                         }
                     }
+
+                    BottomBar(
+                        bottomBarState = state.bottomBarState,
+                        onClick = { onIntent(LedgerIntent.NavigateToScreen(it)) },
+                        modifier = Modifier
+                            .padding(ScribbleFitTheme.spacing.medium)
+                            .align(Alignment.BottomCenter)
+                    )
                 }
             }
         }

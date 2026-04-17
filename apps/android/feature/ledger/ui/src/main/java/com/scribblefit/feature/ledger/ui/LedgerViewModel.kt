@@ -3,21 +3,19 @@ package com.scribblefit.feature.ledger.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.scribblefit.core.navigation.Navigator
-import com.scribblefit.core.navigation.Screen
 import com.scribblefit.feature.ledger.domain.usecase.GetWorkoutsInRangeUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -27,7 +25,7 @@ class LedgerViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(LedgerState())
-    
+
     private val dateRange = combine(
         _state.map { it.startDate }.distinctUntilChanged(),
         _state.map { it.endDate }.distinctUntilChanged()
@@ -40,10 +38,11 @@ class LedgerViewModel @Inject constructor(
             .onCompletion { _state.update { it.copy(isLoading = false) } }
     }
 
-    val state = combine(_state, workoutsFlow) { state, workouts ->
+    val state = combine(_state, workoutsFlow, navigator.navState) { state, workouts, navState ->
         state.copy(
             workouts = workouts.sortedByDescending { it.date },
-            isLoading = false
+            isLoading = false,
+            bottomBarState = navState.bottomBarState
         )
     }.stateIn(
         scope = viewModelScope,
@@ -54,19 +53,29 @@ class LedgerViewModel @Inject constructor(
     fun onIntent(intent: LedgerIntent) {
         when (intent) {
             is LedgerIntent.DateRangeChanged -> {
-                _state.update { it.copy(startDate = intent.startDate, endDate = intent.endDate) }
+                val startDate = intent.startDate?.toLocalDate() ?: _state.value.startDate
+                val endDate = intent.endDate?.toLocalDate() ?: _state.value.endDate
+                _state.update { it.copy(startDate = startDate, endDate = endDate) }
             }
+
             is LedgerIntent.WorkoutClicked -> {
                 // TODO: Navigate to workout details once implemented
                 // navigator.navigateTo(Screen.WorkoutDetails(intent.workoutId))
             }
+
+            LedgerIntent.HideDatePicker -> {
+                _state.update { it.copy(showDatePicker = false) }
+            }
+
+            LedgerIntent.ShowDatePicker -> {
+                _state.update {
+                    it.copy(showDatePicker = true)
+                }
+            }
+
+            is LedgerIntent.NavigateToScreen -> {
+                navigator.navigateTo(intent.screen)
+            }
         }
     }
-
-    fun navigateToCanvas() {
-        navigator.navigateTo(Screen.Canvas)
-    }
 }
-
-private fun <T, R> kotlinx.coroutines.flow.Flow<T>.map(transform: suspend (T) -> R): kotlinx.coroutines.flow.Flow<R> =
-    kotlinx.coroutines.flow.map { transform(it) }

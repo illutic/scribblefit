@@ -8,7 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.ChevronRight
+import androidx.compose.material.icons.filled.KeyboardArrowRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -29,14 +29,14 @@ internal fun WorkoutItem(
 ) {
     Surface(
         onClick = onClick,
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(ScribbleFitTheme.spacing.medium),
         modifier = modifier
             .fillMaxWidth()
-            .scribbleGlass(cornerRadius = 16.dp),
+            .scribbleGlass(cornerRadius = ScribbleFitTheme.spacing.medium),
         color = ScribbleFitTheme.colors.surfaceContainerLow.copy(alpha = 0.5f)
     ) {
         Column(
-            modifier = Modifier.padding(16.dp)
+            modifier = Modifier.padding(ScribbleFitTheme.spacing.medium)
         ) {
             Row(
                 verticalAlignment = Alignment.CenterVertically,
@@ -49,15 +49,15 @@ internal fun WorkoutItem(
                     modifier = Modifier.weight(1f)
                 )
                 Icon(
-                    imageVector = Icons.Rounded.ChevronRight,
+                    imageVector = Icons.Filled.KeyboardArrowRight,
                     contentDescription = null,
                     tint = ScribbleFitTheme.colors.midGray,
                     modifier = Modifier.size(20.dp)
                 )
             }
-            
+
             Spacer(modifier = Modifier.padding(vertical = 4.dp))
-            
+
             workout.exercises.forEach { exercise ->
                 Row(
                     modifier = Modifier

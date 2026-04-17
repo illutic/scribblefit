@@ -1,4 +1,4 @@
-package com.scribblefit.feature.canvas.ui
+package com.scribblefit.feature.canvas.ui.components
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -38,6 +38,9 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
 import com.scribblefit.core.designsystem.BottomBar
 import com.scribblefit.core.designsystem.ScribbleFitTheme
+import com.scribblefit.feature.canvas.ui.CanvasIntent
+import com.scribblefit.feature.canvas.ui.CanvasState
+import com.scribblefit.feature.canvas.ui.R
 
 @Composable
 internal fun CanvasFooter(
@@ -57,18 +60,21 @@ internal fun CanvasFooter(
         modifier = modifier
             .imePadding()
             .background(gradientBrush)
-            .padding(16.dp),
+            .padding(ScribbleFitTheme.spacing.medium),
         contentAlignment = Alignment.Center
     ) {
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(ScribbleFitTheme.spacing.medium)
         ) {
             if (isWide) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterHorizontally),
+                    horizontalArrangement = Arrangement.spacedBy(
+                        ScribbleFitTheme.spacing.medium,
+                        Alignment.CenterHorizontally
+                    ),
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     CanvasInputFooter(
@@ -115,10 +121,13 @@ private fun CanvasInputFooter(
         modifier = modifier,
         color = ScribbleFitTheme.colors.surfaceContainerLow.copy(alpha = 0.9f),
         shape = CircleShape,
-        shadowElevation = 8.dp
+        shadowElevation = ScribbleFitTheme.spacing.small
     ) {
         Row(
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
+            modifier = Modifier.padding(
+                horizontal = ScribbleFitTheme.spacing.small,
+                vertical = 2.dp
+            ),
             verticalAlignment = Alignment.CenterVertically
         ) {
             TextField(
@@ -161,7 +170,7 @@ private fun CanvasInputFooter(
                 Icon(
                     imageVector = Icons.Rounded.ArrowUpward,
                     contentDescription = stringResource(R.string.canvas_send_workout),
-                    modifier = Modifier.size(16.dp),
+                    modifier = Modifier.size(ScribbleFitTheme.spacing.medium),
                 )
             }
         }

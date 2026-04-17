@@ -65,15 +65,16 @@ internal fun AIOverviewSection(state: InsightsState) {
 private fun AIOverviewCard(
     text: String,
     updatedText: String,
+    modifier: Modifier = Modifier,
 ) {
     Surface(
         color = ScribbleFitTheme.colors.surfaceContainerLow,
         shape = RoundedCornerShape(ScribbleFitTheme.shapes.large),
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier,
     ) {
         Column(
             modifier = Modifier.padding(ScribbleFitTheme.spacing.medium),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(ScribbleFitTheme.spacing.smallLarger),
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -120,7 +121,7 @@ private fun AIOverviewShimmer() {
     ) {
         Column(
             modifier = Modifier.padding(ScribbleFitTheme.spacing.medium),
-            verticalArrangement = Arrangement.spacedBy(12.dp),
+            verticalArrangement = Arrangement.spacedBy(ScribbleFitTheme.spacing.smallLarger),
         ) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -129,7 +130,7 @@ private fun AIOverviewShimmer() {
             ) {
                 Box(
                     modifier = Modifier
-                        .size(24.dp)
+                        .size(ScribbleFitTheme.spacing.large)
                         .background(
                             ScribbleFitTheme.colors.primary.copy(alpha = 0.1f),
                             CircleShape
@@ -168,7 +169,10 @@ private fun AIOverviewShimmer() {
 }
 
 @Composable
-private fun InsightChip(insight: AIInsight) {
+private fun InsightChip(
+    insight: AIInsight,
+    modifier: Modifier = Modifier,
+) {
     val emoji = when (insight.insightType) {
         InsightType.SUMMARY -> "\uD83D\uDD25"
         InsightType.TREND -> "\uD83D\uDCC8"
@@ -178,11 +182,11 @@ private fun InsightChip(insight: AIInsight) {
     Surface(
         color = ScribbleFitTheme.colors.surfaceContainerLow,
         shape = RoundedCornerShape(ScribbleFitTheme.shapes.medium),
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier,
     ) {
         Row(
             modifier = Modifier.padding(ScribbleFitTheme.spacing.medium),
-            horizontalArrangement = Arrangement.spacedBy(12.dp),
+            horizontalArrangement = Arrangement.spacedBy(ScribbleFitTheme.spacing.smallLarger),
             verticalAlignment = Alignment.Top,
         ) {
             Surface(
@@ -299,7 +303,7 @@ internal fun MuscleDistributionSection(state: InsightsState) {
         ) {
             Column(
                 modifier = Modifier.padding(ScribbleFitTheme.spacing.medium),
-                verticalArrangement = Arrangement.spacedBy(12.dp),
+                verticalArrangement = Arrangement.spacedBy(ScribbleFitTheme.spacing.smallLarger),
             ) {
                 state.distribution.forEach { group ->
                     MuscleGroupBar(group = group)

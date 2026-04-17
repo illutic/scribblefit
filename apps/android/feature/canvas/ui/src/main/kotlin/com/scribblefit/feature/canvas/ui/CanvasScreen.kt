@@ -15,7 +15,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.scribblefit.core.designsystem.ScribbleFitTheme
+import com.scribblefit.core.designsystem.components.ScribbleFitDatePickerDialog
 import com.scribblefit.core.navigation.Screen
+import com.scribblefit.feature.canvas.ui.components.CanvasBody
+import com.scribblefit.feature.canvas.ui.components.CanvasFooter
+import com.scribblefit.feature.canvas.ui.components.CanvasTopBar
+import com.scribblefit.feature.canvas.ui.components.ScribbleConfirmationBottomSheet
 
 @OptIn(ExperimentalLayoutApi::class)
 @Composable
@@ -40,20 +45,20 @@ internal fun CanvasScreen(
                 .padding(paddingValues)
                 .consumeWindowInsets(paddingValues)
                 .fillMaxSize()
+                .imePadding()
         ) {
             Box(
                 modifier = Modifier.weight(1f)
             ) {
                 CanvasBody(
-                    scribbles = state.scribbles,
+                    scribbles = state.scribbleUiModels,
                     aiInsights = state.aiInsights,
                     isGeneratingInsights = state.isGeneratingInsights,
-                    weightUnit = state.weightUnit,
                     onScribbleClick = { onIntent(CanvasIntent.ClickOnScribble(it)) },
                     onIntent = onIntent,
                     emptyText = state.emptyScribbleText,
-                    aiInsightsLabel = state.aiInsightsLabel,
-                    closeContentDescription = state.closeContentDescription,
+                    retryLabel = state.retryLabel,
+                    removeLabel = state.removeLabel,
                     modifier = Modifier
                         .fillMaxSize()
                         .imeNestedScroll()
@@ -71,22 +76,44 @@ internal fun CanvasScreen(
         }
     }
 
-    state.selectedScribble?.let { scribble ->
+    if (state.selectedScribble != null) {
         ScribbleConfirmationBottomSheet(
-            scribble = scribble,
-            weightUnit = state.weightUnit,
+            state = state,
             onConfirm = { onIntent(CanvasIntent.ConfirmScribble(it)) },
             onDelete = { onIntent(CanvasIntent.DeleteScribble(it.id)) },
             onDismiss = { onIntent(CanvasIntent.DismissScribbleDialog) },
-            onUpdateExerciseName = { id, name -> onIntent(CanvasIntent.UpdateExerciseName(id, name)) },
-            onUpdateSetWeight = { exId, setId, weight -> onIntent(CanvasIntent.UpdateSetWeight(exId, setId, weight)) },
-            onUpdateSetReps = { exId, setId, reps -> onIntent(CanvasIntent.UpdateSetReps(exId, setId, reps)) },
+            onUpdateExerciseName = { id, name ->
+                onIntent(
+                    CanvasIntent.UpdateExerciseName(
+                        id,
+                        name
+                    )
+                )
+            },
+            onUpdateSetWeight = { exId, setId, weight ->
+                onIntent(
+                    CanvasIntent.UpdateSetWeight(
+                        exId,
+                        setId,
+                        weight
+                    )
+                )
+            },
+            onUpdateSetReps = { exId, setId, reps ->
+                onIntent(
+                    CanvasIntent.UpdateSetReps(
+                        exId,
+                        setId,
+                        reps
+                    )
+                )
+            },
             onDeleteSet = { exId, setId -> onIntent(CanvasIntent.DeleteSet(exId, setId)) }
         )
     }
 
     if (state.isDatePickerVisible) {
-        CanvasDatePickerDialog(
+        ScribbleFitDatePickerDialog(
             initialDate = state.currentDate,
             onDateSelected = { onIntent(CanvasIntent.OnDateSelected(it)) },
             onDismiss = { onIntent(CanvasIntent.DismissDatePicker) }

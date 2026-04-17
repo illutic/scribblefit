@@ -37,10 +37,14 @@
     <string name="canvas_edit">Edit</string>
     <string name="canvas_retry">Retry</string>
     <string name="canvas_remove">Remove</string>
-    <string name="canvas_workout_summary_format">%1$.1f %2$s • %3$d sets • %4$d reps</string>
+    <string name="canvas_workout_summary_format">%1$s %2$.2f %3$s • %4$d sets • %5$d reps</string>
     <string name="canvas_set_format">%1$s %2$dx%3$d</string>
     <string name="canvas_collapse">Collapse</string>
     <string name="canvas_expand_search">Expand search</string>
     <string name="canvas_estimated_1rm_value_format">%1$d %2$s</string>
     <string name="canvas_intensity_value_format">%1$d%%</string>
+    <string name="canvas_set_label">Set %1$d: </string>
+    <string name="canvas_reps_label">reps</string>
+    <string name="canvas_set_reps_separator"> x </string>
+    <string name="canvas_delete_set_content_description">Remove set</string>
 </resources>

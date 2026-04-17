@@ -16,9 +16,11 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.scribblefit.core.designsystem.ScribbleFitTheme
 import com.scribblefit.feature.insights.domain.model.VolumeDataPoint
@@ -29,27 +31,29 @@ internal fun VolumeChart(
     points: List<VolumeDataPoint>,
     modifier: Modifier = Modifier,
 ) {
-    if (points.size < 2) return
+    if (points.isEmpty()) return
 
+    val density = LocalDensity.current
     val lineColor = ScribbleFitTheme.colors.primary
-    val fillColorTop = ScribbleFitTheme.colors.primary.copy(alpha = 0.15f)
+    val fillColorTop = ScribbleFitTheme.colors.primary.copy(alpha = 0.12f)
     val fillColorBottom = ScribbleFitTheme.colors.primary.copy(alpha = 0.0f)
     val dotColor = ScribbleFitTheme.colors.primary
+    val haloColor = ScribbleFitTheme.colors.surfaceContainerLow // Match background for contrast
     val labelColor = ScribbleFitTheme.colors.midGray
 
     val textMeasurer = rememberTextMeasurer()
     val labelStyle = TextStyle(fontSize = 10.sp, color = labelColor)
     val dateFormatter = remember { DateTimeFormatter.ofPattern("MMM d") }
 
-    // Pre-compute Y-axis labels
     val maxVolume = points.maxOf { it.volume }
     val minVolume = points.minOf { it.volume }
     val midVolume = (maxVolume + minVolume) / 2f
+    val range = (maxVolume - minVolume).coerceAtLeast(1f) // Ensure no division by zero
 
     fun formatAxisValue(value: Float): String {
         return when {
-            value >= 1_000_000 -> String.format("%.0fM", value / 1_000_000f)
-            value >= 1000 -> String.format("%.0fk", value / 1000f)
+            value >= 1_000_000 -> String.format("%.1fM", value / 1_000_000f)
+            value >= 1000 -> String.format("%.1fk", value / 1000f)
             else -> String.format("%.0f", value)
         }
     }
@@ -61,87 +65,113 @@ internal fun VolumeChart(
     ) {
         Column(modifier = Modifier.padding(ScribbleFitTheme.spacing.medium)) {
             Canvas(modifier = Modifier.fillMaxSize()) {
-                val yAxisWidth = 36f
-                val xAxisHeight = 20f
-                val chartLeft = yAxisWidth
-                val chartRight = size.width
-                val chartTop = 8f
-                val chartBottom = size.height - xAxisHeight
-                val chartWidth = chartRight - chartLeft
-                val chartHeight = chartBottom - chartTop
-                val range = (maxVolume - minVolume).coerceAtLeast(1f)
+                val yAxisWidth = with(density) { 48.dp.toPx() } // Slightly wider for large numbers
+                val xAxisHeight = with(density) { 24.dp.toPx() }
+                val dotRadius = with(density) { 4.5.dp.toPx() }
+                val haloRadius = with(density) { 6.5.dp.toPx() }
+                val strokeWidth = with(density) { 2.5.dp.toPx() }
 
-                // Y-axis labels (top, mid, bottom)
-                val yLabels = listOf(maxVolume to chartTop, midVolume to chartTop + chartHeight / 2f, minVolume to chartBottom)
+                val chartLeft = yAxisWidth
+                val chartRight = size.width - with(density) { 8.dp.toPx() } // Right margin for dot
+                val chartTop = with(density) { 12.dp.toPx() } // Top margin for dot
+                val chartBottom = size.height - xAxisHeight
+                val chartWidth = (chartRight - chartLeft).coerceAtLeast(1f)
+                val chartHeight = (chartBottom - chartTop).coerceAtLeast(1f)
+
+                // Y-axis labels
+                val yLabels = if (maxVolume > minVolume) {
+                    listOf(maxVolume to chartTop, midVolume to chartTop + chartHeight / 2f, minVolume to chartBottom)
+                } else {
+                    listOf(maxVolume to chartTop + chartHeight / 2f)
+                }
+
                 for ((value, y) in yLabels) {
                     val text = formatAxisValue(value)
                     val measured = textMeasurer.measure(text, labelStyle)
                     drawText(
                         textLayoutResult = measured,
-                        topLeft = Offset(0f, y - measured.size.height / 2f)
+                        topLeft = Offset(
+                            x = (yAxisWidth - measured.size.width - with(density) { 12.dp.toPx() }).coerceAtLeast(0f),
+                            y = y - measured.size.height / 2f
+                        )
                     )
                 }
 
-                // Chart data points
                 fun pointOffset(index: Int): Offset {
-                    val x = chartLeft + (index.toFloat() / (points.size - 1).coerceAtLeast(1)) * chartWidth
-                    val normalizedY = (points[index].volume - minVolume) / range
+                    val x = if (points.size > 1) {
+                        chartLeft + (index.toFloat() / (points.size - 1)) * chartWidth
+                    } else {
+                        chartLeft + chartWidth / 2f
+                    }
+
+                    val normalizedY = if (maxVolume > minVolume) {
+                        (points[index].volume - minVolume) / range
+                    } else {
+                        0.5f
+                    }
                     val y = chartBottom - normalizedY * chartHeight
                     return Offset(x, y)
                 }
 
-                // Smooth cubic path
-                val linePath = Path().apply {
-                    val first = pointOffset(0)
-                    moveTo(first.x, first.y)
-                    for (i in 1 until points.size) {
-                        val prev = pointOffset(i - 1)
-                        val curr = pointOffset(i)
-                        val cpX = (prev.x + curr.x) / 2f
-                        cubicTo(cpX, prev.y, cpX, curr.y, curr.x, curr.y)
+                if (points.size >= 2) {
+                    val linePath = Path().apply {
+                        val first = pointOffset(0)
+                        moveTo(first.x, first.y)
+                        for (i in 1 until points.size) {
+                            val prev = pointOffset(i - 1)
+                            val curr = pointOffset(i)
+                            val cpX1 = prev.x + (curr.x - prev.x) / 2f
+                            val cpX2 = prev.x + (curr.x - prev.x) / 2f
+                            cubicTo(cpX1, prev.y, cpX2, curr.y, curr.x, curr.y)
+                        }
                     }
-                }
 
-                // Fill area
-                val fillPath = Path().apply {
-                    addPath(linePath)
-                    lineTo(pointOffset(points.size - 1).x, chartBottom)
-                    lineTo(pointOffset(0).x, chartBottom)
-                    close()
-                }
-                drawPath(
-                    path = fillPath,
-                    brush = Brush.verticalGradient(
-                        colors = listOf(fillColorTop, fillColorBottom),
-                        startY = chartTop,
-                        endY = chartBottom
+                    // Fill
+                    val fillPath = Path().apply {
+                        addPath(linePath)
+                        lineTo(pointOffset(points.size - 1).x, chartBottom)
+                        lineTo(pointOffset(0).x, chartBottom)
+                        close()
+                    }
+                    drawPath(
+                        path = fillPath,
+                        brush = Brush.verticalGradient(
+                            colors = listOf(fillColorTop, fillColorBottom),
+                            startY = chartTop,
+                            endY = chartBottom
+                        )
                     )
-                )
 
-                // Line stroke
-                drawPath(
-                    path = linePath,
-                    color = lineColor,
-                    style = Stroke(width = 2.5f, cap = StrokeCap.Round, join = StrokeJoin.Round)
-                )
+                    // Line
+                    drawPath(
+                        path = linePath,
+                        color = lineColor,
+                        style = Stroke(width = strokeWidth, cap = StrokeCap.Round, join = StrokeJoin.Round)
+                    )
+                }
 
-                // Dots
+                // Dots with halo
                 for (i in points.indices) {
                     val p = pointOffset(i)
-                    drawCircle(color = dotColor, radius = 4f, center = p)
+                    drawCircle(color = haloColor, radius = haloRadius, center = p)
+                    drawCircle(color = dotColor, radius = dotRadius, center = p)
                 }
 
-                // X-axis date labels (first, middle, last)
-                val xLabelIndices = listOf(0, points.size / 2, points.size - 1).distinct()
+                // X-axis date labels
+                val xLabelIndices = when {
+                    points.size <= 3 -> points.indices.toList()
+                    else -> listOf(0, points.size / 2, points.size - 1)
+                }.distinct()
+
                 for (i in xLabelIndices) {
                     val text = points[i].date.format(dateFormatter)
                     val measured = textMeasurer.measure(text, labelStyle)
                     val p = pointOffset(i)
                     val labelX = (p.x - measured.size.width / 2f)
-                        .coerceIn(chartLeft, chartRight - measured.size.width)
+                        .coerceIn(chartLeft - measured.size.width / 2f, size.width - measured.size.width)
                     drawText(
                         textLayoutResult = measured,
-                        topLeft = Offset(labelX, chartBottom + 4f)
+                        topLeft = Offset(labelX, chartBottom + with(density) { 6.dp.toPx() })
                     )
                 }
             }

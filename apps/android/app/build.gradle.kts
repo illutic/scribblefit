@@ -45,6 +45,10 @@ dependencies {
     implementation(project(":feature:insights:data"))
     implementation(project(":feature:insights:ui"))
 
+    implementation(project(":feature:ledger:domain"))
+    implementation(project(":feature:ledger:data"))
+    implementation(project(":feature:ledger:ui"))
+
     implementation(project(":feature:canvas:ui"))
     implementation(project(":feature:canvas:data"))
     implementation(project(":feature:settings:ui"))

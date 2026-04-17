@@ -1,20 +1,21 @@
-package com.scribblefit.feature.canvas.ui
+package com.scribblefit.feature.canvas.ui.components
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
@@ -23,7 +24,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AutoAwesome
-import androidx.compose.material.icons.rounded.Close
 import androidx.compose.material.icons.rounded.Lightbulb
 import androidx.compose.material.icons.rounded.ShowChart
 import androidx.compose.material3.Icon
@@ -34,39 +34,40 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
-import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.scribblefit.core.config.domain.Weight
 import com.scribblefit.core.designsystem.ScribbleFitTheme
 import com.scribblefit.core.model.AIInsight
 import com.scribblefit.core.model.InsightType
 import com.scribblefit.core.model.Scribble
+import com.scribblefit.feature.canvas.ui.CanvasIntent
+import com.scribblefit.feature.canvas.ui.ScribbleUiModel
+import com.scribblefit.feature.canvas.ui.components.card.ScribbleCard
 
 @Composable
 internal fun CanvasBody(
-    scribbles: List<Scribble>,
+    scribbles: List<ScribbleUiModel>,
     aiInsights: List<AIInsight>,
     isGeneratingInsights: Boolean,
-    weightUnit: Weight,
     onScribbleClick: (Scribble) -> Unit,
     onIntent: (CanvasIntent) -> Unit,
     emptyText: String,
-    aiInsightsLabel: String,
-    closeContentDescription: String,
+    retryLabel: String,
+    removeLabel: String,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
         modifier = modifier,
         contentPadding = PaddingValues(
-            start = 24.dp,
-            end = 24.dp,
-            top = 24.dp,
+            start = ScribbleFitTheme.spacing.large,
+            end = ScribbleFitTheme.spacing.large,
+            top = ScribbleFitTheme.spacing.large,
             bottom = 120.dp
         ),
         verticalArrangement = Arrangement.spacedBy(40.dp)
@@ -77,7 +78,7 @@ internal fun CanvasBody(
             }
         } else if (aiInsights.isNotEmpty()) {
             item {
-                Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(ScribbleFitTheme.spacing.medium)) {
                     aiInsights.forEach { insight ->
                         AIInsightCard(insight = insight)
                     }
@@ -93,11 +94,16 @@ internal fun CanvasBody(
             items(scribbles, key = { it.id }) { scribble ->
                 ScribbleCard(
                     scribble = scribble,
-                    weightUnit = weightUnit,
-                    onClick = { onScribbleClick(scribble) },
-                    onIntent = onIntent
+                    onClick = { onScribbleClick(scribble.scribble) },
+                    onIntent = onIntent,
+                    retryLabel = retryLabel,
+                    removeLabel = removeLabel
                 )
             }
+        }
+
+        item {
+            Spacer(modifier = Modifier.imePadding())
         }
     }
 }
@@ -116,19 +122,19 @@ private fun AIInsightsLoadingSection() {
     )
 
     Column(
-        verticalArrangement = Arrangement.spacedBy(16.dp),
+        verticalArrangement = Arrangement.spacedBy(ScribbleFitTheme.spacing.medium),
         modifier = Modifier.alpha(alpha)
     ) {
         repeat(1) {
             Surface(
                 color = ScribbleFitTheme.colors.surfaceContainerLow,
-                shape = RoundedCornerShape(16.dp),
+                shape = RoundedCornerShape(ScribbleFitTheme.spacing.medium),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
-                    modifier = Modifier.padding(16.dp),
+                    modifier = Modifier.padding(ScribbleFitTheme.spacing.medium),
                     verticalAlignment = Alignment.Top,
-                    horizontalArrangement = Arrangement.spacedBy(16.dp)
+                    horizontalArrangement = Arrangement.spacedBy(ScribbleFitTheme.spacing.medium)
                 ) {
                     Box(
                         modifier = Modifier
@@ -138,10 +144,10 @@ private fun AIInsightsLoadingSection() {
                                 CircleShape
                             )
                     )
-                    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(ScribbleFitTheme.spacing.small)) {
                         Box(
                             modifier = Modifier
-                                .height(12.dp)
+                                .height(ScribbleFitTheme.spacing.smallLarger)
                                 .fillMaxWidth(0.3f)
                                 .background(
                                     ScribbleFitTheme.colors.midGray.copy(alpha = 0.2f),
@@ -150,7 +156,7 @@ private fun AIInsightsLoadingSection() {
                         )
                         Box(
                             modifier = Modifier
-                                .height(16.dp)
+                                .height(ScribbleFitTheme.spacing.medium)
                                 .fillMaxWidth(0.9f)
                                 .background(
                                     ScribbleFitTheme.colors.primary.copy(alpha = 0.1f),
@@ -159,7 +165,7 @@ private fun AIInsightsLoadingSection() {
                         )
                         Box(
                             modifier = Modifier
-                                .height(16.dp)
+                                .height(ScribbleFitTheme.spacing.medium)
                                 .fillMaxWidth(0.6f)
                                 .background(
                                     ScribbleFitTheme.colors.primary.copy(alpha = 0.1f),
@@ -185,16 +191,16 @@ private fun AIInsightCard(insight: AIInsight) {
 
     Surface(
         color = ScribbleFitTheme.colors.surfaceContainerLow,
-        shape = RoundedCornerShape(16.dp),
+        shape = RoundedCornerShape(ScribbleFitTheme.spacing.medium),
         modifier = Modifier
             .fillMaxWidth()
-            .clickable { expanded = !expanded }
-            .animateContentSize()
+            .animateContentSize(),
+        onClick = { expanded = !expanded }
     ) {
         Row(
-            modifier = Modifier.padding(16.dp),
+            modifier = Modifier.padding(ScribbleFitTheme.spacing.medium),
             verticalAlignment = Alignment.Top,
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
+            horizontalArrangement = Arrangement.spacedBy(ScribbleFitTheme.spacing.medium)
         ) {
             Surface(
                 color = color.copy(alpha = 0.1f),

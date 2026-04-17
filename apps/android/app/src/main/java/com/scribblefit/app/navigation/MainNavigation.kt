@@ -1,9 +1,16 @@
 package com.scribblefit.app.navigation
 
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.animation.togetherWith
+import androidx.compose.foundation.background
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation3.runtime.NavEntry
 import androidx.navigation3.ui.NavDisplay
+import com.scribblefit.core.designsystem.ScribbleFitTheme
 import com.scribblefit.core.navigation.NavState
 import com.scribblefit.core.navigation.Screen
 import com.scribblefit.feature.canvas.ui.CanvasRoute
@@ -20,7 +27,13 @@ fun MainNavigation(
     NavDisplay(
         backStack = navState.backStack,
         onBack = onBack,
-        modifier = modifier,
+        modifier = modifier.background(ScribbleFitTheme.colors.background),
+        transitionSpec = { fadeIn() togetherWith fadeOut() },
+        popTransitionSpec = { fadeIn() togetherWith fadeOut() },
+        predictivePopTransitionSpec = {
+            slideInHorizontally { it / 2 } togetherWith
+                    slideOutHorizontally() + fadeOut()
+        }
     ) { screen ->
         when (screen) {
             Screen.Canvas -> {
@@ -33,11 +46,6 @@ fun MainNavigation(
 
             Screen.Ledger -> {
                 NavEntry(screen) { LedgerRoute() }
-            }
-
-            Screen.Profile -> {
-                NavEntry(screen) {
-                }
             }
 
             Screen.Settings -> {

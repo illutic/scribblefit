@@ -206,7 +206,7 @@ private fun InsightsDataContent(
             }
         }
 
-        if (state.volumePoints.size >= 2) {
+        if (state.volumePoints.isNotEmpty()) {
             item {
                 VolumeChartSection(state = state)
             }

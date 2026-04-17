@@ -1,11 +1,10 @@
 package com.scribblefit.feature.ledger.ui.components
 
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.History
@@ -27,45 +26,53 @@ internal fun EmptyLedgerContent(
     onCtaClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    Column(
+    LazyColumn(
         modifier = modifier
             .fillMaxSize()
             .padding(horizontal = 40.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center
+        verticalArrangement = Arrangement.spacedBy(
+            ScribbleFitTheme.spacing.medium,
+            Alignment.CenterVertically
+        )
     ) {
-        Icon(
-            imageVector = Icons.Rounded.History,
-            contentDescription = null,
-            tint = ScribbleFitTheme.colors.primary.copy(alpha = 0.4f),
-            modifier = Modifier.size(80.dp)
-        )
-        
-        Spacer(modifier = Modifier.padding(vertical = 12.dp))
-        
-        Text(
-            text = title,
-            style = ScribbleFitTheme.typography.headlineSmall,
-            color = ScribbleFitTheme.colors.primary,
-            textAlign = TextAlign.Center
-        )
-        
-        Spacer(modifier = Modifier.padding(vertical = 12.dp))
-        
-        Button(
-            onClick = onCtaClick,
-            shape = CircleShape,
-            colors = ButtonDefaults.buttonColors(
-                containerColor = ScribbleFitTheme.colors.primary,
-                contentColor = ScribbleFitTheme.colors.onPrimary
-            ),
-            modifier = Modifier.padding(top = 8.dp)
-        ) {
-            Text(
-                text = cta,
-                style = ScribbleFitTheme.typography.titleMedium,
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+        item {
+            Icon(
+                imageVector = Icons.Rounded.History,
+                contentDescription = null,
+                tint = ScribbleFitTheme.colors.primary.copy(alpha = 0.4f),
+                modifier = Modifier.size(80.dp)
             )
+        }
+
+        item {
+            Text(
+                text = title,
+                style = ScribbleFitTheme.typography.headlineSmall,
+                color = ScribbleFitTheme.colors.primary,
+                textAlign = TextAlign.Center
+            )
+        }
+
+        item {
+            Button(
+                onClick = onCtaClick,
+                shape = CircleShape,
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = ScribbleFitTheme.colors.primary,
+                    contentColor = ScribbleFitTheme.colors.onPrimary
+                ),
+                modifier = Modifier.padding(top = ScribbleFitTheme.spacing.small)
+            ) {
+                Text(
+                    text = cta,
+                    style = ScribbleFitTheme.typography.titleMedium,
+                    modifier = Modifier.padding(
+                        horizontal = ScribbleFitTheme.spacing.small,
+                        vertical = 4.dp
+                    )
+                )
+            }
         }
     }
 }

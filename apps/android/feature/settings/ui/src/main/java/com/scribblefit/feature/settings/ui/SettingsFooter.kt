@@ -26,11 +26,11 @@ internal fun SettingsFooter(state: SettingsState, version: String) {
             .fillMaxWidth()
             .padding(top = 32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+        verticalArrangement = Arrangement.spacedBy(ScribbleFitTheme.spacing.small)
     ) {
         Surface(
             color = ScribbleFitTheme.colors.surfaceContainer,
-            shape = RoundedCornerShape(12.dp),
+            shape = RoundedCornerShape(ScribbleFitTheme.spacing.smallLarger),
             modifier = Modifier.size(40.dp)
         ) {
             Box(contentAlignment = Alignment.Center) {

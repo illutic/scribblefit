@@ -7,13 +7,33 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.intl.Locale
 import com.scribblefit.core.config.domain.Weight
+import com.scribblefit.core.model.Exercise
 import com.scribblefit.core.model.Scribble
+import com.scribblefit.core.model.ScribbleStatus
 import com.scribblefit.core.navigation.BottomBarState
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 private val dateFormatter =
     DateTimeFormatter.ofPattern("EEEE, MMMM d", Locale.current.platformLocale)
+
+data class ExerciseUiModel(
+    val id: Long,
+    val summary: String,
+    val estimated1RM: String?,
+    val intensity: String?,
+    val improvement: String?,
+    val hasStats: Boolean
+)
+
+data class ScribbleUiModel(
+    val id: Long,
+    val rawText: String,
+    val status: ScribbleStatus,
+    val exercises: List<ExerciseUiModel>,
+    val statusText: String? = null,
+    val scribble: Scribble,
+)
 
 data class CanvasState(
     val isLoading: Boolean = false,
@@ -30,6 +50,63 @@ data class CanvasState(
 ) {
     val isCurrentDate = currentDate == LocalDate.now()
     val dateString: String by lazy { currentDate.format(dateFormatter) }
+
+    val scribbleUiModels: List<ScribbleUiModel>
+        @Composable @ReadOnlyComposable
+        get() = scribbles.map { scribble ->
+            ScribbleUiModel(
+                id = scribble.id,
+                rawText = scribble.rawText,
+                status = scribble.status,
+                exercises = scribble.exercises.map { exercise ->
+                    val firstSet = exercise.sets.firstOrNull()
+                    val totalSets = exercise.sets.size
+                    val repsPerSet = firstSet?.reps ?: 0
+                    val weightValue = firstSet?.weight ?: 0f
+
+                    ExerciseUiModel(
+                        id = exercise.id,
+                        summary = stringResource(
+                            R.string.canvas_workout_summary_format,
+                            exercise.canonicalName,
+                            weightValue,
+                            weightUnitLabel,
+                            totalSets,
+                            repsPerSet
+                        ),
+                        estimated1RM = exercise.estimated1RM?.let {
+                            stringResource(
+                                R.string.canvas_estimated_1rm_value_format,
+                                it.toInt(),
+                                weightUnitLabel
+                            )
+                        },
+                        intensity = exercise.intensity?.let {
+                            stringResource(
+                                R.string.canvas_intensity_value_format,
+                                (it * 100).toInt()
+                            )
+                        },
+                        improvement = exercise.improvement?.let {
+                            val sign = if (it >= 0) "+" else ""
+                            stringResource(
+                                R.string.canvas_last_session_improvement_format,
+                                "$sign${it.toInt()}",
+                                weightUnitLabel
+                            )
+                        },
+                        hasStats = exercise.estimated1RM != null || exercise.intensity != null || exercise.improvement != null
+                    )
+                },
+                statusText = when (scribble.status) {
+                    ScribbleStatus.PENDING, ScribbleStatus.PARSING -> parsingWorkoutText
+                    ScribbleStatus.FAILED -> failedToParseText
+                    ScribbleStatus.SUCCESS -> tapToConfirmText
+                    else -> null
+                },
+                scribble = scribble
+            )
+        }
 
     val emptyScribbleText: String
         @Composable @ReadOnlyComposable
@@ -92,6 +169,22 @@ data class CanvasState(
     val removeLabel: String
         @Composable @ReadOnlyComposable
         get() = stringResource(R.string.canvas_remove)
+
+    val setLabelFormat: String
+        @Composable @ReadOnlyComposable
+        get() = stringResource(R.string.canvas_set_label)
+
+    val repsLabel: String
+        @Composable @ReadOnlyComposable
+        get() = stringResource(R.string.canvas_reps_label)
+
+    val setRepsSeparator: String
+        @Composable @ReadOnlyComposable
+        get() = stringResource(R.string.canvas_set_reps_separator)
+
+    val deleteSetContentDescription: String
+        @Composable @ReadOnlyComposable
+        get() = stringResource(R.string.canvas_delete_set_content_description)
 
     val collapseContentDescription: String
         @Composable @ReadOnlyComposable

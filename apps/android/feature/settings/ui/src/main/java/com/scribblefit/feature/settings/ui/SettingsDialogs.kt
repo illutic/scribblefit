@@ -2,8 +2,6 @@ package com.scribblefit.feature.settings.ui
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -101,9 +99,9 @@ internal fun ModelSelectionBottomSheet(
         LazyColumn(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 24.dp)
+                .padding(horizontal = ScribbleFitTheme.spacing.large)
                 .navigationBarsPadding(),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+            verticalArrangement = Arrangement.spacedBy(ScribbleFitTheme.spacing.small)
         ) {
             item {
                 Text(
@@ -111,7 +109,7 @@ internal fun ModelSelectionBottomSheet(
                     style = ScribbleFitTheme.typography.headlineSmall,
                     fontWeight = FontWeight.Bold,
                     color = ScribbleFitTheme.colors.primary,
-                    modifier = Modifier.padding(bottom = 16.dp)
+                    modifier = Modifier.padding(bottom = ScribbleFitTheme.spacing.medium)
                 )
             }
 
@@ -122,12 +120,12 @@ internal fun ModelSelectionBottomSheet(
                         .fillMaxWidth()
                         .clickable { onModelSelected(model) },
                     color = if (isSelected) ScribbleFitTheme.colors.surfaceContainerLow else Color.Transparent,
-                    shape = RoundedCornerShape(12.dp)
+                    shape = RoundedCornerShape(ScribbleFitTheme.spacing.smallLarger)
                 ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(16.dp),
+                            .padding(ScribbleFitTheme.spacing.medium),
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
@@ -142,7 +140,7 @@ internal fun ModelSelectionBottomSheet(
                                 imageVector = Icons.Rounded.Check,
                                 contentDescription = null,
                                 tint = ScribbleFitTheme.colors.primary,
-                                modifier = Modifier.size(24.dp)
+                                modifier = Modifier.size(ScribbleFitTheme.spacing.large)
                             )
                         }
                     }

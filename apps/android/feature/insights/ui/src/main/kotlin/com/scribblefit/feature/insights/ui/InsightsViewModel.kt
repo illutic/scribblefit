@@ -4,13 +4,23 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.scribblefit.core.navigation.Navigator
 import com.scribblefit.feature.insights.domain.model.AIOverview
-import com.scribblefit.feature.insights.domain.usecase.*
-import com.scribblefit.feature.scribble.domain.ScribbleRepository
+import com.scribblefit.feature.insights.domain.usecase.GetAIOverviewUseCase
+import com.scribblefit.feature.insights.domain.usecase.GetFrequencyInsightsUseCase
+import com.scribblefit.feature.insights.domain.usecase.GetMuscleDistributionInsightsUseCase
+import com.scribblefit.feature.insights.domain.usecase.GetVolumeInsightsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
-import java.time.ZoneOffset
 import javax.inject.Inject
 
 @HiltViewModel
@@ -23,15 +33,48 @@ class InsightsViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(InsightsState())
-    val state: StateFlow<InsightsState> = _state.asStateFlow()
-
-    init {
-        loadInsights()
-    }
+    
+    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
+    val state: StateFlow<InsightsState> = combine(
+        _state.map { it.startDate }.distinctUntilChanged(),
+        _state.map { it.endDate }.distinctUntilChanged(),
+        navigator.navState
+    ) { start, end, navState ->
+        Triple(start, end, navState)
+    }.flatMapLatest { (start, end, navState) ->
+        combine(
+            getVolumeInsightsUseCase(start, end),
+            getFrequencyInsightsUseCase(start, end),
+            getMuscleDistributionInsightsUseCase(start, end)
+        ) { volume, frequency, distribution ->
+            _state.update {
+                it.copy(
+                    volumePoints = volume,
+                    frequency = frequency,
+                    distribution = distribution,
+                    bottomBarState = navState.bottomBarState,
+                    isLoading = false
+                )
+            }
+            if (frequency.totalWorkouts >= 2) {
+                loadAIOverview(start, end)
+            }
+        }
+    }.catch { error ->
+        _state.update { it.copy(isLoading = false, errorMessage = error.message) }
+    }.map { 
+        _state.value 
+    }.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5_000),
+        initialValue = _state.value
+    )
 
     fun onIntent(intent: InsightsIntent) {
         when (intent) {
-            InsightsIntent.Refresh -> loadInsights()
+            InsightsIntent.Refresh -> {
+                _state.update { it.copy(isLoading = true) }
+            }
             is InsightsIntent.NavigateToScreen -> navigator.navigateTo(intent.screen)
             is InsightsIntent.SelectPeriod -> selectPeriod(intent.period)
         }
@@ -51,53 +94,15 @@ class InsightsViewModel @Inject constructor(
                 endDate = now
             )
         }
-        loadInsights()
     }
 
-    private fun loadInsights() {
-        _state.update { it.copy(isLoading = true) }
-        val startDate = _state.value.startDate
-        val endDate = _state.value.endDate
-
-        val volumeFlow = getVolumeInsightsUseCase(startDate, endDate)
-        val frequencyFlow = getFrequencyInsightsUseCase(startDate, endDate)
-        val distributionFlow = getMuscleDistributionInsightsUseCase(startDate, endDate)
-
-        viewModelScope.launch {
-            combine(volumeFlow, frequencyFlow, distributionFlow) { volume, frequency, distribution ->
-                Triple(volume, frequency, distribution)
-            }
-                .catch { error ->
-                    _state.update {
-                        it.copy(
-                            isLoading = false,
-                            errorMessage = error.message
-                        )
-                    }
-                }
-                .collect { (volume, frequency, distribution) ->
-                    _state.update {
-                        it.copy(
-                            isLoading = false,
-                            volumePoints = volume,
-                            frequency = frequency,
-                            distribution = distribution
-                        )
-                    }
-                    if (frequency.totalWorkouts >= 2) {
-                        loadAIOverview()
-                    }
-                }
-        }
-    }
-
-    private fun loadAIOverview() {
+    private fun loadAIOverview(startDate: LocalDate, endDate: LocalDate) {
         if (_state.value.isGeneratingAI) return
 
         viewModelScope.launch {
             _state.update { it.copy(isGeneratingAI = true) }
 
-            getAIOverviewUseCase().fold(
+            getAIOverviewUseCase(startDate, endDate).fold(
                 onSuccess = { insights ->
                     _state.update {
                         it.copy(

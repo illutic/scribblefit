@@ -11,8 +11,12 @@ import com.scribblefit.feature.canvas.domain.ConfirmScribbleUseCase
 import com.scribblefit.feature.canvas.domain.DeleteScribbleUseCase
 import com.scribblefit.feature.canvas.domain.GetScribblesForDateUseCase
 import com.scribblefit.feature.canvas.domain.ParsePendingScribblesUseCase
+import com.scribblefit.feature.exercises.domain.usecase.UpdateExerciseUseCase
 import com.scribblefit.feature.insights.domain.usecase.GetAIOverviewUseCase
 import com.scribblefit.feature.sets.domain.usecase.RemoveSetUseCase
+import com.scribblefit.feature.sets.domain.usecase.ReorderSetsUseCase
+import com.scribblefit.feature.sets.domain.usecase.UpdateSetRepsUseCase
+import com.scribblefit.feature.sets.domain.usecase.UpdateSetWeightUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -43,6 +47,10 @@ constructor(
     private val configRepository: ConfigRepository,
     private val navigator: Navigator,
     private val removeSetUseCase: RemoveSetUseCase,
+    private val updateExerciseUseCase: UpdateExerciseUseCase,
+    private val updateSetRepsUseCase: UpdateSetRepsUseCase,
+    private val updateSetWeightUseCase: UpdateSetWeightUseCase,
+    private val reorderSetsUseCase: ReorderSetsUseCase,
 ) : ViewModel() {
     private val _state = MutableStateFlow(CanvasState())
     private val currentDate = _state.map { it.currentDate }.distinctUntilChanged()
@@ -54,16 +62,19 @@ constructor(
             .onCompletion { _state.update { it.copy(isLoading = false) } }
     }
 
-    private val preferredWeight = configRepository.config.map { it.weightUnit }.distinctUntilChanged()
+    private val preferredWeight =
+        configRepository.config.map { it.weightUnit }.distinctUntilChanged()
 
     val state = combine(
         _state,
         preferredWeight,
         scribblesForDate,
-    ) { currentState, weightUnit, scribbles ->
+        navigator.navState
+    ) { currentState, weightUnit, scribbles, navState ->
         currentState.copy(
             weightUnit = weightUnit,
             scribbles = scribbles,
+            bottomBarState = navState.bottomBarState
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), _state.value)
 
@@ -193,9 +204,7 @@ constructor(
 
             val updatedExercises = selectedScribble.exercises.map { exercise ->
                 if (exercise.id == exerciseId) {
-                    val updatedSets = exercise.sets
-                        .filterNot { it.id == setId }
-                        .mapIndexed { index, set -> set.copy(setNumber = index + 1) }
+                    val updatedSets = reorderSetsUseCase(exercise.sets.filterNot { it.id == setId })
                     exercise.copy(sets = updatedSets)
                 } else {
                     exercise
@@ -208,6 +217,16 @@ constructor(
     private fun updateExerciseName(exerciseId: Long, newName: String) {
         _state.update { currentState ->
             val selectedScribble = currentState.selectedScribble ?: return@update currentState
+
+            if (selectedScribble.status == ScribbleStatus.COMPLETED) {
+                val exercise = selectedScribble.exercises.find { it.id == exerciseId }
+                exercise?.let {
+                    viewModelScope.launch {
+                        updateExerciseUseCase(it.copy(canonicalName = newName))
+                    }
+                }
+            }
+
             val updatedExercises = selectedScribble.exercises.map { exercise ->
                 if (exercise.id == exerciseId) {
                     exercise.copy(canonicalName = newName)
@@ -223,6 +242,13 @@ constructor(
         val weight = newWeight.toFloatOrNull() ?: return
         _state.update { currentState ->
             val selectedScribble = currentState.selectedScribble ?: return@update currentState
+
+            if (selectedScribble.status == ScribbleStatus.COMPLETED) {
+                viewModelScope.launch {
+                    updateSetWeightUseCase(setId, weight)
+                }
+            }
+
             val updatedExercises = selectedScribble.exercises.map { exercise ->
                 if (exercise.id == exerciseId) {
                     val updatedSets = exercise.sets.map { set ->
@@ -245,6 +271,13 @@ constructor(
         val reps = newReps.toIntOrNull() ?: return
         _state.update { currentState ->
             val selectedScribble = currentState.selectedScribble ?: return@update currentState
+
+            if (selectedScribble.status == ScribbleStatus.COMPLETED) {
+                viewModelScope.launch {
+                    updateSetRepsUseCase(setId, reps)
+                }
+            }
+
             val updatedExercises = selectedScribble.exercises.map { exercise ->
                 if (exercise.id == exerciseId) {
                     val updatedSets = exercise.sets.map { set ->
@@ -274,7 +307,12 @@ constructor(
     private fun scribbleClicked(scribble: Scribble) {
         when (scribble.status) {
             ScribbleStatus.FAILED -> {}
-            ScribbleStatus.SUCCESS, ScribbleStatus.COMPLETED -> _state.update { it.copy(selectedScribble = scribble) }
+            ScribbleStatus.SUCCESS, ScribbleStatus.COMPLETED -> _state.update {
+                it.copy(
+                    selectedScribble = scribble
+                )
+            }
+
             else -> {}
         }
     }

@@ -4,18 +4,23 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.res.stringResource
 import com.scribblefit.core.model.Workout
+import com.scribblefit.core.navigation.BottomBarState
+import com.scribblefit.core.navigation.Screen
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 private val dateRangeFormatter = DateTimeFormatter.ofPattern("MMM d, yyyy", Locale.getDefault())
-private val workoutHeaderFormatter = DateTimeFormatter.ofPattern("EEEE, MMMM d", Locale.getDefault())
+private val workoutHeaderFormatter =
+    DateTimeFormatter.ofPattern("EEEE, MMMM d", Locale.getDefault())
 
 data class LedgerState(
     val isLoading: Boolean = false,
+    val showDatePicker: Boolean = false,
     val workouts: List<Workout> = emptyList(),
     val startDate: LocalDate = LocalDate.now().withDayOfMonth(1),
     val endDate: LocalDate = LocalDate.now(),
+    val bottomBarState: BottomBarState = BottomBarState(selectedTab = Screen.Ledger),
     val error: Throwable? = null,
 ) {
     val dateRangeString: String
@@ -39,8 +44,8 @@ data class LedgerState(
         @Composable @ReadOnlyComposable get() = stringResource(R.string.ledger_loading)
 }
 
-private fun java.time.Instant.toLocalDate(): LocalDate =
+internal fun java.time.Instant.toLocalDate(): LocalDate =
     java.time.LocalDateTime.ofInstant(this, java.time.ZoneId.systemDefault()).toLocalDate()
 
-private fun Long.toLocalDate(): LocalDate =
+internal fun Long.toLocalDate(): LocalDate =
     java.time.Instant.ofEpochMilli(this).toLocalDate()

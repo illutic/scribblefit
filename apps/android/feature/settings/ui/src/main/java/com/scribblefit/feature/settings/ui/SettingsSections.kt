@@ -7,14 +7,42 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.KeyboardArrowRight
-import androidx.compose.material.icons.rounded.*
-import androidx.compose.material3.*
+import androidx.compose.material.icons.rounded.CheckCircle
+import androidx.compose.material.icons.rounded.DeleteForever
+import androidx.compose.material.icons.rounded.Download
+import androidx.compose.material.icons.rounded.Error
+import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.KeyboardArrowDown
+import androidx.compose.material.icons.rounded.KeyboardArrowUp
+import androidx.compose.material.icons.rounded.Visibility
+import androidx.compose.material.icons.rounded.VisibilityOff
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -22,7 +50,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.stringResource
@@ -30,7 +57,6 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.scribblefit.core.config.domain.LLMProvider
@@ -209,7 +235,7 @@ internal fun AIConfigurationSection(
                 Divider(
                     color = ScribbleFitTheme.colors.surfaceContainer,
                     thickness = 1.dp,
-                    modifier = Modifier.padding(vertical = 8.dp)
+                    modifier = Modifier.padding(vertical = ScribbleFitTheme.spacing.small)
                 )
 
                 Column(modifier = Modifier.fillMaxWidth()) {
@@ -217,7 +243,7 @@ internal fun AIConfigurationSection(
                         text = state.apiKeyTitle,
                         style = ScribbleFitTheme.typography.labelMedium,
                         color = ScribbleFitTheme.colors.midGray,
-                        modifier = Modifier.padding(bottom = 8.dp)
+                        modifier = Modifier.padding(bottom = ScribbleFitTheme.spacing.small)
                     )
                     Row(
                         modifier = Modifier.fillMaxWidth(),
@@ -239,7 +265,10 @@ internal fun AIConfigurationSection(
                                     onValueChange = { onIntent(SettingsIntent.ChangeApiKey(it)) },
                                     modifier = Modifier
                                         .weight(1f)
-                                        .padding(horizontal = 16.dp, vertical = 12.dp),
+                                        .padding(
+                                            horizontal = ScribbleFitTheme.spacing.medium,
+                                            vertical = ScribbleFitTheme.spacing.smallLarger
+                                        ),
                                     textStyle = ScribbleFitTheme.typography.bodyMedium.copy(
                                         fontFamily = FontFamily.Monospace,
                                         color = ScribbleFitTheme.colors.primary,
@@ -260,7 +289,7 @@ internal fun AIConfigurationSection(
                                 )
                                 IconButton(
                                     onClick = { onIntent(SettingsIntent.ToggleApiKeyVisibility) },
-                                    modifier = Modifier.padding(end = 8.dp)
+                                    modifier = Modifier.padding(end = ScribbleFitTheme.spacing.small)
                                 ) {
                                     Icon(
                                         imageVector = if (state.isApiKeyVisible) Icons.Rounded.VisibilityOff else Icons.Rounded.Visibility,
@@ -278,12 +307,15 @@ internal fun AIConfigurationSection(
                                 contentColor = ScribbleFitTheme.colors.onPrimary
                             ),
                             shape = CircleShape,
-                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp),
+                            contentPadding = PaddingValues(
+                                horizontal = ScribbleFitTheme.spacing.medium,
+                                vertical = 10.dp
+                            ),
                             enabled = state.connectionTestStatus != ConnectionTestStatus.Testing && state.apiKey.isNotBlank()
                         ) {
                             if (state.connectionTestStatus == ConnectionTestStatus.Testing) {
                                 CircularProgressIndicator(
-                                    modifier = Modifier.size(16.dp),
+                                    modifier = Modifier.size(ScribbleFitTheme.spacing.medium),
                                     strokeWidth = 2.dp
                                 )
                             } else {
@@ -307,7 +339,7 @@ internal fun AIConfigurationSection(
                         Divider(
                             color = ScribbleFitTheme.colors.surfaceContainer,
                             thickness = 1.dp,
-                            modifier = Modifier.padding(vertical = 16.dp)
+                            modifier = Modifier.padding(vertical = ScribbleFitTheme.spacing.medium)
                         )
 
                         Row(
@@ -332,7 +364,11 @@ internal fun AIConfigurationSection(
                                 horizontalArrangement = Arrangement.spacedBy(4.dp)
                             ) {
                                 if (state.isFetchingModels) {
-                                    CircularProgressIndicator(modifier = Modifier.size(16.dp), strokeWidth = 2.dp)
+                                    CircularProgressIndicator(
+                                        modifier = Modifier.size(
+                                            ScribbleFitTheme.spacing.medium
+                                        ), strokeWidth = 2.dp
+                                    )
                                 } else {
                                     Text(
                                         text = state.preferredModel.ifBlank { "Select Model" },
@@ -362,12 +398,12 @@ internal fun AIConfigurationSection(
                 Divider(
                     color = ScribbleFitTheme.colors.surfaceContainer,
                     thickness = 1.dp,
-                    modifier = Modifier.padding(vertical = 8.dp)
+                    modifier = Modifier.padding(vertical = ScribbleFitTheme.spacing.small)
                 )
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    horizontalArrangement = Arrangement.spacedBy(ScribbleFitTheme.spacing.small)
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.Error,
@@ -390,7 +426,7 @@ internal fun AIConfigurationSection(
 private fun ConnectionStatusMessage(status: ConnectionTestStatus) {
     AnimatedVisibility(visible = status != ConnectionTestStatus.Idle) {
         Row(
-            modifier = Modifier.padding(top = 8.dp),
+            modifier = Modifier.padding(top = ScribbleFitTheme.spacing.small),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(ScribbleFitTheme.spacing.small)
         ) {
@@ -414,7 +450,7 @@ private fun ConnectionStatusMessage(status: ConnectionTestStatus) {
                     imageVector = icon,
                     contentDescription = null,
                     tint = color,
-                    modifier = Modifier.size(16.dp)
+                    modifier = Modifier.size(ScribbleFitTheme.spacing.medium)
                 )
                 Text(
                     text = text,
