@@ -1,28 +1,27 @@
 package com.scribblefit.feature.insights.data
 
+import com.scribblefit.core.coroutines.CoroutineDispatcherProvider
 import com.scribblefit.core.database.dao.WorkoutDao
 import com.scribblefit.core.model.AIInsight
 import com.scribblefit.core.model.Exercise
 import com.scribblefit.core.model.InsightType
-import com.scribblefit.feature.ai.domain.LLMEngineProxy
+import com.scribblefit.feature.ai.domain.LLMEngine
 import com.scribblefit.feature.insights.domain.model.FrequencyData
 import com.scribblefit.feature.insights.domain.model.MuscleGroupDistribution
 import com.scribblefit.feature.insights.domain.model.VolumeDataPoint
 import com.scribblefit.feature.insights.domain.repository.InsightsRepository
-import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import java.time.Instant
-import java.time.ZoneOffset
+import java.time.ZoneId
 import java.time.temporal.ChronoUnit
 import javax.inject.Inject
 
 class InsightsRepositoryImpl @Inject constructor(
     private val workoutDao: WorkoutDao,
-    private val llmEngineProxy: LLMEngineProxy,
-    private val coroutineDispatcher: CoroutineDispatcher
+    private val llmEngine: LLMEngine,
+    private val dispatcherProvider: CoroutineDispatcherProvider
 ) : InsightsRepository {
 
     override fun getVolumeInsights(
@@ -39,7 +38,7 @@ class InsightsRepositoryImpl @Inject constructor(
 
                 VolumeDataPoint(
                     date = Instant.ofEpochMilli(workoutWithDetails.workout.workoutDate)
-                        .atZone(ZoneOffset.UTC)
+                        .atZone(ZoneId.systemDefault())
                         .toLocalDate(),
                     volume = totalVolume
                 )
@@ -57,10 +56,10 @@ class InsightsRepositoryImpl @Inject constructor(
             val totalWorkouts = workouts.size
             val totalExercises = workouts.sumOf { it.exercises.size }
             val firstWorkoutDate = Instant.ofEpochMilli(workouts.first().workout.workoutDate)
-                .atZone(ZoneOffset.UTC)
+                .atZone(ZoneId.systemDefault())
                 .toLocalDate()
             val lastWorkoutDate = Instant.ofEpochMilli(workouts.last().workout.workoutDate)
-                .atZone(ZoneOffset.UTC)
+                .atZone(ZoneId.systemDefault())
                 .toLocalDate()
 
             val weeks =
@@ -100,9 +99,8 @@ class InsightsRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getAIOverview(exercises: List<Exercise>): Result<List<AIInsight>> =
-        withContext(coroutineDispatcher) {
+        withContext(dispatcherProvider.io()) {
             try {
-                val llmEngine = llmEngineProxy.underlyingEngine.first()
                 if (exercises.isEmpty()) {
                     return@withContext Result.success(
                         listOf(

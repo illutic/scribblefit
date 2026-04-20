@@ -12,7 +12,10 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
@@ -33,47 +36,55 @@ class InsightsViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(InsightsState())
-    
+    val state: StateFlow<InsightsState> = _state.asStateFlow()
+
+    init {
+        observeData()
+    }
+
     @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
-    val state: StateFlow<InsightsState> = combine(
-        _state.map { it.startDate }.distinctUntilChanged(),
-        _state.map { it.endDate }.distinctUntilChanged(),
-        navigator.navState
-    ) { start, end, navState ->
-        Triple(start, end, navState)
-    }.flatMapLatest { (start, end, navState) ->
-        combine(
-            getVolumeInsightsUseCase(start, end),
-            getFrequencyInsightsUseCase(start, end),
-            getMuscleDistributionInsightsUseCase(start, end)
-        ) { volume, frequency, distribution ->
-            _state.update {
-                it.copy(
-                    volumePoints = volume,
-                    frequency = frequency,
-                    distribution = distribution,
-                    bottomBarState = navState.bottomBarState,
-                    isLoading = false
-                )
-            }
-            if (frequency.totalWorkouts >= 2) {
-                loadAIOverview(start, end)
+    private fun observeData() {
+        viewModelScope.launch {
+            combine(
+                _state.map { it.startDate }.distinctUntilChanged(),
+                _state.map { it.endDate }.distinctUntilChanged(),
+                navigator.navState
+            ) { start, end, navState ->
+                Triple(start, end, navState)
+            }.collectLatest { (start, end, navState) ->
+                _state.update { it.copy(isLoading = true, bottomBarState = navState.bottomBarState) }
+                
+                combine(
+                    getVolumeInsightsUseCase(start, end),
+                    getFrequencyInsightsUseCase(start, end),
+                    getMuscleDistributionInsightsUseCase(start, end)
+                ) { volume, frequency, distribution ->
+                    _state.update {
+                        it.copy(
+                            volumePoints = volume,
+                            frequency = frequency,
+                            distribution = distribution,
+                            isLoading = false
+                        )
+                    }
+                    if (frequency.totalWorkouts >= 2) {
+                        loadAIOverview(start, end)
+                    }
+                }.catch { error ->
+                    _state.update { it.copy(isLoading = false, errorMessage = error.message) }
+                }.collect()
             }
         }
-    }.catch { error ->
-        _state.update { it.copy(isLoading = false, errorMessage = error.message) }
-    }.map { 
-        _state.value 
-    }.stateIn(
-        scope = viewModelScope,
-        started = SharingStarted.WhileSubscribed(5_000),
-        initialValue = _state.value
-    )
+    }
 
     fun onIntent(intent: InsightsIntent) {
         when (intent) {
             InsightsIntent.Refresh -> {
                 _state.update { it.copy(isLoading = true) }
+                // Re-observation will be triggered if dates change, or we can manually reload here
+                val s = _state.value.startDate
+                val e = _state.value.endDate
+                loadAIOverview(s, e)
             }
             is InsightsIntent.NavigateToScreen -> navigator.navigateTo(intent.screen)
             is InsightsIntent.SelectPeriod -> selectPeriod(intent.period)
@@ -96,10 +107,11 @@ class InsightsViewModel @Inject constructor(
         }
     }
 
-    private fun loadAIOverview(startDate: LocalDate, endDate: LocalDate) {
-        if (_state.value.isGeneratingAI) return
+    private var aiJob: kotlinx.coroutines.Job? = null
 
-        viewModelScope.launch {
+    private fun loadAIOverview(startDate: LocalDate, endDate: LocalDate) {
+        aiJob?.cancel()
+        aiJob = viewModelScope.launch {
             _state.update { it.copy(isGeneratingAI = true) }
 
             getAIOverviewUseCase(startDate, endDate).fold(

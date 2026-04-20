@@ -5,7 +5,8 @@ import com.scribblefit.feature.insights.domain.repository.InsightsRepository
 import com.scribblefit.feature.scribble.domain.ScribbleRepository
 import kotlinx.coroutines.flow.first
 import java.time.LocalDate
-import java.time.ZoneOffset
+import java.time.LocalTime
+import java.time.ZoneId
 
 class GetAIOverviewUseCase(
     private val repository: InsightsRepository,
@@ -23,10 +24,10 @@ class GetAIOverviewUseCase(
         startDate: LocalDate,
         endDate: LocalDate
     ): Result<List<AIInsight>> {
-        val startDate = startDate.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli()
-        val endDate = endDate.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli()
+        val startMillis = startDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+        val endMillis = endDate.atTime(LocalTime.MAX).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
 
-        val scribbles = scribbleRepository.getScribblesInRange(startDate, endDate).first()
+        val scribbles = scribbleRepository.getScribblesInRange(startMillis, endMillis).first()
         val exercises = scribbles.flatMap { it.exercises }
         return repository.getAIOverview(exercises)
     }

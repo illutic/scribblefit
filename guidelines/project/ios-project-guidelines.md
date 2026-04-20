@@ -47,7 +47,7 @@
     - **Query Start:** Use `Calendar.current.startOfDay(for: date)`.
     - **Query End:** Use `Calendar.current.date(byAdding: .day, value: 1, to: startOfDay)!`.
     - **Predicate:** Use `#Predicate` with `workout.date >= rangeStart && workout.date < rangeEnd`.
-    This prevents "missing history" bugs caused by UTC shifts and ensures data integrity regardless of the user's current timezone.
+    This policy is MANDATORY for all features dealing with aggregations (e.g., Insights, Frequency counts), ensuring data integrity regardless of the user's current timezone and preventing "missing history" bugs caused by UTC shifts.
 
 ## 8. Data Visualization (Canvas Charting)
 - **Sequential Charting Pattern:** To ensure cross-platform parity and deterministic layering when using a primitive SwiftUI `Canvas`, all charts MUST be rendered in the following strict order:
