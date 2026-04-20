@@ -5,51 +5,64 @@ let package = Package(
     name: "ScribbleFit",
     platforms: [.iOS(.v17), .macOS(.v14)],
     products: [
-        .library(name: "ScribbleFit", targets: [
-            "FeatureCanvas", "FeatureSettings", "FeatureInsights", "FeatureLedger"
-        ])
+        .library(name: "ScribbleFit", targets: ["ScribbleFitAggregator"])
     ],
-    dependencies: [],
+    dependencies: [
+        .package(path: "LocalPackages/Core/CoreModel"),
+        .package(path: "LocalPackages/Core/CoreDatabase"),
+        .package(path: "LocalPackages/Core/CoreDesignSystem"),
+        .package(path: "LocalPackages/Core/CoreCommon"),
+        .package(path: "LocalPackages/Core/CoreFirebase"),
+        .package(path: "LocalPackages/Features/FeatureAI"),
+        .package(path: "LocalPackages/Features/FeatureScribble"),
+        .package(path: "LocalPackages/Features/FeatureWorkouts"),
+        .package(path: "LocalPackages/Features/FeatureConfig"),
+        .package(path: "LocalPackages/Features/FeatureCanvas"),
+        .package(path: "LocalPackages/Features/FeatureSettings"),
+        .package(path: "LocalPackages/Features/FeatureInsights"),
+        .package(path: "LocalPackages/Features/FeatureLedger"),
+        .package(path: "LocalPackages/Features/FeatureSets")
+    ],
     targets: [
-        // Core
-        .target(name: "CoreModel", path: "Sources/Core/Model"),
-        .target(name: "CoreDatabase", dependencies: ["CoreModel"], path: "Sources/Core/Database"),
-        .target(name: "CoreDesignSystem", dependencies: ["CoreModel"], path: "Sources/Core/DesignSystem"),
-        .target(name: "CoreCommon", path: "Sources/Core/Common"),
-
-        // Features (no UI)
-        .target(name: "FeatureAI", dependencies: ["CoreModel", "CoreCommon"],
-                path: "Sources/Features/AI"),
-        .target(name: "FeatureScribble", dependencies: ["CoreModel", "CoreDatabase", "FeatureAI"],
-                path: "Sources/Features/Scribble"),
-        .target(name: "FeatureWorkouts", dependencies: ["CoreModel", "CoreDatabase"],
-                path: "Sources/Features/Workouts"),
-        .target(name: "FeatureConfig", dependencies: ["CoreModel"],
-                path: "Sources/Features/Config"),
-
-        // Features (with UI)
-        .target(name: "FeatureCanvas", dependencies: [
-            "CoreModel", "CoreDatabase", "CoreDesignSystem",
-            "FeatureScribble", "FeatureWorkouts", "FeatureAI", "FeatureConfig",
-            "FeatureSettings", "FeatureInsights", "FeatureLedger"
-        ], path: "Sources/Features/Canvas"),
-        .target(name: "FeatureSettings", dependencies: [
-            "CoreModel", "CoreDatabase", "CoreDesignSystem", "CoreCommon",
-            "FeatureAI", "FeatureConfig"
-        ], path: "Sources/Features/Settings"),
-        .target(name: "FeatureInsights", dependencies: [
-            "CoreModel", "CoreDesignSystem",
-            "FeatureWorkouts", "FeatureAI"
-        ], path: "Sources/Features/Insights"),
-        .target(name: "FeatureLedger", dependencies: [
-            "CoreModel", "CoreDesignSystem", "FeatureWorkouts"
-        ], path: "Sources/Features/Ledger"),
-
+        .target(
+            name: "ScribbleFitAggregator",
+            dependencies: [
+                .product(name: "CoreModel", package: "CoreModel"),
+                .product(name: "CoreDatabase", package: "CoreDatabase"),
+                .product(name: "CoreDesignSystem", package: "CoreDesignSystem"),
+                .product(name: "CoreCommon", package: "CoreCommon"),
+                .product(name: "CoreFirebase", package: "CoreFirebase"),
+                .product(name: "FeatureAI", package: "FeatureAI"),
+                .product(name: "FeatureScribble", package: "FeatureScribble"),
+                .product(name: "FeatureWorkouts", package: "FeatureWorkouts"),
+                .product(name: "FeatureConfig", package: "FeatureConfig"),
+                .product(name: "FeatureCanvas", package: "FeatureCanvas"),
+                .product(name: "FeatureSettings", package: "FeatureSettings"),
+                .product(name: "FeatureInsights", package: "FeatureInsights"),
+                .product(name: "FeatureLedger", package: "FeatureLedger"),
+                .product(name: "FeatureSets", package: "FeatureSets")
+            ],
+            path: "Sources/ScribbleFitAggregator"
+        ),
         // Tests
-        .testTarget(name: "ScribbleFitTests", dependencies: [
-            "FeatureCanvas", "FeatureSettings", "FeatureInsights", "FeatureLedger",
-            "CoreModel", "CoreDatabase", "FeatureAI", "FeatureScribble",
-            "FeatureWorkouts", "FeatureConfig"
-        ], path: "ScribbleFitTests"),
+        .testTarget(
+            name: "ScribbleFitTests",
+            dependencies: [
+                "ScribbleFitAggregator",
+                .product(name: "FeatureCanvas", package: "FeatureCanvas"),
+                .product(name: "FeatureSettings", package: "FeatureSettings"),
+                .product(name: "FeatureInsights", package: "FeatureInsights"),
+                .product(name: "FeatureLedger", package: "FeatureLedger"),
+                .product(name: "CoreModel", package: "CoreModel"),
+                .product(name: "CoreDatabase", package: "CoreDatabase"),
+                .product(name: "FeatureAI", package: "FeatureAI"),
+                .product(name: "FeatureScribble", package: "FeatureScribble"),
+                .product(name: "FeatureWorkouts", package: "FeatureWorkouts"),
+                .product(name: "FeatureConfig", package: "FeatureConfig"),
+                .product(name: "CoreFirebase", package: "CoreFirebase"),
+                .product(name: "FeatureSets", package: "FeatureSets")
+            ],
+            path: "ScribbleFitTests"
+        ),
     ]
 )

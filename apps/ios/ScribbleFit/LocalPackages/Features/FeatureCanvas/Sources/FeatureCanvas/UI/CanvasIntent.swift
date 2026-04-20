@@ -1,0 +1,31 @@
+import Foundation
+import CoreModel
+
+public enum CanvasIntent: Sendable {
+    // Canvas
+    case updateScribbleText(String)
+    case addScribble(String)
+    case retryScribbleParsing(Scribble)
+    case toggleInputExpansion
+    case clickOnScribble(Scribble)
+    case onPreviousDayClick
+    case onNextDayClick
+    case showDatePicker
+    case dismissDatePicker
+    case onDateSelected(Date)
+
+    // Manual Editing
+    case updateExerciseName(UUID, String)
+    case updateSetWeight(UUID, UUID, String)
+    case updateSetReps(UUID, UUID, String)
+    case deleteSet(UUID, UUID) // exerciseId, setId
+
+    // Scribble Dialog
+    case confirmScribble(Scribble)
+    case deleteScribble(UUID)
+    case dismissScribbleDialog
+
+    // Navigation
+    case navigateToSettings
+    case navigateToProfile
+}

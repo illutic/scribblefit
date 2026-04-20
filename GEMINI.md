@@ -44,7 +44,9 @@ test for it before reporting it as done. Use unit tests for domain/data logic, C
 (Android) or XCUITests (iOS) for UI behaviour, or both. A certainty level of WEAK or INSUFFICIENT
 is not acceptable for merged code — escalate to STRONG by adding automated tests.
 
-**QA Verification:** ALWAYS run the `qa-agent` after proving your changes with tests. This agent 
+**Compilation Rule:** A task is NOT complete until the application compiles successfully on ALL target platforms. For cross-platform changes, verify BOTH Android and iOS builds.
+
+**QA Verification:** ALWAYS run the `qa-agent` after proving your changes with tests and verifying compilation. This agent 
 verifies that the implementation meets all acceptance criteria in the feature spec and updates the 
 `specs/[feature].md` file accordingly.
 
@@ -105,7 +107,6 @@ Before implementing any feature or making architectural decisions, read the rele
 - **Concurrency:** Swift 6 strict concurrency -- `Sendable` models, `@MainActor` stores/repos/use
   cases
 - **Persistence:** SwiftData with reactive `AsyncStream` repositories
-- **Secure storage:** Keychain via `KeychainHelper`. Never use `UserDefaults` for secrets
 - **Mapping:** `@MainActor` on `toDomain()` extensions, bidirectional mapping required
 - **AI:** `RoutingLLMService` for dynamic cloud/local switching
 - **Status enums:** Uppercase raw values (e.g., `case failed = "FAILED"`), use `.uppercased()` in

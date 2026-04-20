@@ -1,6 +1,6 @@
 import SwiftUI
 import SwiftData
-#if SWIFT_PACKAGE
+import CoreFirebase
 import CoreModel
 import CoreDatabase
 import CoreDesignSystem
@@ -13,7 +13,17 @@ import FeatureCanvas
 import FeatureSettings
 import FeatureInsights
 import FeatureLedger
-#endif
+import FeatureSets
+
+class ScribbleFitAppCheckProviderFactory: NSObject, AppCheckProviderFactory {
+    func createProvider(with app: FirebaseApp) -> AppCheckProvider? {
+        #if DEBUG
+        return AppCheckDebugProvider(app: app)
+        #else
+        return AppAttestProvider(app: app)
+        #endif
+    }
+}
 
 @main
 @MainActor
@@ -39,14 +49,13 @@ struct ScribbleFitApp: App {
     private let getWorkoutsByDateUseCase: GetWorkoutsByDateUseCase
     private let getWorkoutsInRangeUseCase: GetWorkoutsInRangeUseCase
     private let clearAllDataUseCase: ClearAllDataUseCase
-    private let updateApiKeyUseCase: UpdateApiKeyUseCase
-    private let testConnectionUseCase: TestConnectionUseCase
-    private let getAvailableModelsUseCase: GetAvailableModelsUseCase
     private let checkLocalSupportUseCase: CheckLocalSupportUseCase
     private let exportUserDataUseCase: ExportUserDataUseCase
     private let getVolumeInsightsUseCase: GetVolumeInsightsUseCase
     private let getFrequencyInsightsUseCase: GetFrequencyInsightsUseCase
     private let getMuscleDistributionInsightsUseCase: GetMuscleDistributionInsightsUseCase
+    private let updateScribbleWithWorkoutUseCase: UpdateScribbleWithWorkoutUseCase
+    private let reorderSetsUseCase: ReorderSetsUseCase
 
     // Stores
     private let canvasStore: CanvasStore
@@ -55,6 +64,19 @@ struct ScribbleFitApp: App {
     private let ledgerStore: LedgerStore
 
     init() {
+        let providerFactory = ScribbleFitAppCheckProviderFactory()
+        AppCheck.setAppCheckProviderFactory(providerFactory)
+        FirebaseApp.configure()
+        
+        // Sign in anonymously to provide auth context for Gemini / App Check
+        Auth.auth().signInAnonymously { _, error in
+            if let error = error {
+                print("Firebase Anonymous Auth Error: \(error.localizedDescription)")
+            } else {
+                print("Firebase Anonymous Auth Success")
+            }
+        }
+
         do {
             let schema = Schema([
                 ScribbleEntity.self,
@@ -79,28 +101,30 @@ struct ScribbleFitApp: App {
             // AI Services
             let localLLM = LocalLLMService(configRepository: configRepo)
             let geminiLLM = GeminiLLMService(configRepository: configRepo, settingsRepository: settingsRepo)
-            let routingLLM = RoutingLLMService(configRepository: configRepo, localService: localLLM, geminiService: geminiLLM)
+            let routingLLM = RoutingLLMService(geminiService: geminiLLM, localService: localLLM, configRepository: configRepo)
             self.llmProvider = routingLLM
 
             // Use Cases
             self.getScribblesForDateUseCase = GetScribblesForDateUseCase(repository: scribbleRepo)
             self.addRawScribbleUseCase = AddRawScribbleUseCase(repository: scribbleRepo)
+            let removeScribbleUC = RemoveScribbleUseCase(repository: scribbleRepo)
             self.confirmScribbleUseCase = ConfirmScribbleUseCase(scribbleRepository: scribbleRepo, workoutRepository: workoutRepo)
-            self.deleteScribbleUseCase = DeleteScribbleUseCase(repository: scribbleRepo)
+            self.deleteScribbleUseCase = DeleteScribbleUseCase(removeScribbleUseCase: removeScribbleUC)
             self.parsePendingScribblesUseCase = ParsePendingScribblesUseCase(scribbleRepository: scribbleRepo, llmProvider: routingLLM)
             self.getAIOverviewUseCase = GetAIOverviewUseCase(workoutRepository: workoutRepo, llmProvider: routingLLM)
             self.getWorkoutsByDateUseCase = GetWorkoutsByDateUseCase(repository: workoutRepo)
             self.getWorkoutsInRangeUseCase = GetWorkoutsInRangeUseCase(repository: workoutRepo)
 
             self.clearAllDataUseCase = ClearAllDataUseCase(repository: settingsRepo)
-            self.updateApiKeyUseCase = UpdateApiKeyUseCase(repository: settingsRepo)
-            self.testConnectionUseCase = TestConnectionUseCase(llmService: routingLLM)
-            self.getAvailableModelsUseCase = GetAvailableModelsUseCase(llmService: routingLLM)
             self.checkLocalSupportUseCase = CheckLocalSupportUseCase(localLLM: localLLM)
             self.exportUserDataUseCase = ExportUserDataUseCase(repository: settingsRepo)
             self.getVolumeInsightsUseCase = GetVolumeInsightsUseCase(workoutRepository: workoutRepo)
             self.getFrequencyInsightsUseCase = GetFrequencyInsightsUseCase(workoutRepository: workoutRepo)
             self.getMuscleDistributionInsightsUseCase = GetMuscleDistributionInsightsUseCase(workoutRepository: workoutRepo)
+            
+            let reorderSetsUC = ReorderSetsUseCase()
+            self.reorderSetsUseCase = reorderSetsUC
+            self.updateScribbleWithWorkoutUseCase = UpdateScribbleWithWorkoutUseCase(scribbleRepository: scribbleRepo, workoutRepository: workoutRepo)
 
             // Stores
             self.canvasStore = CanvasStore(
@@ -110,15 +134,14 @@ struct ScribbleFitApp: App {
                 deleteScribbleUseCase: deleteScribbleUseCase,
                 parsePendingScribblesUseCase: parsePendingScribblesUseCase,
                 getAIOverviewUseCase: getAIOverviewUseCase,
+                updateScribbleWithWorkoutUseCase: updateScribbleWithWorkoutUseCase,
+                reorderSetsUseCase: reorderSetsUC,
                 configRepository: configRepo
             )
 
             self.settingsStore = SettingsStore(
                 configRepository: configRepo,
                 settingsRepository: settingsRepo,
-                updateApiKeyUseCase: updateApiKeyUseCase,
-                testConnectionUseCase: testConnectionUseCase,
-                getAvailableModelsUseCase: getAvailableModelsUseCase,
                 checkLocalSupportUseCase: checkLocalSupportUseCase,
                 clearAllDataUseCase: clearAllDataUseCase,
                 exportUserDataUseCase: exportUserDataUseCase

@@ -105,7 +105,6 @@ Before implementing any feature or making architectural decisions, read the rele
 - **Concurrency:** Swift 6 strict concurrency -- `Sendable` models, `@MainActor` stores/repos/use
   cases
 - **Persistence:** SwiftData with reactive `AsyncStream` repositories
-- **Secure storage:** Keychain via `KeychainHelper`. Never use `UserDefaults` for secrets
 - **Mapping:** `@MainActor` on `toDomain()` extensions, bidirectional mapping required
 - **AI:** `RoutingLLMService` for dynamic cloud/local switching
 - **Status enums:** Uppercase raw values (e.g., `case failed = "FAILED"`), use `.uppercased()` in
