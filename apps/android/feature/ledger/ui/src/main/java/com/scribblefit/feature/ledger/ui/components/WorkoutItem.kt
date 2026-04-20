@@ -15,6 +15,7 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.scribblefit.core.designsystem.ScribbleFitTheme
 import com.scribblefit.core.designsystem.scribbleGlass
@@ -22,8 +23,8 @@ import com.scribblefit.core.model.Workout
 
 @Composable
 internal fun WorkoutItem(
-    workout: Workout,
-    dateHeader: String,
+    title: String,
+    exercises: List<com.scribblefit.core.model.Exercise>,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -39,26 +40,27 @@ internal fun WorkoutItem(
             modifier = Modifier.padding(ScribbleFitTheme.spacing.medium)
         ) {
             Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(bottom = 12.dp),
+                verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = dateHeader,
+                    text = title,
                     style = ScribbleFitTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
                     color = ScribbleFitTheme.colors.primary,
                     modifier = Modifier.weight(1f)
                 )
                 Icon(
-                    imageVector = Icons.Filled.KeyboardArrowRight,
+                    imageVector = Icons.Default.KeyboardArrowRight,
                     contentDescription = null,
-                    tint = ScribbleFitTheme.colors.midGray,
+                    tint = ScribbleFitTheme.colors.primary,
                     modifier = Modifier.size(20.dp)
                 )
             }
 
-            Spacer(modifier = Modifier.padding(vertical = 4.dp))
-
-            workout.exercises.forEach { exercise ->
+            exercises.forEachIndexed { index, exercise ->
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -68,12 +70,13 @@ internal fun WorkoutItem(
                     Text(
                         text = exercise.canonicalName,
                         style = ScribbleFitTheme.typography.bodyMedium,
+                        fontWeight = FontWeight.Bold,
                         color = ScribbleFitTheme.colors.primary,
                         modifier = Modifier.weight(1f)
                     )
                     Text(
                         text = formatMetrics(exercise),
-                        style = ScribbleFitTheme.typography.labelMedium,
+                        style = ScribbleFitTheme.typography.labelSmall,
                         color = ScribbleFitTheme.colors.midGray
                     )
                 }

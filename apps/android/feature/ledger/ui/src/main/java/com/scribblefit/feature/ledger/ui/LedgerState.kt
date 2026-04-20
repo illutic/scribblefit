@@ -14,11 +14,16 @@ private val dateRangeFormatter = DateTimeFormatter.ofPattern("MMM d, yyyy", Loca
 private val workoutHeaderFormatter =
     DateTimeFormatter.ofPattern("EEEE, MMMM d", Locale.getDefault())
 
+data class DailyWorkout(
+    val date: LocalDate,
+    val exercises: List<com.scribblefit.core.model.Exercise>,
+)
+
 data class LedgerState(
     val isLoading: Boolean = false,
     val showDatePicker: Boolean = false,
     val workouts: List<Workout> = emptyList(),
-    val startDate: LocalDate = LocalDate.now().withDayOfMonth(1),
+    val startDate: LocalDate = LocalDate.now().minusDays(30),
     val endDate: LocalDate = LocalDate.now(),
     val bottomBarState: BottomBarState = BottomBarState(selectedTab = Screen.Ledger),
     val error: Throwable? = null,
@@ -26,8 +31,15 @@ data class LedgerState(
     val dateRangeString: String
         get() = "${startDate.format(dateRangeFormatter)} – ${endDate.format(dateRangeFormatter)}"
 
-    val groupedWorkouts: Map<LocalDate, List<Workout>>
+    val groupedWorkouts: List<DailyWorkout>
         get() = workouts.groupBy { it.date.toLocalDate() }
+            .map { (date, workouts) ->
+                DailyWorkout(
+                    date = date,
+                    exercises = workouts.sortedBy { it.date }.flatMap { it.exercises }
+                )
+            }
+            .sortedByDescending { it.date }
 
     fun getWorkoutDateHeader(date: LocalDate): String = date.format(workoutHeaderFormatter)
 

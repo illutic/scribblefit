@@ -8,7 +8,7 @@ import com.scribblefit.feature.scribble.domain.ScribbleRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
-import java.time.ZoneOffset
+import java.time.ZoneId
 
 class AddRawScribbleUseCase(
     private val scribbleRepository: ScribbleRepository,
@@ -31,7 +31,7 @@ class AddRawScribbleUseCase(
         }
 
     private fun getCurrentDateInMillis(date: LocalDate): Long = date
-        .atStartOfDay(ZoneOffset.UTC)
+        .atStartOfDay(ZoneId.systemDefault())
         .toInstant()
         .toEpochMilli()
 }
