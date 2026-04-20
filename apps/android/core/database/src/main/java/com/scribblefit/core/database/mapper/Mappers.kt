@@ -77,7 +77,6 @@ fun SystemConfig.toDomain(): DomainSystemConfig =
         insightPrompt = insightPrompt,
         parsePrompt = parsePrompt,
         updatedAt = updatedAt,
-        preferredModel = preferredModel,
         weightUnit = Weight.valueOf(weightUnit),
         preferredLlmProvider = LLMProvider.valueOf(preferredLlmProvider),
         themePreference = ThemePreference.valueOf(themePreference),
@@ -93,6 +92,7 @@ fun ScribbleEntity.toDomain(): Scribble {
             ScribbleStatus.FAILED
         ),
         createdAt = createdAt,
+        workoutId = workoutId,
         exercises = emptyList() // Base entity doesn't have exercises, use ScribbleWithExercises
     )
 }
@@ -106,6 +106,7 @@ fun ScribbleWithExercises.toDomain(): Scribble {
             ScribbleStatus.FAILED
         ),
         createdAt = scribble.createdAt,
+        workoutId = scribble.workoutId,
         exercises = exercises.map { it.toDomain() },
     )
 }
@@ -121,6 +122,7 @@ fun Scribble.toEntity(): ScribbleEntity =
         parsedJson = parsedJson,
         status = status.name,
         createdAt = createdAt,
+        workoutId = workoutId,
     )
 
 fun DomainSet.toEntity(workoutExerciseId: Long): WorkoutSet =
@@ -158,7 +160,6 @@ fun DomainSystemConfig.toEntity(): SystemConfig =
         parsePrompt = parsePrompt,
         preferredLlmProvider = preferredLlmProvider.name,
         updatedAt = updatedAt,
-        preferredModel = preferredModel,
         weightUnit = weightUnit.name,
         themePreference = themePreference.name,
         isDynamicTheme = isDynamicTheme,

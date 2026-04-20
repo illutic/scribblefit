@@ -47,6 +47,31 @@ internal class WorkoutRepositoryImpl(
         workoutDao.insertWorkoutWithDetails(workoutEntity, exerciseEntities, setsPerExercise, exerciseStats)
     }
 
+    override suspend fun updateWorkout(workout: Workout): Unit = withContext(coroutineDispatcher) {
+        val workoutEntity = workout.toEntity()
+        val exerciseEntities = workout.exercises.map { it.toEntity() }
+        val setsPerExercise = workout.exercises.map { exercise ->
+            exercise.sets.map { set ->
+                WorkoutSet(
+                    workoutExerciseId = 0,
+                    setNumber = set.setNumber,
+                    weight = set.weight,
+                    reps = set.reps,
+                    rpe = set.rpe,
+                    notes = set.notes,
+                )
+            }
+        }
+        val exerciseStats = workout.exercises.map { exercise ->
+            ExerciseStats(
+                estimated1RM = exercise.estimated1RM,
+                intensity = exercise.intensity,
+                improvement = exercise.improvement,
+            )
+        }
+        workoutDao.updateWorkoutWithDetails(workoutEntity, exerciseEntities, setsPerExercise, exerciseStats)
+    }
+
     override fun getWorkoutByDate(date: Long): Flow<Workout?> =
         workoutDao
             .getWorkoutByDate(date)
