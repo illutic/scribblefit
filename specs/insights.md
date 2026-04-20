@@ -48,7 +48,7 @@ The Insights feature provides a data-driven view of the user's progress. It aggr
     - [ ] **Navigation:** Tapping an exercise navigates to the **Exercise Details** screen.
 
 ### 3.5 States
-- [ ] **Loading State:** Shimmer effects for charts and cards.
+- [x] **Loading State:** Shimmer effects for charts and cards. Verified in `InsightsStore.swift`.
 - [ ] **Empty State:** Displayed when fewer than two sessions are recorded. Reference: `Insights (Empty State)` design.
 
 ## 4. Development Guidelines (Android)

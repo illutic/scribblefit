@@ -44,3 +44,15 @@ This document tracks identified technical debt, performance bottlenecks, and dev
 
 ### 12. Missing IME Padding on Canvas [FIXED]
 *   **Fix:** Applied `.imePadding()` to the root layout of `CanvasScreen`.
+
+### 13. Insecure Client-Side API Keys
+*   **Issue:** `GEMINI_API_KEY` is injected via `BuildConfig` and stored in the application binary. This is insecure for production as it can be reverse-engineered.
+*   **Solution:** For production release, migrate to Firebase Vertex AI (which uses Firebase App Check for security) or implement a backend proxy to keep keys off the client.
+
+---
+
+## 🍎 iOS Specific Debt
+
+### 14. Single-Component File Pattern Violations
+*   **Issue:** Several iOS UI files (e.g., `SettingsView.swift`, `ScribbleCard.swift`) "dump" multiple View structs into a single file instead of extracting them to the `Components/` folder.
+*   **Refactor Needed:** Extract `AppearanceSection`, `AIConfigurationSection`, `UnitPreferencesSection`, `DataManagementSection`, and `FooterSection` from `SettingsView.swift`. Extract status-specific cards from `ScribbleCard.swift`.

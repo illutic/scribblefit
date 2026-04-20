@@ -15,9 +15,9 @@ The feature follows an offline-first approach, where scribbles are saved locally
 
 ### 3.1 Core Functionality
 - [ ] **Offline-First Scribbles:** Users can submit raw text scribbles even when offline. Scribbles are stored in the local database immediately.
-- [ ] **Scribble Lifecycle:** Scribbles must transition through the following statuses: `PENDING` (stored locally), `PARSING` (sent to LLM), `SUCCESS` (parsed), `FAILED` (parsing error), and `COMPLETED` (confirmed by user and moved to workout history).
-- [ ] **Date Persistence:** Scribbles are associated with a specific date. The UI must only show scribbles for the currently selected date.
-- [ ] **Real-time Updates:** The list of scribbles must update reactively as statuses change.
+- [x] **Scribble Lifecycle:** Scribbles must transition through the following statuses: `PENDING` (stored locally), `PARSING` (sent to LLM), `SUCCESS` (parsed), `FAILED` (parsing error), and `COMPLETED` (confirmed by user and moved to workout history).
+- [x] **Date Persistence:** Scribbles are associated with a specific date. The UI must only show scribbles for the currently selected date.
+- [x] **Real-time Updates:** The list of scribbles must update reactively as statuses change.
 
 ### 3.2 UI Components (Contextual Splitting)
 The UI must strictly adhere to the "The Input Canvas (Home)" design project.
@@ -46,24 +46,24 @@ The body must handle four distinct states as defined in the design:
     - [ ] Displays "What did you lift today?" message.
     - [ ] Centered graphic or illustration.
 2.  **Pending (`Canvas Screen - Pending`):**
-    - [ ] Shows raw text scribbles with a "PENDING" badge.
-    - [ ] Status indicator: Simple text label or subtle pulse effect.
+    - [x] Shows raw text scribbles with a "PENDING" badge.
+    - [x] Status indicator: Simple text label or subtle pulse effect.
 3.  **Parsed (`Canvas Screen - Parsed/Completed`):**
-    - [ ] Shows structured exercise data (Exercise Name, Sets x Reps @ Weight).
-    - [ ] Border color matches status (e.g., light gray for parsed).
+    - [x] Shows structured exercise data (Exercise Name, Sets x Reps @ Weight). Verified fallback for empty exercises in `ScribbleCard.swift`.
+    - [x] Border color matches status (e.g., light gray for parsed).
 4.  **Completed (`Canvas Screen - Parsed/Completed`):**
-    - [ ] Shows "COMPLETED" badge in success green.
-    - [ ] Non-interactive once confirmed.
+    - [x] Shows "COMPLETED" badge in success green.
+    - [x] Non-interactive once confirmed. Verified fallback for empty exercises in `ScribbleCard.swift`.
 
 - [ ] **AI Insights Section:**
     - [ ] Displays motivational summaries or patterns at the top of the body.
     - [ ] Integrated with `GetAIOverviewUseCase`.
 
-- [ ] **Workout Confirmation Sheet (`Canvas Screen - Confirm/Edit/Delete parsed exercise`):**
-    - [ ] Triggered by tapping a parsed scribble.
-    - [ ] **Confirm Button:** Primary action, styled with the project's primary color (Black in Light mode, White in Dark mode).
-    - [ ] **Edit Button:** Secondary action, opens manual adjustment form.
-    - [ ] **Delete Button:** Destructive action, styled in red.
+- [x] **Workout Confirmation Sheet (`Canvas Screen - Confirm/Edit/Delete parsed exercise`):**
+    - [x] Triggered by tapping a parsed scribble.
+    - [x] **Confirm Button:** Primary action, styled with the project's primary color (Black in Light mode, White in Dark mode).
+    - [x] **Edit Button:** Secondary action, opens manual adjustment form.
+    - [x] **Delete Button:** Destructive action, styled in red.
 
 #### **Footer**
 - [ ] **Scribble Input:**

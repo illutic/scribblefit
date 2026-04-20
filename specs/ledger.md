@@ -14,29 +14,29 @@ The Ledger is a comprehensive, chronological log of all physical activity record
 ## 3. Acceptance Criteria
 
 ### 3.1 Header
-- [ ] **Title:** "Ledger" (Large, bold).
-- [ ] **Date Range Selector:**
-    - [ ] Displays the current filter range (e.g., "Mar 1, 2026 – Mar 31, 2026").
-    - [ ] Includes a calendar icon (`calendar_today`).
-    - [ ] Tapping the selector opens a native Date Range Picker.
-    - [ ] Default range: Current Month.
+- [x] **Title:** "Ledger" (Large, bold). (Verified on Android and iOS).
+- [x] **Date Range Selector:**
+    - [x] Displays the current filter range (e.g., "Mar 1, 2026 – Mar 31, 2026"). (Verified on Android and iOS).
+    - [x] Includes a calendar icon (`calendar_today`). (Verified on Android and iOS).
+    - [x] Tapping the selector opens a native Date Range Picker. (Verified on Android and iOS).
+    - [x] Default range: Last 30 Days. (Verified on Android and iOS).
 
 ### 3.2 Workout List (Chronological History)
-- [ ] **Grouping:** Workouts are grouped by date, displayed in descending order (newest first).
-- [ ] **Workout Card/Item:**
-    - [ ] **Header:** Displays the day and date (e.g., "Monday, March 16").
-    - [ ] **Interactivity Indicator:** A trailing chevron-right (`chevron_right`) suggesting navigation to details.
-    - [ ] **Exercise Summary:** A list of exercises performed in that session.
-    - [ ] **Metrics:** Displays the total volume or specific stats for each exercise (e.g., "Bench Press 2,450 lbs").
+- [x] **Grouping:** Workouts are grouped by date, displayed in descending order (newest first). (Verified on Android and iOS: Aggregates exercises from all workouts on same day).
+- [x] **Workout Card/Item:**
+    - [x] **Header:** Displays the day and date (e.g., "Monday, March 16"). (Verified on Android and iOS).
+    - [x] **Interactivity Indicator:** A trailing chevron-right (`chevron_right`) suggesting navigation to details. (Verified on Android and iOS).
+    - [x] **Exercise Summary:** A list of exercises performed in that session. (Verified on Android and iOS).
+    - [x] **Metrics:** Displays the total volume or specific stats for each exercise (e.g., "Bench Press 2,450 lbs"). (Verified on Android and iOS).
 - [ ] **Navigation:** Tapping any part of a workout entry navigates to the **Workout Details** screen for that session.
 
 ### 3.3 States
-- [ ] **Loading State:**
-    - [ ] Display skeleton loaders that match the layout of the workout cards.
+- [x] **Loading State:**
+    - [x] Display skeleton loaders that match the layout of the workout cards. (Verified on Android and iOS).
     - [ ] Reference: `Ledger (Loading State)` design.
-- [ ] **Empty State:**
-    - [ ] Displayed when no workouts are found in the selected range or at all.
-    - [ ] Includes a clear message (e.g., "Your history is empty") and a call-to-action (e.g., "Start your first session on the Canvas").
+- [x] **Empty State:**
+    - [x] Displayed when no workouts are found in the selected range or at all. (Verified on Android and iOS).
+    - [x] Includes a clear message (e.g., "Your history is empty") and a call-to-action (e.g., "Start your first session on the Canvas"). (Verified on Android and iOS).
     - [ ] Reference: `Ledger (Minimal Empty State)` design.
 
 ### 3.4 UI Design Tokens
