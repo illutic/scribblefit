@@ -1,8 +1,10 @@
 package com.scribblefit.feature.canvas.ui.components.card
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
@@ -12,6 +14,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.History
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -19,6 +22,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
@@ -26,6 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.scribblefit.core.designsystem.ScribbleFitTheme
+import com.scribblefit.core.designsystem.scribbleGlass
 import com.scribblefit.feature.canvas.ui.ExerciseUiModel
 
 @Composable
@@ -36,13 +41,12 @@ internal fun ScribbleCardContainer(
     alpha: Float = 1f,
     content: @Composable ColumnScope.() -> Unit
 ) {
-    Surface(
-        color = ScribbleFitTheme.colors.surfaceContainerLowest,
-        shape = RoundedCornerShape(ScribbleFitTheme.shapes.medium),
-        border = border,
+    Box(
         modifier = modifier
             .fillMaxWidth()
+            .clip(RoundedCornerShape(ScribbleFitTheme.shapes.medium))
             .then(if (onClick != null) Modifier.clickable(onClick = onClick) else Modifier)
+            .scribbleGlass(cornerRadius = ScribbleFitTheme.shapes.medium)
             .alpha(alpha)
     ) {
         Column(
@@ -70,15 +74,31 @@ internal fun ScribbleRawText(
 }
 
 @Composable
-internal fun ExerciseSummary(
-    summary: String,
-    modifier: Modifier = Modifier
+internal fun ExerciseHeader(
+    exercise: ExerciseUiModel,
+    modifier: Modifier = Modifier,
+    fontSize: Int = 24,
+    kerning: Double = -0.5
 ) {
-    Text(
-        text = summary,
-        style = ScribbleFitTheme.typography.bodyMedium,
-        modifier = modifier
-    )
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Text(
+            text = exercise.name,
+            style = ScribbleFitTheme.typography.titleLarge.copy(
+                fontSize = fontSize.sp,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = kerning.sp
+            ),
+            color = ScribbleFitTheme.colors.primary
+        )
+        Text(
+            text = exercise.formattedSummary,
+            style = ScribbleFitTheme.typography.bodyMedium,
+            color = ScribbleFitTheme.colors.midGray
+        )
+    }
 }
 
 @Composable
@@ -90,7 +110,7 @@ internal fun ExerciseStats(
 
     Column(
         modifier = modifier,
-        verticalArrangement = Arrangement.spacedBy(ScribbleFitTheme.spacing.small)
+        verticalArrangement = Arrangement.spacedBy(ScribbleFitTheme.spacing.medium)
     ) {
         if (exercise.estimated1RM != null || exercise.intensity != null) {
             Row(horizontalArrangement = Arrangement.spacedBy(ScribbleFitTheme.spacing.medium)) {
@@ -120,11 +140,14 @@ internal fun ExerciseStats(
                     imageVector = Icons.Rounded.History,
                     contentDescription = null,
                     tint = ScribbleFitTheme.colors.midGray,
-                    modifier = Modifier.size(14.dp)
+                    modifier = Modifier.size(12.dp)
                 )
                 Text(
                     text = improvement.uppercase(),
-                    style = ScribbleFitTheme.typography.labelMedium,
+                    style = ScribbleFitTheme.typography.labelMedium.copy(
+                        fontWeight = FontWeight.SemiBold,
+                        letterSpacing = 0.5.sp
+                    ),
                     color = ScribbleFitTheme.colors.midGray
                 )
             }
@@ -134,12 +157,13 @@ internal fun ExerciseStats(
 
 @Composable
 internal fun StatCard(label: String, value: String, modifier: Modifier = Modifier) {
-    Surface(
-        color = ScribbleFitTheme.colors.surfaceContainerLow,
-        shape = RoundedCornerShape(ScribbleFitTheme.shapes.smallLarger),
+    Box(
         modifier = modifier
+            .clip(RoundedCornerShape(12.dp))
+            .background(ScribbleFitTheme.colors.primary.copy(alpha = 0.03f))
+            .padding(12.dp)
     ) {
-        Column(modifier = Modifier.padding(ScribbleFitTheme.spacing.medium)) {
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
             Text(
                 text = label.uppercase(),
                 style = ScribbleFitTheme.typography.labelMedium,
@@ -150,7 +174,8 @@ internal fun StatCard(label: String, value: String, modifier: Modifier = Modifie
             Text(
                 text = value,
                 style = ScribbleFitTheme.typography.titleMedium,
-                fontWeight = FontWeight.Bold
+                fontWeight = FontWeight.Bold,
+                color = ScribbleFitTheme.colors.primary
             )
         }
     }

@@ -9,9 +9,7 @@ import com.scribblefit.feature.canvas.ui.ScribbleUiModel
 internal fun ScribbleCard(
     scribble: ScribbleUiModel,
     onClick: () -> Unit,
-    onIntent: (CanvasIntent) -> Unit,
-    retryLabel: String,
-    removeLabel: String,
+    onIntent: (CanvasIntent) -> Unit
 ) {
     when (scribble.status) {
         ScribbleStatus.PENDING, ScribbleStatus.PARSING -> PendingScribbleCard(scribble)
@@ -19,9 +17,7 @@ internal fun ScribbleCard(
         ScribbleStatus.COMPLETED -> LoggedScribbleCard(scribble, onClick)
         ScribbleStatus.FAILED -> FailedScribbleCard(
             scribble = scribble,
-            onIntent = onIntent,
-            retryLabel = retryLabel,
-            removeLabel = removeLabel
+            onIntent = onIntent
         )
     }
 }

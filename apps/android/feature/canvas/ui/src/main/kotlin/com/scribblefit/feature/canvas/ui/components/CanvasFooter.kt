@@ -36,8 +36,15 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
+import androidx.compose.material.icons.rounded.AutoGraph
+import androidx.compose.material.icons.rounded.CalendarMonth
+import androidx.compose.material.icons.rounded.Home
+import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import com.scribblefit.core.designsystem.BottomBar
+import com.scribblefit.core.designsystem.BottomBarUiItem
 import com.scribblefit.core.designsystem.ScribbleFitTheme
+import com.scribblefit.core.navigation.Screen
 import com.scribblefit.feature.canvas.ui.CanvasIntent
 import com.scribblefit.feature.canvas.ui.CanvasState
 import com.scribblefit.feature.canvas.ui.R
@@ -68,6 +75,26 @@ internal fun CanvasFooter(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(ScribbleFitTheme.spacing.medium)
         ) {
+            val bottomBarItems = state.bottomBarState.items.map { item ->
+                val icon = when (item.screen) {
+                    Screen.Canvas -> Icons.Rounded.Home
+                    Screen.Insights -> Icons.Rounded.AutoGraph
+                    Screen.Ledger -> Icons.Rounded.CalendarMonth
+                    Screen.Settings -> Icons.Rounded.Settings
+                }
+                val label = when (item.screen) {
+                    Screen.Canvas -> stringResource(R.string.nav_canvas)
+                    Screen.Insights -> stringResource(R.string.nav_insights)
+                    Screen.Ledger -> stringResource(R.string.nav_ledger)
+                    Screen.Settings -> stringResource(R.string.nav_settings)
+                }
+                BottomBarUiItem(
+                    screen = item.screen,
+                    icon = rememberVectorPainter(icon),
+                    label = label
+                )
+            }
+
             if (isWide) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
@@ -85,7 +112,9 @@ internal fun CanvasFooter(
                         modifier = Modifier.widthIn(max = 300.dp)
                     )
                     BottomBar(
-                        bottomBarState = state.bottomBarState,
+                        items = bottomBarItems,
+                        selectedTab = state.bottomBarState.selectedTab,
+                        isVisible = state.bottomBarState.isVisible,
                         onClick = { onIntent(CanvasIntent.NavigateToScreen(it)) }
                     )
                 }
@@ -99,7 +128,9 @@ internal fun CanvasFooter(
                 )
 
                 BottomBar(
-                    bottomBarState = state.bottomBarState,
+                    items = bottomBarItems,
+                    selectedTab = state.bottomBarState.selectedTab,
+                    isVisible = state.bottomBarState.isVisible,
                     onClick = { onIntent(CanvasIntent.NavigateToScreen(it)) }
                 )
             }

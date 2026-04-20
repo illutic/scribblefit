@@ -31,7 +31,6 @@ internal fun ParsedScribbleCard(
     onClick: () -> Unit
 ) {
     ScribbleCardContainer(
-        border = BorderStroke(1.dp, ScribbleFitTheme.colors.outlineVariant.copy(alpha = 0.15f)),
         onClick = onClick
     ) {
         Row(
@@ -41,49 +40,49 @@ internal fun ParsedScribbleCard(
         ) {
             Column(
                 modifier = Modifier.weight(1f),
-                verticalArrangement = Arrangement.spacedBy(ScribbleFitTheme.spacing.small)
+                verticalArrangement = Arrangement.spacedBy(ScribbleFitTheme.spacing.medium)
             ) {
                 ScribbleRawText(text = scribble.rawText)
+                
                 scribble.exercises.forEach { exercise ->
-                    ExerciseSummary(exercise.summary)
+                    ExerciseHeader(exercise = exercise)
                 }
             }
+            
             Surface(
                 color = ScribbleFitTheme.colors.primary,
                 shape = CircleShape,
                 modifier = Modifier
-                    .size(40.dp)
-                    .padding(start = ScribbleFitTheme.spacing.medium)
+                    .size(36.dp)
+                    .padding(start = ScribbleFitTheme.spacing.small)
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
                         imageVector = Icons.Rounded.DoneAll,
                         contentDescription = null,
                         tint = ScribbleFitTheme.colors.onPrimary,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(18.dp)
                     )
                 }
             }
         }
 
-        scribble.statusText?.let {
-            Surface(
-                color = ScribbleFitTheme.colors.primary.copy(alpha = 0.05f),
-                shape = RoundedCornerShape(ScribbleFitTheme.shapes.small),
-                modifier = Modifier.wrapContentSize()
-            ) {
-                Text(
-                    text = it.uppercase(),
-                    modifier = Modifier.padding(
-                        horizontal = ScribbleFitTheme.spacing.smallLarger,
-                        vertical = ScribbleFitTheme.spacing.small
-                    ),
-                    style = ScribbleFitTheme.typography.labelMedium,
-                    color = ScribbleFitTheme.colors.primary,
-                    fontWeight = FontWeight.Bold,
-                    letterSpacing = 1.sp
-                )
-            }
+        Surface(
+            color = ScribbleFitTheme.colors.primary.copy(alpha = 0.05f),
+            shape = RoundedCornerShape(8.dp),
+            modifier = Modifier.wrapContentSize()
+        ) {
+            Text(
+                text = scribble.statusText?.uppercase() ?: "",
+                modifier = Modifier.padding(
+                    horizontal = 12.dp,
+                    vertical = 8.dp
+                ),
+                style = ScribbleFitTheme.typography.labelMedium,
+                color = ScribbleFitTheme.colors.primary,
+                fontWeight = FontWeight.Bold,
+                letterSpacing = 1.sp
+            )
         }
     }
 }

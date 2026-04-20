@@ -58,8 +58,6 @@ internal fun CanvasBody(
     onScribbleClick: (Scribble) -> Unit,
     onIntent: (CanvasIntent) -> Unit,
     emptyText: String,
-    retryLabel: String,
-    removeLabel: String,
     modifier: Modifier = Modifier,
 ) {
     LazyColumn(
@@ -95,9 +93,7 @@ internal fun CanvasBody(
                 ScribbleCard(
                     scribble = scribble,
                     onClick = { onScribbleClick(scribble.scribble) },
-                    onIntent = onIntent,
-                    retryLabel = retryLabel,
-                    removeLabel = removeLabel
+                    onIntent = onIntent
                 )
             }
         }

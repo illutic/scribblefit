@@ -29,67 +29,62 @@ import com.scribblefit.feature.canvas.ui.ScribbleUiModel
 @Composable
 internal fun FailedScribbleCard(
     scribble: ScribbleUiModel,
-    onIntent: (CanvasIntent) -> Unit,
-    retryLabel: String,
-    removeLabel: String
+    onIntent: (CanvasIntent) -> Unit
 ) {
-    ScribbleCardContainer(
-        border = BorderStroke(1.dp, ScribbleFitTheme.colors.dangerRed.copy(alpha = 0.2f))
-    ) {
+    ScribbleCardContainer {
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.Top
         ) {
-            Column(modifier = Modifier.weight(1f)) {
+            Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 ScribbleRawText(
                     text = scribble.rawText,
                     style = ScribbleFitTheme.typography.titleMedium
                 )
-                scribble.statusText?.let {
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
-                        horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        modifier = Modifier.padding(top = ScribbleFitTheme.spacing.small)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Rounded.Error,
-                            contentDescription = null,
-                            tint = ScribbleFitTheme.colors.dangerRed,
-                            modifier = Modifier.size(14.dp)
-                        )
-                        Text(
-                            text = it.uppercase(),
-                            style = ScribbleFitTheme.typography.labelMedium,
-                            color = ScribbleFitTheme.colors.dangerRed,
-                            fontWeight = FontWeight.Bold,
-                            letterSpacing = 1.sp
-                        )
-                    }
+                
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Rounded.Error,
+                        contentDescription = null,
+                        tint = ScribbleFitTheme.colors.dangerRed,
+                        modifier = Modifier.size(14.dp)
+                    )
+                    Text(
+                        text = (scribble.statusText ?: "").uppercase(),
+                        style = ScribbleFitTheme.typography.labelMedium,
+                        color = ScribbleFitTheme.colors.dangerRed,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 1.sp
+                    )
                 }
             }
+            
             Surface(
                 color = ScribbleFitTheme.colors.dangerRed.copy(alpha = 0.1f),
                 shape = CircleShape,
-                modifier = Modifier.size(40.dp)
+                modifier = Modifier.size(36.dp)
             ) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
                         imageVector = Icons.Rounded.PriorityHigh,
                         contentDescription = null,
                         tint = ScribbleFitTheme.colors.dangerRed,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(18.dp)
                     )
                 }
             }
         }
 
         Row(
-            horizontalArrangement = Arrangement.spacedBy(ScribbleFitTheme.spacing.medium),
-            modifier = Modifier.padding(top = ScribbleFitTheme.spacing.small)
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+            modifier = Modifier.padding(top = 8.dp)
         ) {
             Text(
-                text = retryLabel.uppercase(),
+                text = "RETRY",
                 style = ScribbleFitTheme.typography.labelMedium,
                 color = ScribbleFitTheme.colors.primary,
                 fontWeight = FontWeight.Bold,
@@ -97,7 +92,7 @@ internal fun FailedScribbleCard(
                 modifier = Modifier.clickable { onIntent(CanvasIntent.RetryScribbleParsing(scribble.scribble)) }
             )
             Text(
-                text = removeLabel.uppercase(),
+                text = "REMOVE",
                 style = ScribbleFitTheme.typography.labelMedium,
                 color = ScribbleFitTheme.colors.midGray,
                 fontWeight = FontWeight.Bold,

@@ -24,6 +24,10 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.scribblefit.core.designsystem.ScribbleFitTheme
+import com.scribblefit.feature.insights.ui.components.AIOverviewSection
+import com.scribblefit.feature.insights.ui.components.MuscleDistributionSection
+import com.scribblefit.feature.insights.ui.components.StatsRow
+import com.scribblefit.feature.insights.ui.components.VolumeChartSection
 
 @Composable
 internal fun InsightsBody(

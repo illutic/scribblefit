@@ -45,8 +45,12 @@ Each ViewModel must be autonomous. Do not inherit from a `BaseViewModel`.
 ### 4. UI Layer (The View)
 - **Design System:** Use `:core:designsystem` tokens (colors, spacing, typography).
 - **Iconography:** Use `material-icons-extended` for advanced iconography (Visibility, etc.).
-- **Contextual Splitting:** Screens MUST be split into contextual components (e.g., `Header`, `Body`, `Footer`).
-- **File-Level Isolation:** When a screen exceeds 300 lines, move contextual components to separate files in the same package (e.g., `CanvasFooter.kt`) to ensure the code remains readable and reviewable.
+- **Atomic Composable Pattern (One File, One Composable):**
+    - **Isolation:** Every significant or reusable Composable (e.g., `CanvasBody`, `ScribbleCard`) MUST reside in its own dedicated Kotlin file. Avoid nesting multiple top-level Composables in a single file.
+    - **Organization:** Store these components in a `components/` sub-package within the feature's `ui` package.
+    - **Main Screen Minimalism:** Feature main screens (e.g., `CanvasScreen.kt`) MUST only contain high-level layout, `Scaffold`, and state-to-intent wiring, delegating all section and item rendering to individual component files.
+    - **Early Splitting:** Large screens MUST be split into contextual components (e.g., `TopBar`, `Body`, `Footer`) as soon as the implementation logic becomes non-trivial, rather than waiting for a 300-line threshold.
+    - **State Resolution:** Main screens MUST resolve the `State` and map user interactions to `Intent` callbacks, passing only the necessary data or functional references to child components to keep them decoupled from the ViewModel.
 - **IME Handling:** Always use `android:windowSoftInputMode="adjustResize"`. Apply `.imePadding()` to bottom-anchored components and `.imeNestedScroll()` to scrollable content.
 - **Adaptive Layouts:** On large screens (>600dp), constrain width-sensitive elements (like search bars or action buttons) using `.widthIn(max = 300.dp)`.
 - **Composition over Inheritance:** Build screens by composing these small, single-responsibility parts.

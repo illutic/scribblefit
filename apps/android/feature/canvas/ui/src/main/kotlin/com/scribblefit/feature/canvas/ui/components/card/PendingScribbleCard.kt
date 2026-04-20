@@ -16,7 +16,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Sync
+import androidx.compose.material.icons.rounded.Autorenew
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -55,11 +55,11 @@ internal fun PendingScribbleCard(scribble: ScribbleUiModel) {
                 modifier = Modifier.weight(1f)
             )
             Icon(
-                imageVector = Icons.Rounded.Sync,
+                imageVector = Icons.Rounded.Autorenew,
                 contentDescription = null,
                 tint = ScribbleFitTheme.colors.primary,
                 modifier = Modifier
-                    .size(ScribbleFitTheme.spacing.large)
+                    .size(20.dp)
                     .rotate(rotation)
             )
         }
@@ -68,7 +68,7 @@ internal fun PendingScribbleCard(scribble: ScribbleUiModel) {
             modifier = Modifier
                 .fillMaxWidth()
                 .height(2.dp)
-                .background(ScribbleFitTheme.colors.surfaceContainerHigh, CircleShape)
+                .background(ScribbleFitTheme.colors.primary.copy(alpha = 0.1f), CircleShape)
         ) {
             val progressWidth by infiniteTransition.animateFloat(
                 initialValue = 0f,
@@ -87,14 +87,12 @@ internal fun PendingScribbleCard(scribble: ScribbleUiModel) {
             )
         }
 
-        scribble.statusText?.let {
-            Text(
-                text = it.uppercase(),
-                style = ScribbleFitTheme.typography.labelMedium,
-                color = ScribbleFitTheme.colors.primary.copy(alpha = 0.4f),
-                fontWeight = FontWeight.Bold,
-                letterSpacing = 1.sp
-            )
-        }
+        Text(
+            text = scribble.statusText?.uppercase() ?: "",
+            style = ScribbleFitTheme.typography.labelMedium,
+            color = ScribbleFitTheme.colors.primary.copy(alpha = 0.4f),
+            fontWeight = FontWeight.Bold,
+            letterSpacing = 1.sp
+        )
     }
 }

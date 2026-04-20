@@ -20,6 +20,8 @@ Each Store must be autonomous using `@Observable` and must be isolated to `@Main
 - **Codable Parity:** Models intended for JSON export MUST conform to `Codable`.
 - **Repository Protocol:** Define the contract here. Stream-based getters MUST be reactive.
 - **Use Cases:** Explicitly isolated to `@MainActor` to match the Store and Repository, or conform to `Sendable`.
+    - **Reactive Streams:** Use cases returning data streams MUST return an `AsyncStream`.
+    - **Visibility:** Use Cases intended for cross-feature consumption MUST be marked `public` (including their initializers) to ensure visibility across SPM targets.
 
 ### 3. Data Layer (The Implementation)
 - **Reactive Repositories:** Use `Combine.PassthroughSubject` or `Observation` to signal data changes to open `AsyncStream` cursors. This is critical for real-time UI updates.
@@ -30,6 +32,7 @@ Each Store must be autonomous using `@Observable` and must be isolated to `@Main
     - **Resilient Mapping:** `toDomain()` mapping MUST use `status.uppercased()` when mapping from String to Enum to handle case-insensitive database values.
     - **Bidirectional Support:** Ensure all domain models intended for persistence have a corresponding `toEntity()` mapping.
 - **AI Integration:** For AI-driven features (parsing, summaries), integrate with equivalent LLM services via async/await. Define protocols like `LLMService` in the domain for decoupled integration.
+    - **Initializer Consistency:** Service initializers MUST maintain a consistent argument order. When adding new dependencies (e.g., to `RoutingLLMService`), ensure the call site in the Data layer matches the definition exactly.
 - **No Mocks in Production:** Configure real `SwiftData` containers in `App.swift` immediately.
 
 ## 4. UI Layer (The View)
@@ -40,12 +43,17 @@ Each Store must be autonomous using `@Observable` and must be isolated to `@Main
     - **Strict State Resolution:** All UI strings (labels, hints, placeholders, and formatted messages) MUST be resolved in the `State` or `Store`.
     - **View Isolation:** Contextual components (like `HeaderView`, `BodyView`, `FooterView`) MUST NOT call `String(localized:)` directly. They should receive pre-resolved `String` or `LocalizedStringKey` parameters.
     - **Formatting:** Formatting logic (e.g., `String(localized: "format", ...)`) MUST be encapsulated in the `State` or `Store`.
+- **View Safety:** Contextual components MUST safely unwrap optional state values (using `if let` or `map`) before rendering.
 - **Data Export:** Use the `Transferable` protocol via a dedicated wrapper struct (e.g., `ExportFile`) for sharing data.
+- **Single-Component File Pattern:**
+    - **One File, One View:** Every `View` struct MUST reside in its own dedicated Swift file.
+    - **No Dumping:** Avoid accumulating multiple sub-component structs in a single file.
+    - **Organization:** Place extracted components in a `Components/` sub-directory.
 - **Contextual Splitting:** Views MUST be split into contextual components (e.g., `HeaderView`, `BodyView`, `FooterView`).
 - **Component Isolation:** Each major contextual area should be implemented as a separate SwiftUI `View` to ensure focus and testability.
 - **Static Theming:** Use standard SwiftUI `Color` and `Font` extensions that automatically adapt to light/dark mode. Avoid complex `EnvironmentKey` runtime mappings for basic brand colors.
 - **Theme Concurrency:** All static color and font extensions MUST be `Sendable`.
-- **Native OS Aesthetics (iOS 26+):** Use the refined glass pattern: `.background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))`. This ensures the material correctly conforms to the container shape and avoids rectangular artifacts.
+- **Native OS Aesthetics (iOS 26+):** Use the refined glass pattern: `.background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))`. This ensures the material correctly conforms to the container shape and avoids rectangular artifacts. Prefer native modifiers over custom view extensions to avoid naming ambiguity.
 - **Platform Parity:** Maintain brand parity. Use native modifiers to enhance the OS-specific feel.
 
 ## Committing Workflow
@@ -54,3 +62,9 @@ Each Store must be autonomous using `@Observable` and must be isolated to `@Main
 3. `feat(data): [feature] reactive implementation`
 4. `feat(ai): [feature] AI integration and logic`
 5. `feat(ui): [feature] MVI screens with static theming and native glass effects`
+
+## Modularity Discipline
+- **Clean Root Pattern:** Strictly separate the main App target from internal modules to resolve hybrid resolution ambiguity.
+    - **`Sources/`**: Exclusive for the main App target (e.g., `ScribbleFitApp.swift`).
+    - **`LocalPackages/`**: Exclusive for internal Swift Package Manager (SPM) targets, organized into `Core/` and `Features/` sub-folders.
+- **Target Definition:** Adding a new feature requires (1) defining the target in `Package.swift`, (2) explicitly setting the `path` to the correct `LocalPackages/` subfolder, (3) adding dependencies to consuming targets, and (4) updating imports in the Store.
