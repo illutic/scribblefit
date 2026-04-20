@@ -25,7 +25,11 @@ interface ScribbleDao {
     fun getScribbleById(id: Long): Flow<ScribbleWithExercises>
 
     @Transaction
-    @Query("SELECT * FROM scribbles WHERE status = :status AND createdAt = :date")
+    @Query("SELECT * FROM scribbles WHERE status IN (:statuses) AND createdAt >= :date AND createdAt < :date + (24 * 60 * 60 * 1000)")
+    fun getScribblesByStatusesAndDate(statuses: List<String>, date: Long): Flow<List<ScribbleWithExercises>>
+
+    @Transaction
+    @Query("SELECT * FROM scribbles WHERE status = :status AND createdAt >= :date AND createdAt < :date + (24 * 60 * 60 * 1000)")
     fun getScribblesByStatusAndDate(status: String, date: Long): Flow<List<ScribbleWithExercises>>
 
     @Transaction

@@ -91,12 +91,4 @@ internal fun SettingsScreen(
             onDismiss = { onIntent(SettingsIntent.DismissClearDataDialog) }
         )
     }
-
-    if (state.showModelSelection) {
-        ModelSelectionBottomSheet(
-            state = state,
-            onModelSelected = { onIntent(SettingsIntent.ChangeAIModel(it)) },
-            onDismiss = { onIntent(SettingsIntent.DismissModelSelection) }
-        )
-    }
 }

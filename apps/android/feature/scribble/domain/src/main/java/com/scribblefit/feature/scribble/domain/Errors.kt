@@ -8,6 +8,3 @@ sealed class ScribbleError : Throwable() {
 }
 
 class EmptyScribbleTextException : IllegalArgumentException("Scribble text cannot be empty")
-
-class ScribbleNotFoundException(scribbleId: Long) :
-    IllegalArgumentException("Scribble with id $scribbleId not found")

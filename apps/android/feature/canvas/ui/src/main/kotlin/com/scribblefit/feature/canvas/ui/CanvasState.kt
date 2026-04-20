@@ -19,7 +19,9 @@ private val dateFormatter =
 
 data class ExerciseUiModel(
     val id: Long,
+    val name: String,
     val summary: String,
+    val formattedSummary: String,
     val estimated1RM: String?,
     val intensity: String?,
     val improvement: String?,
@@ -66,9 +68,17 @@ data class CanvasState(
 
                     ExerciseUiModel(
                         id = exercise.id,
+                        name = exercise.canonicalName,
                         summary = stringResource(
                             R.string.canvas_workout_summary_format,
                             exercise.canonicalName,
+                            weightValue,
+                            weightUnitLabel,
+                            totalSets,
+                            repsPerSet
+                        ),
+                        formattedSummary = stringResource(
+                            R.string.canvas_exercise_item_summary_format,
                             weightValue,
                             weightUnitLabel,
                             totalSets,
@@ -90,7 +100,7 @@ data class CanvasState(
                         improvement = exercise.improvement?.let {
                             val sign = if (it >= 0) "+" else ""
                             stringResource(
-                                R.string.canvas_last_session_improvement_format,
+                                R.string.canvas_last_session_improvement_label_format,
                                 "$sign${it.toInt()}",
                                 weightUnitLabel
                             )

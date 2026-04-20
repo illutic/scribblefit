@@ -8,26 +8,27 @@ import com.scribblefit.core.config.domain.Weight
 import com.scribblefit.core.database.dao.SystemConfigDao
 import com.scribblefit.core.database.mapper.toDomain
 import com.scribblefit.core.database.mapper.toEntity
+import com.scribblefit.core.coroutines.CoroutineDispatcherProvider
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.CoroutineName
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.mapNotNull
 import kotlinx.coroutines.flow.stateIn
+import javax.inject.Inject
 import kotlin.time.Clock
 
-class ConfigRepositoryImpl(
+class ConfigRepositoryImpl @Inject constructor(
     private val systemConfigDao: SystemConfigDao,
-    coroutineDispatcher: CoroutineDispatcher
+    dispatcherProvider: CoroutineDispatcherProvider
 ) : ConfigRepository,
-    CoroutineScope by CoroutineScope(coroutineDispatcher + CoroutineName("ConfigRepository")) {
+    CoroutineScope by CoroutineScope(dispatcherProvider.default() + CoroutineName("ConfigRepository")) {
     private val defaultConfig = SystemConfig(
         summaryPrompt = SystemConfig.SUMMARY_PROMPT,
         suggestionPrompt = SystemConfig.SUGGESTION_PROMPT,
         insightPrompt = SystemConfig.INSIGHT_PROMPT,
         parsePrompt = SystemConfig.PARSE_PROMPT,
         preferredLlmProvider = LLMProvider.LOCAL,
-        preferredModel = null,
         weightUnit = Weight.KGS,
         themePreference = ThemePreference.SYSTEM,
         isDynamicTheme = false,

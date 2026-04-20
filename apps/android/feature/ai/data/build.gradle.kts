@@ -6,6 +6,10 @@ plugins {
 
 android {
     namespace = "com.scribblefit.feature.ai.data"
+
+    buildFeatures {
+        buildConfig = true
+    }
 }
 
 dependencies {
@@ -15,13 +19,10 @@ dependencies {
     implementation(project(":core:config:domain"))
     implementation(project(":feature:ai:domain"))
     implementation(libs.kotlinx.serialization.json)
-    implementation(libs.ktor.client.core)
-    implementation(libs.ktor.client.okhttp)
-    implementation(libs.ktor.client.content.negotiation)
-    implementation(libs.ktor.serialization.kotlinx.json)
-    implementation(libs.ktor.client.logging)
-    implementation(libs.security.crypto)
     implementation(libs.coroutines.android)
     implementation(libs.mlkit.genai.prompt)
     implementation(libs.slf4j.android)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.ai)
+    implementation(libs.firebase.appcheck.playintegrity)
 }

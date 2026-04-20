@@ -16,16 +16,9 @@
     <string name="settings_ai">AI Configuration</string>
     <string name="settings_ai_engine_title">AI ENGINE</string>
     <string name="settings_ai_provider">Provider</string>
-    <string name="settings_ai_provider_cloud">Cloud (Gemini)</string>
-    <string name="settings_ai_provider_local">Local (On-Device)</string>
-    <string name="settings_ai_model">Model</string>
-    <string name="settings_ai_model_selection_title">Select Model</string>
-    <string name="settings_api_key_title">API KEY</string>
-    <string name="settings_api_key_placeholder">Enter API Key</string>
-    <string name="settings_test_connection">Test Connection</string>
-    <string name="settings_connection_success">Connection successful!</string>
-    <string name="settings_connection_error">Connection failed: %s</string>
-    <string name="settings_ai_local_unsupported">This device does not support on-device AI. Please use Cloud (Gemini).</string>
+    <string name="settings_ai_provider_cloud">Cloud</string>
+    <string name="settings_ai_provider_local">Local</string>
+    <string name="settings_ai_local_unsupported">This device does not support on-device AI. Please use Cloud.</string>
     <string name="settings_data_title">DATA</string>
     <string name="settings_data_management">Data Management</string>
     <string name="settings_export_workout_ledger">Export Workout Ledger</string>
@@ -41,4 +34,10 @@
     <string name="settings_copyright">© 2026 ScribbleFit AI</string>
     <string name="settings_privacy_policy">Privacy Policy</string>
     <string name="settings_terms_of_service">Terms of Service</string>
+
+    <!-- Navigation Labels -->
+    <string name="nav_canvas">Canvas</string>
+    <string name="nav_insights">Insights</string>
+    <string name="nav_ledger">Ledger</string>
+    <string name="nav_settings">Settings</string>
 </resources>

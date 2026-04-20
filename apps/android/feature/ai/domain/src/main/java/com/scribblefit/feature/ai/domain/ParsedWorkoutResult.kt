@@ -13,4 +13,4 @@ data class ParsedWorkoutResult(
     val error: String? = null
 )
 
-enum class ParsingStatus { SUCCESS, PARTIAL_SUCCESS, FAILURE }
+enum class ParsingStatus { SUCCESS, PARTIAL_SUCCESS, FAILURE, SAFETY_REJECTION }

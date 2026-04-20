@@ -9,7 +9,7 @@ class UpdateSetWeightUseCase(
     private val repository: SetRepository,
     private val coroutineDispatcher: CoroutineDispatcher
 ) {
-    suspend operator fun invoke(setId: Long, weight: Float): Result<Unit> = withContext(coroutineDispatcher) {
+    suspend operator fun invoke(setId: Long, weight: Float?): Result<Unit> = withContext(coroutineDispatcher) {
         runCatchingWithCancellation {
             repository.updateSetWeight(setId, weight)
         }

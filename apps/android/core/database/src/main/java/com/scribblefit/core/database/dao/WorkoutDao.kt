@@ -75,6 +75,26 @@ interface WorkoutDao {
     }
 
     @Transaction
+    suspend fun updateWorkoutWithDetails(
+        workout: Workout,
+        exercises: List<Exercise>,
+        setsPerExercise: List<List<WorkoutSet>>,
+        exerciseStats: List<ExerciseStats> = emptyList(),
+    ) {
+        val workoutId = workout.workoutId
+        // First delete all linked exercises and sets (CASCADE will handle sets if configured, 
+        // but we'll do it manually if needed. Actually, deleteWorkoutExercisesByWorkoutId 
+        // should be enough if CASCADE is on)
+        deleteWorkoutExercisesByWorkoutId(workoutId)
+        
+        // Now re-insert everything
+        insertWorkoutWithDetails(workout, exercises, setsPerExercise, exerciseStats)
+    }
+
+    @Query("DELETE FROM workout_exercise WHERE workoutId = :workoutId")
+    suspend fun deleteWorkoutExercisesByWorkoutId(workoutId: Long)
+
+    @Transaction
     @Query("SELECT * FROM workout WHERE workoutId = :workoutId")
     fun getWorkoutWithAllDetails(workoutId: Long): Flow<WorkoutWithAllDetails>
 @Transaction

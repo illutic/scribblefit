@@ -3,17 +3,16 @@ package com.scribblefit.feature.ai.data.di
 import com.google.mlkit.genai.prompt.Generation
 import com.google.mlkit.genai.prompt.GenerativeModel
 import com.scribblefit.core.config.domain.ConfigRepository
-import com.scribblefit.core.config.domain.SecureKeyStorage
-import com.scribblefit.feature.ai.data.engine.LLMEngineProxyImpl
 import com.scribblefit.feature.ai.data.engine.GeminiAIEngine
 import com.scribblefit.feature.ai.data.engine.LocalAIEngine
-import com.scribblefit.feature.ai.domain.LLMEngineProxy
-import com.scribblefit.feature.ai.domain.LocalLLMEngine
+import com.scribblefit.feature.ai.data.engine.RoutingLLMEngine
+import com.scribblefit.feature.ai.domain.CloudEngine
+import com.scribblefit.feature.ai.domain.LLMEngine
+import com.scribblefit.feature.ai.domain.LocalEngine
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import io.ktor.client.HttpClient
 import kotlinx.serialization.json.Json
 import javax.inject.Singleton
 
@@ -23,15 +22,12 @@ internal object AIModule {
 
     @Provides
     @Singleton
+    @CloudEngine
     fun provideGeminiEngine(
-        httpClient: HttpClient,
-        secureKeyStorage: SecureKeyStorage,
         json: Json,
         configRepository: ConfigRepository
-    ): GeminiAIEngine {
+    ): LLMEngine {
         return GeminiAIEngine(
-            httpClient = httpClient,
-            secureKeyStorage = secureKeyStorage,
             configRepository = configRepository,
             json = json
         )
@@ -43,11 +39,12 @@ internal object AIModule {
 
     @Provides
     @Singleton
+    @LocalEngine
     fun provideLocalEngine(
         generativeModel: GenerativeModel,
         json: Json,
         configRepository: ConfigRepository
-    ): LocalLLMEngine =
+    ): LLMEngine =
         LocalAIEngine(
             generativeModel = generativeModel,
             json = json,
@@ -57,10 +54,10 @@ internal object AIModule {
     @Provides
     @Singleton
     fun provideLLMEngine(
-        geminiEngine: GeminiAIEngine,
-        localEngine: LocalLLMEngine,
+        @CloudEngine geminiEngine: LLMEngine,
+        @LocalEngine localEngine: LLMEngine,
         configRepository: ConfigRepository,
-    ): LLMEngineProxy = LLMEngineProxyImpl(
+    ): LLMEngine = RoutingLLMEngine(
         geminiEngine = geminiEngine,
         localEngine = localEngine,
         configRepository = configRepository

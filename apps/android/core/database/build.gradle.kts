@@ -17,4 +17,5 @@ dependencies {
     implementation(project(":core:config:domain"))
     implementation(libs.androidx.core.ktx)
     implementation(libs.coroutines.android)
+    implementation(libs.kotlinx.serialization.json)
 }

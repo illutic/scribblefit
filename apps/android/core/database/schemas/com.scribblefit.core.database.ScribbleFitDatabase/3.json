@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 3,
-    "identityHash": "7d8b73132184f1284d24adf825f94ae8",
+    "identityHash": "8aab0130213a14ccf54552d449522448",
     "entities": [
       {
         "tableName": "workout",
@@ -245,7 +245,7 @@
       },
       {
         "tableName": "scribbles",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`scribbleId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `rawText` TEXT NOT NULL, `parsedJson` TEXT, `status` TEXT NOT NULL, `createdAt` INTEGER NOT NULL)",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`scribbleId` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `rawText` TEXT NOT NULL, `parsedJson` TEXT, `status` TEXT NOT NULL, `createdAt` INTEGER NOT NULL, `workoutId` INTEGER)",
         "fields": [
           {
             "fieldPath": "scribbleId",
@@ -275,6 +275,11 @@
             "columnName": "createdAt",
             "affinity": "INTEGER",
             "notNull": true
+          },
+          {
+            "fieldPath": "workoutId",
+            "columnName": "workoutId",
+            "affinity": "INTEGER"
           }
         ],
         "primaryKey": {
@@ -286,7 +291,7 @@
       },
       {
         "tableName": "system_config",
-        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `summaryPrompt` TEXT NOT NULL, `suggestionPrompt` TEXT NOT NULL, `insightPrompt` TEXT NOT NULL, `parsePrompt` TEXT NOT NULL, `preferredLlmProvider` TEXT NOT NULL, `updatedAt` INTEGER NOT NULL, `preferredModel` TEXT, `weightUnit` TEXT NOT NULL, `themePreference` TEXT NOT NULL, `isDynamicTheme` INTEGER NOT NULL, PRIMARY KEY(`id`))",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER NOT NULL, `summaryPrompt` TEXT NOT NULL, `suggestionPrompt` TEXT NOT NULL, `insightPrompt` TEXT NOT NULL, `parsePrompt` TEXT NOT NULL, `preferredLlmProvider` TEXT NOT NULL, `updatedAt` INTEGER NOT NULL, `weightUnit` TEXT NOT NULL, `themePreference` TEXT NOT NULL, `isDynamicTheme` INTEGER NOT NULL, PRIMARY KEY(`id`))",
         "fields": [
           {
             "fieldPath": "id",
@@ -329,11 +334,6 @@
             "columnName": "updatedAt",
             "affinity": "INTEGER",
             "notNull": true
-          },
-          {
-            "fieldPath": "preferredModel",
-            "columnName": "preferredModel",
-            "affinity": "TEXT"
           },
           {
             "fieldPath": "weightUnit",
@@ -438,7 +438,7 @@
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '7d8b73132184f1284d24adf825f94ae8')"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '8aab0130213a14ccf54552d449522448')"
     ]
   }
 }

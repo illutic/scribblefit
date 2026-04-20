@@ -7,6 +7,7 @@ import com.scribblefit.feature.workouts.domain.WorkoutRepository
 import com.scribblefit.feature.workouts.domain.usecase.GetWorkoutByDateUseCase
 import com.scribblefit.feature.workouts.domain.usecase.GetWorkoutUseCase
 import com.scribblefit.feature.workouts.domain.usecase.InsertWorkoutUseCase
+import com.scribblefit.feature.workouts.domain.usecase.UpdateWorkoutUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -51,6 +52,15 @@ internal object WorkoutModule {
         coroutineDispatcherProvider: CoroutineDispatcherProvider
     ): InsertWorkoutUseCase = InsertWorkoutUseCase(
         repository = workoutRepository,
+        coroutineDispatcher = coroutineDispatcherProvider.default()
+    )
+
+    @Provides
+    fun provideUpdateWorkoutUseCase(
+        workoutRepository: WorkoutRepository,
+        coroutineDispatcherProvider: CoroutineDispatcherProvider
+    ): UpdateWorkoutUseCase = UpdateWorkoutUseCase(
+        workoutRepository = workoutRepository,
         coroutineDispatcher = coroutineDispatcherProvider.default()
     )
 }

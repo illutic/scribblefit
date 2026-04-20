@@ -3,7 +3,7 @@ package com.scribblefit.feature.scribble.domain.usecase
 import com.scribblefit.core.common.runCatchingWithCancellation
 import com.scribblefit.core.model.Exercise
 import com.scribblefit.core.model.ScribbleStatus
-import com.scribblefit.feature.scribble.domain.ScribbleNotFoundException
+import com.scribblefit.feature.scribble.domain.ScribbleError
 import com.scribblefit.feature.scribble.domain.ScribbleRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.firstOrNull
@@ -17,7 +17,7 @@ class UpdateScribbleWithWorkoutUseCase(
         runCatchingWithCancellation {
             withContext(coroutineDispatcher) {
                 val scribble = scribbleRepository.getScribble(id).firstOrNull()
-                    ?: throw ScribbleNotFoundException(id)
+                    ?: throw ScribbleError.NotFound(id)
                 
                 scribbleRepository.clearScribbleExercises(id)
                 scribbleRepository.saveScribbleExercises(id, exercises)

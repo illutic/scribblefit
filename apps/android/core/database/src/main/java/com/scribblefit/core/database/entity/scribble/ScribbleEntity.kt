@@ -13,5 +13,6 @@ data class ScribbleEntity(
     val rawText: String,
     val parsedJson: String? = null,
     val status: String, // Maps to ScribbleStatus enum
-    val createdAt: Long = System.currentTimeMillis()
+    val createdAt: Long = System.currentTimeMillis(),
+    val workoutId: Long? = null
 )

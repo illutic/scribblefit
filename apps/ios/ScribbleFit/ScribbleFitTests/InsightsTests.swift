@@ -1,11 +1,9 @@
 import XCTest
 import Combine
-#if SWIFT_PACKAGE
 @testable import CoreModel
 @testable import FeatureAI
 @testable import FeatureWorkouts
 @testable import FeatureInsights
-#endif
 
 // MARK: - Test Helpers
 
@@ -32,7 +30,7 @@ private final class InsightsTestWorkoutRepository: WorkoutRepository {
         }
     }
 
-    func getWorkoutsInRange(startDate: Date, endDate: Date) async throws -> [Workout] {
+    func getWorkoutsInRange(startDate: Date, endDate: Date) -> AsyncStream<[Workout]> {
         let calendar = Calendar.current
         var allWorkouts: [Workout] = []
         var currentDate = calendar.startOfDay(for: startDate)
@@ -44,7 +42,11 @@ private final class InsightsTestWorkoutRepository: WorkoutRepository {
             guard let nextDate = calendar.date(byAdding: .day, value: 1, to: currentDate) else { break }
             currentDate = nextDate
         }
-        return allWorkouts
+        
+        return AsyncStream { continuation in
+            continuation.yield(allWorkouts)
+            continuation.finish()
+        }
     }
 
     func addWorkout(on date: Date, exercises: [Exercise]) {
@@ -77,6 +79,13 @@ private func makeSet(
 
 // MARK: - GetVolumeInsightsUseCase Tests
 
+extension AsyncStream {
+    fileprivate func first() async -> Element? {
+        var iterator = makeAsyncIterator()
+        return await iterator.next()
+    }
+}
+
 final class GetVolumeInsightsUseCaseTests: XCTestCase {
 
     @MainActor
@@ -91,7 +100,7 @@ final class GetVolumeInsightsUseCaseTests: XCTestCase {
         repo.addWorkout(on: today, exercises: [exercise])
 
         let useCase = GetVolumeInsightsUseCase(workoutRepository: repo)
-        let result = try await useCase.execute(startDate: today, endDate: today)
+        let result = await useCase.execute(startDate: today, endDate: today).first() ?? []
 
         XCTAssertEqual(result.count, 1)
         // Volume = (100 * 10) + (100 * 8) = 1800
@@ -113,7 +122,7 @@ final class GetVolumeInsightsUseCaseTests: XCTestCase {
         ])
 
         let useCase = GetVolumeInsightsUseCase(workoutRepository: repo)
-        let result = try await useCase.execute(startDate: yesterday, endDate: today)
+        let result = await useCase.execute(startDate: yesterday, endDate: today).first() ?? []
 
         XCTAssertEqual(result.count, 2)
 
@@ -128,7 +137,7 @@ final class GetVolumeInsightsUseCaseTests: XCTestCase {
         let today = Calendar.current.startOfDay(for: Date())
 
         let useCase = GetVolumeInsightsUseCase(workoutRepository: repo)
-        let result = try await useCase.execute(startDate: today, endDate: today)
+        let result = await useCase.execute(startDate: today, endDate: today).first() ?? []
 
         XCTAssertTrue(result.isEmpty)
     }
@@ -157,7 +166,7 @@ final class GetFrequencyInsightsUseCaseTests: XCTestCase {
         ])
 
         let useCase = GetFrequencyInsightsUseCase(workoutRepository: repo)
-        let result = try await useCase.execute(startDate: sevenDaysAgo, endDate: today)
+        let result = await useCase.execute(startDate: sevenDaysAgo, endDate: today).first()!
 
         XCTAssertEqual(result.totalWorkouts, 3)
         // 6 days / 7 = ~0.857 weeks, 3 / 0.857 = ~3.5 workouts/week
@@ -170,7 +179,7 @@ final class GetFrequencyInsightsUseCaseTests: XCTestCase {
         let today = Calendar.current.startOfDay(for: Date())
 
         let useCase = GetFrequencyInsightsUseCase(workoutRepository: repo)
-        let result = try await useCase.execute(startDate: today, endDate: today)
+        let result = await useCase.execute(startDate: today, endDate: today).first()!
 
         XCTAssertEqual(result.totalWorkouts, 0)
         XCTAssertEqual(result.workoutsPerWeek, 0.0, accuracy: 0.01)
@@ -200,7 +209,7 @@ final class GetMuscleDistributionInsightsUseCaseTests: XCTestCase {
         ])
 
         let useCase = GetMuscleDistributionInsightsUseCase(workoutRepository: repo)
-        let result = try await useCase.execute(startDate: today, endDate: today)
+        let result = await useCase.execute(startDate: today, endDate: today).first() ?? []
 
         XCTAssertEqual(result.count, 2)
 
@@ -217,7 +226,7 @@ final class GetMuscleDistributionInsightsUseCaseTests: XCTestCase {
         let today = Calendar.current.startOfDay(for: Date())
 
         let useCase = GetMuscleDistributionInsightsUseCase(workoutRepository: repo)
-        let result = try await useCase.execute(startDate: today, endDate: today)
+        let result = await useCase.execute(startDate: today, endDate: today).first() ?? []
 
         XCTAssertTrue(result.isEmpty)
     }
@@ -235,7 +244,7 @@ final class GetMuscleDistributionInsightsUseCaseTests: XCTestCase {
         ])
 
         let useCase = GetMuscleDistributionInsightsUseCase(workoutRepository: repo)
-        let result = try await useCase.execute(startDate: today, endDate: today)
+        let result = await useCase.execute(startDate: today, endDate: today).first() ?? []
 
         XCTAssertEqual(result.count, 1)
         XCTAssertEqual(result[0].muscleGroup, "Chest")

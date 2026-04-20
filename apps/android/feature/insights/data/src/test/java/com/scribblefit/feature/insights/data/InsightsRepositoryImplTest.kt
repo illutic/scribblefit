@@ -1,6 +1,7 @@
 package com.scribblefit.feature.insights.data
 
 import app.cash.turbine.test
+import com.scribblefit.core.coroutines.CoroutineDispatcherProvider
 import com.scribblefit.core.database.dao.WorkoutDao
 import com.scribblefit.core.database.entity.exercise.Exercise
 import com.scribblefit.core.database.entity.exercise.WorkoutExercise
@@ -8,9 +9,10 @@ import com.scribblefit.core.database.entity.exercise.WorkoutExerciseWithDetails
 import com.scribblefit.core.database.entity.set.WorkoutSet
 import com.scribblefit.core.database.entity.workout.Workout
 import com.scribblefit.core.database.entity.workout.WorkoutWithAllDetails
-import com.scribblefit.feature.ai.domain.LLMEngineProxy
+import com.scribblefit.feature.ai.domain.LLMEngine
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
@@ -22,13 +24,18 @@ import org.junit.Test
 class InsightsRepositoryImplTest {
 
     private val workoutDao = mockk<WorkoutDao>()
-    private val llmEngineProxy = mockk<LLMEngineProxy>()
+    private val llmEngine = mockk<LLMEngine>()
     private val testDispatcher = StandardTestDispatcher()
+    private val dispatcherProvider = object : CoroutineDispatcherProvider {
+        override fun main(): CoroutineDispatcher = testDispatcher
+        override fun default(): CoroutineDispatcher = testDispatcher
+        override fun io(): CoroutineDispatcher = testDispatcher
+    }
     private lateinit var repository: InsightsRepositoryImpl
 
     @Before
     fun setup() {
-        repository = InsightsRepositoryImpl(workoutDao, llmEngineProxy, testDispatcher)
+        repository = InsightsRepositoryImpl(workoutDao, llmEngine, dispatcherProvider)
     }
 
     // region Helpers

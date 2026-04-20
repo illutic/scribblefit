@@ -48,6 +48,7 @@ internal fun InsightsScreen(
             )
         },
         containerColor = ScribbleFitTheme.colors.surface,
+        contentColor = ScribbleFitTheme.colors.primary,
     ) { paddingValues ->
         Column(
             modifier = Modifier

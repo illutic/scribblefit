@@ -2,8 +2,7 @@ package com.scribblefit.feature.scribble.domain.usecase
 
 import com.scribblefit.core.common.runCatchingWithCancellation
 import com.scribblefit.core.model.ScribbleStatus
-import com.scribblefit.feature.scribble.domain.EmptyScribbleTextException
-import com.scribblefit.feature.scribble.domain.ScribbleNotFoundException
+import com.scribblefit.feature.scribble.domain.ScribbleError
 import com.scribblefit.feature.scribble.domain.ScribbleRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.firstOrNull
@@ -18,11 +17,11 @@ class EditScribbleUseCase(
             withContext(coroutineDispatcher) {
                 val existing = scribbleRepository.getScribble(id).firstOrNull()
                 when {
-                    existing == null -> throw ScribbleNotFoundException(id)
-                    newText.isBlank() -> throw EmptyScribbleTextException()
+                    existing == null -> throw ScribbleError.NotFound(id)
+                    newText.isBlank() -> throw ScribbleError.EmptyText
                 }
                 scribbleRepository.updateScribble(
-                    existing.copy(
+                    existing!!.copy(
                         rawText = newText,
                         status = ScribbleStatus.PENDING
                     )

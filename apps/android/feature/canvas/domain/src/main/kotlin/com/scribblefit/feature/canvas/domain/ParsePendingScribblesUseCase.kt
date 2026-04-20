@@ -2,14 +2,13 @@ package com.scribblefit.feature.canvas.domain
 
 import com.scribblefit.core.model.Scribble
 import com.scribblefit.core.model.ScribbleStatus
-import com.scribblefit.feature.ai.domain.LLMEngineProxy
+import com.scribblefit.feature.ai.domain.LLMEngine
 import com.scribblefit.feature.scribble.domain.usecase.GetPendingScribblesByDateUseCase
 import com.scribblefit.feature.scribble.domain.usecase.UpdateScribbleAsFailedUseCase
 import com.scribblefit.feature.scribble.domain.usecase.UpdateScribbleAsPendingUseCase
 import com.scribblefit.feature.scribble.domain.usecase.UpdateScribbleWithWorkoutUseCase
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.slf4j.LoggerFactory
@@ -21,7 +20,7 @@ class ParsePendingScribblesUseCase(
     private val updateScribbleWithWorkoutUseCase: UpdateScribbleWithWorkoutUseCase,
     private val updateScribbleAsFailedUseCase: UpdateScribbleAsFailedUseCase,
     private val updateScribbleAsPendingUseCase: UpdateScribbleAsPendingUseCase,
-    private val llmEngineProxy: LLMEngineProxy,
+    private val llmEngine: LLMEngine,
     private val coroutineDispatcher: CoroutineDispatcher
 ) {
     private val logger = LoggerFactory.getLogger("ParsePendingScribblesUseCase")
@@ -30,12 +29,21 @@ class ParsePendingScribblesUseCase(
 
     suspend operator fun invoke(date: LocalDate) = withContext(coroutineDispatcher) {
         collectorJob?.cancel()
+        // We DON'T clear parsingScribbleIds here because a previous background parse might still be running
+        // and we don't want to double-parse.
+        
         collectorJob = launch {
             getPendingScribblesByDateUseCase(date).collect { pendingScribbles ->
                 pendingScribbles
-                    .filter { (it.status == ScribbleStatus.PENDING || it.status == ScribbleStatus.PARSING) && !parsingScribbleIds.contains(it.id) }
+                    .filter { scribble ->
+                        val isPending = scribble.status == ScribbleStatus.PENDING
+                                || scribble.status == ScribbleStatus.PARSING
+                        isPending && !parsingScribbleIds.contains(scribble.id)
+                    }
                     .forEach { scribble ->
-                        parseScribble(scribble)
+                        launch {
+                            parseScribble(scribble)
+                        }
                     }
             }
         }
@@ -43,7 +51,9 @@ class ParsePendingScribblesUseCase(
 
     suspend fun parseSingleScribble(scribble: Scribble) = withContext(coroutineDispatcher) {
         if (!parsingScribbleIds.contains(scribble.id)) {
-            parseScribble(scribble)
+            launch {
+                parseScribble(scribble)
+            }
         }
     }
 
@@ -52,8 +62,11 @@ class ParsePendingScribblesUseCase(
         
         try {
             logger.info("Parsing scribble with id ${scribble.id}")
-            updateScribbleAsPendingUseCase(scribble.id)
-            val llmEngine = llmEngineProxy.underlyingEngine.first()
+            // Update status to PARSING in DB to show progress indicator
+            updateScribbleAsPendingUseCase(scribble.id) 
+            // Note: updateScribbleAsPendingUseCase actually sets it to PARSING state in the implementation
+            // despite the name (legacy naming from initial implementation).
+            
             llmEngine.parseWorkout(scribble.rawText)
                 .onSuccess {
                     logger.info("Successfully parsed scribble with id ${scribble.id}")
@@ -66,6 +79,9 @@ class ParsePendingScribblesUseCase(
                     logger.error("Failed to parse scribble with id ${scribble.id}", it)
                     updateScribbleAsFailedUseCase(scribble.id)
                 }
+        } catch (e: Exception) {
+            logger.error("Unexpected error parsing scribble ${scribble.id}", e)
+            updateScribbleAsFailedUseCase(scribble.id)
         } finally {
             parsingScribbleIds.remove(scribble.id)
         }

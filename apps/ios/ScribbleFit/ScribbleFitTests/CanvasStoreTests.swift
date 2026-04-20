@@ -1,6 +1,5 @@
 import XCTest
 import Combine
-#if SWIFT_PACKAGE
 @testable import CoreModel
 @testable import FeatureAI
 @testable import FeatureScribble
@@ -8,7 +7,6 @@ import Combine
 @testable import FeatureConfig
 @testable import FeatureCanvas
 @testable import FeatureInsights
-#endif
 
 // MARK: - Mock Repositories
 
@@ -94,8 +92,12 @@ final class MockWorkoutRepository: WorkoutRepository {
         }
     }
 
-    func getWorkoutsInRange(startDate: Date, endDate: Date) async throws -> [Workout] {
-        workouts
+    func getWorkoutsInRange(startDate: Date, endDate: Date) -> AsyncStream<[Workout]> {
+        let current = workouts
+        return AsyncStream { continuation in
+            continuation.yield(current)
+            continuation.finish()
+        }
     }
 }
 
@@ -137,8 +139,7 @@ final class MockLLMService: LLMService {
         return insights
     }
 
-    func validateApiKey(_ apiKey: String) async throws {}
-    func getAvailableModels(apiKey: String) async throws -> [String] { [] }
+    func isSupported() async -> Bool { true }
 }
 
 enum MockError: Error {

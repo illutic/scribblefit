@@ -1,6 +1,7 @@
 plugins {
     id("scribblefit.android.application.compose")
     id("scribblefit.android.hilt")
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -22,11 +23,14 @@ android {
             )
         }
     }
+
+    buildFeatures {
+        buildConfig = true
+    }
 }
 
 dependencies {
     implementation(project(":core:database"))
-    implementation(project(":core:network"))
     implementation(project(":core:designsystem"))
     implementation(project(":core:navigation"))
     implementation(project(":core:config:data"))
@@ -59,4 +63,11 @@ dependencies {
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)
     implementation(libs.androidx.material3)
+
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
+    implementation(libs.firebase.ai)
+    implementation(libs.firebase.appcheck.playintegrity)
+    implementation(libs.firebase.appcheck.debug)
 }

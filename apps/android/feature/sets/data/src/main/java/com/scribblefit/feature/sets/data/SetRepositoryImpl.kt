@@ -26,7 +26,7 @@ internal class SetRepositoryImpl(
             workoutExerciseDao.updateSetReps(setId, reps)
         }
 
-    override suspend fun updateSetWeight(setId: Long, weight: Float) =
+    override suspend fun updateSetWeight(setId: Long, weight: Float?) =
         withContext(coroutineDispatcher) {
             workoutExerciseDao.updateSetWeight(setId, weight)
         }

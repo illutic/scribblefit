@@ -12,14 +12,7 @@ data class SettingsState(
     val isDynamicTheme: Boolean = false,
     val weightUnit: Weight = Weight.KGS,
     val llmProvider: LLMProvider = LLMProvider.LOCAL,
-    val preferredModel: String = "",
-    val apiKey: String = "",
-    val isApiKeyVisible: Boolean = false,
-    val connectionTestStatus: ConnectionTestStatus = ConnectionTestStatus.Idle,
-    val availableModels: List<String> = emptyList(),
     val isLocalSupported: Boolean = true,
-    val isFetchingModels: Boolean = false,
-    val showModelSelection: Boolean = false,
     val exportData: String? = null,
     val showClearDataDialog: Boolean = false,
     val isLoading: Boolean = false,
@@ -44,17 +37,6 @@ data class SettingsState(
             LLMProvider.LOCAL -> stringResource(R.string.settings_ai_provider_local)
         }
 
-    val connectionStatusMessage: String?
-        @Composable @ReadOnlyComposable get() = when (val status = connectionTestStatus) {
-            is ConnectionTestStatus.Success -> stringResource(R.string.settings_connection_success)
-            is ConnectionTestStatus.Error -> stringResource(
-                R.string.settings_connection_error,
-                status.message
-            )
-
-            else -> null
-        }
-
     // Static Section Titles and Labels resolved via State
     val appearanceTitle: String @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_appearance)
     val themeTitle: String @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_theme)
@@ -65,11 +47,6 @@ data class SettingsState(
     val weightPreferenceLabel: String @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_weight_preference)
     val aiEngineTitle: String @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_ai_engine_title)
     val providerLabel: String @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_ai_provider)
-    val modelLabel: String @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_ai_model)
-    val aiModelSelectionTitle: String @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_ai_model_selection_title)
-    val apiKeyTitle: String @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_api_key_title)
-    val apiKeyPlaceholder: String @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_api_key_placeholder)
-    val testConnectionLabel: String @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_test_connection)
     val dataTitle: String @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_data_title)
     val exportWorkoutLedgerLabel: String @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_export_workout_ledger)
     val jsonFormatLabel: String @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_json_format)
@@ -81,11 +58,4 @@ data class SettingsState(
     @ReadOnlyComposable
     fun getVersionLabel(version: String): String =
         stringResource(R.string.settings_version, version)
-}
-
-sealed interface ConnectionTestStatus {
-    object Idle : ConnectionTestStatus
-    object Testing : ConnectionTestStatus
-    object Success : ConnectionTestStatus
-    data class Error(val message: String) : ConnectionTestStatus
 }

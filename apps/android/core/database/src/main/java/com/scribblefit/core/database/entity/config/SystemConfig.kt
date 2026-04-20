@@ -12,7 +12,6 @@ data class SystemConfig(
     val parsePrompt: String,
     val preferredLlmProvider: String,
     val updatedAt: Long,
-    val preferredModel: String?,
     val weightUnit: String,
     val themePreference: String,
     val isDynamicTheme: Boolean,

@@ -26,7 +26,6 @@ includeBuild("build-logic")
 include(":app")
 include(
     ":core:database",
-    ":core:network",
     ":core:designsystem",
     ":core:navigation",
     ":core:coroutines",

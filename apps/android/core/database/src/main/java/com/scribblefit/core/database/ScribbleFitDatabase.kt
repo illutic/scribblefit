@@ -1,5 +1,6 @@
 package com.scribblefit.core.database
 
+import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import com.scribblefit.core.database.dao.ExerciseDao
@@ -16,7 +17,7 @@ import com.scribblefit.core.database.entity.scribble.ScribbleExercise
 import com.scribblefit.core.database.entity.set.WorkoutSet
 import com.scribblefit.core.database.entity.workout.Workout
 
-private const val DATABASE_VERSION = 3
+private const val DATABASE_VERSION = 4
 
 @Database(
     entities = [
@@ -29,6 +30,9 @@ private const val DATABASE_VERSION = 3
         ScribbleExercise::class
     ],
     version = DATABASE_VERSION,
+    autoMigrations = [
+        AutoMigration(from = 3, to = 4)
+    ],
     exportSchema = true
 )
 abstract class ScribbleFitDatabase : RoomDatabase() {

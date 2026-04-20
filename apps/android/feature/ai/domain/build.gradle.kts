@@ -10,4 +10,5 @@ android {
 dependencies {
     implementation(project(":core:model"))
     implementation(libs.kotlinx.serialization.json)
+    implementation(libs.javax.inject)
 }

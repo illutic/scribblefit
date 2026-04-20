@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1067651470105",
+    "project_id": "scribblefit",
+    "storage_bucket": "scribblefit.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1067651470105:android:8abc754057158811b82b88",
+        "android_client_info": {
+          "package_name": "com.scribblefit.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAKwP7Un1RTYkAE8szEnBfrFeWNR1Dc_hk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

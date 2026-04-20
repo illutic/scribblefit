@@ -38,7 +38,7 @@ interface WorkoutExerciseDao {
     suspend fun updateSetReps(setId: Long, reps: Int)
 
     @Query("UPDATE workout_set SET weight = :weight WHERE setId = :setId")
-    suspend fun updateSetWeight(setId: Long, weight: Float)
+    suspend fun updateSetWeight(setId: Long, weight: Float?)
 
     @Query("SELECT * FROM workout_set WHERE workoutExerciseId = :workoutExerciseId ORDER BY setNumber ASC")
     fun getSetsForWorkoutExercise(workoutExerciseId: Long): Flow<List<WorkoutSet>>

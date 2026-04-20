@@ -6,7 +6,8 @@ import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
 import java.time.LocalDate
-import java.time.ZoneOffset
+import java.time.LocalTime
+import java.time.ZoneId
 
 class GetFrequencyInsightsUseCase(
     private val repository: InsightsRepository,
@@ -16,8 +17,8 @@ class GetFrequencyInsightsUseCase(
         startDate: LocalDate,
         endDate: LocalDate
     ): Flow<FrequencyData> {
-        val startMillis = startDate.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli()
-        val endMillis = endDate.atStartOfDay().toInstant(ZoneOffset.UTC).toEpochMilli()
+        val startMillis = startDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+        val endMillis = endDate.atTime(LocalTime.MAX).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
         return repository.getFrequencyInsights(startMillis, endMillis)
             .flowOn(coroutineDispatcher)
     }

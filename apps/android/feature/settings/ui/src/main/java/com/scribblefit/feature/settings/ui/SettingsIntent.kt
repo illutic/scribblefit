@@ -9,12 +9,6 @@ sealed interface SettingsIntent {
     data class ToggleDynamicTheme(val enabled: Boolean) : SettingsIntent
     data class ChangeWeightUnit(val unit: Weight) : SettingsIntent
     data class ChangeAIProvider(val provider: LLMProvider) : SettingsIntent
-    data class ChangeAIModel(val model: String) : SettingsIntent
-    object ShowModelSelection : SettingsIntent
-    object DismissModelSelection : SettingsIntent
-    data class ChangeApiKey(val apiKey: String) : SettingsIntent
-    object ToggleApiKeyVisibility : SettingsIntent
-    object TestConnection : SettingsIntent
     object ExportData : SettingsIntent
     object ClearAllData : SettingsIntent
     object ShowClearDataDialog : SettingsIntent

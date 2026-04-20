@@ -80,25 +80,21 @@ constructor(
 
     init {
         viewModelScope.launch {
-            currentDate.collectLatest {
-                parsePendingScribblesUseCase(_state.value.currentDate)
+            currentDate.collectLatest { date ->
+                launch { parsePendingScribblesUseCase(date) }
+                loadAIInsights(date)
             }
         }
-        loadAIInsights()
     }
 
-    private fun loadAIInsights() {
-        viewModelScope.launch {
-            currentDate.collectLatest { date ->
-                _state.update { it.copy(isGeneratingInsights = true) }
-                val result = getAIOverviewUseCase(date)
-                _state.update {
-                    it.copy(
-                        isGeneratingInsights = false,
-                        aiInsights = result.getOrNull() ?: emptyList(),
-                    )
-                }
-            }
+    private suspend fun loadAIInsights(date: LocalDate) {
+        _state.update { it.copy(isGeneratingInsights = true) }
+        val result = getAIOverviewUseCase(date)
+        _state.update {
+            it.copy(
+                isGeneratingInsights = false,
+                aiInsights = result.getOrNull() ?: emptyList(),
+            )
         }
     }
 
@@ -239,7 +235,9 @@ constructor(
     }
 
     private fun updateSetWeight(exerciseId: Long, setId: Long, newWeight: String) {
-        val weight = newWeight.toFloatOrNull() ?: return
+        val weight = newWeight.toFloatOrNull()
+        if (weight == null && newWeight.isNotEmpty()) return
+
         _state.update { currentState ->
             val selectedScribble = currentState.selectedScribble ?: return@update currentState
 

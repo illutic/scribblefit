@@ -9,10 +9,9 @@ import com.scribblefit.core.config.domain.LLMProvider
 import com.scribblefit.core.model.Scribble
 import com.scribblefit.core.model.ScribbleStatus
 import com.scribblefit.core.navigation.Navigator
+import com.scribblefit.core.navigation.NavState
 import com.scribblefit.feature.canvas.domain.*
-import com.scribblefit.feature.insights.domain.model.AIOverview
 import com.scribblefit.feature.insights.domain.usecase.GetAIOverviewUseCase
-import com.scribblefit.feature.canvas.domain.GetScribblesForDateUseCase
 import io.mockk.*
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -20,11 +19,11 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.*
 import org.junit.After
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import java.time.LocalDate
-import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class CanvasViewModelTest {
@@ -34,13 +33,16 @@ class CanvasViewModelTest {
     private val getScribblesForDateUseCase = mockk<GetScribblesForDateUseCase>()
     private val parsePendingScribblesUseCase = mockk<ParsePendingScribblesUseCase>()
     private val addScribbleUseCase = mockk<AddScribbleUseCase>()
-    private val editScribbleUseCase = mockk<com.scribblefit.feature.scribble.domain.usecase.EditScribbleUseCase>()
     private val confirmScribbleUseCase = mockk<ConfirmScribbleUseCase>()
     private val deleteScribbleUseCase = mockk<DeleteScribbleUseCase>()
     private val getAIOverviewUseCase = mockk<GetAIOverviewUseCase>()
     private val configRepository = mockk<ConfigRepository>()
     private val navigator = mockk<Navigator>()
     private val removeSetUseCase = mockk<com.scribblefit.feature.sets.domain.usecase.RemoveSetUseCase>()
+    private val updateExerciseUseCase = mockk<com.scribblefit.feature.exercises.domain.usecase.UpdateExerciseUseCase>()
+    private val updateSetRepsUseCase = mockk<com.scribblefit.feature.sets.domain.usecase.UpdateSetRepsUseCase>()
+    private val updateSetWeightUseCase = mockk<com.scribblefit.feature.sets.domain.usecase.UpdateSetWeightUseCase>()
+    private val reorderSetsUseCase = mockk<com.scribblefit.feature.sets.domain.usecase.ReorderSetsUseCase>()
 
     private lateinit var viewModel: CanvasViewModel
 
@@ -51,31 +53,36 @@ class CanvasViewModelTest {
         parsePrompt = "",
         preferredLlmProvider = LLMProvider.LOCAL,
         updatedAt = 0,
-        preferredModel = null,
         weightUnit = Weight.KGS,
-        themePreference = ThemePreference.SYSTEM
+        themePreference = ThemePreference.SYSTEM,
+        isDynamicTheme = false
     )
 
     @Before
     fun setup() {
         Dispatchers.setMain(testDispatcher)
         
-        coEvery { getScribblesForDateUseCase(any()) } returns flowOf(emptyList())
+        coEvery { getScribblesForDateUseCase(any()) } returns flowOf(emptyList<Scribble>())
         coEvery { parsePendingScribblesUseCase(any()) } returns Unit
-        coEvery { getAIOverviewUseCase() } returns Result.success(AIOverview("Summary", emptyList(), emptyList(), "", 0f))
+        coEvery { getAIOverviewUseCase(any<LocalDate>()) } returns Result.success(emptyList())
+        coEvery { getAIOverviewUseCase(any<LocalDate>(), any<LocalDate>()) } returns Result.success(emptyList())
         every { configRepository.config } returns MutableStateFlow(defaultConfig)
+        every { navigator.navState } returns MutableStateFlow(NavState())
         
         viewModel = CanvasViewModel(
             getScribblesForDateUseCase = getScribblesForDateUseCase,
             parsePendingScribblesUseCase = parsePendingScribblesUseCase,
             addScribbleUseCase = addScribbleUseCase,
-            editScribbleUseCase = editScribbleUseCase,
             confirmScribbleUseCase = confirmScribbleUseCase,
             deleteScribbleUseCase = deleteScribbleUseCase,
             getAIOverviewUseCase = getAIOverviewUseCase,
             configRepository = configRepository,
             navigator = navigator,
-            removeSetUseCase = removeSetUseCase
+            removeSetUseCase = removeSetUseCase,
+            updateExerciseUseCase = updateExerciseUseCase,
+            updateSetRepsUseCase = updateSetRepsUseCase,
+            updateSetWeightUseCase = updateSetWeightUseCase,
+            reorderSetsUseCase = reorderSetsUseCase
         )
     }
 
@@ -90,7 +97,6 @@ class CanvasViewModelTest {
             val state = awaitItem()
             assertEquals(LocalDate.now(), state.currentDate)
             assertTrue(state.scribbles.isEmpty())
-            assertEquals("Summary", state.aiOverview)
             assertEquals(Weight.KGS, state.weightUnit)
         }
     }
@@ -134,7 +140,7 @@ class CanvasViewModelTest {
     @Test
     fun `AddScribble calls use case and clears text`() = runTest {
         val text = "Squat 100kg 3x5"
-        coEvery { addScribbleUseCase(any(), any()) } returns Result.success(Unit)
+        coEvery { addScribbleUseCase(any(), any()) } returns Unit
         
         viewModel.onIntent(CanvasIntent.UpdateScribbleText(text))
         viewModel.onIntent(CanvasIntent.AddScribble(text))
@@ -158,6 +164,7 @@ class CanvasViewModelTest {
                 com.scribblefit.core.model.Exercise(
                     id = 1L,
                     canonicalName = "Squat",
+                    muscleGroup = "Legs",
                     sets = listOf(
                         com.scribblefit.core.model.Set(id = 1L, setNumber = 1, weight = 100f, reps = 5),
                         com.scribblefit.core.model.Set(id = 2L, setNumber = 2, weight = 100f, reps = 5)
@@ -166,7 +173,11 @@ class CanvasViewModelTest {
             )
         )
         
-        coEvery { removeSetUseCase(any()) } returns Unit
+        coEvery { removeSetUseCase(any()) } just Runs
+        every { reorderSetsUseCase(any()) } answers {
+            val sets = firstArg<List<com.scribblefit.core.model.Set>>()
+            sets.mapIndexed { index, set -> set.copy(setNumber = index + 1) }
+        }
         
         // Open the scribble dialog
         viewModel.onIntent(CanvasIntent.ClickOnScribble(scribble))
@@ -184,6 +195,80 @@ class CanvasViewModelTest {
             assertEquals(1, updatedScribble?.exercises?.first()?.sets?.size)
             assertEquals(2L, updatedScribble?.exercises?.first()?.sets?.first()?.id)
             assertEquals(1, updatedScribble?.exercises?.first()?.sets?.first()?.setNumber)
+        }
+    }
+
+    @Test
+    fun `UpdateSetWeight updates weight in state and calls use case if completed`() = runTest {
+        val scribble = Scribble(
+            id = 1L,
+            rawText = "Squat 100kg 3x5",
+            status = ScribbleStatus.COMPLETED,
+            createdAt = 0L,
+            exercises = listOf(
+                com.scribblefit.core.model.Exercise(
+                    id = 1L,
+                    canonicalName = "Squat",
+                    muscleGroup = "Legs",
+                    sets = listOf(
+                        com.scribblefit.core.model.Set(id = 1L, setNumber = 1, weight = 100f, reps = 5)
+                    )
+                )
+            )
+        )
+        
+        coEvery { updateSetWeightUseCase(any(), any()) } returns Result.success(Unit)
+        
+        // Open the scribble dialog
+        viewModel.onIntent(CanvasIntent.ClickOnScribble(scribble))
+        
+        // Update weight to 110
+        viewModel.onIntent(CanvasIntent.UpdateSetWeight(exerciseId = 1L, setId = 1L, newWeight = "110"))
+        
+        testDispatcher.scheduler.advanceUntilIdle()
+        
+        coVerify { updateSetWeightUseCase(1L, 110f) }
+        
+        viewModel.state.test {
+            val state = awaitItem()
+            assertEquals(110f, state.selectedScribble?.exercises?.first()?.sets?.first()?.weight)
+        }
+    }
+
+    @Test
+    fun `UpdateSetWeight with empty string sets weight to null`() = runTest {
+        val scribble = Scribble(
+            id = 1L,
+            rawText = "Squat 100kg 3x5",
+            status = ScribbleStatus.COMPLETED,
+            createdAt = 0L,
+            exercises = listOf(
+                com.scribblefit.core.model.Exercise(
+                    id = 1L,
+                    canonicalName = "Squat",
+                    muscleGroup = "Legs",
+                    sets = listOf(
+                        com.scribblefit.core.model.Set(id = 1L, setNumber = 1, weight = 100f, reps = 5)
+                    )
+                )
+            )
+        )
+        
+        coEvery { updateSetWeightUseCase(any(), any()) } returns Result.success(Unit)
+        
+        // Open the scribble dialog
+        viewModel.onIntent(CanvasIntent.ClickOnScribble(scribble))
+        
+        // Update weight to empty
+        viewModel.onIntent(CanvasIntent.UpdateSetWeight(exerciseId = 1L, setId = 1L, newWeight = ""))
+        
+        testDispatcher.scheduler.advanceUntilIdle()
+        
+        coVerify { updateSetWeightUseCase(1L, null) }
+        
+        viewModel.state.test {
+            val state = awaitItem()
+            assertEquals(null, state.selectedScribble?.exercises?.first()?.sets?.first()?.weight)
         }
     }
 }

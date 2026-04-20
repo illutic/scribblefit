@@ -4,7 +4,6 @@ import com.scribblefit.core.coroutines.CoroutineDispatcherProvider
 import com.scribblefit.core.database.dao.ScribbleDao
 import com.scribblefit.core.database.dao.ScribbleTrackerDao
 import com.scribblefit.feature.exercises.domain.usecase.MarkExerciseAsCompleteUseCase
-import com.scribblefit.feature.exercises.domain.usecase.RemoveExerciseUseCase
 import com.scribblefit.feature.scribble.data.ScribbleRepositoryImpl
 import com.scribblefit.feature.scribble.domain.ScribbleRepository
 import com.scribblefit.feature.scribble.domain.usecase.AddRawScribbleUseCase
@@ -84,11 +83,9 @@ internal object ScribbleDataModule {
     @Provides
     fun provideRemoveScribbleUseCase(
         scribbleRepository: ScribbleRepository,
-        removeExerciseUseCase: RemoveExerciseUseCase,
         coroutineDispatcherProvider: CoroutineDispatcherProvider
     ): RemoveScribbleUseCase = RemoveScribbleUseCase(
         scribbleRepository = scribbleRepository,
-        removeExerciseUseCase = removeExerciseUseCase,
         coroutineDispatcher = coroutineDispatcherProvider.default()
     )
 

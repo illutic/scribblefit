@@ -38,6 +38,8 @@
     <string name="canvas_retry">Retry</string>
     <string name="canvas_remove">Remove</string>
     <string name="canvas_workout_summary_format">%1$s %2$.2f %3$s • %4$d sets • %5$d reps</string>
+    <string name="canvas_exercise_item_summary_format">%1$.1f %2$s • %3$d sets • %4$d reps</string>
+    <string name="canvas_last_session_improvement_label_format">%1$s %2$s VS LAST SESSION</string>
     <string name="canvas_set_format">%1$s %2$dx%3$d</string>
     <string name="canvas_collapse">Collapse</string>
     <string name="canvas_expand_search">Expand search</string>
@@ -47,4 +49,10 @@
     <string name="canvas_reps_label">reps</string>
     <string name="canvas_set_reps_separator"> x </string>
     <string name="canvas_delete_set_content_description">Remove set</string>
+
+    <!-- Navigation Labels -->
+    <string name="nav_canvas">Canvas</string>
+    <string name="nav_insights">Insights</string>
+    <string name="nav_ledger">Ledger</string>
+    <string name="nav_settings">Settings</string>
 </resources>

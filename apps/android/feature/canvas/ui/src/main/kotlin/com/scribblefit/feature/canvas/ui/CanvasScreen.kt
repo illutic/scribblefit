@@ -57,11 +57,7 @@ internal fun CanvasScreen(
                     onScribbleClick = { onIntent(CanvasIntent.ClickOnScribble(it)) },
                     onIntent = onIntent,
                     emptyText = state.emptyScribbleText,
-                    retryLabel = state.retryLabel,
-                    removeLabel = state.removeLabel,
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .imeNestedScroll()
+                    modifier = Modifier.fillMaxSize()
                 )
 
                 CanvasFooter(

@@ -2,19 +2,15 @@ package com.scribblefit.feature.settings.data
 
 import com.scribblefit.core.database.dao.ScribbleTrackerDao
 import com.scribblefit.core.database.dao.WorkoutDao
-import com.scribblefit.feature.ai.domain.CloudLLMEngine
-import com.scribblefit.feature.ai.domain.LLMEngineProxy
 import com.scribblefit.feature.settings.domain.SettingsRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.combine
-import kotlinx.coroutines.flow.first
 import kotlinx.serialization.json.Json
 import javax.inject.Inject
 
 class SettingsRepositoryImpl @Inject constructor(
     private val scribbleTrackerDao: ScribbleTrackerDao,
     private val workoutDao: WorkoutDao,
-    private val llmEngineProxy: LLMEngineProxy,
     private val json: Json
 ) : SettingsRepository {
 
@@ -76,11 +72,5 @@ class SettingsRepositoryImpl @Inject constructor(
             )
             json.encodeToString(export)
         }
-    }
-
-    override suspend fun testConnection(apiKey: String): Result<Unit> {
-        val llmEngine = llmEngineProxy.underlyingEngine.first() as? CloudLLMEngine
-            ?: return Result.failure(IllegalStateException("Current LLM engine does not support API key validation"))
-        return llmEngine.validateApiKey(apiKey)
     }
 }

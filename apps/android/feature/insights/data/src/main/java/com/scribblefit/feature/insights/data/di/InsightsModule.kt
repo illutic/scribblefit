@@ -2,8 +2,7 @@ package com.scribblefit.feature.insights.data.di
 
 import com.scribblefit.core.coroutines.CoroutineDispatcherProvider
 import com.scribblefit.core.database.dao.WorkoutDao
-import com.scribblefit.feature.ai.domain.LLMEngineProxy
-import com.scribblefit.feature.insights.data.CachedInsightsRepositoryImpl
+import com.scribblefit.feature.ai.domain.LLMEngine
 import com.scribblefit.feature.insights.data.InsightsRepositoryImpl
 import com.scribblefit.feature.insights.domain.repository.InsightsRepository
 import com.scribblefit.feature.insights.domain.usecase.GetAIOverviewUseCase
@@ -15,76 +14,49 @@ import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
-import javax.inject.Named
 import javax.inject.Singleton
 
 @Module
 @InstallIn(SingletonComponent::class)
-object InsightsModule {
+internal object InsightsModule {
 
     @Provides
     @Singleton
     fun provideInsightsRepository(
         workoutDao: WorkoutDao,
-        llmEngineProxy: LLMEngineProxy,
-        coroutineDispatcherProvider: CoroutineDispatcherProvider
-    ): InsightsRepository {
-        return InsightsRepositoryImpl(
-            workoutDao = workoutDao,
-            llmEngineProxy = llmEngineProxy,
-            coroutineDispatcher = coroutineDispatcherProvider.io()
-        )
-    }
+        llmEngine: LLMEngine,
+        dispatcherProvider: CoroutineDispatcherProvider
+    ): InsightsRepository = InsightsRepositoryImpl(
+        workoutDao = workoutDao,
+        llmEngine = llmEngine,
+        dispatcherProvider = dispatcherProvider
+    )
 
-    @Named("cachedInsightsRepository")
     @Provides
     @Singleton
-    fun provideCachedInsightsRepository(
-        insightsRepository: InsightsRepository,
-        coroutineDispatcherProvider: CoroutineDispatcherProvider
-    ): InsightsRepository {
-        return CachedInsightsRepositoryImpl(
-            insightsRepository = insightsRepository,
-            coroutineDispatcher = coroutineDispatcherProvider.io()
-        )
-    }
-
-    @Provides
     fun provideGetVolumeInsightsUseCase(
         repository: InsightsRepository,
-        coroutineDispatcherProvider: CoroutineDispatcherProvider
-    ): GetVolumeInsightsUseCase {
-        return GetVolumeInsightsUseCase(repository, coroutineDispatcherProvider.default())
-    }
+        dispatcherProvider: CoroutineDispatcherProvider
+    ): GetVolumeInsightsUseCase = GetVolumeInsightsUseCase(repository, dispatcherProvider.io())
 
     @Provides
+    @Singleton
     fun provideGetFrequencyInsightsUseCase(
         repository: InsightsRepository,
-        coroutineDispatcherProvider: CoroutineDispatcherProvider
-    ): GetFrequencyInsightsUseCase {
-        return GetFrequencyInsightsUseCase(repository, coroutineDispatcherProvider.default())
-    }
+        dispatcherProvider: CoroutineDispatcherProvider
+    ): GetFrequencyInsightsUseCase = GetFrequencyInsightsUseCase(repository, dispatcherProvider.io())
 
     @Provides
+    @Singleton
     fun provideGetMuscleDistributionInsightsUseCase(
         repository: InsightsRepository,
-        coroutineDispatcherProvider: CoroutineDispatcherProvider
-    ): GetMuscleDistributionInsightsUseCase {
-        return GetMuscleDistributionInsightsUseCase(
-            repository,
-            coroutineDispatcherProvider.default()
-        )
-    }
+        dispatcherProvider: CoroutineDispatcherProvider
+    ): GetMuscleDistributionInsightsUseCase = GetMuscleDistributionInsightsUseCase(repository, dispatcherProvider.io())
 
     @Provides
+    @Singleton
     fun provideGetAIOverviewUseCase(
-        @Named("cachedInsightsRepository")
-        repository: InsightsRepository,
+        insightsRepository: InsightsRepository,
         scribbleRepository: ScribbleRepository
-    ): GetAIOverviewUseCase {
-        return GetAIOverviewUseCase(
-            repository = repository,
-            scribbleRepository = scribbleRepository
-        )
-    }
+    ): GetAIOverviewUseCase = GetAIOverviewUseCase(insightsRepository, scribbleRepository)
 }
