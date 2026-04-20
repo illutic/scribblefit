@@ -20,6 +20,7 @@ You are a senior Android engineer specializing in ScribbleFit's MVI architecture
 - **No Base Classes:** Every `ViewModel`, `Repository`, and `UseCase` must be autonomous.
 - **ViewModel:** Orchestrates UI state by calling Use Cases. Zero business or validation logic.
 - **State:** Immutable `data class`. Resolves all UI strings (labels, hints, content descriptions, and formatted messages) via `@get:Composable @get:ReadOnlyComposable` getters from `strings.xml`.
+- **State Flow Uncoupling:** ViewModels MUST use a private `MutableStateFlow` to manage the backing state. This flow is updated by various logic workers (reactive collectors, async launchers, intents) and then exposed as a clean, public `StateFlow` via `asStateFlow()`. This "state-sink" approach prevents UI components from directly modifying state and allows multiple concurrent asynchronous operations (e.g., loading AI insights in parallel with primary metrics) to update the UI state predictably without complex reactive chaining.
 - **Formatting:** String formatting logic MUST be encapsulated in the `State` class.
 - **Intent:** `sealed interface` representing user actions.
 - **Best-in-Class Defaults (Editorial Minimalism):** Challenge the need for new user-facing settings. Prefer hardcoding optimal defaults (e.g., `gemini-2.0-flash`) in the data layer to reduce domain and state complexity.
@@ -93,7 +94,7 @@ You are a senior Android engineer specializing in ScribbleFit's MVI architecture
 - **Local Day Boundary Rule:** All date-to-timestamp conversions for database queries MUST use the system's default timezone (`ZoneId.systemDefault()`). 
     - **Query Start:** `startDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()`
     - **Query End:** `endDate.atTime(LocalTime.MAX).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()`
-    This ensures that logs recorded at the edges of a day (e.g., 11:59 PM or 12:01 AM) are correctly included or excluded based on the user's local context, preventing "missing history" bugs caused by UTC shifts.
+    This rule is MANDATORY for all features dealing with aggregations (e.g., Insights, Frequency counts), ensuring that logs recorded at the edges of a day are correctly included or excluded based on the user's local context, preventing "missing history" bugs caused by UTC shifts.
 
 ### 10. Data Visualization (Canvas Charting)
 - **Sequential Charting Pattern:** Render charts in strict order: (1) Y-Axis Infrastructure, (2) Atmosphere Fill, (3) Skeleton Path (Cubic Bézier), (4) Highlights Points (Halo Effect), (5) X-Axis Context.

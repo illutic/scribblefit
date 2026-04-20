@@ -3,6 +3,7 @@
 ## 1. Architectural Pattern: MVI (Model-View-Intent)
 - **ViewModel:** Autonomous classes (no base inheritance).
 - **State:** Immutable `data class`. String resolution MUST happen here via `@Composable @ReadOnlyComposable` getters.
+- **State Flow Uncoupling:** ViewModels MUST use a private `MutableStateFlow` to manage the backing state. This flow is updated by various logic workers (reactive collectors, async launchers, intents) and then exposed as a clean, public `StateFlow` via `asStateFlow()`. This "state-sink" approach prevents UI components from directly modifying state and allows multiple concurrent asynchronous operations (e.g., loading AI insights in parallel with primary metrics) to update the UI state predictably without complex reactive chaining.
 - **Intent:** `sealed interface` for user actions.
 - **Business Logic:** Zero logic in ViewModel; all logic resides in Use Cases (SRP).
 - **Best-in-Class Defaults (Editorial Minimalism):** Prefer hardcoding optimal defaults (e.g., AI model names like `gemini-2.5-flash-lite`) over adding complex, database-backed configuration settings. Only expose settings that provide significant user value to minimize state management overhead and schema complexity.
@@ -116,7 +117,7 @@
 - **Local Day Boundary Rule:** All date-to-timestamp conversions for database queries MUST use the system's default timezone (`ZoneId.systemDefault()`). 
     - **Query Start:** `startDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()`
     - **Query End:** `endDate.atTime(LocalTime.MAX).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()`
-    This ensures that logs recorded at the edges of a day (e.g., 11:59 PM or 12:01 AM) are correctly included or excluded based on the user's local context, preventing "missing history" bugs caused by UTC shifts.
+    This rule is MANDATORY for all features dealing with aggregations (e.g., Insights, Frequency counts), ensuring that logs recorded at the edges of a day are correctly included or excluded based on the user's local context, preventing "missing history" bugs caused by UTC shifts.
 
 ## 10. Data Visualization (Canvas Charting)
 - **Sequential Charting Pattern:** To ensure cross-platform parity and deterministic layering when using a primitive `Canvas`, all charts MUST be rendered in the following strict order:
