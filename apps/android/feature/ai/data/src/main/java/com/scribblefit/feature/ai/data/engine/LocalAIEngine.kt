@@ -9,7 +9,6 @@ import com.scribblefit.feature.ai.data.entity.AIInsightDto
 import com.scribblefit.feature.ai.data.entity.WorkoutDto
 import com.scribblefit.feature.ai.data.entity.toDomain
 import com.scribblefit.feature.ai.domain.LLMEngine
-import com.scribblefit.feature.ai.domain.LocalLLMEngine
 import com.scribblefit.feature.ai.domain.ParsedWorkoutResult
 import com.scribblefit.feature.ai.domain.ParsingStatus
 import kotlinx.serialization.json.Json
@@ -19,14 +18,14 @@ internal class LocalAIEngine(
     private val generativeModel: GenerativeModel,
     private val json: Json,
     private val configRepository: ConfigRepository
-) : LLMEngine, LocalLLMEngine {
+) : LLMEngine {
     private val logger = LoggerFactory.getLogger(LocalAIEngine::class.java)
     private val config get() = configRepository.config.value
 
     override suspend fun parseWorkout(rawText: String): Result<ParsedWorkoutResult> = runCatching {
         val startMs = System.currentTimeMillis()
         ensureModelIsReady()
-        val prompt = "${config.parsePrompt}\n\nInput: $rawText"
+        val prompt = config.parsePrompt.replace("{{rawText}}", rawText)
         val responseText = callLocalLLM(prompt)
         val workout = json.decodeFromString<WorkoutDto>(responseText)
 
@@ -49,7 +48,7 @@ internal class LocalAIEngine(
                 "${exercise.canonicalName} (${exercise.muscleGroup}): $sets"
             }
 
-            val prompt = "${config.summaryPrompt}\n\nData:\n$context"
+            val prompt = config.summaryPrompt.replace("{{workoutData}}", context)
             val responseText = callLocalLLM(prompt)
             val dtos = json.decodeFromString<List<AIInsightDto>>(responseText)
             dtos.map { it.toDomain() }
