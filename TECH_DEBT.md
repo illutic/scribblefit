@@ -30,9 +30,8 @@ This document tracks identified technical debt, performance bottlenecks, and dev
 ### 6. Stuck "Parsing" Status Recovery [FIXED]
 *   **Fix:** `ParsePendingScribblesUseCase` now retries `PARSING` scribbles on app start and includes a session-level tracker to prevent redundant parsing.
 
-### 7. Generic Error Handling
-*   **Issue:** Use cases return generic `Result<Unit>`, losing semantic error context (e.g., "Invalid LLM Format" vs "Database Constraint Violation").
-*   **Improvement:** Standardize on typed error classes (e.g., `ScribbleError`, `WorkoutError`) to allow the UI to provide more specific feedback/retry logic.
+### 7. Generic Error Handling [FIXED]
+*   **Fix:** Implemented typed error classes (e.g., `ScribbleError`) to provide semantic context for failures, moving away from generic `Result<Unit>` exceptions.
 
 ## 📐 Guideline Violations (UI & Layout)
 
@@ -45,14 +44,14 @@ This document tracks identified technical debt, performance bottlenecks, and dev
 ### 12. Missing IME Padding on Canvas [FIXED]
 *   **Fix:** Applied `.imePadding()` to the root layout of `CanvasScreen`.
 
-### 13. Insecure Client-Side API Keys
-*   **Issue:** `GEMINI_API_KEY` is injected via `BuildConfig` and stored in the application binary. This is insecure for production as it can be reverse-engineered.
-*   **Solution:** For production release, migrate to Firebase Vertex AI (which uses Firebase App Check for security) or implement a backend proxy to keep keys off the client.
+### 13. Insecure Client-Side API Keys [FIXED]
+*   **Fix:** Migrated to Firebase Vertex AI (Firebase.ai), which handles authentication via Google Services and Firebase App Check, eliminating the need for hardcoded client-side keys.
+
 
 ---
 
 ## 🍎 iOS Specific Debt
 
-### 14. Single-Component File Pattern Violations
-*   **Issue:** Several iOS UI files (e.g., `SettingsView.swift`, `ScribbleCard.swift`) "dump" multiple View structs into a single file instead of extracting them to the `Components/` folder.
-*   **Refactor Needed:** Extract `AppearanceSection`, `AIConfigurationSection`, `UnitPreferencesSection`, `DataManagementSection`, and `FooterSection` from `SettingsView.swift`. Extract status-specific cards from `ScribbleCard.swift`.
+### 14. Single-Component File Pattern Violations [FIXED]
+*   **Fix:** Refactored `InsightsView.swift`, `CanvasView.swift`, and `SettingsView.swift` by extracting all sub-components into standalone files within `Components/` directories.
+

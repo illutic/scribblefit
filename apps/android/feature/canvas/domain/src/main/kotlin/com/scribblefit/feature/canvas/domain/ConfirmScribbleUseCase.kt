@@ -4,6 +4,7 @@ import com.scribblefit.core.model.Scribble
 import com.scribblefit.core.model.ScribbleStatus
 import com.scribblefit.core.model.Workout
 import com.scribblefit.feature.scribble.domain.ScribbleRepository
+import com.scribblefit.feature.scribble.domain.error.ScribbleError
 import com.scribblefit.feature.workouts.domain.WorkoutRepository
 
 class ConfirmScribbleUseCase(
@@ -11,8 +12,8 @@ class ConfirmScribbleUseCase(
     private val workoutRepository: WorkoutRepository,
 ) {
     suspend operator fun invoke(scribble: Scribble): Result<Unit> = runCatching {
-        require(scribble.status == ScribbleStatus.SUCCESS) {
-            "Cannot confirm scribble with status ${scribble.status}"
+        if (scribble.status != ScribbleStatus.SUCCESS) {
+            throw ScribbleError.InvalidStatus(scribble.status)
         }
 
         // 1. Persist any UI edits made by the user before confirming
