@@ -28,7 +28,7 @@ The Ledger is a comprehensive, chronological log of all physical activity record
     - [x] **Interactivity Indicator:** A trailing chevron-right (`chevron_right`) suggesting navigation to details. (Verified on Android and iOS).
     - [x] **Exercise Summary:** A list of exercises performed in that session. (Verified on Android and iOS).
     - [x] **Metrics:** Displays the total volume or specific stats for each exercise (e.g., "Bench Press 2,450 lbs"). (Verified on Android and iOS).
-- [ ] **Navigation:** Tapping any part of a workout entry navigates to the **Workout Details** screen for that session.
+- [x] **Navigation:** Tapping any part of a workout entry navigates to the **Workout Exercises** list screen for that session. (Android: `Screen.WorkoutExercises(workoutId)` via Navigator; iOS: `onNavigateToWorkoutDetails(UUID)` callback to sheet presentation. Note: iOS ledger groups by day and navigates to the first workout of that day — see TECH_DEBT.md #19.) Implemented 2026-04-21.
 
 ### 3.3 States
 - [x] **Loading State:**

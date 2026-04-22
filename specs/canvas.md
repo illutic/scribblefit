@@ -54,6 +54,7 @@ The body must handle four distinct states as defined in the design:
 4.  **Completed (`Canvas Screen - Parsed/Completed`):**
     - [x] Shows "COMPLETED" badge in success green.
     - [x] Non-interactive once confirmed. Verified fallback for empty exercises in `ScribbleCard.swift`.
+    - [x] **Exercise-Level Navigation (2026-04-21):** Individual exercises within logged scribble cards are tappable and navigate to the Exercise Details screen. Tapping the card itself (non-exercise area) navigates to the Workout Exercises list screen.
 
 - [ ] **AI Insights Section:**
     - [ ] Displays motivational summaries or patterns at the top of the body.
@@ -66,16 +67,9 @@ The body must handle four distinct states as defined in the design:
     - [x] **Delete Button:** Destructive action, styled in red.
 
 #### **Footer**
-- [ ] **Scribble Input:**
-    - [ ] Fully rounded capsule text field (Glass effect on iOS).
-    - [ ] Placeholder text: "Enter workout (e.g., Bench 100kg 3x5)".
-- [ ] **Send Button:**
-    - [ ] Circular button with an up-arrow icon.
-    - [ ] Integrated into the input field container.
-- [ ] **Floating Navigation Bar:**
-    - [ ] Fixed at the bottom center.
-    - [ ] Icons: Home (Canvas), Star (Insights), Person (Ledger).
-
+- [ ] **Scribble Input**
+- [ ] **Floating Navigation Bar**
+- 
 ### 3.3 Unit & Preference Support
 - [ ] **Weight Unit:** Displays weight in `kg` or `lbs` based on the user's preference stored in `ConfigRepository`.
 

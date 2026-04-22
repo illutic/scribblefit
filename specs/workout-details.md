@@ -19,20 +19,29 @@ The screen allows for granular control over exercises, sets, weights, and repeti
 ## 3. Acceptance Criteria
 
 ### 3.1 Header
-- [ ] Displays a **Back Button** (chevron-left) to return to the previous screen (Canvas or Ledger).
-- [ ] Displays the **Workout Date** (Format: "Monday, October 23").
+- [x] Displays a **Back Button** (chevron-left) to return to the previous screen (Canvas or Ledger). Implemented 2026-04-21 in WorkoutExercisesHeader (Android) and WorkoutExercisesView (iOS).
+- [x] Displays the **Workout Date** (Format: "Monday, October 23"). Implemented 2026-04-21.
+- [x] **Summary Stats Row:** Displays aggregate EXERCISES count, SETS count, and VOLUME total as StatCards. Implemented 2026-04-21.
 - [ ] Sticky header behavior on scroll is preferred.
 
-### 3.2 Exercise List
-- [ ] Displays a list of exercises included in the workout.
+### 3.2 Exercise List (Read-Only View — Implemented 2026-04-21)
+- [x] Displays a list of exercises included in the workout in glassmorphism cards matching canvas visual style.
+- [x] Each exercise card shows:
+    - [x] **Exercise Name:** Bold 28sp with -1 kerning, matching LoggedScribbleCard.
+    - [x] **Formatted Summary:** Weight, sets, and reps (e.g., "80.0 kg * 3 sets * 10 reps").
+    - [x] **Stats:** EST. 1RM and INTENSITY stat cards when available.
+- [x] **Navigation:** Tapping an exercise card navigates to Exercise Details.
+- [ ] **Set List:** Individual set breakdown with weight/reps (not yet implemented — current view shows summary only).
+- [ ] **Editing capabilities** (Add Set, Delete Exercise, weight/reps inputs) are not yet implemented. The current screen is read-only.
+
+### 3.2b Exercise List (Edit Mode — Not Yet Implemented)
 - [ ] Each exercise block includes:
-    - [ ] **Exercise Name:** Clearly displayed at the top of the block.
     - [ ] **Set List:** A numbered list of sets (1, 2, 3...).
     - [ ] **Set Inputs:** Each set row has:
         - [ ] **Weight Input:** Numeric field with unit label (e.g., "lbs" or "kg").
         - [ ] **Reps Input:** Numeric field for repetition count.
     - [ ] **Add Set Button:** Appends a new set row to the exercise.
-    - [ ] **Delete Exercise Button:** A destructive action (typically an icon or "Delete" text) to remove the exercise from the workout.
+    - [ ] **Delete Exercise Button:** A destructive action to remove the exercise from the workout.
 
 ### 3.3 Workout Actions
 - [ ] **Create New Exercise Button:** A prominent button below the exercise list to manually add a new exercise block.

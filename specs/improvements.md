@@ -253,6 +253,90 @@ causing redundant API calls.
 **Fix:** No immediate action required, but document the decision. If sync becomes a
 goal, migrate both platforms to UUIDs.
 
+### 24a. iOS DateFormatter allocation in computed properties
+
+**Affected:** `WorkoutExercisesState.dateString`, `LedgerState.dateRangeString`,
+`LedgerState.GroupedWorkouts.dateString` (iOS)
+
+**Problem:** `DateFormatter()` is allocated on every computed property access.
+`DateFormatter` is notoriously expensive in Swift. These properties are called on
+every SwiftUI body evaluation, creating dozens of formatter instances per second
+during scrolling.
+
+**Fix:** Use a `static let` formatter shared across all instances, or cache the
+formatted string when the date is set rather than computing it on read.
+
+### 24b. iOS WorkoutItem hardcodes "lbs" regardless of weight unit
+
+**Affected:** `WorkoutItem.swift` — `formatMetrics` function (iOS)
+
+**Problem:** The ledger's `WorkoutItem` always uses `String(localized: "lbs")`
+regardless of the user's weight unit preference. No `weightUnit` parameter is
+accepted. Users who have selected kilograms see "lbs" in the ledger.
+
+**Fix:** Thread `WeightUnit` from `LedgerStore` through to `WorkoutItem`. Use
+the weight unit for metric formatting.
+
+### 24c. iOS LedgerStore naming convention inconsistency
+
+**Affected:** `LedgerStore.handleIntent(_:)` (iOS)
+
+**Problem:** Every other Store in the codebase uses `onIntent(_:)`. LedgerStore
+alone uses `handleIntent(_:)`. Minor but breaks naming conventions.
+
+**Fix:** Rename to `onIntent(_:)` for consistency.
+
+---
+
+## P2.5 — Medium-Low (UX Enhancements)
+
+### 24. Swipe-to-change-date on Canvas (Pagination Gesture)
+
+**Affected:** `CanvasScreen` / `CanvasBody` (Android), `CanvasView` / `CanvasBodyView` (iOS)
+
+**Problem:** Changing the date requires tapping the small chevron buttons in the
+header or opening the date picker. This is slow for users who want to quickly browse
+recent days — a common pattern when reviewing the past week's workouts.
+
+**User Story:** As a user, I want to swipe left/right on the Canvas body to navigate
+between days, so I can quickly browse my recent workout history.
+
+**Behaviour:**
+- Swipe left → next day (unless today). Swipe right → previous day.
+- Respect the same guards as chevron buttons (no future dates, 30-day limit).
+- Animate the content transition: outgoing content slides out in the swipe
+  direction, incoming content slides in from the opposite edge. Use a short
+  fade+slide (150–200ms) to indicate the date changed.
+- The header date string should update to match.
+- Coexist with vertical scroll — use a horizontal drag threshold (~40dp) before
+  committing to a page swipe, so normal vertical scrolling is unaffected.
+
+**Android Implementation:**
+- Wrap `CanvasBody` in a `HorizontalPager` (Compose Foundation) with
+  `pageCount = daysAvailable` and `state = rememberPagerState(initialPage = currentIndex)`.
+- Map page index ↔ date offset from today: `page 0 = today`, `page 1 = yesterday`, etc.
+- On `snappedPage` change, emit `CanvasIntent.OnDateSelected(dateForPage)`.
+- Alternatively, use `Modifier.pointerInput` with `detectHorizontalDragGestures`
+  for lighter-weight gesture detection without a full pager (avoids pre-loading
+  adjacent pages).
+
+**iOS Implementation:**
+- Use `TabView(selection:)` with `.tabViewStyle(.page(indexDisplayMode: .never))`
+  wrapping per-day content, or use a `ScrollView(.horizontal, showsIndicators: false)`
+  with `scrollTargetBehavior(.paging)`.
+- Alternatively, attach `.gesture(DragGesture())` to `CanvasBodyView` and
+  commit on `onEnded` when `translation.width > threshold`.
+- On page change, call `store.onIntent(.onDateSelected(newDate))`.
+
+**Edge cases:**
+- Rapid swiping: debounce or queue date changes so data loading keeps up.
+- IME open: disable horizontal swipe while the keyboard is visible to avoid
+  gesture conflicts with text input.
+- Empty days: swiping to a day with no scribbles should still show the empty state
+  with the correct date — not skip empty days.
+
+**Priority:** P2.5 — Nice UX polish, not blocking any functionality.
+
 ---
 
 ## Execution Order
@@ -266,3 +350,5 @@ goal, migrate both platforms to UUIDs.
 | 5 | #14, #15, #16 | Features — InsightsScreen, date range, caching |
 | 6 | #17, #18 | UX — strings, accessibility, confirmation dialogs |
 | 7 | #19–#23 | Polish — queries, batching, thresholds, cache keys |
+| 8 | #24a, #24b, #24c | iOS polish — DateFormatter perf, weight unit bug, naming |
+| 9 | #24 (P2.5) | UX — swipe-to-change-date on Canvas |
