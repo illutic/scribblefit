@@ -17,6 +17,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.scribblefit.core.designsystem.ScribbleFitTheme
+import com.scribblefit.feature.settings.ui.components.AIConfigurationSection
+import com.scribblefit.feature.settings.ui.components.AppearanceSection
+import com.scribblefit.feature.settings.ui.components.DataManagementSection
+import com.scribblefit.feature.settings.ui.components.UnitsSection
 
 @Composable
 internal fun SettingsScreen(

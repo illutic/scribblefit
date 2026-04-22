@@ -21,7 +21,8 @@ let package = Package(
         .package(path: "LocalPackages/Features/FeatureSettings"),
         .package(path: "LocalPackages/Features/FeatureInsights"),
         .package(path: "LocalPackages/Features/FeatureLedger"),
-        .package(path: "LocalPackages/Features/FeatureSets")
+        .package(path: "LocalPackages/Features/FeatureSets"),
+        .package(path: "LocalPackages/Features/FeatureExercises")
     ],
     targets: [
         .target(
@@ -40,7 +41,8 @@ let package = Package(
                 .product(name: "FeatureSettings", package: "FeatureSettings"),
                 .product(name: "FeatureInsights", package: "FeatureInsights"),
                 .product(name: "FeatureLedger", package: "FeatureLedger"),
-                .product(name: "FeatureSets", package: "FeatureSets")
+                .product(name: "FeatureSets", package: "FeatureSets"),
+                .product(name: "FeatureExercises", package: "FeatureExercises")
             ],
             path: "Sources/ScribbleFitAggregator"
         ),
@@ -60,7 +62,8 @@ let package = Package(
                 .product(name: "FeatureWorkouts", package: "FeatureWorkouts"),
                 .product(name: "FeatureConfig", package: "FeatureConfig"),
                 .product(name: "CoreFirebase", package: "CoreFirebase"),
-                .product(name: "FeatureSets", package: "FeatureSets")
+                .product(name: "FeatureSets", package: "FeatureSets"),
+                .product(name: "FeatureExercises", package: "FeatureExercises")
             ],
             path: "ScribbleFitTests"
         ),

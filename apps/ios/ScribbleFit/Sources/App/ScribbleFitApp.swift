@@ -14,6 +14,7 @@ import FeatureSettings
 import FeatureInsights
 import FeatureLedger
 import FeatureSets
+import FeatureExercises
 
 class ScribbleFitAppCheckProviderFactory: NSObject, AppCheckProviderFactory {
     func createProvider(with app: FirebaseApp) -> AppCheckProvider? {
@@ -55,7 +56,10 @@ struct ScribbleFitApp: App {
     private let getFrequencyInsightsUseCase: GetFrequencyInsightsUseCase
     private let getMuscleDistributionInsightsUseCase: GetMuscleDistributionInsightsUseCase
     private let updateScribbleWithWorkoutUseCase: UpdateScribbleWithWorkoutUseCase
+    private let manualEditScribbleUseCase: ManualEditScribbleUseCase
     private let reorderSetsUseCase: ReorderSetsUseCase
+    private let getExerciseDetailsUseCase: GetExerciseDetailsUseCase
+    private let getExerciseAIInsightUseCase: GetExerciseAIInsightUseCase
 
     // Stores
     private let canvasStore: CanvasStore
@@ -121,10 +125,15 @@ struct ScribbleFitApp: App {
             self.getVolumeInsightsUseCase = GetVolumeInsightsUseCase(workoutRepository: workoutRepo)
             self.getFrequencyInsightsUseCase = GetFrequencyInsightsUseCase(workoutRepository: workoutRepo)
             self.getMuscleDistributionInsightsUseCase = GetMuscleDistributionInsightsUseCase(workoutRepository: workoutRepo)
-            
+
             let reorderSetsUC = ReorderSetsUseCase()
             self.reorderSetsUseCase = reorderSetsUC
             self.updateScribbleWithWorkoutUseCase = UpdateScribbleWithWorkoutUseCase(scribbleRepository: scribbleRepo, workoutRepository: workoutRepo)
+            let manualEditScribbleUC = ManualEditScribbleUseCase(scribbleRepository: scribbleRepo)
+            self.manualEditScribbleUseCase = manualEditScribbleUC
+
+            self.getExerciseDetailsUseCase = GetExerciseDetailsUseCase(workoutRepository: workoutRepo)
+            self.getExerciseAIInsightUseCase = GetExerciseAIInsightUseCase(llmService: routingLLM)
 
             // Stores
             self.canvasStore = CanvasStore(
@@ -135,6 +144,7 @@ struct ScribbleFitApp: App {
                 parsePendingScribblesUseCase: parsePendingScribblesUseCase,
                 getAIOverviewUseCase: getAIOverviewUseCase,
                 updateScribbleWithWorkoutUseCase: updateScribbleWithWorkoutUseCase,
+                manualEditScribbleUseCase: manualEditScribbleUC,
                 reorderSetsUseCase: reorderSetsUC,
                 configRepository: configRepo
             )
@@ -156,7 +166,8 @@ struct ScribbleFitApp: App {
             )
 
             self.ledgerStore = LedgerStore(
-                getWorkoutsInRangeUseCase: getWorkoutsInRangeUseCase
+                getWorkoutsInRangeUseCase: getWorkoutsInRangeUseCase,
+                configRepository: configRepo
             )
 
         } catch {
@@ -171,7 +182,11 @@ struct ScribbleFitApp: App {
                 canvasStore: canvasStore,
                 settingsStore: settingsStore,
                 insightsStore: insightsStore,
-                ledgerStore: ledgerStore
+                ledgerStore: ledgerStore,
+                getExerciseDetailsUseCase: getExerciseDetailsUseCase,
+                getExerciseAIInsightUseCase: getExerciseAIInsightUseCase,
+                configRepository: configRepository,
+                workoutRepository: workoutRepository
             )
         }
         .modelContainer(modelContainer)
@@ -183,6 +198,11 @@ struct ContentView: View {
     @Bindable var settingsStore: SettingsStore
     @Bindable var insightsStore: InsightsStore
     @Bindable var ledgerStore: LedgerStore
+    
+    let getExerciseDetailsUseCase: GetExerciseDetailsUseCase
+    let getExerciseAIInsightUseCase: GetExerciseAIInsightUseCase
+    let configRepository: ConfigRepository
+    let workoutRepository: WorkoutRepository
 
     @State private var selectedTab = 0
 
@@ -190,7 +210,11 @@ struct ContentView: View {
         TabView(selection: $selectedTab) {
             CanvasView(
                 store: canvasStore,
-                settingsStore: settingsStore
+                settingsStore: settingsStore,
+                getExerciseDetailsUseCase: getExerciseDetailsUseCase,
+                getExerciseAIInsightUseCase: getExerciseAIInsightUseCase,
+                configRepository: configRepository,
+                workoutRepository: workoutRepository
             )
             .tabItem {
                 Label(String(localized: "Today"), systemImage: "house.fill")
@@ -206,7 +230,10 @@ struct ContentView: View {
             LedgerView(
                 store: ledgerStore,
                 onNavigateToCanvas: { selectedTab = 0 },
-                onNavigateToWorkoutDetails: { _ in /* TODO: Implement navigation */ }
+                getExerciseDetailsUseCase: getExerciseDetailsUseCase,
+                getExerciseAIInsightUseCase: getExerciseAIInsightUseCase,
+                configRepository: configRepository,
+                workoutRepository: workoutRepository
             )
             .tabItem {
                 Label(String(localized: "Ledger"), systemImage: "person.fill")

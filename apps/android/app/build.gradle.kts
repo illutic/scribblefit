@@ -39,6 +39,7 @@ dependencies {
     implementation(project(":feature:ai:data"))
     implementation(project(":feature:exercises:data"))
     implementation(project(":feature:exercises:domain"))
+    implementation(project(":feature:exercises:ui"))
     implementation(project(":feature:workouts:data"))
     implementation(project(":feature:workouts:domain"))
     implementation(project(":feature:sets:data"))

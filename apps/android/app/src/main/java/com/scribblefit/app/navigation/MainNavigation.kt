@@ -14,6 +14,8 @@ import com.scribblefit.core.designsystem.ScribbleFitTheme
 import com.scribblefit.core.navigation.NavState
 import com.scribblefit.core.navigation.Screen
 import com.scribblefit.feature.canvas.ui.CanvasRoute
+import com.scribblefit.feature.exercises.ui.ExerciseDetailsRoute
+import com.scribblefit.feature.exercises.ui.WorkoutExercisesRoute
 import com.scribblefit.feature.insights.ui.InsightsRoute
 import com.scribblefit.feature.ledger.ui.LedgerRoute
 import com.scribblefit.feature.settings.ui.SettingsRoute
@@ -51,6 +53,18 @@ fun MainNavigation(
             Screen.Settings -> {
                 NavEntry(screen) {
                     SettingsRoute(onBackClick = onBack)
+                }
+            }
+
+            is Screen.ExerciseDetails -> {
+                NavEntry(screen) {
+                    ExerciseDetailsRoute(exerciseName = screen.exerciseName)
+                }
+            }
+
+            is Screen.WorkoutExercises -> {
+                NavEntry(screen) {
+                    WorkoutExercisesRoute(workoutId = screen.workoutId)
                 }
             }
         }

@@ -36,7 +36,7 @@ include(
 )
 include(":feature:ai:domain", ":feature:ai:data")
 include(":feature:scribble:domain", ":feature:scribble:data")
-include(":feature:exercises:domain", ":feature:exercises:data")
+include(":feature:exercises:domain", ":feature:exercises:data", ":feature:exercises:ui")
 include(":feature:workouts:domain", ":feature:workouts:data")
 include(":feature:sets:domain", ":feature:sets:data")
 include(":feature:insights:domain", ":feature:insights:data", ":feature:insights:ui")

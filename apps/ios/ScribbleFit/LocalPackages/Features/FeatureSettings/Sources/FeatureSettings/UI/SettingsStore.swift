@@ -33,16 +33,17 @@ public final class SettingsStore {
     }
 
     private func loadInitialData() {
-        state.config = configRepository.getConfig()
+        state = state.copy(config: configRepository.getConfig())
         
         Task {
-            state.isLocalLlmSupported = await checkLocalSupportUseCase.execute()
+            let isSupported = await checkLocalSupportUseCase.execute()
+            state = state.copy(isLocalLlmSupported: isSupported)
         }
         
         configRepository.configPublisher
             .receive(on: RunLoop.main)
             .sink { [weak self] config in
-                self?.state.config = config
+                self?.state = self?.state.copy(config: config) ?? .init()
             }
             .store(in: &cancellables)
     }
@@ -71,23 +72,23 @@ public final class SettingsStore {
             clearData()
             
         case .showClearConfirmation(let show):
-            state.isShowingClearConfirmation = show
+            state = state.copy(isShowingClearConfirmation: show)
             
         case .dismissError:
-            state.error = nil
+            state = state.copy(error: .some(nil))
         }
     }
 
     private func exportData() {
-        state.isExporting = true
+        state = state.copy(isExporting: true)
         Task {
             do {
                 let url = try await exportUserDataUseCase.execute()
-                state.exportURL = url
+                state = state.copy(exportURL: url)
             } catch {
-                state.error = "Failed to export data: \(error.localizedDescription)"
+                state = state.copy(error: "Failed to export data: \(error.localizedDescription)")
             }
-            state.isExporting = false
+            state = state.copy(isExporting: false)
         }
     }
 
@@ -95,9 +96,9 @@ public final class SettingsStore {
         Task {
             do {
                 try await clearAllDataUseCase.execute()
-                state.isShowingClearConfirmation = false
+                state = state.copy(isShowingClearConfirmation: false)
             } catch {
-                state.error = "Failed to clear data: \(error.localizedDescription)"
+                state = state.copy(error: "Failed to clear data: \(error.localizedDescription)")
             }
         }
     }

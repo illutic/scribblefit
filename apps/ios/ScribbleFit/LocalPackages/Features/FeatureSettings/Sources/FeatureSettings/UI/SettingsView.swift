@@ -17,47 +17,52 @@ public struct SettingsView: View {
                 Color.scribbleBackground.ignoresSafeArea()
                 
                 ScrollView {
-                    VStack(spacing: 32) {
-                        SettingsHeader(onDismiss: onDismiss)
-                        
-                        VStack(spacing: 32) {
-                            SettingsAppearanceSection(
-                                theme: Binding(
-                                    get: { store.state.config.themePreference },
-                                    set: { store.onIntent(.updateTheme($0)) }
-                                )
-                            )
-                            
-                            SettingsAISection(
-                                provider: Binding(
-                                    get: { store.state.config.preferredLlmProvider },
-                                    set: { store.onIntent(.updateLlmProvider($0)) }
-                                ),
-                                isLocalSupported: store.state.isLocalLlmSupported,
-                                onIntent: store.onIntent
-                            )
-                            
-                            SettingsUnitSection(
-                                unit: Binding(
-                                    get: { store.state.config.weightUnit },
-                                    set: { store.onIntent(.updateWeightUnit($0)) }
-                                )
-                            )
-                            
-                            SettingsDataSection(
-                                isExporting: store.state.isExporting,
-                                onIntent: store.onIntent
-                            )
-                        }
-                        .padding(.horizontal, 24)
-                        
-                        SettingsFooter()
-                    }
-                    .padding(.vertical, 24)
+                    SettingsAppearanceSection(
+                        theme: Binding(
+                            get: { store.state.config.themePreference },
+                            set: { store.onIntent(.updateTheme($0)) }
+                        )
+                    )
+                    
+                    SettingsAISection(
+                        provider: Binding(
+                            get: { store.state.config.preferredLlmProvider },
+                            set: { store.onIntent(.updateLlmProvider($0)) }
+                        ),
+                        isLocalSupported: store.state.isLocalLlmSupported,
+                        onIntent: store.onIntent
+                    )
+                    
+                    SettingsUnitSection(
+                        unit: Binding(
+                            get: { store.state.config.weightUnit },
+                            set: { store.onIntent(.updateWeightUnit($0)) }
+                        )
+                    )
+                    
+                    SettingsDataSection(
+                        isExporting: store.state.isExporting,
+                        onIntent: store.onIntent
+                    )
                 }
-                .scrollDismissesKeyboard(.interactively)
+                .padding(.horizontal, 24)
+                
+                SettingsFooter()
             }
-            .toolbar(.hidden)
+            .toolbar {
+                ToolbarItem(placement: .title) {
+                    Text(String(localized: "Settings"))
+                        .font(.scribbleHeadlineSmall)
+                        .foregroundStyle(Color.scribblePrimary)
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(action: onDismiss) {
+                        Image(systemName: "xmark")
+                            .font(.system(size: 16, weight: .bold))
+                            .foregroundStyle(Color.scribblePrimary)
+                    }
+                }
+            }
             .alert(String(localized: "Clear All Data"), isPresented: $store.state.isShowingClearConfirmation) {
                 Button(String(localized: "Cancel"), role: .cancel) { }
                 Button(String(localized: "Clear Everything"), role: .destructive) {
