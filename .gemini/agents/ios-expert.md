@@ -21,7 +21,9 @@ You are a senior iOS engineer specializing in ScribbleFit's Pure SwiftUI MVI arc
 - **No Base Classes:** Every `Store`, `Repository`, and `UseCase` must be autonomous.
 - **Store (ViewModel):** `@Observable` and `@MainActor` classes. Orchestrate UI state via Use Cases. Zero business logic.
 - **State:** A simple `struct` representing the entire UI state. Resolves all UI strings (labels, hints, and formatted messages) using `LocalizedStringResource` or pre-resolved `String` values.
-- **Formatting:** String formatting logic MUST be encapsulated in the `State` or `Store`.
+- **Formatting:** Complex string formatting logic (e.g., grouping sets like "3x10, 1x8 @ 80kg") MUST be encapsulated in Domain Use Cases (e.g., `FormatExerciseSummaryUseCase`) to ensure parity with Android. 
+- **Pure State Enforcement:** `State` structs MUST remain pure data containers. Use Cases MUST NOT be orchestrated within the `State` or `Store` initializers. Stores MUST inject formatting Use Cases and pass pre-mapped UI models to the `State`.
+- **Immutable State Updates:** `State` structs and Domain models MUST implement a `copy()` function to support Kotlin-style immutable updates (e.g., `state = state.copy(isLoading: true)`). Avoid direct property mutation in Stores.
 - **Intent:** User actions handled by the Store.
 - **Best-in-Class Defaults (Editorial Minimalism):** Challenge the need for new user-facing settings. Prefer hardcoding optimal defaults (e.g., `gemini-2.0-flash`) in the data layer to reduce domain and state complexity.
 - **Use Cases:** The *only* place for business logic. Must conform to `Sendable` and be isolated to `@MainActor` when interacting with the Store or Repository.
@@ -74,6 +76,7 @@ You are a senior iOS engineer specializing in ScribbleFit's Pure SwiftUI MVI arc
 
 ### 5. Navigation & UI Patterns
 - **Navigation Abstraction:** Views SHOULD prefer closure-based navigation (e.g., `onNavigate: (UUID) -> Void`) over injecting child stores, keeping the view focused on presentation.
+- **Decentralized Navigation (Sheet Ownership):** Detail sheets (e.g., `ExerciseDetailsView`) MUST be owned and presented by their parent feature view (e.g., `LedgerView`) rather than the root `ContentView` to prevent unnecessary root re-evaluations and UI flicker.
 - **Module Discipline:** Adding a new feature requires (1) defining the target in `Package.swift`, (2) adding dependencies to consuming targets, and (3) updating imports in the Store.
 - **Editorial Minimalism:**
     - **Zero-States:** Handle optional/null numeric values with human-friendly labels (e.g., "Bodyweight" for null weight) in UI summaries.

@@ -1,57 +1,20 @@
 # Technical Debt & Architectural Improvements
 
-This document tracks identified technical debt, performance bottlenecks, and deviations from project guidelines in the ScribbleFit Android implementation.
-
-## 🏛️ Architectural Deviations
-
-### 1. Incomplete Atomic Update Pattern [FIXED]
-*   **Fix:** Implemented `ConfirmScribbleUseCase` to sync UI edits back to DB before re-linking. Fixed DAO methods for targeted updates.
-
-### 2. Business Logic in ViewModels [FIXED]
-*   **Fix:** Moved set re-indexing logic to `ReorderSetsUseCase` in the domain layer.
-
-### 3. Brittle Date Calculations [FIXED]
-*   **Fix:** DAOs updated to use robust range queries instead of fixed millisecond constants.
+This document tracks identified technical debt, performance bottlenecks, and deviations
+from project guidelines. Fixed items are archived in `fixed_tech_debt.md`.
 
 ---
 
-## ⚡ Performance & Efficiency
+## Remaining Tech Debt
 
-### 4. N+1 Query Problem on Canvas [FIXED]
-*   **Fix:** `GetScribblesForDateUseCase` now uses the `@Relation` data from `ScribbleWithExercises` directly.
+### 41. Mapping Logic in ScribbleRepositoryImpl (Android)
+*   **Severity:** Low
+*   **File:** `ScribbleRepositoryImpl.kt`
+*   **Problem:** Contains significant mapping-like operations that should be moved to a dedicated mapper file in `:core:database`.
+*   **Fix:** Extract mapping logic to `com.scribblefit.core.database.mapper`.
 
-### 5. Over-Collection in Insights [FIXED]
-*   **Fix:** `InsightsViewModel` refactored to use `stateIn` with `flatMapLatest`.
-
----
-
-## 🛡️ Resilience & UX
-
-### 6. Stuck "Parsing" Status Recovery [FIXED]
-*   **Fix:** `ParsePendingScribblesUseCase` now retries `PARSING` scribbles on app start and includes a session-level tracker to prevent redundant parsing.
-
-### 7. Generic Error Handling [FIXED]
-*   **Fix:** Implemented typed error classes (e.g., `ScribbleError`) to provide semantic context for failures, moving away from generic `Result<Unit>` exceptions.
-
-## 📐 Guideline Violations (UI & Layout)
-
-### 10. Missing Adaptive Width Constraints [FIXED]
-*   **Fix:** Applied `widthIn(max = 600.dp)` to content columns in `Canvas`, `Insights`, `Ledger`, and `ScribbleConfirmationBottomSheet`.
-
-### 11. Hardcoded Strings in UI [FIXED]
-*   **Fix:** Moved "Set", "reps", and "x" strings to `strings.xml` and resolved them via `CanvasState`.
-
-### 12. Missing IME Padding on Canvas [FIXED]
-*   **Fix:** Applied `.imePadding()` to the root layout of `CanvasScreen`.
-
-### 13. Insecure Client-Side API Keys [FIXED]
-*   **Fix:** Migrated to Firebase Vertex AI (Firebase.ai), which handles authentication via Google Services and Firebase App Check, eliminating the need for hardcoded client-side keys.
-
-
----
-
-## 🍎 iOS Specific Debt
-
-### 14. Single-Component File Pattern Violations [FIXED]
-*   **Fix:** Refactored `InsightsView.swift`, `CanvasView.swift`, and `SettingsView.swift` by extracting all sub-components into standalone files within `Components/` directories.
-
+### 42. Date Pattern Hardcoded in State (Android)
+*   **Severity:** Low
+*   **Files:** `WorkoutExercisesState.kt`, `CanvasState.kt`
+*   **Problem:** Date patterns are hardcoded in static formatters.
+*   **Fix:** Move patterns to `strings.xml`.

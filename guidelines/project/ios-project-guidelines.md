@@ -40,6 +40,10 @@
 - **Status Enum Consistency:** Enforce uppercase raw values for status enums (e.g., `case failed = "FAILED"`) to ensure alignment with technical specifications and cross-platform (Android) implementation.
 - **Resilient Mapping:** When mapping from storage (String) to Domain (Enum), `toDomain()` mapping MUST use `.uppercased()` on the status string to handle case-insensitive database values safely.
 - **End-to-End Nullability:** Maintain nullability parity across all layers (Store -> Use Case -> Repository -> SwiftData). If a value can be cleared, the underlying schema and repository methods MUST support `Optional` types.
+- **Formatting Use Cases:** Complex formatting logic that requires business rules (e.g., grouping sets as "3x10, 1x8 @ 80kg") MUST be implemented as a Domain Use Case (e.g., `FormatExerciseSummaryUseCase`). This ensures identical formatting logic across Android and iOS and prevents "formatting leak" into the UI layer.
+- **Pure State Enforcement:** `State` structs MUST remain pure data containers. 
+    - **No Logic Orchestration:** Use Cases MUST NOT be instantiated or orchestrated within the `State` struct or `Store` initializer. 
+    - **Pre-Mapped UI Models:** Stores MUST inject the necessary formatting Use Cases and pass pre-mapped, ready-to-display UI models to the `State`. 
 
 ## 7. History & Time Integrity
 - **Rolling History Pattern:** Features displaying historical data (e.g., Ledger, Insights) MUST default to a "Rolling 30-Day Window". This ensures the UI remains focused on recent, relevant activity while providing a consistent starting point across features.
@@ -64,6 +68,7 @@
 ## 3. UI & Design System (DRY)
 - **Native Navigation:** Prefer native `ToolbarItem` placements (`.principal`, `.topBarTrailing`) over custom `HeaderView` components.
 - **Navigation Abstraction:** Views SHOULD prefer closure-based navigation (e.g., `onNavigate: (UUID) -> Void`) over injecting child stores for navigation purposes, keeping the view focused on presentation.
+- **Decentralized Navigation (Sheet Ownership):** Detail sheets (e.g., `ExerciseDetailsView`) MUST be owned and presented by their parent feature view (e.g., `LedgerView`) rather than the root `ContentView`. This local ownership prevents unnecessary root state re-evaluations and ensures smooth dismissal transitions without UI "flicker".
 - **Editorial Minimalism:**
     - **Zero-States:** Handle optional or null numeric values with human-friendly labels (e.g., "Bodyweight" for a null `weight` in an exercise summary).
     - **Visual Hierarchy:** Use brand-defined semantic colors and weight (e.g., `Color.scribblePrimary`) to guide user attention.

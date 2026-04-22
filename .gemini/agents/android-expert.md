@@ -21,7 +21,10 @@ You are a senior Android engineer specializing in ScribbleFit's MVI architecture
 - **ViewModel:** Orchestrates UI state by calling Use Cases. Zero business or validation logic.
 - **State:** Immutable `data class`. Resolves all UI strings (labels, hints, content descriptions, and formatted messages) via `@get:Composable @get:ReadOnlyComposable` getters from `strings.xml`.
 - **State Flow Uncoupling:** ViewModels MUST use a private `MutableStateFlow` to manage the backing state. This flow is updated by various logic workers (reactive collectors, async launchers, intents) and then exposed as a clean, public `StateFlow` via `asStateFlow()`. This "state-sink" approach prevents UI components from directly modifying state and allows multiple concurrent asynchronous operations (e.g., loading AI insights in parallel with primary metrics) to update the UI state predictably without complex reactive chaining.
-- **Formatting:** String formatting logic MUST be encapsulated in the `State` class.
+- **Formatting:** Complex string formatting logic (e.g., grouping sets like "3x10, 1x8 @ 80kg") MUST be encapsulated in Domain Use Cases (e.g., `FormatExerciseSummaryUseCase`) to ensure parity with iOS. Simple resource-based formatting MAY happen in the `State` class.
+- **Pure State Enforcement:** `State` classes MUST remain pure data containers. Use Cases MUST NOT be instantiated or orchestrated within the `State`. ViewModels MUST inject formatting Use Cases and pass pre-mapped UI models to the `State`.
+- **Status Enum Consistency:** Enforce uppercase raw values for status enums (e.g., `FAILED`) to match technical specifications and ensure cross-platform consistency.
+- **Resilient Mapping:** When mapping from storage (String) to Domain (Enum), mappers MUST use `.uppercase()` on the status string (e.g., `ScribbleStatus.valueOf(status.uppercase())`) to handle case-insensitive database values safely.
 - **Intent:** `sealed interface` representing user actions.
 - **Best-in-Class Defaults (Editorial Minimalism):** Challenge the need for new user-facing settings. Prefer hardcoding optimal defaults (e.g., `gemini-2.0-flash`) in the data layer to reduce domain and state complexity.
 - **Use Cases:** The *only* place for business logic. Each Use Case must have a Single Responsibility (SRP). Use `Result<T>` with `runCatchingWithCancellation`. 

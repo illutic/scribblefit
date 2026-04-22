@@ -23,6 +23,11 @@
 - **Mappers:** Pure functions to isolate database entities from domain logic.
     - **Status Enum Consistency:** Enforce uppercase raw values for status enums (e.g., `FAILED`) to match technical specifications and ensure cross-platform consistency.
     - **Resilient Mapping:** When mapping from storage (String) to Domain (Enum), mappers MUST use `.uppercase()` on the status string (e.g., `ScribbleStatus.valueOf(status.uppercase())`) to handle case-insensitive database values safely.
+    - **Formatting Use Cases:** Complex formatting logic that requires business rules (e.g., grouping sets as "3x10, 1x8 @ 80kg") MUST be implemented as a Domain Use Case (e.g., `FormatExerciseSummaryUseCase`). This ensures identical formatting logic across Android and iOS and prevents "formatting leak" into the UI layer.
+- **Pure State Enforcement:** `State` classes MUST remain pure data containers. 
+    - **No Logic Orchestration:** Use Cases MUST NOT be instantiated or orchestrated within the `State` class. 
+    - **Pre-Mapped UI Models:** ViewModels MUST inject the necessary formatting Use Cases and pass pre-mapped, ready-to-display UI models to the `State`. 
+    - **Resource Resolution Exception:** On Android, `State` classes MAY contain `@get:Composable @get:ReadOnlyComposable` getters for resolving `strings.xml` resources, but these getters MUST NOT contain business logic or formatting orchestration.
 - **End-to-End Nullability:** If a domain property is nullable (e.g., `Double?`), the entire architectural chain (Intent -> Use Case -> Repository -> DAO) MUST explicitly support nullability to allow "clearing" values. Use Cases MUST NOT force non-null defaults unless required by business logic.
 - **Data Export:** Entities and Domain Models intended for JSON export MUST be annotated with `@Serializable` from `kotlinx.serialization`.
 
