@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="workout_exercises_title">Workout</string>
+    <string name="workout_exercises_exercises_label">EXERCISES</string>
+    <string name="workout_exercises_sets_label">SETS</string>
+    <string name="workout_exercises_volume_label">VOLUME</string>
+    <string name="workout_exercises_estimated_1rm_format">EST. 1RM: %1$d%2$s</string>
+    <string name="workout_exercises_intensity_format">INTENSITY: %1$d%%</string>
+    <string name="workout_exercises_improvement_format">VS LAST: %1$s%2$s</string>
+    <string name="workout_exercises_weight_unit_kg">kg</string>
+    <string name="workout_exercises_weight_unit_lb">lb</string>
+    <string name="workout_exercises_volume_format">%1$s %2$s</string>
+    <string name="workout_exercises_back">Back</string>
+
+    <!-- Exercise Details Strings -->
+    <string name="exercise_details_recommendation">RECOMMENDATION</string>
+    <string name="exercise_details_no_insights">Perform more sessions to get AI recommendations.</string>
+    <string name="exercise_details_trends">TRENDS</string>
+    <string name="exercise_details_view_all">VIEW ALL</string>
+    <string name="exercise_details_current_1rm">Current 1RM</string>
+    <string name="exercise_details_last_volume">Last Volume</string>
+    <string name="exercise_details_history">HISTORY</string>
+    <string name="exercise_details_view_all_sessions">View all tracked sessions</string>
+    <string name="exercise_details_total_sessions_format">%d total sessions recorded</string>
+    <string name="exercise_details_weekly_performance">WEEKLY PERFORMANCE</string>
+    <string name="exercise_details_activity">Activity</string>
+    <string name="exercise_details_sessions_unit">sessions</string>
+    <string name="exercise_details_volume">Volume</string>
+    <string name="exercise_details_max_weight">Max Weight</string>
+
+    <!-- Trend Directions -->
+    <string name="trend_improving">IMPROVING</string>
+    <string name="trend_stable">STABLE</string>
+    <string name="trend_plateaued">PLATEAUED</string>
+    <string name="trend_declining">DECLINING</string>
+</resources>

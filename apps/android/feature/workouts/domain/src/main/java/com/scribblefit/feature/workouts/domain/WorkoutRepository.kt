@@ -10,4 +10,5 @@ interface WorkoutRepository {
     fun getWorkoutByDate(date: Long): Flow<Workout?>
     fun getWorkoutById(workoutId: Long): Flow<Workout?>
     fun getWorkoutsInRange(startDate: Long, endDate: Long): Flow<List<Workout>>
+    fun getWorkoutsWithExercise(exerciseName: String): Flow<List<Workout>>
 }

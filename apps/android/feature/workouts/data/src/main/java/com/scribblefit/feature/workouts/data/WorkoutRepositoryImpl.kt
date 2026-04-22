@@ -90,4 +90,10 @@ internal class WorkoutRepositoryImpl(
             .flowOn(coroutineDispatcher)
             .map { list -> list.map { it.toDomain() } }
 
+    override fun getWorkoutsWithExercise(exerciseName: String): Flow<List<Workout>> =
+        workoutDao
+            .getWorkoutsByExerciseName(exerciseName)
+            .flowOn(coroutineDispatcher)
+            .map { list -> list.map { it.toDomain() } }
+
 }

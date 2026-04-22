@@ -6,6 +6,7 @@ import com.scribblefit.feature.workouts.data.WorkoutRepositoryImpl
 import com.scribblefit.feature.workouts.domain.WorkoutRepository
 import com.scribblefit.feature.workouts.domain.usecase.GetWorkoutByDateUseCase
 import com.scribblefit.feature.workouts.domain.usecase.GetWorkoutUseCase
+import com.scribblefit.feature.workouts.domain.usecase.GetWorkoutWithExercisesUseCase
 import com.scribblefit.feature.workouts.domain.usecase.InsertWorkoutUseCase
 import com.scribblefit.feature.workouts.domain.usecase.UpdateWorkoutUseCase
 import dagger.Module
@@ -54,6 +55,23 @@ internal object WorkoutModule {
         repository = workoutRepository,
         coroutineDispatcher = coroutineDispatcherProvider.default()
     )
+
+    @Provides
+    fun provideGetWorkoutWithExercisesUseCase(
+        workoutRepository: WorkoutRepository,
+        coroutineDispatcherProvider: CoroutineDispatcherProvider
+    ): GetWorkoutWithExercisesUseCase = GetWorkoutWithExercisesUseCase(
+        repository = workoutRepository,
+        coroutineDispatcher = coroutineDispatcherProvider.default()
+    )
+
+    @Provides
+    fun provideCalculateWorkoutVolumeUseCase(): com.scribblefit.feature.workouts.domain.usecase.CalculateWorkoutVolumeUseCase =
+        com.scribblefit.feature.workouts.domain.usecase.CalculateWorkoutVolumeUseCase()
+
+    @Provides
+    fun provideFormatWorkoutSummaryUseCase(): com.scribblefit.feature.workouts.domain.usecase.FormatWorkoutSummaryUseCase =
+        com.scribblefit.feature.workouts.domain.usecase.FormatWorkoutSummaryUseCase()
 
     @Provides
     fun provideUpdateWorkoutUseCase(

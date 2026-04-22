@@ -10,5 +10,4 @@ android {
 dependencies {
     implementation(project(":core:model"))
     implementation(project(":core:common"))
-    implementation(project(":feature:exercises:domain"))
 }
