@@ -1,12 +1,13 @@
 package com.scribblefit.feature.ai.data.engine
 
 import com.google.firebase.Firebase
-import com.google.firebase.ai.type.generationConfig
 import com.google.firebase.ai.ai
 import com.google.firebase.ai.type.GenerativeBackend
+import com.google.firebase.ai.type.generationConfig
 import com.scribblefit.core.config.domain.ConfigRepository
 import com.scribblefit.core.model.AIInsight
 import com.scribblefit.core.model.Exercise
+import com.scribblefit.core.model.ExercisePerformanceInsight
 import com.scribblefit.feature.ai.data.entity.AIInsightDto
 import com.scribblefit.feature.ai.data.entity.WorkoutDto
 import com.scribblefit.feature.ai.data.entity.toDomain
@@ -31,7 +32,9 @@ internal class GeminiAIEngine(
     override suspend fun isSupported(): Boolean = true
 
     override suspend fun parseWorkout(rawText: String): Result<ParsedWorkoutResult> = runCatching {
-        val prompt = config.parsePrompt.replace("{{rawText}}", rawText)
+        // Sanitize input to prevent prompt injection by escaping delimiters
+        val sanitizedInput = rawText.replace("""[\{\}]""".toRegex(), " ")
+        val prompt = config.parsePrompt.replace("{{rawText}}", "<workout_scribble>$sanitizedInput</workout_scribble>")
         val startMs = System.currentTimeMillis()
         
         val response = getModel().generateContent(prompt)
@@ -56,7 +59,8 @@ internal class GeminiAIEngine(
                 "${exercise.canonicalName} (${exercise.muscleGroup}): $sets"
             }
 
-            val prompt = config.summaryPrompt.replace("{{workoutData}}", context)
+            val sanitizedContext = context.replace("""[\{\}]""".toRegex(), " ")
+            val prompt = config.summaryPrompt.replace("{{workoutData}}", "<workout_history>$sanitizedContext</workout_history>")
 
             val response = getModel().generateContent(prompt)
             val responseText = response.text ?: error("No response from Gemini")
@@ -64,5 +68,17 @@ internal class GeminiAIEngine(
 
             val dtos = json.decodeFromString<List<AIInsightDto>>(cleanJson)
             dtos.map { it.toDomain() }
+        }
+
+    override suspend fun generateExerciseInsight(history: String): Result<ExercisePerformanceInsight> =
+        runCatching {
+            val sanitizedHistory = history.replace("""[\{\}]""".toRegex(), " ")
+            val prompt = config.insightPrompt.replace("{{exerciseHistory}}", "<exercise_history>$sanitizedHistory</exercise_history>")
+
+            val response = getModel().generateContent(prompt)
+            val responseText = response.text ?: error("No response from Gemini")
+            val cleanJson = responseText.replaceFirst("```json", "").replaceFirst("```", "").trim()
+
+            json.decodeFromString<ExercisePerformanceInsight>(cleanJson)
         }
 }

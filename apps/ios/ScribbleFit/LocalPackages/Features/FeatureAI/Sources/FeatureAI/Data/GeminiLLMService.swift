@@ -7,7 +7,6 @@ public final class GeminiLLMService: LLMService {
     private let configRepository: ConfigRepository
     
     private func getModel() -> GenerativeModel {
-        // Firebase AI Logic handles authentication via GoogleService-Info.plist
         return FirebaseAI.firebaseAI(backend: .googleAI()).generativeModel(
             modelName: "gemini-2.5-flash-lite",
             generationConfig: GenerationConfig(responseMIMEType: "application/json")
@@ -27,15 +26,16 @@ public final class GeminiLLMService: LLMService {
     }
 
     public func parseWorkout(rawText: String) async throws -> ParsedWorkoutResult {
-        let prompt = config.parsePrompt.replacingOccurrences(of: "{{rawText}}", with: rawText)
+        let sanitized = rawText.replacingOccurrences(of: "{", with: " ").replacingOccurrences(of: "}", with: " ")
+        let prompt = config.parsePrompt.replacingOccurrences(of: "{{rawText}}", with: "<workout_scribble>\(sanitized)</workout_scribble>")
         
         let response = try await getModel().generateContent(prompt)
         guard let responseText = response.text else {
             throw NSError(domain: "GeminiLLMService", code: 500, userInfo: [NSLocalizedDescriptionKey: "No response from Gemini"])
         }
         
-        let cleanJson = responseText.replacingOccurrences(of: "```json", with: "")
-            .replacingOccurrences(of: "```", with: "")
+        let cleanJson = responseText.replaceFirst("```json", with: "")
+            .replaceFirst("```", with: "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
             
         guard let data = cleanJson.data(using: .utf8) else {
@@ -51,15 +51,16 @@ public final class GeminiLLMService: LLMService {
 
     public func generateInsightsSummary(exercises: [Exercise]) async throws -> [AIInsight] {
         let context = exercises.map { "\($0)" }.joined(separator: "\n")
-        let prompt = config.summaryPrompt.replacingOccurrences(of: "{{workoutData}}", with: context)
+        let sanitized = context.replacingOccurrences(of: "{", with: " ").replacingOccurrences(of: "}", with: " ")
+        let prompt = config.summaryPrompt.replacingOccurrences(of: "{{workoutData}}", with: "<workout_history>\(sanitized)</workout_history>")
 
         let response = try await getModel().generateContent(prompt)
         guard let responseText = response.text else {
             throw NSError(domain: "GeminiLLMService", code: 500, userInfo: [NSLocalizedDescriptionKey: "No response from Gemini"])
         }
         
-        let cleanJson = responseText.replacingOccurrences(of: "```json", with: "")
-            .replacingOccurrences(of: "```", with: "")
+        let cleanJson = responseText.replaceFirst("```json", with: "")
+            .replaceFirst("```", with: "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
             
         guard let data = cleanJson.data(using: .utf8) else {
@@ -68,6 +69,36 @@ public final class GeminiLLMService: LLMService {
         
         let insightsResponse = try JSONDecoder().decode(InsightsResponseDto.self, from: data)
         return insightsResponse.insights.map { $0.toDomain() }
+    }
+
+    public func generateExerciseInsight(history: String) async throws -> ExercisePerformanceInsight {
+        let sanitized = history.replacingOccurrences(of: "{", with: " ").replacingOccurrences(of: "}", with: " ")
+        let prompt = config.insightPrompt.replacingOccurrences(of: "{{exerciseHistory}}", with: "<exercise_history>\(sanitized)</exercise_history>")
+        
+        let response = try await getModel().generateContent(prompt)
+        guard let responseText = response.text else {
+            throw NSError(domain: "GeminiLLMService", code: 500, userInfo: [NSLocalizedDescriptionKey: "No response from Gemini"])
+        }
+        
+        let cleanJson = responseText.replaceFirst("```json", with: "")
+            .replaceFirst("```", with: "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            
+        guard let data = cleanJson.data(using: .utf8) else {
+            throw NSError(domain: "GeminiLLMService", code: 400, userInfo: [NSLocalizedDescriptionKey: "Failed to convert response to data"])
+        }
+        
+        let dto = try JSONDecoder().decode(ExercisePerformanceInsightDto.self, from: data)
+        return dto.toDomain()
+    }
+}
+
+private extension String {
+    func replaceFirst(_ target: String, with replacement: String) -> String {
+        if let range = self.range(of: target) {
+            return self.replacingCharacters(in: range, with: replacement)
+        }
+        return self
     }
 }
 
@@ -102,7 +133,7 @@ private struct ExerciseDto: Codable {
 }
 
 private struct SetDto: Codable {
-    let weight: Float
+    let weight: Float?
     let reps: Int
     let setNumber: Int
     let rpe: Float?
@@ -123,7 +154,7 @@ private struct SetDto: Codable {
 private struct AIInsightDto: Codable {
     let insightType: String
     let text: String
-    
+
     func toDomain() -> AIInsight {
         let type: InsightType = {
             switch insightType.lowercased() {
@@ -134,5 +165,30 @@ private struct AIInsightDto: Codable {
             }
         }()
         return AIInsight(insightType: type, text: text)
+    }
+}
+
+private struct ExercisePerformanceInsightDto: Codable {
+    let estimated1RM: Float
+    let prDetected: Bool
+    let trendDirection: String
+    let breakdownText: String
+
+    func toDomain() -> ExercisePerformanceInsight {
+        let direction: TrendDirection = {
+            switch trendDirection.uppercased() {
+            case "IMPROVING": return .improving
+            case "STABLE": return .stable
+            case "PLATEAUED": return .plateaued
+            case "DECLINING": return .declining
+            default: return .stable
+            }
+        }()
+        return ExercisePerformanceInsight(
+            estimated1RM: estimated1RM,
+            prDetected: prDetected,
+            trendDirection: direction,
+            breakdownText: breakdownText
+        )
     }
 }

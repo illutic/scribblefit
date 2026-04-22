@@ -4,9 +4,9 @@ import com.scribblefit.core.config.domain.ConfigRepository
 import com.scribblefit.core.config.domain.LLMProvider
 import com.scribblefit.core.model.AIInsight
 import com.scribblefit.core.model.Exercise
+import com.scribblefit.core.model.ExercisePerformanceInsight
 import com.scribblefit.feature.ai.domain.LLMEngine
 import com.scribblefit.feature.ai.domain.ParsedWorkoutResult
-import kotlinx.coroutines.flow.first
 
 internal class RoutingLLMEngine(
     private val geminiEngine: LLMEngine,
@@ -34,6 +34,10 @@ internal class RoutingLLMEngine(
 
     override suspend fun generateInsightsSummary(exercises: List<Exercise>): Result<List<AIInsight>> {
         return getActiveEngine().generateInsightsSummary(exercises)
+    }
+
+    override suspend fun generateExerciseInsight(history: String): Result<ExercisePerformanceInsight> {
+        return getActiveEngine().generateExerciseInsight(history)
     }
 
     override suspend fun isSupported(): Boolean = true

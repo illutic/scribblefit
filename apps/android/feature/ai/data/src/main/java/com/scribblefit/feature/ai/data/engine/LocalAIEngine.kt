@@ -5,6 +5,7 @@ import com.google.mlkit.genai.prompt.GenerativeModel
 import com.scribblefit.core.config.domain.ConfigRepository
 import com.scribblefit.core.model.AIInsight
 import com.scribblefit.core.model.Exercise
+import com.scribblefit.core.model.ExercisePerformanceInsight
 import com.scribblefit.feature.ai.data.entity.AIInsightDto
 import com.scribblefit.feature.ai.data.entity.WorkoutDto
 import com.scribblefit.feature.ai.data.entity.toDomain
@@ -53,6 +54,10 @@ internal class LocalAIEngine(
             val dtos = json.decodeFromString<List<AIInsightDto>>(responseText)
             dtos.map { it.toDomain() }
         }
+
+    override suspend fun generateExerciseInsight(history: String): Result<ExercisePerformanceInsight> {
+        return Result.failure(NotImplementedError("Local LLM insight generation not yet implemented"))
+    }
 
     override suspend fun isSupported(): Boolean {
         return generativeModel.checkStatus() == FeatureStatus.AVAILABLE

@@ -37,6 +37,10 @@ public final class LocalLLMService: LLMService {
     public func generateInsightsSummary(exercises: [Exercise]) async throws -> [AIInsight] {
         try await implementation.generateInsightsSummary(exercises: exercises)
     }
+    
+    public func generateExerciseInsight(history: String) async throws -> ExercisePerformanceInsight {
+        try await implementation.generateExerciseInsight(history: history)
+    }
 }
 
 // MARK: - Native iOS 26+ Implementation
@@ -81,6 +85,17 @@ private final class NativeLocalLLMService: LLMService {
         )
         return response.content.insights.map { $0.toDomain() }
     }
+    
+    func generateExerciseInsight(history: String) async throws -> ExercisePerformanceInsight {
+        let config = configRepository.getConfig()
+        let prompt = config.insightPrompt.replacingOccurrences(of: "{{exerciseHistory}}", with: history)
+        let session = LanguageModelSession(model: model)
+        let response = try await session.respond(
+            to: prompt,
+            generating: ExercisePerformanceInsightDto.self
+        )
+        return response.content.toDomain()
+    }
 }
 #endif
 
@@ -95,6 +110,10 @@ private final class UnsupportedLocalLLMService: LLMService {
     }
 
     func generateInsightsSummary(exercises: [Exercise]) async throws -> [AIInsight] {
+        throw NSError(domain: "LocalLLM", code: 501, userInfo: [NSLocalizedDescriptionKey: "Local AI not supported on this device/OS version"])
+    }
+    
+    func generateExerciseInsight(history: String) async throws -> ExercisePerformanceInsight {
         throw NSError(domain: "LocalLLM", code: 501, userInfo: [NSLocalizedDescriptionKey: "Local AI not supported on this device/OS version"])
     }
 }
@@ -165,7 +184,7 @@ private struct SetDto: Codable, Sendable {
 private struct AIInsightResponse: Sendable {
     let insightType: String // "summary", "trend", "advice"
     let text: String
-    
+
     func toDomain() -> AIInsight {
         let type: InsightType = {
             switch insightType.lowercased() {
@@ -176,6 +195,34 @@ private struct AIInsightResponse: Sendable {
             }
         }()
         return AIInsight(insightType: type, text: text)
+    }
+}
+
+@available(iOS 26.0, macOS 26.0, *)
+@Generable
+@MainActor
+private struct ExercisePerformanceInsightDto: Sendable {
+    let estimated1RM: Float
+    let prDetected: Bool
+    let trendDirection: String
+    let breakdownText: String
+
+    func toDomain() -> ExercisePerformanceInsight {
+        let direction: TrendDirection = {
+            switch trendDirection.uppercased() {
+            case "IMPROVING": return .improving
+            case "STABLE": return .stable
+            case "PLATEAUED": return .plateaued
+            case "DECLINING": return .declining
+            default: return .stable
+            }
+        }()
+        return ExercisePerformanceInsight(
+            estimated1RM: estimated1RM,
+            prDetected: prDetected,
+            trendDirection: direction,
+            breakdownText: breakdownText
+        )
     }
 }
 #endif
