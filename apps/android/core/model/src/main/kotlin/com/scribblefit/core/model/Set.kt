@@ -1,5 +1,8 @@
 package com.scribblefit.core.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class Set(
     val id: Long,
     val setNumber: Int,

@@ -65,6 +65,62 @@ interface ScribbleTrackerDao {
     )
 
     @Transaction
+    suspend fun confirmScribble(
+        scribbleId: Long,
+        exercises: List<com.scribblefit.core.database.entity.exercise.Exercise>,
+        workout: com.scribblefit.core.database.entity.workout.Workout,
+        setsPerExercise: List<List<com.scribblefit.core.database.entity.set.WorkoutSet>>,
+        exerciseStats: List<ExerciseStats>
+    ) {
+        // 1. Clear existing scribble exercises
+        clearScribbleExercises(scribbleId)
+        
+        // 2. Insert as a workout (this handles exercise creation and linking)
+        // Note: We need a reference to WorkoutDao or use the same logic here.
+        // Since we are in ScribbleTrackerDao, we'll implement the logic here to stay within one transaction.
+        val workoutId = insertWorkout(workout)
+        
+        exercises.forEachIndexed { index, exercise ->
+            val existingId = getExerciseIdByName(exercise.name)
+            val exerciseId = existingId ?: insertExercises(listOf(exercise)).first()
+
+            val stats = exerciseStats.getOrNull(index)
+            val we = com.scribblefit.core.database.entity.exercise.WorkoutExercise(
+                workoutId = workoutId,
+                exerciseId = exerciseId,
+                estimated1RM = stats?.estimated1RM,
+                intensity = stats?.intensity,
+                improvement = stats?.improvement,
+            )
+            val weId = insertWorkoutExercises(listOf(we)).first()
+
+            val sets = setsPerExercise.getOrNull(index)?.map { it.copy(workoutExerciseId = weId) }
+            if (!sets.isNullOrEmpty()) {
+                insertWorkoutSets(sets)
+            }
+            
+            // Re-link the new WorkoutExercise ID to the scribble in the junction table
+            insertScribbleExercise(ScribbleExercise(scribbleId = scribbleId, workoutExerciseId = weId))
+        }
+        
+        // 3. Update scribble with workoutId and COMPLETED status
+        updateScribbleStatusAndWorkout(scribbleId, "COMPLETED", workoutId)
+    }
+
+    @Query("INSERT INTO workout (workoutDate, notes) VALUES (:date, :notes)")
+    suspend fun insertWorkout(date: Long, notes: String?): Long
+    
+    // We already have insertWorkout in WorkoutDao, but to keep it transactional 
+    // we either need a shared parent DAO or duplicate the simple insert here.
+    // Room doesn't allow cross-DAO transactions easily without DB reference.
+    
+    @Insert
+    suspend fun insertWorkout(workout: com.scribblefit.core.database.entity.workout.Workout): Long
+
+    @Query("UPDATE scribbles SET status = :status, workoutId = :workoutId WHERE scribbleId = :scribbleId")
+    suspend fun updateScribbleStatusAndWorkout(scribbleId: Long, status: String, workoutId: Long)
+
+    @Transaction
     suspend fun clearScribbleExercises(scribbleId: Long) {
         val workoutExerciseIds = getWorkoutExerciseIdsForScribble(scribbleId)
         deleteScribbleExercisesByScribbleId(scribbleId)

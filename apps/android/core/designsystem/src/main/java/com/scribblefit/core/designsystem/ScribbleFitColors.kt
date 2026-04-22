@@ -29,6 +29,9 @@ private val DarkMidGrayColor = Color(0xFF8E8EA0)
 private val DangerRedColor = Color(0xFFFF3B30)
 private val DarkDangerRedColor = Color(0xFFFF453A)
 
+private val WarningOrangeColor = Color(0xFFFF9500)
+private val DarkWarningOrangeColor = Color(0xFFFF9F0A)
+
 private val SuccessGreenColor = Color(0xFF34C759)
 private val DarkSuccessGreenColor = Color(0xFF30D158)
 
@@ -45,6 +48,7 @@ data class ScribbleFitColors(
     val surfaceContainerHigh: Color = SurfaceContainerHighColor,
     val midGray: Color = MidGrayColor,
     val dangerRed: Color = DangerRedColor,
+    val warningOrange: Color = WarningOrangeColor,
     val successGreen: Color = SuccessGreenColor,
     val outlineVariant: Color = OutlineVariantColor,
     val background: Color = surface,
@@ -62,6 +66,7 @@ internal val darkScribbleFitColors = ScribbleFitColors(
     surfaceContainerHigh = DarkSurfaceContainerHighColor,
     midGray = DarkMidGrayColor,
     dangerRed = DarkDangerRedColor,
+    warningOrange = DarkWarningOrangeColor,
     successGreen = DarkSuccessGreenColor,
     outlineVariant = DarkOutlineVariantColor
 )

@@ -3,6 +3,9 @@ package com.scribblefit.core.model
 /**
  * Domain model representing a scribble.
  */
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class Scribble(
     val id: Long,
     val rawText: String,

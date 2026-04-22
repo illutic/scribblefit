@@ -77,9 +77,9 @@ fun SystemConfig.toDomain(): DomainSystemConfig =
         insightPrompt = insightPrompt,
         parsePrompt = parsePrompt,
         updatedAt = updatedAt,
-        weightUnit = Weight.valueOf(weightUnit),
-        preferredLlmProvider = LLMProvider.valueOf(preferredLlmProvider),
-        themePreference = ThemePreference.valueOf(themePreference),
+        weightUnit = Weight.valueOf(weightUnit.uppercase()),
+        preferredLlmProvider = LLMProvider.valueOf(preferredLlmProvider.uppercase()),
+        themePreference = ThemePreference.valueOf(themePreference.uppercase()),
         isDynamicTheme = isDynamicTheme,
     )
 

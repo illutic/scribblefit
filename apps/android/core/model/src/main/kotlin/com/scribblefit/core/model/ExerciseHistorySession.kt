@@ -3,9 +3,8 @@ package com.scribblefit.core.model
 import kotlinx.serialization.Serializable
 
 @Serializable
-data class Workout(
-    val id: Long,
+data class ExerciseHistorySession(
+    val workoutId: Long,
     val date: Long,
-    val exercises: List<Exercise>,
-    val notes: List<String>? = null,
+    val exercise: Exercise
 )

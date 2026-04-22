@@ -24,7 +24,7 @@ data class SystemConfig(
             ---
             {{#system}}
             You are ScribbleFit AI, a fitness analysis assistant.
-            Generate one actionable training suggestion based on the workout context below.
+            Generate one actionable training suggestion based on the workout context provided within <workout_context> tags.
             Output ONLY this JSON (no markdown, no extra text):
             {
               "text": "suggestion text", 
@@ -50,7 +50,7 @@ data class SystemConfig(
             ---
             {{#system}}
             You are ScribbleFit AI, a fitness analysis assistant.
-            Analyze the workout data below and generate a list of structured insights.
+            Analyze the workout data provided within <workout_history> tags and generate a list of structured insights.
             Output ONLY this JSON schema (no markdown, no extra text):
             [
               {
@@ -85,7 +85,7 @@ data class SystemConfig(
             ---
             {{#system}}
             You are ScribbleFit AI, a fitness analysis assistant.
-            Analyze the exercise history below and generate a performance insight.
+            Analyze the exercise history provided within <exercise_history> tags and generate a performance insight.
             Output ONLY this JSON (no markdown, no extra text):
             {
               "estimated1RM": number,
@@ -113,7 +113,7 @@ data class SystemConfig(
             ---
             {{#system}}
             You are ScribbleFit AI, a fitness parsing assistant.
-            Parse raw gym shorthand into this JSON schema:
+            Parse raw gym shorthand provided within <workout_scribble> tags into this JSON schema:
             {
               "exercises": [{ 
                 "canonical_name": "String", 

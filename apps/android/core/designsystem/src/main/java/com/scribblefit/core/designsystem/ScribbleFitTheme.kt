@@ -68,11 +68,23 @@ private val ScribbleFitTypography = Typography(
         fontSize = 14.sp, // ~0.875rem
         letterSpacing = 0.sp
     ),
+    bodySmall = TextStyle(
+        fontFamily = InterFontFamily,
+        fontWeight = FontWeight.Normal,
+        fontSize = 12.sp,
+        letterSpacing = 0.sp
+    ),
     labelMedium = TextStyle(
         fontFamily = InterFontFamily,
         fontWeight = FontWeight.SemiBold,
         fontSize = 12.sp, // ~0.75rem
         letterSpacing = 0.05.sp
+    ),
+    labelSmall = TextStyle(
+        fontFamily = InterFontFamily,
+        fontWeight = FontWeight.Bold,
+        fontSize = 10.sp,
+        letterSpacing = 0.1.sp
     )
 )
 
@@ -92,6 +104,13 @@ data object ScribbleFitTheme {
     val spacing: ScribbleFitSpacing
         @Composable @ReadOnlyComposable
         get() = LocalSpacing.current
+
+    object Alphas {
+        const val glassBackground = 0.5f
+        const val secondaryText = 0.7f
+        const val cardOverlay = 0.03f
+        const val badgeBackground = 0.1f
+    }
 }
 
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)

@@ -98,6 +98,10 @@ interface WorkoutDao {
     @Query("SELECT * FROM workout WHERE workoutId = :workoutId")
     fun getWorkoutWithAllDetails(workoutId: Long): Flow<WorkoutWithAllDetails>
 @Transaction
+@Query("SELECT * FROM workout WHERE workoutId IN (SELECT workoutId FROM workout_exercise WHERE exerciseId IN (SELECT exerciseId FROM exercise WHERE name = :exerciseName)) ORDER BY workoutDate DESC")
+fun getWorkoutsByExerciseName(exerciseName: String): Flow<List<WorkoutWithAllDetails>>
+
+@Transaction
 @Query("SELECT * FROM workout WHERE workoutDate = :date LIMIT 1")
 fun getWorkoutByDate(date: Long): Flow<Workout?>
 

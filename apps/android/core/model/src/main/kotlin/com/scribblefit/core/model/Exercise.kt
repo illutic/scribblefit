@@ -1,5 +1,8 @@
 package com.scribblefit.core.model
 
+import kotlinx.serialization.Serializable
+
+@Serializable
 data class Exercise(
     val id: Long,
     val canonicalName: String,
