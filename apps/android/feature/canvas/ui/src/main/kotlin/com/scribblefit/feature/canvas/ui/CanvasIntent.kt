@@ -40,6 +40,9 @@ sealed interface CanvasIntent {
         val scribbleId: Long,
     ) : CanvasIntent
 
+    data class ShowDeleteConfirmation(val scribbleId: Long) : CanvasIntent
+    data object HideDeleteConfirmation : CanvasIntent
+
     data object DismissScribbleDialog : CanvasIntent
 
     // Manual Editing
@@ -53,5 +56,13 @@ sealed interface CanvasIntent {
 
     data class NavigateToScreen(
         val screen: Screen,
+    ) : CanvasIntent
+
+    data class NavigateToExerciseDetails(
+        val exerciseName: String,
+    ) : CanvasIntent
+
+    data class NavigateToWorkoutExercises(
+        val workoutId: Long,
     ) : CanvasIntent
 }

@@ -44,7 +44,12 @@ internal fun LedgerScreen(
     )
 
     Scaffold(
-        topBar = { LedgerHeader(title = state.ledgerTitle) },
+        topBar = { 
+            LedgerHeader(
+                title = state.ledgerTitle,
+                onRefreshClick = { onIntent(LedgerIntent.Refresh) }
+            ) 
+        },
         containerColor = ScribbleFitTheme.colors.surface
     ) { paddingValues ->
         Column(
@@ -97,12 +102,14 @@ internal fun LedgerScreen(
                             Screen.Insights -> Icons.Rounded.AutoGraph
                             Screen.Ledger -> Icons.Rounded.CalendarMonth
                             Screen.Settings -> Icons.Rounded.Settings
+                            else -> return@Scaffold
                         }
                         val label = when (item.screen) {
                             Screen.Canvas -> stringResource(R.string.nav_canvas)
                             Screen.Insights -> stringResource(R.string.nav_insights)
                             Screen.Ledger -> stringResource(R.string.nav_ledger)
                             Screen.Settings -> stringResource(R.string.nav_settings)
+                            else -> return@Scaffold
                         }
                         BottomBarUiItem(
                             screen = item.screen,

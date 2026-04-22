@@ -6,69 +6,60 @@ struct ScribbleCard: View {
     let scribble: Scribble
     let weightUnit: WeightUnit
     let onClick: () -> Void
+    let onExerciseClick: (String) -> Void
+    let onWorkoutExercisesClick: (UUID) -> Void
     let onIntent: (CanvasIntent) -> Void
     
     var body: some View {
-        Group {
-            switch scribble.status {
-            case .pending, .parsing:
-                PendingScribbleCard(scribble: scribble)
-            case .success:
-                ParsedScribbleCard(scribble: scribble, weightUnit: weightUnit, onClick: onClick)
-            case .completed:
-                LoggedScribbleCard(scribble: scribble, weightUnit: weightUnit, onClick: onClick)
-            case .failed:
-                FailedScribbleCard(scribble: scribble, onIntent: onIntent)
-            }
+        switch scribble.status {
+        case .pending, .parsing:
+            PendingScribbleCard(scribble: scribble)
+        case .success:
+            ParsedScribbleCard(scribble: scribble, weightUnit: weightUnit, onClick: onClick)
+        case .completed:
+            LoggedScribbleCard(
+                scribble: scribble,
+                weightUnit: weightUnit,
+                onClick: {
+                    if let workoutId = scribble.workoutId {
+                        onWorkoutExercisesClick(workoutId)
+                    } else {
+                        onClick()
+                    }
+                },
+                onExerciseClick: onExerciseClick
+            )
+        case .failed:
+            FailedScribbleCard(scribble: scribble, onIntent: onIntent)
         }
     }
 }
 
 private struct PendingScribbleCard: View {
     let scribble: Scribble
-    @State private var rotation: Double = 0
-    @State private var progress: CGFloat = 0
-
+    @State private var isAnimating = false
+    
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            HStack(alignment: .top) {
-                Text("\"\(scribble.rawText)\"")
-                    .font(.scribbleTitleMedium)
-                    .italic()
+        VStack(alignment: .leading, spacing: 12) {
+            ScribbleRawText(text: scribble.rawText)
+            
+            HStack(spacing: 8) {
+                ProgressView()
+                    .tint(Color.scribblePrimary)
+                    .scaleEffect(0.8)
+                
+                Text(String(localized: "Parsing workout data…"))
+                    .font(.scribbleLabelMedium)
                     .foregroundStyle(Color.scribbleMidGray)
-                
-                Spacer()
-                
-                Image(systemName: "arrow.triangle.2.circlepath")
-                    .font(.system(size: 20))
-                    .foregroundStyle(Color.scribblePrimary)
-                    .rotationEffect(.degrees(rotation))
             }
-            
-            ZStack(alignment: .leading) {
-                Capsule()
-                    .fill(Color.scribblePrimary.opacity(0.1))
-                    .frame(height: 2)
-                
-                Capsule()
-                    .fill(Color.scribblePrimary)
-                    .frame(width: 200 * progress, height: 2)
-            }
-            
-            Text(String(localized: "PARSING WORKOUT DATA").uppercased())
-                .font(.scribbleLabelMedium)
-                .foregroundStyle(Color.scribblePrimary.opacity(0.4))
-                .fontWeight(.bold)
-                .kerning(1)
         }
         .padding(20)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .scribbleGlass(cornerRadius: 16)
+        .opacity(isAnimating ? 0.6 : 1.0)
         .onAppear {
-            withAnimation(.linear(duration: 1).repeatForever(autoreverses: false)) {
-                rotation = 360
-            }
-            withAnimation(.linear(duration: 2).repeatForever(autoreverses: false)) {
-                progress = 1.0
+            withAnimation(.easeInOut(duration: 1.0).repeatForever(autoreverses: true)) {
+                isAnimating = true
             }
         }
     }
@@ -84,10 +75,7 @@ private struct ParsedScribbleCard: View {
             VStack(alignment: .leading, spacing: 20) {
                 HStack(alignment: .top) {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("\"\(scribble.rawText)\"")
-                            .font(.scribbleBodyMedium)
-                            .italic()
-                            .foregroundStyle(Color.scribbleMidGray)
+                        ScribbleRawText(text: scribble.rawText)
                         
                         if scribble.exercises.isEmpty {
                             Text(String(localized: "No exercises detected"))
@@ -141,7 +129,6 @@ private struct ParsedScribbleCard: View {
             }
         }
         .buttonStyle(.plain)
-        .accessibilityIdentifier("parsedScribbleCard")
     }
 }
 
@@ -149,24 +136,25 @@ private struct LoggedScribbleCard: View {
     let scribble: Scribble
     let weightUnit: WeightUnit
     let onClick: () -> Void
+    let onExerciseClick: (String) -> Void
     
     var body: some View {
-        Button(action: onClick) {
-            VStack(alignment: .leading, spacing: 20) {
-                if scribble.exercises.isEmpty {
+        VStack(alignment: .leading, spacing: 20) {
+            if scribble.exercises.isEmpty {
+                Button(action: onClick) {
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("\"\(scribble.rawText)\"")
-                            .font(.scribbleBodyMedium)
-                            .italic()
-                            .foregroundStyle(Color.scribbleMidGray)
+                        ScribbleRawText(text: scribble.rawText)
                         
                         Text(String(localized: "LOGGED (NO EXERCISES)"))
                             .font(.scribbleLabelMedium)
                             .fontWeight(.bold)
                             .foregroundStyle(Color.scribblePrimary.opacity(0.4))
                     }
-                } else {
-                    ForEach(scribble.exercises) { exercise in
+                }
+                .buttonStyle(.plain)
+            } else {
+                ForEach(scribble.exercises) { exercise in
+                    Button(action: { onExerciseClick(exercise.canonicalName) }) {
                         VStack(alignment: .leading, spacing: 20) {
                             HStack(alignment: .center) {
                                 VStack(alignment: .leading, spacing: 4) {
@@ -202,13 +190,13 @@ private struct LoggedScribbleCard: View {
                             if exercise.estimated1RM != nil || exercise.intensity != nil {
                                 HStack(spacing: 12) {
                                     if let oneRm = exercise.estimated1RM {
-                                        StatCard(
+                                        StatCardView(
                                             label: String(localized: "EST. 1RM"),
                                             value: "\(Int(oneRm))\(weightUnit == .kgs ? String(localized: "kg") : String(localized: "lbs"))"
                                         )
                                     }
                                     if let intensity = exercise.intensity {
-                                        StatCard(
+                                        StatCardView(
                                             label: String(localized: "INTENSITY"),
                                             value: "\(Int(intensity * 100))%"
                                         )
@@ -222,14 +210,13 @@ private struct LoggedScribbleCard: View {
                             }
                         }
                     }
+                    .buttonStyle(.plain)
                 }
             }
-            .padding(20)
-            .scribbleGlass(cornerRadius: 16)
-            .opacity(0.8)
         }
-        .buttonStyle(.plain)
-        .accessibilityIdentifier("loggedScribbleCard")
+        .padding(20)
+        .scribbleGlass(cornerRadius: 16)
+        .opacity(0.8)
     }
 }
 
@@ -239,84 +226,47 @@ private struct FailedScribbleCard: View {
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            HStack(alignment: .top) {
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("\"\(scribble.rawText)\"")
-                        .font(.scribbleTitleMedium)
-                        .italic()
-                        .foregroundStyle(Color.scribbleMidGray)
-                    
-                    HStack(spacing: 6) {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .font(.system(size: 14))
-                        Text(String(localized: "FAILED TO PARSE WORKOUT").uppercased())
-                            .font(.scribbleLabelMedium)
-                            .fontWeight(.bold)
-                            .kerning(1)
-                    }
-                    .foregroundStyle(Color.scribbleDanger)
-                }
-                
-                Spacer()
-                
-                Circle()
-                    .fill(Color.scribbleDanger.opacity(0.1))
-                    .frame(width: 36, height: 36)
-                    .overlay {
-                        Image(systemName: "exclamationmark")
-                            .foregroundStyle(Color.scribbleDanger)
-                            .fontWeight(.bold)
-                    }
-            }
+            ScribbleRawText(text: scribble.rawText, color: Color.red.opacity(0.7))
             
-            HStack(spacing: 16) {
+            HStack(spacing: 12) {
                 Button(action: { onIntent(.retryScribbleParsing(scribble)) }) {
-                    Text(String(localized: "RETRY").uppercased())
+                    Text(String(localized: "Retry"))
                         .font(.scribbleLabelMedium)
                         .fontWeight(.bold)
-                        .kerning(1)
-                        .foregroundStyle(Color.scribblePrimary)
+                        .foregroundStyle(Color.white)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(Color.scribblePrimary)
+                        .clipShape(Capsule())
                 }
                 
                 Button(action: { onIntent(.deleteScribble(scribble.id)) }) {
-                    Text(String(localized: "REMOVE").uppercased())
+                    Text(String(localized: "Remove"))
                         .font(.scribbleLabelMedium)
                         .fontWeight(.bold)
-                        .kerning(1)
                         .foregroundStyle(Color.scribbleMidGray)
                 }
             }
-            .padding(.top, 8)
         }
         .padding(20)
-        .scribbleGlass(cornerRadius: 16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.red.opacity(0.05))
+        .clipShape(RoundedRectangle(cornerRadius: 16))
         .overlay {
             RoundedRectangle(cornerRadius: 16)
-                .stroke(Color.scribbleDanger.opacity(0.05), lineWidth: 0.5)
+                .stroke(Color.red.opacity(0.1), lineWidth: 1)
         }
     }
 }
 
-private struct StatCard: View {
-    let label: String
-    let value: String
+private struct ScribbleRawText: View {
+    let text: String
+    var color: Color = Color.scribbleMidGray
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 4) {
-            Text(label)
-                .font(.scribbleLabelMedium)
-                .fontWeight(.bold)
-                .kerning(1)
-                .foregroundStyle(Color.scribbleMidGray)
-            
-            Text(value)
-                .font(.scribbleTitleMedium)
-                .fontWeight(.bold)
-                .foregroundStyle(Color.scribblePrimary)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(12)
-        .background(Color.scribblePrimary.opacity(0.03))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        Text("\"\(text)\"")
+            .font(.scribbleBodyMedium)
+            .italic()
+            .foregroundStyle(color)
     }
 }

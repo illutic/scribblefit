@@ -12,6 +12,7 @@ let package = Package(
         .package(path: "../../Core/CoreDatabase"),
         .package(path: "../../Core/CoreDesignSystem"),
         .package(path: "../../Core/CoreFirebase"),
+        .package(path: "../../Core/CoreCommon"),
         .package(path: "../FeatureScribble"),
         .package(path: "../FeatureWorkouts"),
         .package(path: "../FeatureAI"),
@@ -19,7 +20,8 @@ let package = Package(
         .package(path: "../FeatureSettings"),
         .package(path: "../FeatureInsights"),
         .package(path: "../FeatureLedger"),
-        .package(path: "../FeatureSets")
+        .package(path: "../FeatureSets"),
+        .package(path: "../FeatureExercises")
     ],
     targets: [
         .target(
@@ -29,6 +31,7 @@ let package = Package(
                 .product(name: "CoreDatabase", package: "CoreDatabase"),
                 .product(name: "CoreDesignSystem", package: "CoreDesignSystem"),
                 .product(name: "CoreFirebase", package: "CoreFirebase"),
+                .product(name: "CoreCommon", package: "CoreCommon"),
                 .product(name: "FeatureScribble", package: "FeatureScribble"),
                 .product(name: "FeatureWorkouts", package: "FeatureWorkouts"),
                 .product(name: "FeatureAI", package: "FeatureAI"),
@@ -36,7 +39,8 @@ let package = Package(
                 .product(name: "FeatureSettings", package: "FeatureSettings"),
                 .product(name: "FeatureInsights", package: "FeatureInsights"),
                 .product(name: "FeatureLedger", package: "FeatureLedger"),
-                .product(name: "FeatureSets", package: "FeatureSets")
+                .product(name: "FeatureSets", package: "FeatureSets"),
+                .product(name: "FeatureExercises", package: "FeatureExercises")
             ]
         )
     ]

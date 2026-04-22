@@ -47,19 +47,23 @@ import com.scribblefit.core.model.AIInsight
 import com.scribblefit.core.model.InsightType
 import com.scribblefit.core.model.Scribble
 import com.scribblefit.feature.canvas.ui.CanvasIntent
+import com.scribblefit.feature.canvas.ui.CanvasState
 import com.scribblefit.feature.canvas.ui.ScribbleUiModel
 import com.scribblefit.feature.canvas.ui.components.card.ScribbleCard
 
 @Composable
 internal fun CanvasBody(
-    scribbles: List<ScribbleUiModel>,
-    aiInsights: List<AIInsight>,
-    isGeneratingInsights: Boolean,
+    state: CanvasState,
     onScribbleClick: (Scribble) -> Unit,
+    onExerciseClick: (exerciseName: String) -> Unit,
     onIntent: (CanvasIntent) -> Unit,
-    emptyText: String,
     modifier: Modifier = Modifier,
 ) {
+    val aiInsights = state.aiInsights
+    val isGeneratingInsights = state.isGeneratingInsights
+    val scribbles = state.scribbleUiModels
+    val emptyText = state.emptyScribbleText
+
     LazyColumn(
         modifier = modifier,
         contentPadding = PaddingValues(
@@ -68,7 +72,7 @@ internal fun CanvasBody(
             top = ScribbleFitTheme.spacing.large,
             bottom = 120.dp
         ),
-        verticalArrangement = Arrangement.spacedBy(40.dp)
+        verticalArrangement = Arrangement.spacedBy(ScribbleFitTheme.spacing.medium)
     ) {
         if (isGeneratingInsights) {
             item {
@@ -91,15 +95,21 @@ internal fun CanvasBody(
         } else {
             items(scribbles, key = { it.id }) { scribble ->
                 ScribbleCard(
+                    state = state,
                     scribble = scribble,
                     onClick = { onScribbleClick(scribble.scribble) },
+                    onExerciseClick = onExerciseClick,
                     onIntent = onIntent
                 )
             }
         }
 
         item {
-            Spacer(modifier = Modifier.imePadding())
+            Spacer(
+                modifier = Modifier
+                    .imePadding()
+                    .padding(40.dp)
+            )
         }
     }
 }

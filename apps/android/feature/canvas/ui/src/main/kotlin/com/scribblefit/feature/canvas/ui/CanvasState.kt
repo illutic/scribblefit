@@ -7,7 +7,6 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.intl.Locale
 import com.scribblefit.core.config.domain.Weight
-import com.scribblefit.core.model.Exercise
 import com.scribblefit.core.model.Scribble
 import com.scribblefit.core.model.ScribbleStatus
 import com.scribblefit.core.navigation.BottomBarState
@@ -20,12 +19,14 @@ private val dateFormatter =
 data class ExerciseUiModel(
     val id: Long,
     val name: String,
-    val summary: String,
     val formattedSummary: String,
-    val estimated1RM: String?,
-    val intensity: String?,
-    val improvement: String?,
-    val hasStats: Boolean
+    val estimated1RMValue: Int?,
+    val intensityValue: Int?,
+    val improvementValue: Int?,
+    val hasStats: Boolean,
+    val firstSetWeight: Float,
+    val totalSets: Int,
+    val repsPerSet: Int
 )
 
 data class ScribbleUiModel(
@@ -33,7 +34,6 @@ data class ScribbleUiModel(
     val rawText: String,
     val status: ScribbleStatus,
     val exercises: List<ExerciseUiModel>,
-    val statusText: String? = null,
     val scribble: Scribble,
 )
 
@@ -43,106 +43,100 @@ data class CanvasState(
     val error: Throwable? = null,
     val currentScribbleText: String = "",
     val scribbles: List<Scribble> = emptyList(),
+    val scribbleUiModels: List<ScribbleUiModel> = emptyList(),
     val selectedScribble: Scribble? = null,
     val bottomBarState: BottomBarState = BottomBarState(),
     val aiInsights: List<com.scribblefit.core.model.AIInsight> = emptyList(),
     val isGeneratingInsights: Boolean = false,
     val isDatePickerVisible: Boolean = false,
     val weightUnit: Weight = Weight.KGS,
+    val showDeleteConfirmation: Boolean = false,
+    val deletingScribbleId: Long? = null,
 ) {
-    val isCurrentDate = currentDate == LocalDate.now()
     val dateString: String by lazy { currentDate.format(dateFormatter) }
 
-    val scribbleUiModels: List<ScribbleUiModel>
+    val uiModels: List<ScribbleUiModel>
         @Composable @ReadOnlyComposable
-        get() = scribbles.map { scribble ->
-            ScribbleUiModel(
-                id = scribble.id,
-                rawText = scribble.rawText,
-                status = scribble.status,
-                exercises = scribble.exercises.map { exercise ->
-                    val firstSet = exercise.sets.firstOrNull()
-                    val totalSets = exercise.sets.size
-                    val repsPerSet = firstSet?.reps ?: 0
-                    val weightValue = firstSet?.weight ?: 0f
+        get() = scribbleUiModels
 
-                    ExerciseUiModel(
-                        id = exercise.id,
-                        name = exercise.canonicalName,
-                        summary = stringResource(
-                            R.string.canvas_workout_summary_format,
-                            exercise.canonicalName,
-                            weightValue,
-                            weightUnitLabel,
-                            totalSets,
-                            repsPerSet
-                        ),
-                        formattedSummary = stringResource(
-                            R.string.canvas_exercise_item_summary_format,
-                            weightValue,
-                            weightUnitLabel,
-                            totalSets,
-                            repsPerSet
-                        ),
-                        estimated1RM = exercise.estimated1RM?.let {
-                            stringResource(
-                                R.string.canvas_estimated_1rm_value_format,
-                                it.toInt(),
-                                weightUnitLabel
-                            )
-                        },
-                        intensity = exercise.intensity?.let {
-                            stringResource(
-                                R.string.canvas_intensity_value_format,
-                                (it * 100).toInt()
-                            )
-                        },
-                        improvement = exercise.improvement?.let {
-                            val sign = if (it >= 0) "+" else ""
-                            stringResource(
-                                R.string.canvas_last_session_improvement_label_format,
-                                "$sign${it.toInt()}",
-                                weightUnitLabel
-                            )
-                        },
-                        hasStats = exercise.estimated1RM != null || exercise.intensity != null || exercise.improvement != null
-                    )
-                },
-                statusText = when (scribble.status) {
-                    ScribbleStatus.PENDING, ScribbleStatus.PARSING -> parsingWorkoutText
-                    ScribbleStatus.FAILED -> failedToParseText
-                    ScribbleStatus.SUCCESS -> tapToConfirmText
-                    else -> null
-                },
-                scribble = scribble
-            )
-        }
+    @Composable
+    @ReadOnlyComposable
+    fun getExerciseSummary(exercise: ExerciseUiModel): String = stringResource(
+        R.string.canvas_workout_summary_format,
+        exercise.name,
+        exercise.firstSetWeight,
+        weightUnitLabel,
+        exercise.totalSets,
+        exercise.repsPerSet
+    )
+
+    @Composable
+    @ReadOnlyComposable
+    fun getEstimated1RM(exercise: ExerciseUiModel): String? = exercise.estimated1RMValue?.let {
+        stringResource(R.string.canvas_estimated_1rm_value_format, it, weightUnitLabel)
+    }
+
+    @Composable
+    @ReadOnlyComposable
+    fun getIntensity(exercise: ExerciseUiModel): String? = exercise.intensityValue?.let {
+        stringResource(R.string.canvas_intensity_value_format, it)
+    }
+
+    @Composable
+    @ReadOnlyComposable
+    fun getImprovement(exercise: ExerciseUiModel): String? = exercise.improvementValue?.let {
+        val sign = if (it >= 0) "+" else ""
+        stringResource(
+            R.string.canvas_last_session_improvement_label_format,
+            "$sign$it",
+            weightUnitLabel
+        )
+    }
+
+    val estimated1RMLabel: String @Composable @ReadOnlyComposable get() = stringResource(R.string.canvas_estimated_1rm)
+    val intensityLabel: String @Composable @ReadOnlyComposable get() = stringResource(R.string.canvas_intensity)
+
+    @Composable
+    @ReadOnlyComposable
+    fun getStatusText(status: ScribbleStatus): String? = when (status) {
+        ScribbleStatus.PENDING, ScribbleStatus.PARSING -> parsingWorkoutText
+        ScribbleStatus.FAILED -> failedToParseText
+        ScribbleStatus.SUCCESS -> tapToConfirmText
+        else -> null
+    }
+
+    @Composable
+    @ReadOnlyComposable
+    fun getBadgeText(status: ScribbleStatus): String = when (status) {
+        ScribbleStatus.PENDING -> stringResource(R.string.canvas_status_pending)
+        ScribbleStatus.PARSING -> stringResource(R.string.canvas_status_parsing)
+        ScribbleStatus.SUCCESS -> stringResource(R.string.canvas_parsed)
+        ScribbleStatus.COMPLETED -> stringResource(R.string.canvas_logged)
+        ScribbleStatus.FAILED -> stringResource(R.string.canvas_status_failed)
+    }
+
+    val retryActionLabel: String @Composable @ReadOnlyComposable get() = retryActionText
+    val removeActionLabel: String @Composable @ReadOnlyComposable get() = removeActionText
 
     val emptyScribbleText: String
         @Composable @ReadOnlyComposable
         get() = stringResource(R.string.canvas_empty_scribble_text)
 
-    val errorMessage: String
-        @Composable @ReadOnlyComposable
-        get() =
-            error?.localizedMessage
-                ?: stringResource(R.string.canvas_error_unknown)
-
     val textfieldPlaceholder: String
         @Composable @ReadOnlyComposable
         get() = stringResource(R.string.canvas_textfield_placeholder)
 
-    val appName: String
+    val tapToConfirmActionText: String
         @Composable @ReadOnlyComposable
-        get() = stringResource(R.string.canvas_app_name)
+        get() = stringResource(R.string.canvas_tap_to_confirm_action)
 
-    val aiInsightsLabel: String
+    val retryActionText: String
         @Composable @ReadOnlyComposable
-        get() = stringResource(R.string.canvas_ai_insights)
+        get() = stringResource(R.string.canvas_retry_action)
 
-    val closeContentDescription: String
+    val removeActionText: String
         @Composable @ReadOnlyComposable
-        get() = stringResource(R.string.canvas_close)
+        get() = stringResource(R.string.canvas_remove_action)
 
     val parsingWorkoutText: String
         @Composable @ReadOnlyComposable
@@ -152,33 +146,9 @@ data class CanvasState(
         @Composable @ReadOnlyComposable
         get() = stringResource(R.string.canvas_tap_to_confirm)
 
-    val loggedLabel: String
-        @Composable @ReadOnlyComposable
-        get() = stringResource(R.string.canvas_logged)
-
-    val estimated1rmLabel: String
-        @Composable @ReadOnlyComposable
-        get() = stringResource(R.string.canvas_estimated_1rm)
-
-    val intensityLabel: String
-        @Composable @ReadOnlyComposable
-        get() = stringResource(R.string.canvas_intensity)
-
     val failedToParseText: String
         @Composable @ReadOnlyComposable
         get() = stringResource(R.string.canvas_failed_to_parse_workout)
-
-    val editLabel: String
-        @Composable @ReadOnlyComposable
-        get() = stringResource(R.string.canvas_edit)
-
-    val retryLabel: String
-        @Composable @ReadOnlyComposable
-        get() = stringResource(R.string.canvas_retry)
-
-    val removeLabel: String
-        @Composable @ReadOnlyComposable
-        get() = stringResource(R.string.canvas_remove)
 
     val setLabelFormat: String
         @Composable @ReadOnlyComposable
@@ -196,13 +166,21 @@ data class CanvasState(
         @Composable @ReadOnlyComposable
         get() = stringResource(R.string.canvas_delete_set_content_description)
 
-    val collapseContentDescription: String
+    val deleteDialogTitle: String
         @Composable @ReadOnlyComposable
-        get() = stringResource(R.string.canvas_collapse)
+        get() = stringResource(R.string.canvas_delete_dialog_title)
 
-    val expandSearchContentDescription: String
+    val deleteDialogText: String
         @Composable @ReadOnlyComposable
-        get() = stringResource(R.string.canvas_expand_search)
+        get() = stringResource(R.string.canvas_delete_dialog_text)
+
+    val deleteConfirmLabel: String
+        @Composable @ReadOnlyComposable
+        get() = stringResource(R.string.canvas_delete_confirm)
+
+    val deleteCancelLabel: String
+        @Composable @ReadOnlyComposable
+        get() = stringResource(R.string.canvas_delete_cancel)
 
     val weightUnitLabel: String
         @Composable @ReadOnlyComposable

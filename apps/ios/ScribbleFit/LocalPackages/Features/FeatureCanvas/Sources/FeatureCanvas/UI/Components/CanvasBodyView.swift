@@ -9,6 +9,8 @@ struct CanvasBodyView: View {
     let weightUnit: WeightUnit
     let emptyText: String
     let onScribbleClick: (Scribble) -> Void
+    let onExerciseClick: (String) -> Void
+    let onWorkoutExercisesClick: (UUID) -> Void
     let onIntent: (CanvasIntent) -> Void
     
     var body: some View {
@@ -37,6 +39,8 @@ struct CanvasBodyView: View {
                                 scribble: scribble,
                                 weightUnit: weightUnit,
                                 onClick: { onScribbleClick(scribble) },
+                                onExerciseClick: onExerciseClick,
+                                onWorkoutExercisesClick: onWorkoutExercisesClick,
                                 onIntent: onIntent
                             )
                         }

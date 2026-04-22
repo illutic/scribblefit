@@ -1,5 +1,6 @@
 import Foundation
 import CoreModel
+import CoreCommon
 
 public enum CanvasIntent: Sendable {
     // Canvas
@@ -27,5 +28,8 @@ public enum CanvasIntent: Sendable {
 
     // Navigation
     case navigateToSettings
-    case navigateToProfile
+    case dismissSettings
+    case navigateToExerciseDetails(String)
+    case navigateToWorkoutExercises(UUID)
+    case dismissDetails
 }

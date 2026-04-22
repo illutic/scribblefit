@@ -19,13 +19,12 @@ class UpdateScribbleWithWorkoutUseCase(
                 val scribble = scribbleRepository.getScribble(id).firstOrNull()
                     ?: throw ScribbleError.NotFound(id)
                 
-                scribbleRepository.clearScribbleExercises(id)
-                scribbleRepository.saveScribbleExercises(id, exercises)
+                scribbleRepository.updateScribbleExercises(id, exercises)
                 
                 scribbleRepository.updateScribble(
                     scribble.copy(
                         status = ScribbleStatus.SUCCESS,
-                        parsedJson = null // We now store structured data instead of raw JSON
+                        parsedJson = null
                     )
                 )
             }

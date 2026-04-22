@@ -7,5 +7,6 @@ sealed interface LedgerIntent {
     data class WorkoutClicked(val workoutId: Long) : LedgerIntent
     data object ShowDatePicker : LedgerIntent
     data object HideDatePicker : LedgerIntent
+    data object Refresh : LedgerIntent
     data class NavigateToScreen(val screen: Screen) : LedgerIntent
 }

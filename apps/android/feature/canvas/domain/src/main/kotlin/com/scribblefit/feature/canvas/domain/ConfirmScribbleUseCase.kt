@@ -16,22 +16,15 @@ class ConfirmScribbleUseCase(
             throw ScribbleError.InvalidStatus(scribble.status)
         }
 
-        // 1. Persist any UI edits made by the user before confirming
-        scribbleRepository.clearScribbleExercises(scribble.id)
-        scribbleRepository.saveScribbleExercises(scribble.id, scribble.exercises)
-
+        // 1. Create the workout domain model
         val workout = Workout(
             id = 0,
             date = scribble.createdAt,
-            exercises = emptyList(),
+            exercises = scribble.exercises, // Link current state of exercises
             notes = listOf("Imported from scribble: ${scribble.rawText}")
         )
 
-        // 2. Create the workout and link existing exercises
-        val workoutId = workoutRepository.saveWorkout(workout)
-        scribbleRepository.updateScribbleExercisesToWorkout(scribble.id, workoutId)
-
-        // 3. Mark as completed
-        scribbleRepository.updateScribble(scribble.copy(status = ScribbleStatus.COMPLETED))
+        // 2. Atomically confirm (clear, save workout, link, update status)
+        scribbleRepository.confirmScribble(scribble, workout)
     }
 }

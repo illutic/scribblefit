@@ -16,8 +16,11 @@ private val workoutHeaderFormatter =
 
 data class DailyWorkout(
     val date: LocalDate,
-    val exercises: List<com.scribblefit.core.model.Exercise>,
-)
+    val workouts: List<Workout>,
+) {
+    val exercises: List<com.scribblefit.core.model.Exercise>
+        get() = workouts.sortedBy { it.date }.flatMap { it.exercises }
+}
 
 data class LedgerState(
     val isLoading: Boolean = false,
@@ -36,7 +39,7 @@ data class LedgerState(
             .map { (date, workouts) ->
                 DailyWorkout(
                     date = date,
-                    exercises = workouts.sortedBy { it.date }.flatMap { it.exercises }
+                    workouts = workouts.sortedBy { it.date }
                 )
             }
             .sortedByDescending { it.date }

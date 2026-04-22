@@ -1,62 +1,76 @@
 import SwiftUI
 import CoreModel
 import CoreDesignSystem
+import FeatureExercises
 
 public struct WorkoutItem: View {
     private let dateString: String
-    private let exercises: [Exercise]
-    private let onTapped: () -> Void
+    private let workouts: [Workout]
+    private let weightUnit: WeightUnit
+    private let onWorkoutTapped: (UUID) -> Void
+    private let onExerciseTapped: (String) -> Void
+    
+    private let exerciseFormatter = FormatExerciseSummaryUseCase()
 
     public init(
         dateString: String,
-        exercises: [Exercise],
-        onTapped: @escaping () -> Void
+        workouts: [Workout],
+        weightUnit: WeightUnit,
+        onWorkoutTapped: @escaping (UUID) -> Void,
+        onExerciseTapped: @escaping (String) -> Void
     ) {
         self.dateString = dateString
-        self.exercises = exercises
-        self.onTapped = onTapped
+        self.workouts = workouts
+        self.weightUnit = weightUnit
+        self.onWorkoutTapped = onWorkoutTapped
+        self.onExerciseTapped = onExerciseTapped
     }
 
     public var body: some View {
-        Button(action: onTapped) {
-            VStack(alignment: .leading, spacing: 12) {
-                HStack {
-                    Text(dateString)
-                        .font(.scribbleTitleMedium)
-                        .foregroundStyle(Color.scribblePrimary)
-                    Spacer()
-                    Image(systemName: "chevron.right")
-                        .foregroundStyle(Color.scribblePrimary)
-                }
+        VStack(alignment: .leading, spacing: 16) {
+            Text(dateString)
+                .font(.scribbleTitleMedium)
+                .foregroundStyle(Color.scribblePrimary)
+                .padding(.bottom, 4)
 
-                VStack(alignment: .leading, spacing: 8) {
-                    ForEach(exercises, id: \.id) { exercise in
+            ForEach(workouts) { workout in
+                VStack(alignment: .leading, spacing: 12) {
+                    Button(action: { onWorkoutTapped(workout.id) }) {
                         HStack {
-                            Text(exercise.canonicalName)
-                                .font(.scribbleBodyMedium)
-                                .foregroundStyle(Color.scribblePrimary)
-                            Spacer()
-                            Text(formatMetrics(for: exercise))
+                            Text(String(localized: "Workout"))
                                 .font(.scribbleLabelMedium)
-                                .foregroundStyle(Color.scribblePrimary.opacity(0.6))
+                                .foregroundStyle(Color.scribbleMidGray)
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 12))
+                                .foregroundStyle(Color.scribbleMidGray)
+                        }
+                    }
+                    .buttonStyle(.plain)
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        ForEach(workout.exercises, id: \.id) { exercise in
+                            Button(action: { onExerciseTapped(exercise.canonicalName) }) {
+                                HStack {
+                                    Text(exercise.canonicalName)
+                                        .font(.scribbleBodyMedium)
+                                        .foregroundStyle(Color.scribblePrimary)
+                                    Spacer()
+                                    Text(exerciseFormatter.execute(exercise: exercise, weightUnit: weightUnit))
+                                        .font(.scribbleLabelMedium)
+                                        .foregroundStyle(Color.scribblePrimary.opacity(0.6))
+                                }
+                            }
+                            .buttonStyle(.plain)
                         }
                     }
                 }
+                .padding()
+                .background(Color.scribbleSurfaceContainerLow.opacity(0.4))
+                .clipShape(RoundedRectangle(cornerRadius: 12))
             }
-            .padding()
-            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
         }
-    }
-
-    private func formatMetrics(for exercise: Exercise) -> String {
-        // Simple metric formatting: e.g., "3 sets" or total weight if available
-        let setsCount = exercise.sets.count
-        let totalWeight = exercise.sets.reduce(0.0) { $0 + Double($1.weight ?? 0.0) }
-        
-        if totalWeight > 0 {
-            return "\(setsCount) sets, \(Int(totalWeight)) \(String(localized: "lbs"))"
-        } else {
-            return "\(setsCount) sets"
-        }
+        .padding()
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
     }
 }

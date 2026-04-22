@@ -14,8 +14,55 @@ public struct CanvasState: Equatable, Sendable {
     public var weightUnit: WeightUnit = .kgs
     public var isInputExpanded: Bool = false
     public var isSettingsVisible: Bool = false
+    public var navigationState: NavigationState? = nil
+
+    public enum NavigationState: Equatable, Sendable, Identifiable {
+        case exerciseDetails(String)
+        case workoutExercises(UUID)
+
+        public var id: String {
+            switch self {
+            case .exerciseDetails(let name):
+                return "exercise-\(name)"
+            case .workoutExercises(let uuid):
+                return "workout-\(uuid.uuidString)"
+            }
+        }
+    }
 
     public init() {}
+
+    public func copy(
+        isLoading: Bool? = nil,
+        currentDate: Date? = nil,
+        error: String? = nil,
+        currentScribbleText: String? = nil,
+        scribbles: [Scribble]? = nil,
+        selectedScribble: Scribble?? = nil,
+        aiInsights: [AIInsight]? = nil,
+        isGeneratingInsights: Bool? = nil,
+        isDatePickerVisible: Bool? = nil,
+        weightUnit: WeightUnit? = nil,
+        isInputExpanded: Bool? = nil,
+        isSettingsVisible: Bool? = nil,
+        navigationState: NavigationState?? = nil
+    ) -> CanvasState {
+        var newState = self
+        if let isLoading = isLoading { newState.isLoading = isLoading }
+        if let currentDate = currentDate { newState.currentDate = currentDate }
+        if let error = error { newState.error = error }
+        if let currentScribbleText = currentScribbleText { newState.currentScribbleText = currentScribbleText }
+        if let scribbles = scribbles { newState.scribbles = scribbles }
+        if let selectedScribble = selectedScribble { newState.selectedScribble = selectedScribble }
+        if let aiInsights = aiInsights { newState.aiInsights = aiInsights }
+        if let isGeneratingInsights = isGeneratingInsights { newState.isGeneratingInsights = isGeneratingInsights }
+        if let isDatePickerVisible = isDatePickerVisible { newState.isDatePickerVisible = isDatePickerVisible }
+        if let weightUnit = weightUnit { newState.weightUnit = weightUnit }
+        if let isInputExpanded = isInputExpanded { newState.isInputExpanded = isInputExpanded }
+        if let isSettingsVisible = isSettingsVisible { newState.isSettingsVisible = isSettingsVisible }
+        if let navigationState = navigationState { newState.navigationState = navigationState }
+        return newState
+    }
 
     public var isCurrentDate: Bool {
         Calendar.current.isDateInToday(currentDate)

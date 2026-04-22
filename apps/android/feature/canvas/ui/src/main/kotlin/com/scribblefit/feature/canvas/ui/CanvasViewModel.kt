@@ -6,17 +6,15 @@ import com.scribblefit.core.config.domain.ConfigRepository
 import com.scribblefit.core.model.Scribble
 import com.scribblefit.core.model.ScribbleStatus
 import com.scribblefit.core.navigation.Navigator
-import com.scribblefit.feature.canvas.domain.AddScribbleUseCase
+import com.scribblefit.core.navigation.Screen
 import com.scribblefit.feature.canvas.domain.ConfirmScribbleUseCase
 import com.scribblefit.feature.canvas.domain.DeleteScribbleUseCase
 import com.scribblefit.feature.canvas.domain.GetScribblesForDateUseCase
 import com.scribblefit.feature.canvas.domain.ParsePendingScribblesUseCase
-import com.scribblefit.feature.exercises.domain.usecase.UpdateExerciseUseCase
+import com.scribblefit.feature.exercises.domain.usecase.FormatExerciseSummaryUseCase
 import com.scribblefit.feature.insights.domain.usecase.GetAIOverviewUseCase
-import com.scribblefit.feature.sets.domain.usecase.RemoveSetUseCase
-import com.scribblefit.feature.sets.domain.usecase.ReorderSetsUseCase
-import com.scribblefit.feature.sets.domain.usecase.UpdateSetRepsUseCase
-import com.scribblefit.feature.sets.domain.usecase.UpdateSetWeightUseCase
+import com.scribblefit.feature.scribble.domain.usecase.AddRawScribbleUseCase
+import com.scribblefit.feature.scribble.domain.usecase.ManualEditScribbleUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -26,8 +24,6 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onCompletion
-import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -35,31 +31,26 @@ import java.time.LocalDate
 import javax.inject.Inject
 
 @HiltViewModel
-class CanvasViewModel
-@Inject
-constructor(
+class CanvasViewModel @Inject constructor(
     private val getScribblesForDateUseCase: GetScribblesForDateUseCase,
-    private val parsePendingScribblesUseCase: ParsePendingScribblesUseCase,
-    private val addScribbleUseCase: AddScribbleUseCase,
+    private val addRawScribbleUseCase: AddRawScribbleUseCase,
     private val confirmScribbleUseCase: ConfirmScribbleUseCase,
     private val deleteScribbleUseCase: DeleteScribbleUseCase,
-    private val getAIOverviewUseCase: GetAIOverviewUseCase,
+    private val parsePendingScribblesUseCase: ParsePendingScribblesUseCase,
+    private val manualEditScribbleUseCase: ManualEditScribbleUseCase,
+    private val getAIInsightsUseCase: GetAIOverviewUseCase,
+    private val formatExerciseSummaryUseCase: FormatExerciseSummaryUseCase,
     private val configRepository: ConfigRepository,
     private val navigator: Navigator,
-    private val removeSetUseCase: RemoveSetUseCase,
-    private val updateExerciseUseCase: UpdateExerciseUseCase,
-    private val updateSetRepsUseCase: UpdateSetRepsUseCase,
-    private val updateSetWeightUseCase: UpdateSetWeightUseCase,
-    private val reorderSetsUseCase: ReorderSetsUseCase,
 ) : ViewModel() {
+
     private val _state = MutableStateFlow(CanvasState())
+    private val currentDateValue get() = _state.value.currentDate
     private val currentDate = _state.map { it.currentDate }.distinctUntilChanged()
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private val scribblesForDate = currentDate.flatMapLatest { date ->
         getScribblesForDateUseCase(date)
-            .onStart { _state.update { it.copy(isLoading = true) } }
-            .onCompletion { _state.update { it.copy(isLoading = false) } }
     }
 
     private val preferredWeight =
@@ -74,31 +65,81 @@ constructor(
         currentState.copy(
             weightUnit = weightUnit,
             scribbles = scribbles,
-            bottomBarState = navState.bottomBarState
+            scribbleUiModels = scribbles.map { scribble ->
+                ScribbleUiModel(
+                    id = scribble.id,
+                    rawText = scribble.rawText,
+                    status = scribble.status,
+                    exercises = scribble.exercises.map { exercise ->
+                        val firstSet = exercise.sets.firstOrNull()
+                        val totalSets = exercise.sets.size
+                        val repsPerSet = firstSet?.reps ?: 0
+                        val weightValue = firstSet?.weight ?: 0f
+
+                        ExerciseUiModel(
+                            id = exercise.id,
+                            name = exercise.canonicalName,
+                            formattedSummary = formatExerciseSummaryUseCase(exercise, weightUnit),
+                            estimated1RMValue = exercise.estimated1RM?.toInt(),
+                            intensityValue = exercise.intensity?.let { (it * 100).toInt() },
+                            improvementValue = exercise.improvement?.toInt(),
+                            hasStats = exercise.estimated1RM != null ||
+                                    exercise.intensity != null ||
+                                    exercise.improvement != null,
+                            firstSetWeight = weightValue,
+                            totalSets = totalSets,
+                            repsPerSet = repsPerSet
+                        )
+                    },
+                    scribble = scribble
+                )
+            },
+            bottomBarState = navState.bottomBarState,
+            isLoading = false
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), _state.value)
 
     init {
         viewModelScope.launch {
             currentDate.collectLatest { date ->
+                _state.update { it.copy(isLoading = true) }
                 launch { parsePendingScribblesUseCase(date) }
                 loadAIInsights(date)
             }
         }
     }
 
-    private suspend fun loadAIInsights(date: LocalDate) {
-        _state.update { it.copy(isGeneratingInsights = true) }
-        val result = getAIOverviewUseCase(date)
-        _state.update {
-            it.copy(
-                isGeneratingInsights = false,
-                aiInsights = result.getOrNull() ?: emptyList(),
-            )
+    fun onIntent(intent: CanvasIntent) {
+        when (intent) {
+            is CanvasIntent.UpdateScribbleText,
+            is CanvasIntent.AddScribble,
+            is CanvasIntent.RetryScribbleParsing,
+            is CanvasIntent.ClickOnScribble,
+            is CanvasIntent.ConfirmScribble,
+            is CanvasIntent.DeleteScribble,
+            is CanvasIntent.ShowDeleteConfirmation,
+            CanvasIntent.HideDeleteConfirmation,
+            CanvasIntent.DismissScribbleDialog -> handleScribbleIntent(intent)
+
+            CanvasIntent.OnPreviousDayClick,
+            CanvasIntent.OnNextDayClick,
+            CanvasIntent.ShowDatePicker,
+            CanvasIntent.DismissDatePicker,
+            is CanvasIntent.OnDateSelected -> handleDateIntent(intent)
+
+            is CanvasIntent.UpdateExerciseName,
+            is CanvasIntent.UpdateSetWeight,
+            is CanvasIntent.UpdateSetReps,
+            is CanvasIntent.DeleteSet -> handleEditIntent(intent)
+
+            CanvasIntent.NavigateBack,
+            is CanvasIntent.NavigateToScreen,
+            is CanvasIntent.NavigateToExerciseDetails,
+            is CanvasIntent.NavigateToWorkoutExercises -> handleNavigationIntent(intent)
         }
     }
 
-    fun onIntent(intent: CanvasIntent) {
+    private fun handleScribbleIntent(intent: CanvasIntent) {
         when (intent) {
             is CanvasIntent.UpdateScribbleText -> {
                 _state.update { it.copy(currentScribbleText = intent.text) }
@@ -109,13 +150,7 @@ constructor(
             }
 
             is CanvasIntent.RetryScribbleParsing -> {
-                viewModelScope.launch {
-                    parsePendingScribblesUseCase.parseSingleScribble(intent.scribble)
-                }
-            }
-
-            is CanvasIntent.NavigateToScreen -> {
-                navigator.navigateTo(intent.screen)
+                retryScribbleParsing(intent.scribble)
             }
 
             is CanvasIntent.ClickOnScribble -> {
@@ -128,25 +163,40 @@ constructor(
 
             is CanvasIntent.DeleteScribble -> {
                 deleteScribble(intent.scribbleId)
+                _state.update { it.copy(showDeleteConfirmation = false, deletingScribbleId = null) }
+            }
+
+            is CanvasIntent.ShowDeleteConfirmation -> {
+                _state.update {
+                    it.copy(
+                        showDeleteConfirmation = true,
+                        deletingScribbleId = intent.scribbleId
+                    )
+                }
+            }
+
+            CanvasIntent.HideDeleteConfirmation -> {
+                _state.update { it.copy(showDeleteConfirmation = false, deletingScribbleId = null) }
             }
 
             CanvasIntent.DismissScribbleDialog -> {
                 dismissScribbleDialog()
             }
 
-            CanvasIntent.NavigateBack -> {
-                navigator.goBack()
-            }
+            else -> {}
+        }
+    }
 
+    private fun handleDateIntent(intent: CanvasIntent) {
+        when (intent) {
             CanvasIntent.OnPreviousDayClick -> {
-                val prevDate = _state.value.currentDate.minusDays(1)
-                _state.update { it.copy(currentDate = prevDate) }
+                updateDate(currentDateValue.minusDays(1))
             }
 
             CanvasIntent.OnNextDayClick -> {
-                val nextDate = _state.value.currentDate.plusDays(1)
-                if (!nextDate.isAfter(LocalDate.now())) {
-                    _state.update { it.copy(currentDate = nextDate) }
+                val nextDay = currentDateValue.plusDays(1)
+                if (!nextDay.isAfter(LocalDate.now())) {
+                    updateDate(nextDay)
                 }
             }
 
@@ -159,17 +209,18 @@ constructor(
             }
 
             is CanvasIntent.OnDateSelected -> {
-                val today = LocalDate.now()
-                if (!intent.date.isAfter(today)) {
-                    _state.update {
-                        it.copy(
-                            currentDate = intent.date,
-                            isDatePickerVisible = false
-                        )
-                    }
+                if (!intent.date.isAfter(LocalDate.now())) {
+                    updateDate(intent.date)
                 }
+                _state.update { it.copy(isDatePickerVisible = false) }
             }
 
+            else -> {}
+        }
+    }
+
+    private fun handleEditIntent(intent: CanvasIntent) {
+        when (intent) {
             is CanvasIntent.UpdateExerciseName -> {
                 updateExerciseName(intent.exerciseId, intent.newName)
             }
@@ -185,142 +236,70 @@ constructor(
             is CanvasIntent.DeleteSet -> {
                 deleteSet(intent.exerciseId, intent.setId)
             }
+
+            else -> {}
         }
     }
 
-    private fun deleteSet(exerciseId: Long, setId: Long) {
-        _state.update { currentState ->
-            val selectedScribble = currentState.selectedScribble ?: return@update currentState
-
-            if (selectedScribble.status == ScribbleStatus.COMPLETED) {
-                viewModelScope.launch {
-                    removeSetUseCase(setId)
-                }
+    private fun handleNavigationIntent(intent: CanvasIntent) {
+        when (intent) {
+            CanvasIntent.NavigateBack -> {
+                navigator.goBack()
             }
 
-            val updatedExercises = selectedScribble.exercises.map { exercise ->
-                if (exercise.id == exerciseId) {
-                    val updatedSets = reorderSetsUseCase(exercise.sets.filterNot { it.id == setId })
-                    exercise.copy(sets = updatedSets)
-                } else {
-                    exercise
-                }
-            }
-            currentState.copy(selectedScribble = selectedScribble.copy(exercises = updatedExercises))
-        }
-    }
-
-    private fun updateExerciseName(exerciseId: Long, newName: String) {
-        _state.update { currentState ->
-            val selectedScribble = currentState.selectedScribble ?: return@update currentState
-
-            if (selectedScribble.status == ScribbleStatus.COMPLETED) {
-                val exercise = selectedScribble.exercises.find { it.id == exerciseId }
-                exercise?.let {
-                    viewModelScope.launch {
-                        updateExerciseUseCase(it.copy(canonicalName = newName))
-                    }
-                }
+            is CanvasIntent.NavigateToScreen -> {
+                navigator.navigateTo(intent.screen)
             }
 
-            val updatedExercises = selectedScribble.exercises.map { exercise ->
-                if (exercise.id == exerciseId) {
-                    exercise.copy(canonicalName = newName)
-                } else {
-                    exercise
-                }
-            }
-            currentState.copy(selectedScribble = selectedScribble.copy(exercises = updatedExercises))
-        }
-    }
-
-    private fun updateSetWeight(exerciseId: Long, setId: Long, newWeight: String) {
-        val weight = newWeight.toFloatOrNull()
-        if (weight == null && newWeight.isNotEmpty()) return
-
-        _state.update { currentState ->
-            val selectedScribble = currentState.selectedScribble ?: return@update currentState
-
-            if (selectedScribble.status == ScribbleStatus.COMPLETED) {
-                viewModelScope.launch {
-                    updateSetWeightUseCase(setId, weight)
-                }
+            is CanvasIntent.NavigateToExerciseDetails -> {
+                navigator.navigateTo(Screen.ExerciseDetails(intent.exerciseName))
             }
 
-            val updatedExercises = selectedScribble.exercises.map { exercise ->
-                if (exercise.id == exerciseId) {
-                    val updatedSets = exercise.sets.map { set ->
-                        if (set.id == setId) {
-                            set.copy(weight = weight)
-                        } else {
-                            set
-                        }
-                    }
-                    exercise.copy(sets = updatedSets)
-                } else {
-                    exercise
-                }
-            }
-            currentState.copy(selectedScribble = selectedScribble.copy(exercises = updatedExercises))
-        }
-    }
-
-    private fun updateSetReps(exerciseId: Long, setId: Long, newReps: String) {
-        val reps = newReps.toIntOrNull() ?: return
-        _state.update { currentState ->
-            val selectedScribble = currentState.selectedScribble ?: return@update currentState
-
-            if (selectedScribble.status == ScribbleStatus.COMPLETED) {
-                viewModelScope.launch {
-                    updateSetRepsUseCase(setId, reps)
-                }
-            }
-
-            val updatedExercises = selectedScribble.exercises.map { exercise ->
-                if (exercise.id == exerciseId) {
-                    val updatedSets = exercise.sets.map { set ->
-                        if (set.id == setId) {
-                            set.copy(reps = reps)
-                        } else {
-                            set
-                        }
-                    }
-                    exercise.copy(sets = updatedSets)
-                } else {
-                    exercise
-                }
-            }
-            currentState.copy(selectedScribble = selectedScribble.copy(exercises = updatedExercises))
-        }
-    }
-
-    private fun addScribble(text: String) {
-        if (text.isBlank()) return
-        viewModelScope.launch {
-            addScribbleUseCase(text, _state.value.currentDate)
-            _state.update { it.copy(currentScribbleText = "") }
-        }
-    }
-
-    private fun scribbleClicked(scribble: Scribble) {
-        when (scribble.status) {
-            ScribbleStatus.FAILED -> {}
-            ScribbleStatus.SUCCESS, ScribbleStatus.COMPLETED -> _state.update {
-                it.copy(
-                    selectedScribble = scribble
-                )
+            is CanvasIntent.NavigateToWorkoutExercises -> {
+                navigator.navigateTo(Screen.WorkoutExercises(intent.workoutId))
             }
 
             else -> {}
         }
     }
 
+    private fun addScribble(text: String) {
+        if (text.isBlank()) return
+        viewModelScope.launch {
+            addRawScribbleUseCase(text, currentDateValue)
+            _state.update { it.copy(currentScribbleText = "") }
+        }
+    }
+
+    private fun retryScribbleParsing(scribble: Scribble) {
+        viewModelScope.launch {
+            parsePendingScribblesUseCase.parseSingleScribble(scribble)
+        }
+    }
+
+    private fun scribbleClicked(scribble: Scribble) {
+        when (scribble.status) {
+            ScribbleStatus.SUCCESS -> _state.update {
+                it.copy(selectedScribble = scribble)
+            }
+
+            ScribbleStatus.COMPLETED -> {
+                val workoutId = scribble.workoutId ?: return
+                navigator.navigateTo(Screen.WorkoutExercises(workoutId = workoutId))
+            }
+
+            else -> {}
+        }
+    }
+
+    private fun updateDate(date: LocalDate) {
+        _state.update { it.copy(currentDate = date) }
+    }
+
     private fun confirmScribble(scribble: Scribble) {
         viewModelScope.launch {
-            confirmScribbleUseCase(scribble).fold(
-                onSuccess = { dismissScribbleDialog() },
-                onFailure = { /* Dialog stays open — user can retry or dismiss */ }
-            )
+            confirmScribbleUseCase(scribble)
+            dismissScribbleDialog()
         }
     }
 
@@ -333,5 +312,48 @@ constructor(
 
     private fun dismissScribbleDialog() {
         _state.update { it.copy(selectedScribble = null) }
+    }
+
+    private fun updateExerciseName(exerciseId: Long, newName: String) {
+        val scribble = _state.value.selectedScribble ?: return
+        viewModelScope.launch {
+            manualEditScribbleUseCase.updateExerciseName(scribble.id, exerciseId, newName)
+        }
+    }
+
+    private fun updateSetWeight(exerciseId: Long, setId: Long, newWeight: String) {
+        val scribble = _state.value.selectedScribble ?: return
+        val weight = newWeight.toFloatOrNull() ?: return
+        viewModelScope.launch {
+            manualEditScribbleUseCase.updateSetWeight(scribble.id, exerciseId, setId, weight)
+        }
+    }
+
+    private fun updateSetReps(exerciseId: Long, setId: Long, newReps: String) {
+        val scribble = _state.value.selectedScribble ?: return
+        val reps = newReps.toIntOrNull() ?: return
+        viewModelScope.launch {
+            manualEditScribbleUseCase.updateSetReps(scribble.id, exerciseId, setId, reps)
+        }
+    }
+
+    private fun deleteSet(exerciseId: Long, setId: Long) {
+        val scribble = _state.value.selectedScribble ?: return
+        viewModelScope.launch {
+            manualEditScribbleUseCase.deleteSet(scribble.id, exerciseId, setId)
+        }
+    }
+
+    private fun loadAIInsights(date: LocalDate) {
+        viewModelScope.launch {
+            _state.update { it.copy(isGeneratingInsights = true) }
+            val insights = getAIInsightsUseCase(date)
+            _state.update {
+                it.copy(
+                    isGeneratingInsights = false,
+                    aiInsights = insights.getOrDefault(emptyList())
+                )
+            }
+        }
     }
 }

@@ -1,5 +1,7 @@
 package com.scribblefit.feature.scribble.data
 
+import androidx.room.withTransaction
+import com.scribblefit.core.database.ScribbleFitDatabase
 import com.scribblefit.core.database.dao.ScribbleDao
 import com.scribblefit.core.database.dao.ScribbleTrackerDao
 import com.scribblefit.core.database.dao.WorkoutDao
@@ -24,12 +26,14 @@ import kotlinx.coroutines.withContext
  * Implementation of ScribbleRepository.
  */
 internal class ScribbleRepositoryImpl(
+    private val database: ScribbleFitDatabase,
     private val scribbleDao: ScribbleDao,
     private val scribbleTrackerDao: ScribbleTrackerDao,
     private val workoutDao: WorkoutDao,
     private val workoutExerciseDao: WorkoutExerciseDao,
     private val coroutineDispatcher: CoroutineDispatcher,
 ) : ScribbleRepository {
+
     override suspend fun saveScribbleExercises(
         scribbleId: Long,
         exercises: List<DomainExercise>,
@@ -65,6 +69,16 @@ internal class ScribbleRepositoryImpl(
         )
     }
 
+    override suspend fun updateScribbleExercises(
+        scribbleId: Long,
+        exercises: List<DomainExercise>,
+    ) = withContext(coroutineDispatcher) {
+        database.withTransaction {
+            scribbleTrackerDao.clearScribbleExercises(scribbleId)
+            saveScribbleExercises(scribbleId, exercises)
+        }
+    }
+
     override suspend fun updateScribbleExercisesToWorkout(
         scribbleId: Long,
         workoutId: Long,
@@ -74,6 +88,7 @@ internal class ScribbleRepositoryImpl(
             workoutExerciseDao.updateWorkoutId(workoutExerciseId, workoutId)
         }
     }
+
     override suspend fun insertScribble(scribble: Scribble): Long =
         withContext(coroutineDispatcher) {
             scribbleDao.insertScribble(scribble.toEntity())
@@ -106,6 +121,41 @@ internal class ScribbleRepositoryImpl(
                 )
             scribbleTrackerDao.insertScribbleExercise(entity)
         }
+
+    override suspend fun confirmScribble(
+        scribble: Scribble,
+        workout: com.scribblefit.core.model.Workout
+    ) = withContext(coroutineDispatcher) {
+        val exerciseEntities = scribble.exercises.map { it.toEntity() }
+        val workoutEntity = workout.toEntity()
+        val setsPerExercise = scribble.exercises.map { domainExercise ->
+            domainExercise.sets.map { domainSet ->
+                EntityWorkoutSet(
+                    workoutExerciseId = 0,
+                    setNumber = domainSet.setNumber,
+                    reps = domainSet.reps,
+                    weight = domainSet.weight,
+                    rpe = domainSet.rpe,
+                    notes = domainSet.notes,
+                )
+            }
+        }
+        val exerciseStats = scribble.exercises.map { exercise ->
+            com.scribblefit.core.database.dao.ExerciseStats(
+                estimated1RM = exercise.estimated1RM,
+                intensity = exercise.intensity,
+                improvement = exercise.improvement,
+            )
+        }
+
+        scribbleTrackerDao.confirmScribble(
+            scribbleId = scribble.id,
+            exercises = exerciseEntities,
+            workout = workoutEntity,
+            setsPerExercise = setsPerExercise,
+            exerciseStats = exerciseStats
+        )
+    }
 
     override fun getScribble(scribbleId: Long): Flow<Scribble> =
         scribbleDao

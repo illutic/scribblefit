@@ -6,11 +6,13 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.consumeWindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.imeNestedScroll
 import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,13 +53,10 @@ internal fun CanvasScreen(
                 modifier = Modifier.weight(1f)
             ) {
                 CanvasBody(
-                    scribbles = state.scribbleUiModels,
-                    aiInsights = state.aiInsights,
-                    isGeneratingInsights = state.isGeneratingInsights,
+                    state = state,
                     onScribbleClick = { onIntent(CanvasIntent.ClickOnScribble(it)) },
+                    onExerciseClick = { onIntent(CanvasIntent.NavigateToExerciseDetails(it)) },
                     onIntent = onIntent,
-                    emptyText = state.emptyScribbleText,
-                    modifier = Modifier.fillMaxSize()
                 )
 
                 CanvasFooter(
@@ -76,7 +75,7 @@ internal fun CanvasScreen(
         ScribbleConfirmationBottomSheet(
             state = state,
             onConfirm = { onIntent(CanvasIntent.ConfirmScribble(it)) },
-            onDelete = { onIntent(CanvasIntent.DeleteScribble(it.id)) },
+            onDelete = { onIntent(CanvasIntent.ShowDeleteConfirmation(it.id)) },
             onDismiss = { onIntent(CanvasIntent.DismissScribbleDialog) },
             onUpdateExerciseName = { id, name ->
                 onIntent(
@@ -113,6 +112,29 @@ internal fun CanvasScreen(
             initialDate = state.currentDate,
             onDateSelected = { onIntent(CanvasIntent.OnDateSelected(it)) },
             onDismiss = { onIntent(CanvasIntent.DismissDatePicker) }
+        )
+    }
+
+    if (state.showDeleteConfirmation && state.deletingScribbleId != null) {
+        AlertDialog(
+            onDismissRequest = { onIntent(CanvasIntent.HideDeleteConfirmation) },
+            title = { Text(text = state.deleteDialogTitle) },
+            text = { Text(text = state.deleteDialogText) },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onIntent(CanvasIntent.DeleteScribble(state.deletingScribbleId))
+                    }
+                ) {
+                    Text(state.deleteConfirmLabel, color = ScribbleFitTheme.colors.dangerRed)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { onIntent(CanvasIntent.HideDeleteConfirmation) }) {
+                    Text(state.deleteCancelLabel)
+                }
+            },
+            containerColor = ScribbleFitTheme.colors.surface
         )
     }
 }

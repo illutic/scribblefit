@@ -81,12 +81,14 @@ internal fun CanvasFooter(
                     Screen.Insights -> Icons.Rounded.AutoGraph
                     Screen.Ledger -> Icons.Rounded.CalendarMonth
                     Screen.Settings -> Icons.Rounded.Settings
+                    else -> return
                 }
                 val label = when (item.screen) {
                     Screen.Canvas -> stringResource(R.string.nav_canvas)
                     Screen.Insights -> stringResource(R.string.nav_insights)
                     Screen.Ledger -> stringResource(R.string.nav_ledger)
                     Screen.Settings -> stringResource(R.string.nav_settings)
+                    else -> return
                 }
                 BottomBarUiItem(
                     screen = item.screen,
@@ -146,7 +148,7 @@ private fun CanvasInputFooter(
     placeholder: String,
     modifier: Modifier = Modifier
 ) {
-    var text by remember { mutableStateOf(initialText) }
+    var text by remember(initialText) { mutableStateOf(initialText) }
 
     Surface(
         modifier = modifier,

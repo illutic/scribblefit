@@ -3,9 +3,11 @@ package com.scribblefit.feature.ledger.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.scribblefit.core.navigation.Navigator
+import com.scribblefit.core.navigation.Screen
 import com.scribblefit.feature.ledger.domain.usecase.GetWorkoutsInRangeUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
@@ -16,6 +18,7 @@ import kotlinx.coroutines.flow.onCompletion
 import kotlinx.coroutines.flow.onStart
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
@@ -25,6 +28,7 @@ class LedgerViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(LedgerState())
+    private val refreshTrigger = MutableSharedFlow<Unit>(replay = 1).apply { tryEmit(Unit) }
 
     private val dateRange = combine(
         _state.map { it.startDate }.distinctUntilChanged(),
@@ -32,11 +36,12 @@ class LedgerViewModel @Inject constructor(
     ) { start, end -> start to end }
 
     @OptIn(ExperimentalCoroutinesApi::class)
-    private val workoutsFlow = dateRange.flatMapLatest { (start, end) ->
-        getWorkoutsInRangeUseCase(start, end)
-            .onStart { _state.update { it.copy(isLoading = true) } }
-            .onCompletion { _state.update { it.copy(isLoading = false) } }
-    }
+    private val workoutsFlow = combine(dateRange, refreshTrigger) { range, _ -> range }
+        .flatMapLatest { (start, end) ->
+            getWorkoutsInRangeUseCase(start, end)
+                .onStart { _state.update { it.copy(isLoading = true) } }
+                .onCompletion { _state.update { it.copy(isLoading = false) } }
+        }
 
     val state = combine(_state, workoutsFlow, navigator.navState) { state, workouts, navState ->
         state.copy(
@@ -59,8 +64,7 @@ class LedgerViewModel @Inject constructor(
             }
 
             is LedgerIntent.WorkoutClicked -> {
-                // TODO: Navigate to workout details once implemented
-                // navigator.navigateTo(Screen.WorkoutDetails(intent.workoutId))
+                navigator.navigateTo(Screen.WorkoutExercises(intent.workoutId))
             }
 
             LedgerIntent.HideDatePicker -> {
@@ -73,9 +77,19 @@ class LedgerViewModel @Inject constructor(
                 }
             }
 
+            LedgerIntent.Refresh -> {
+                fetchWorkouts()
+            }
+
             is LedgerIntent.NavigateToScreen -> {
                 navigator.navigateTo(intent.screen)
             }
+        }
+    }
+
+    private fun fetchWorkouts() {
+        viewModelScope.launch {
+            refreshTrigger.emit(Unit)
         }
     }
 }

@@ -18,12 +18,12 @@ public final class CanvasStore {
     private let parsePendingScribblesUseCase: ParsePendingScribblesUseCase
     private let getAIOverviewUseCase: GetAIOverviewUseCase
     private let updateScribbleWithWorkoutUseCase: UpdateScribbleWithWorkoutUseCase
+    private let manualEditScribbleUseCase: ManualEditScribbleUseCase
     private let reorderSetsUseCase: ReorderSetsUseCase
     private let configRepository: ConfigRepository
     
     private var observationTask: Task<Void, Never>?
     private var aiInsightsTask: Task<Void, Never>?
-    private var persistenceTask: Task<Void, Never>?
     private var lastInsightDate: Date?
     private var cancellables = Set<AnyCancellable>()
 
@@ -35,6 +35,7 @@ public final class CanvasStore {
         parsePendingScribblesUseCase: ParsePendingScribblesUseCase,
         getAIOverviewUseCase: GetAIOverviewUseCase,
         updateScribbleWithWorkoutUseCase: UpdateScribbleWithWorkoutUseCase,
+        manualEditScribbleUseCase: ManualEditScribbleUseCase,
         reorderSetsUseCase: ReorderSetsUseCase,
         configRepository: ConfigRepository
     ) {
@@ -45,6 +46,7 @@ public final class CanvasStore {
         self.parsePendingScribblesUseCase = parsePendingScribblesUseCase
         self.getAIOverviewUseCase = getAIOverviewUseCase
         self.updateScribbleWithWorkoutUseCase = updateScribbleWithWorkoutUseCase
+        self.manualEditScribbleUseCase = manualEditScribbleUseCase
         self.reorderSetsUseCase = reorderSetsUseCase
         self.configRepository = configRepository
         
@@ -55,39 +57,77 @@ public final class CanvasStore {
 
     public func onIntent(_ intent: CanvasIntent) {
         switch intent {
+        case .updateScribbleText, .addScribble, .clickOnScribble, .dismissScribbleDialog, 
+             .confirmScribble, .deleteScribble, .retryScribbleParsing:
+            handleScribbleIntent(intent)
+            
+        case .onPreviousDayClick, .onNextDayClick, .showDatePicker, .dismissDatePicker, .onDateSelected:
+            handleDateIntent(intent)
+            
+        case .updateExerciseName, .updateSetWeight, .updateSetReps, .deleteSet:
+            handleEditIntent(intent)
+            
+        case .navigateToSettings, .dismissSettings, .toggleInputExpansion:
+            handleUIIntent(intent)
+            
+        default:
+            break
+        }
+    }
+
+    private func handleScribbleIntent(_ intent: CanvasIntent) {
+        switch intent {
         case .updateScribbleText(let text):
-            state.currentScribbleText = text
+            state = state.copy(currentScribbleText: text)
         case .addScribble(let text):
             addScribble(text)
-        case .onPreviousDayClick:
-            changeDate(by: -1)
-        case .onNextDayClick:
-            changeDate(by: 1)
-        case .showDatePicker:
-            state.isDatePickerVisible = true
-        case .dismissDatePicker:
-            state.isDatePickerVisible = false
-        case .onDateSelected(let date):
-            state.currentDate = date
-            state.isDatePickerVisible = false
-            observeScribbles()
-            refreshAIInsights()
-        case .toggleInputExpansion:
-            state.isInputExpanded.toggle()
         case .clickOnScribble(let scribble):
-            if scribble.status == .success || scribble.status == .completed {
-                state.selectedScribble = scribble
+            if scribble.status == .success {
+                state = state.copy(selectedScribble: scribble)
+            } else if scribble.status == .completed, let workoutId = scribble.workoutId {
+                state = state.copy(navigationState: .workoutExercises(workoutId))
             }
         case .dismissScribbleDialog:
-            state.selectedScribble = nil
+            state = state.copy(selectedScribble: .some(nil))
         case .confirmScribble(let scribble):
             confirmScribble(scribble)
         case .deleteScribble(let id):
             deleteScribble(id)
         case .retryScribbleParsing(let scribble):
             retryParsing(scribble)
-        case .navigateToSettings:
-            state.isSettingsVisible = true
+        default:
+            break
+        }
+    }
+
+    private func handleDateIntent(_ intent: CanvasIntent) {
+        switch intent {
+        case .onPreviousDayClick:
+            changeDate(by: -1)
+        case .onNextDayClick:
+            changeDate(by: 1)
+        case .showDatePicker:
+            state = state.copy(isDatePickerVisible: true)
+        case .dismissDatePicker:
+            state = state.copy(isDatePickerVisible: false)
+        case .onDateSelected(let date):
+            let startOfToday = Calendar.current.startOfDay(for: Date())
+            let startOfSelected = Calendar.current.startOfDay(for: date)
+            
+            if startOfSelected <= startOfToday {
+                state = state.copy(currentDate: date, isDatePickerVisible: false)
+                observeScribbles()
+                refreshAIInsights()
+            } else {
+                state = state.copy(isDatePickerVisible: false)
+            }
+        default:
+            break
+        }
+    }
+
+    private func handleEditIntent(_ intent: CanvasIntent) {
+        switch intent {
         case .updateExerciseName(let exerciseId, let newName):
             updateExerciseName(exerciseId: exerciseId, newName: newName)
         case .updateSetWeight(let exerciseId, let setId, let newWeight):
@@ -101,152 +141,108 @@ public final class CanvasStore {
         }
     }
 
+    private func handleUIIntent(_ intent: CanvasIntent) {
+        switch intent {
+        case .navigateToSettings:
+            state = state.copy(isSettingsVisible: true)
+        case .dismissSettings:
+            state = state.copy(isSettingsVisible: false)
+        case .toggleInputExpansion:
+            state = state.copy(isInputExpanded: !state.isInputExpanded)
+        case .navigateToExerciseDetails(let name):
+            state = state.copy(navigationState: .exerciseDetails(name))
+        case .navigateToWorkoutExercises(let id):
+            state = state.copy(navigationState: .workoutExercises(id))
+        case .dismissDetails:
+            state = state.copy(navigationState: .some(nil))
+        default:
+            break
+        }
+    }
+
     private func updateExerciseName(exerciseId: UUID, newName: String) {
         guard let selectedScribble = state.selectedScribble else { return }
-        let updatedExercises = selectedScribble.exercises.map { exercise in
-            if exercise.id == exerciseId {
-                return Exercise(
-                    id: exercise.id,
-                    canonicalName: newName,
-                    muscleGroup: exercise.muscleGroup,
-                    sets: exercise.sets,
-                    isDraft: exercise.isDraft,
-                    estimated1RM: exercise.estimated1RM,
-                    intensity: exercise.intensity
-                )
+        Task {
+            try? await manualEditScribbleUseCase.updateExerciseName(
+                scribbleId: selectedScribble.id,
+                exerciseId: exerciseId,
+                newName: newName
+            )
+            // Local update for immediate UI feedback
+            if let selected = state.selectedScribble {
+                let updated = selected.copy(exercises: selected.exercises.map { ex in
+                    ex.id == exerciseId ? ex.copy(canonicalName: newName) : ex
+                })
+                state = state.copy(selectedScribble: updated)
             }
-            return exercise
-        }
-        
-        var updatedScribble = selectedScribble
-        updatedScribble.exercises = updatedExercises
-        state.selectedScribble = updatedScribble
-        
-        if updatedScribble.status == .completed {
-            persistScribbleUpdate(updatedScribble)
         }
     }
 
     private func updateSetWeight(exerciseId: UUID, setId: UUID, newWeight: String) {
         guard let selectedScribble = state.selectedScribble, let weight = Float(newWeight) else { return }
-        let updatedExercises = selectedScribble.exercises.map { exercise in
-            if exercise.id == exerciseId {
-                let updatedSets = exercise.sets.map { set in
-                    if set.id == setId {
-                        return ExerciseSet(
-                            id: set.id,
-                            setNumber: set.setNumber,
-                            weight: weight,
-                            reps: set.reps,
-                            rpe: set.rpe,
-                            notes: set.notes
-                        )
+        Task {
+            try? await manualEditScribbleUseCase.updateSetWeight(
+                scribbleId: selectedScribble.id,
+                exerciseId: exerciseId,
+                setId: setId,
+                newWeight: weight
+            )
+            // Local update
+            if let selected = state.selectedScribble {
+                let updated = selected.copy(exercises: selected.exercises.map { ex in
+                    if ex.id == exerciseId {
+                        return ex.copy(sets: ex.sets.map { s in
+                            s.id == setId ? s.copy(weight: weight) : s
+                        })
                     }
-                    return set
-                }
-                return Exercise(
-                    id: exercise.id,
-                    canonicalName: exercise.canonicalName,
-                    muscleGroup: exercise.muscleGroup,
-                    sets: updatedSets,
-                    isDraft: exercise.isDraft,
-                    estimated1RM: exercise.estimated1RM,
-                    intensity: exercise.intensity
-                )
+                    return ex
+                })
+                state = state.copy(selectedScribble: updated)
             }
-            return exercise
-        }
-        
-        var updatedScribble = selectedScribble
-        updatedScribble.exercises = updatedExercises
-        state.selectedScribble = updatedScribble
-        
-        if updatedScribble.status == .completed {
-            persistScribbleUpdate(updatedScribble)
         }
     }
 
     private func updateSetReps(exerciseId: UUID, setId: UUID, newReps: String) {
         guard let selectedScribble = state.selectedScribble, let reps = Int(newReps) else { return }
-        let updatedExercises = selectedScribble.exercises.map { exercise in
-            if exercise.id == exerciseId {
-                let updatedSets = exercise.sets.map { set in
-                    if set.id == setId {
-                        return ExerciseSet(
-                            id: set.id,
-                            setNumber: set.setNumber,
-                            weight: set.weight,
-                            reps: reps,
-                            rpe: set.rpe,
-                            notes: set.notes
-                        )
+        Task {
+            try? await manualEditScribbleUseCase.updateSetReps(
+                scribbleId: selectedScribble.id,
+                exerciseId: exerciseId,
+                setId: setId,
+                newReps: reps
+            )
+            // Local update
+            if let selected = state.selectedScribble {
+                let updated = selected.copy(exercises: selected.exercises.map { ex in
+                    if ex.id == exerciseId {
+                        return ex.copy(sets: ex.sets.map { s in
+                            s.id == setId ? s.copy(reps: reps) : s
+                        })
                     }
-                    return set
-                }
-                return Exercise(
-                    id: exercise.id,
-                    canonicalName: exercise.canonicalName,
-                    muscleGroup: exercise.muscleGroup,
-                    sets: updatedSets,
-                    isDraft: exercise.isDraft,
-                    estimated1RM: exercise.estimated1RM,
-                    intensity: exercise.intensity
-                )
+                    return ex
+                })
+                state = state.copy(selectedScribble: updated)
             }
-            return exercise
-        }
-        
-        var updatedScribble = selectedScribble
-        updatedScribble.exercises = updatedExercises
-        state.selectedScribble = updatedScribble
-        
-        if updatedScribble.status == .completed {
-            persistScribbleUpdate(updatedScribble)
         }
     }
 
     private func deleteSet(exerciseId: UUID, setId: UUID) {
         guard let selectedScribble = state.selectedScribble else { return }
-        let updatedExercises = selectedScribble.exercises.map { exercise in
-            if exercise.id == exerciseId {
-                let filteredSets = exercise.sets.filter { $0.id != setId }
-                let reorderedSets = reorderSetsUseCase.execute(sets: filteredSets)
-                return Exercise(
-                    id: exercise.id,
-                    canonicalName: exercise.canonicalName,
-                    muscleGroup: exercise.muscleGroup,
-                    sets: reorderedSets,
-                    isDraft: exercise.isDraft,
-                    estimated1RM: exercise.estimated1RM,
-                    intensity: exercise.intensity
-                )
-            }
-            return exercise
-        }
-        
-        var updatedScribble = selectedScribble
-        updatedScribble.exercises = updatedExercises
-        state.selectedScribble = updatedScribble
-        
-        if updatedScribble.status == .completed {
-            persistScribbleUpdate(updatedScribble)
-        }
-    }
-
-    private func persistScribbleUpdate(_ scribble: Scribble) {
-        persistenceTask?.cancel()
-        persistenceTask = Task {
-            do {
-                // Debounce keystrokes for 500ms
-                try await Task.sleep(for: .milliseconds(500))
-                
-                if Task.isCancelled { return }
-                
-                try await updateScribbleWithWorkoutUseCase.execute(scribble: scribble)
-            } catch is CancellationError {
-                // Ignore cancellation
-            } catch {
-                state.error = error.localizedDescription
+        Task {
+            try? await manualEditScribbleUseCase.deleteSet(
+                scribbleId: selectedScribble.id,
+                exerciseId: exerciseId,
+                setId: setId
+            )
+            // Local update handled via re-observation usually, but for immediate UI:
+            if let selected = state.selectedScribble {
+                let updated = selected.copy(exercises: selected.exercises.map { ex in
+                    if ex.id == exerciseId {
+                        return ex.copy(sets: ex.sets.filter { $0.id != setId })
+                    }
+                    return ex
+                })
+                state = state.copy(selectedScribble: updated)
             }
         }
     }
@@ -256,13 +252,10 @@ public final class CanvasStore {
         Task {
             do {
                 try await addRawScribbleUseCase.execute(text: text, date: state.currentDate)
-                state.currentScribbleText = ""
-                // Auto-trigger parsing for the new scribble
-                // We'll let the observer handle finding new pending scribbles in a real app,
-                // but for now let's just trigger a parse check.
+                state = state.copy(currentScribbleText: "")
                 triggerParsing()
             } catch {
-                state.error = error.localizedDescription
+                state = state.copy(error: error.localizedDescription)
             }
         }
     }
@@ -271,10 +264,9 @@ public final class CanvasStore {
         Task {
             do {
                 try await confirmScribbleUseCase.execute(scribble: scribble)
-                state.selectedScribble = nil
-                // We don't refresh insights here anymore, only on date change
+                state = state.copy(selectedScribble: .some(nil))
             } catch {
-                state.error = error.localizedDescription
+                state = state.copy(error: error.localizedDescription)
             }
         }
     }
@@ -283,10 +275,9 @@ public final class CanvasStore {
         Task {
             do {
                 try await deleteScribbleUseCase.execute(id: id)
-                state.selectedScribble = nil
-                // We don't refresh insights here anymore, only on date change
+                state = state.copy(selectedScribble: .some(nil))
             } catch {
-                state.error = error.localizedDescription
+                state = state.copy(error: error.localizedDescription)
             }
         }
     }
@@ -296,14 +287,13 @@ public final class CanvasStore {
             do {
                 try await parsePendingScribblesUseCase.parseSingleScribble(id: scribble.id)
             } catch {
-                state.error = "Failed to retry parsing: \(error.localizedDescription)"
+                state = state.copy(error: "Failed to retry parsing: \(error.localizedDescription)")
             }
         }
     }
 
     private func triggerParsing() {
         Task {
-            // Find pending scribbles and parse them
             for scribble in state.scribbles where scribble.status == .pending {
                 try? await parsePendingScribblesUseCase.parseSingleScribble(id: scribble.id)
             }
@@ -311,7 +301,6 @@ public final class CanvasStore {
     }
 
     private func refreshAIInsights(force: Bool = false) {
-        // Token Optimization: Only fetch if date has changed or forced (initial load)
         let calendar = Calendar.current
         if !force, let lastDate = lastInsightDate, calendar.isDate(lastDate, inSameDayAs: state.currentDate) {
             return
@@ -319,23 +308,21 @@ public final class CanvasStore {
         
         lastInsightDate = state.currentDate
         aiInsightsTask?.cancel()
-        state.isGeneratingInsights = true
-        state.aiInsights = [] // Clear old insights while loading
+        state = state.copy(aiInsights: [], isGeneratingInsights: true)
         
         aiInsightsTask = Task {
             defer {
                 if !Task.isCancelled {
-                    state.isGeneratingInsights = false
+                    state = state.copy(isGeneratingInsights: false)
                 }
             }
             
             do {
                 let insights = try await getAIOverviewUseCase.execute(date: state.currentDate)
                 if !Task.isCancelled {
-                    state.aiInsights = insights
+                    state = state.copy(aiInsights: insights)
                 }
             } catch {
-                // Silent failure for insights is usually better unless it's a critical error
                 print("Failed to fetch AI insights: \(error)")
             }
         }
@@ -344,10 +331,12 @@ public final class CanvasStore {
     private func changeDate(by days: Int) {
         guard let newDate = Calendar.current.date(byAdding: .day, value: days, to: state.currentDate) else { return }
         
-        let now = Date()
-        if newDate > now { return }
+        let startOfToday = Calendar.current.startOfDay(for: Date())
+        let startOfNewDate = Calendar.current.startOfDay(for: newDate)
         
-        state.currentDate = newDate
+        if startOfNewDate > startOfToday { return }
+        
+        state = state.copy(currentDate: newDate)
         observeScribbles()
         refreshAIInsights()
     }
@@ -358,23 +347,28 @@ public final class CanvasStore {
             let stream = getScribblesForDateUseCase.execute(date: state.currentDate)
             for await scribbles in stream {
                 if Task.isCancelled { break }
-                state.scribbles = scribbles
+                state = state.copy(scribbles: scribbles)
                 
-                // If we see pending scribbles, trigger parsing automatically
                 if scribbles.contains(where: { $0.status == .pending }) {
                     triggerParsing()
+                }
+                
+                // Keep selectedScribble in sync if it's being edited
+                if let selected = state.selectedScribble,
+                   let updated = scribbles.first(where: { $0.id == selected.id }) {
+                    state = state.copy(selectedScribble: updated)
                 }
             }
         }
     }
     
     private func setupConfigObservation() {
-        state.weightUnit = configRepository.getConfig().weightUnit
+        state = state.copy(weightUnit: configRepository.getConfig().weightUnit)
         
         configRepository.configPublisher
             .receive(on: RunLoop.main)
             .sink { [weak self] config in
-                self?.state.weightUnit = config.weightUnit
+                self?.state = self?.state.copy(weightUnit: config.weightUnit) ?? .init()
             }
             .store(in: &cancellables)
     }

@@ -39,7 +39,11 @@ internal fun LedgerContent(
             WorkoutItem(
                 title = state.getWorkoutDateHeader(dailyWorkout.date),
                 exercises = dailyWorkout.exercises,
-                onClick = { /* TODO: Navigate to day details */ }
+                onClick = { 
+                    dailyWorkout.workouts.firstOrNull()?.let { 
+                        onIntent(LedgerIntent.WorkoutClicked(it.id)) 
+                    }
+                }
             )
         }
         item {

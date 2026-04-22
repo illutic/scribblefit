@@ -10,6 +10,7 @@ import com.scribblefit.feature.scribble.domain.usecase.AddRawScribbleUseCase
 import com.scribblefit.feature.scribble.domain.usecase.EditScribbleUseCase
 import com.scribblefit.feature.scribble.domain.usecase.GetPendingScribblesByDateUseCase
 import com.scribblefit.feature.scribble.domain.usecase.GetScribblesByDateUseCase
+import com.scribblefit.feature.scribble.domain.usecase.ManualEditScribbleUseCase
 import com.scribblefit.feature.scribble.domain.usecase.RemoveScribbleUseCase
 import com.scribblefit.feature.scribble.domain.usecase.UpdateScribbleAsCompleteUseCase
 import com.scribblefit.feature.scribble.domain.usecase.UpdateScribbleAsFailedUseCase
@@ -31,12 +32,14 @@ internal object ScribbleDataModule {
     @Provides
     @Singleton
     fun provideScribbleRepository(
+        database: com.scribblefit.core.database.ScribbleFitDatabase,
         scribbleDao: ScribbleDao,
         scribbleTrackerDao: ScribbleTrackerDao,
         workoutDao: com.scribblefit.core.database.dao.WorkoutDao,
         workoutExerciseDao: com.scribblefit.core.database.dao.WorkoutExerciseDao,
         coroutineDispatcherProvider: CoroutineDispatcherProvider
     ): ScribbleRepository = ScribbleRepositoryImpl(
+        database = database,
         scribbleDao = scribbleDao,
         scribbleTrackerDao = scribbleTrackerDao,
         workoutDao = workoutDao,
@@ -126,4 +129,14 @@ internal object ScribbleDataModule {
         scribbleRepository = scribbleRepository,
         coroutineDispatcher = coroutineDispatcherProvider.default()
     )
+
+    @Provides
+    fun provideManualEditScribbleUseCase(
+        scribbleRepository: ScribbleRepository,
+        coroutineDispatcherProvider: CoroutineDispatcherProvider
+    ): ManualEditScribbleUseCase =
+        ManualEditScribbleUseCase(
+            scribbleRepository = scribbleRepository,
+            coroutineDispatcher = coroutineDispatcherProvider.default()
+        )
 }

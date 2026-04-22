@@ -17,6 +17,10 @@
     <string name="canvas_dialog_confirm">Confirm</string>
     <string name="canvas_dialog_delete">Delete</string>
     <string name="canvas_dialog_edit">Edit</string>
+    <string name="canvas_delete_dialog_title">Delete Scribble?</string>
+    <string name="canvas_delete_dialog_text">Are you sure you want to delete this scribble? This action cannot be undone.</string>
+    <string name="canvas_delete_confirm">Delete</string>
+    <string name="canvas_delete_cancel">Cancel</string>
     <string name="canvas_weight_unit_kg">kg</string>
     <string name="canvas_weight_unit_lb">lb</string>
     <string name="canvas_profile_button">Profile</string>
@@ -29,7 +33,11 @@
     <string name="canvas_close">Close</string>
     <string name="canvas_parsing_workout_data">Parsing workout data…</string>
     <string name="canvas_tap_to_confirm">Tap to confirm &amp; save</string>
+    <string name="canvas_tap_to_confirm_action">TAP TO CONFIRM</string>
     <string name="canvas_logged">Logged</string>
+    <string name="canvas_parsed">Parsed</string>
+    <string name="canvas_retry_action">RETRY</string>
+    <string name="canvas_remove_action">REMOVE</string>
     <string name="canvas_estimated_1rm">Estimated 1RM</string>
     <string name="canvas_intensity">Intensity</string>
     <string name="canvas_last_session_improvement_format">%1$s %2$s from last session</string>
