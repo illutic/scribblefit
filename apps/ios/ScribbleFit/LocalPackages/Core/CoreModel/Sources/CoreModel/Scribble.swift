@@ -26,6 +26,22 @@ public struct Scribble: Identifiable, Equatable, Sendable, Codable {
         self.workoutId = workoutId
         self.exercises = exercises
     }
+
+    public func copy(
+        rawText: String? = nil,
+        status: ScribbleStatus? = nil,
+        parsedJson: String?? = nil,
+        workoutId: UUID?? = nil,
+        exercises: [Exercise]? = nil
+    ) -> Scribble {
+        var newScribble = self
+        if let rawText = rawText { newScribble.rawText = rawText }
+        if let status = status { newScribble.status = status }
+        if let parsedJson = parsedJson { newScribble.parsedJson = parsedJson }
+        if let workoutId = workoutId { newScribble.workoutId = workoutId }
+        if let exercises = exercises { newScribble.exercises = exercises }
+        return newScribble
+    }
 }
 
 public enum ScribbleStatus: String, Codable, Sendable {

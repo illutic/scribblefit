@@ -14,5 +14,6 @@ public struct ParsedWorkoutResult: Sendable, Codable {
 public protocol LLMService: Sendable {
     func parseWorkout(rawText: String) async throws -> ParsedWorkoutResult
     func generateInsightsSummary(exercises: [Exercise]) async throws -> [AIInsight]
+    func generateExerciseInsight(history: String) async throws -> ExercisePerformanceInsight
     func isSupported() async -> Bool
 }

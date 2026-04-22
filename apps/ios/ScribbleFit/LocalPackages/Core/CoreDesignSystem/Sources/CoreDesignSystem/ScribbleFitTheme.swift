@@ -17,6 +17,8 @@ extension Color {
     
     public static let scribbleMidGray = Color(hex: "8E8EA0")
     public static let scribbleDanger = Color(light: Color(hex: "FF3B30"), dark: Color(hex: "FF453A"))
+    public static let scribbleError = scribbleDanger
+    public static let scribbleWarning = Color(light: Color(hex: "FF9500"), dark: Color(hex: "FF9F0A"))
     public static let scribbleSuccess = Color(light: Color(hex: "34C759"), dark: Color(hex: "30D158"))
     
     public static let scribbleSurfaceContainerHigh = Color(light: Color(hex: "E8E8E8"), dark: Color(hex: "3C3C3E"))

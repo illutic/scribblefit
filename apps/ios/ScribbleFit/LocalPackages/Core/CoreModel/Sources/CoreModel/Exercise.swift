@@ -61,4 +61,24 @@ public struct Exercise: Identifiable, Equatable, Sendable, Codable {
             }.joined(separator: ", ")
         }
     }
+    
+    public func copy(
+        id: UUID? = nil,
+        canonicalName: String? = nil,
+        muscleGroup: String? = nil,
+        sets: [ExerciseSet]? = nil,
+        isDraft: Bool? = nil,
+        estimated1RM: Float? = nil,
+        intensity: Float? = nil
+    ) -> Exercise {
+        return .init(
+            id: id ?? self.id,
+            canonicalName: canonicalName ?? self.canonicalName,
+            muscleGroup: muscleGroup ?? self.muscleGroup,
+            sets: sets ?? self.sets,
+            isDraft: isDraft ?? self.isDraft,
+            estimated1RM: estimated1RM ?? self.estimated1RM,
+            intensity: intensity ?? self.intensity
+        )
+    }
 }
