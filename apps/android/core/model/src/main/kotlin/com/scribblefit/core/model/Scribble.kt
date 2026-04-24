@@ -11,8 +11,6 @@ data class Scribble(
     val rawText: String,
     val status: ScribbleStatus,
     val createdAt: Long,
-    val parsedJson: String? = null,
-    val workoutId: Long? = null,
     val exercises: List<Exercise> = emptyList(),
 )
 

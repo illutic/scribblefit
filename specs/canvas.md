@@ -1,21 +1,21 @@
 # Feature Specification: Canvas
 
 ## 1. Overview
-The Canvas is the home screen of ScribbleFit, designed for rapid, low-friction workout entry. It allows users to "scribble" their workout in plain text (e.g., "Bench press 100kg 3x10"). These scribbles are then processed by an LLM to extract structured workout data.
+The Canvas is the home screen of ScribbleFit, designed for rapid, low-friction entry of training data. It allows users to "scribble" their sessions in plain text (e.g., "Bench press 100kg 3x10"). These scribbles are then processed by an LLM to extract structured exercise data.
 
-The feature follows an offline-first approach, where scribbles are saved locally before being processed. It integrates with the `:feature:ai` module for workout parsing and insights generation.
+The feature follows an offline-first approach, where scribbles are saved locally before being processed. It integrates with the `:feature:ai` module for session parsing and insights generation.
 
 ## 2. User Stories
-- **As a fitness enthusiast**, I want to quickly type my workout in plain text **so that** I don't spend time navigating complex menus during my session.
+- **As a fitness enthusiast**, I want to quickly type my training data in plain text **so that** I don't spend time navigating complex menus during my session.
 - **As a user**, I want to see the parsing status of my scribbles **so that** I know when they have been successfully processed.
-- **As a user**, I want to navigate to previous days **so that** I can review my past workout logs.
-- **As a user**, I want to receive AI-generated insights about my workout patterns directly on the Canvas **so that** I can stay motivated and informed.
+- **As a user**, I want to navigate to previous days **so that** I can review my past training logs.
+- **As a user**, I want to receive AI-generated insights about my training patterns directly on the Canvas **so that** I can stay motivated and informed.
 
 ## 3. Acceptance Criteria
 
 ### 3.1 Core Functionality
 - [ ] **Offline-First Scribbles:** Users can submit raw text scribbles even when offline. Scribbles are stored in the local database immediately.
-- [x] **Scribble Lifecycle:** Scribbles must transition through the following statuses: `PENDING` (stored locally), `PARSING` (sent to LLM), `SUCCESS` (parsed), `FAILED` (parsing error), and `COMPLETED` (confirmed by user and moved to workout history).
+- [x] **Scribble Lifecycle:** Scribbles must transition through the following statuses: `PENDING` (stored locally), `PARSING` (sent to LLM), `SUCCESS` (parsed), `FAILED` (parsing error), and `COMPLETED` (confirmed by user and officially logged).
 - [x] **Date Persistence:** Scribbles are associated with a specific date. The UI must only show scribbles for the currently selected date.
 - [x] **Real-time Updates:** The list of scribbles must update reactively as statuses change.
 
@@ -54,15 +54,15 @@ The body must handle four distinct states as defined in the design:
 4.  **Completed (`Canvas Screen - Parsed/Completed`):**
     - [x] Shows "COMPLETED" badge in success green.
     - [x] Non-interactive once confirmed. Verified fallback for empty exercises in `ScribbleCard.swift`.
-    - [x] **Exercise-Level Navigation (2026-04-21):** Individual exercises within logged scribble cards are tappable and navigate to the Exercise Details screen. Tapping the card itself (non-exercise area) navigates to the Workout Exercises list screen.
+    - [x] **Exercise-Level Navigation (2026-04-21):** Individual exercises within logged scribble cards are tappable and navigate to the Exercise Details screen. Tapping the card itself (non-exercise area) navigates to the **Scribble Details** screen.
 
 - [ ] **AI Insights Section:**
     - [ ] Displays motivational summaries or patterns at the top of the body.
     - [ ] Integrated with `GetAIOverviewUseCase`.
 
-- [x] **Workout Confirmation Sheet (`Canvas Screen - Confirm/Edit/Delete parsed exercise`):**
+- [x] **Scribble Confirmation Sheet (`Canvas Screen - Confirm/Edit/Delete parsed exercise`):**
     - [x] Triggered by tapping a parsed scribble.
-    - [x] **Confirm Button:** Primary action, styled with the project's primary color (Black in Light mode, White in Dark mode).
+    - [x] **Confirm Button:** Primary action, styled with the project's primary color. Marks the scribble as `COMPLETED`.
     - [x] **Edit Button:** Secondary action, opens manual adjustment form.
     - [x] **Delete Button:** Destructive action, styled in red.
 
@@ -82,9 +82,9 @@ The body must handle four distinct states as defined in the design:
 - **Use Cases:**
     - `GetScribblesForDateUseCase`: Returns a `Flow<List<Scribble>>`.
     - `AddScribbleUseCase`: Persists a new raw text scribble.
-    - `ConfirmScribbleUseCase`: Converts a parsed scribble into a workout entry.
+    - `ConfirmScribbleUseCase`: Updates the scribble status to `COMPLETED`.
     - `GetAIOverviewUseCase`: Fetches insights from `:feature:ai:domain`.
-- **AI Integration:** Use `LLMEngine.parseWorkout(rawText)` from `:feature:ai:data` for processing.
+- **AI Integration:** Use `LLMEngine.parseScribble(rawText)` from `:feature:ai:data` for processing.
 - **Database:** Room entities for `Scribble` with a `status` field.
 
 ## 4. Development Guidelines (iOS)
@@ -101,7 +101,7 @@ The body must handle four distinct states as defined in the design:
     - `AddScribbleUseCase` business logic (e.g., preventing future dates).
 - **Integration Tests:**
     - Database insertion and retrieval of `Scribble` entities.
-    - Mapping between `Scribble` (Data) and `ScribbleDomainModel`.
+    - Mapping between `Scribble` (Data) and `Scribble` (Domain Model).
 - **UI Tests:**
     - Verify "Send" button enablement logic.
     - Verify date navigation updates the scribble list.

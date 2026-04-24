@@ -3,7 +3,8 @@ import CoreDesignSystem
 import CoreModel
 import CoreCommon
 import FeatureExercises
-import FeatureWorkouts
+import FeatureCanvas
+import FeatureScribble
 
 public struct LedgerView: View {
     @Bindable var store: LedgerStore
@@ -13,7 +14,11 @@ public struct LedgerView: View {
     let getExerciseDetailsUseCase: GetExerciseDetailsUseCase
     let getExerciseAIInsightUseCase: GetExerciseAIInsightUseCase
     let configRepository: ConfigRepository
-    let workoutRepository: WorkoutRepository
+    let exerciseRepository: ExerciseRepository
+    let addManualExerciseUseCase: AddManualExerciseUseCase
+    let addSetToExerciseUseCase: AddSetToExerciseUseCase
+    let scribbleRepository: ScribbleRepository
+    let confirmScribbleUseCase: ConfirmScribbleUseCase
 
     @State private var showingDatePicker = false
     @State private var tempStartDate: Date = .now
@@ -25,14 +30,22 @@ public struct LedgerView: View {
         getExerciseDetailsUseCase: GetExerciseDetailsUseCase,
         getExerciseAIInsightUseCase: GetExerciseAIInsightUseCase,
         configRepository: ConfigRepository,
-        workoutRepository: WorkoutRepository
+        exerciseRepository: ExerciseRepository,
+        addManualExerciseUseCase: AddManualExerciseUseCase,
+        addSetToExerciseUseCase: AddSetToExerciseUseCase,
+        scribbleRepository: ScribbleRepository,
+        confirmScribbleUseCase: ConfirmScribbleUseCase
     ) {
         self.store = store
         self.onNavigateToCanvas = onNavigateToCanvas
         self.getExerciseDetailsUseCase = getExerciseDetailsUseCase
         self.getExerciseAIInsightUseCase = getExerciseAIInsightUseCase
         self.configRepository = configRepository
-        self.workoutRepository = workoutRepository
+        self.exerciseRepository = exerciseRepository
+        self.addManualExerciseUseCase = addManualExerciseUseCase
+        self.addSetToExerciseUseCase = addSetToExerciseUseCase
+        self.scribbleRepository = scribbleRepository
+        self.confirmScribbleUseCase = confirmScribbleUseCase
     }
 
     public var body: some View {
@@ -68,33 +81,14 @@ public struct LedgerView: View {
             set: { if $0 == nil { store.handleIntent(.dismissDetails) } }
         )) { navState in
             switch navState {
-            case .exerciseDetails(let name):
-                ExerciseDetailsView(
-                    store: ExerciseDetailsStore(
-                        exerciseName: name,
-                        getExerciseDetailsUseCase: getExerciseDetailsUseCase,
-                        getExerciseAIInsightUseCase: getExerciseAIInsightUseCase,
-                        configRepository: configRepository
-                    ),
-                    onDismiss: { store.handleIntent(.dismissDetails) }
-                )
-            case .workoutExercises(let id):
-                WorkoutExercisesView(
-                    store: WorkoutExercisesStore(
-                        workoutId: id,
-                        workoutRepository: workoutRepository,
+            case .scribbleDetails(let id):
+                ScribbleDetailsView(
+                    store: ScribbleDetailsStore(
+                        scribbleId: id,
+                        scribbleRepository: scribbleRepository,
                         configRepository: configRepository,
-                        calculateWorkoutVolumeUseCase: CalculateWorkoutVolumeUseCase(),
-                        formatWorkoutSummaryUseCase: FormatWorkoutSummaryUseCase(),
-                        formatExerciseSummaryUseCase: FormatExerciseSummaryUseCase()
-                    ),
-                    onExerciseClick: { name in
-                        store.handleIntent(.dismissDetails)
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                            store.handleIntent(.exerciseTapped(name: name))
-                        }
-                    },
-                    onDismiss: { store.handleIntent(.dismissDetails) }
+                        confirmScribbleUseCase: confirmScribbleUseCase
+                    )
                 )
             }
         }
@@ -114,10 +108,10 @@ public struct LedgerView: View {
         Group {
             if store.state.isLoading {
                 loadingView
-            } else if store.state.groupedWorkouts.isEmpty {
+            } else if store.state.groupedScribbles.isEmpty {
                 emptyView
             } else {
-                workoutsList
+                scribblesList
             }
         }
     }
@@ -136,18 +130,18 @@ public struct LedgerView: View {
         )
     }
 
-    private var workoutsList: some View {
+    private var scribblesList: some View {
         LazyVStack(alignment: .leading, spacing: 16) {
-            ForEach(store.state.groupedWorkouts) { group in
-                WorkoutItem(
+            ForEach(store.state.groupedScribbles) { group in
+                ScribbleItem(
                     dateString: group.dateString,
-                    workouts: group.workouts,
+                    scribbles: group.scribbles,
                     weightUnit: store.state.weightUnit,
-                    onWorkoutTapped: { workoutId in
-                        store.handleIntent(.workoutTapped(id: workoutId))
+                    onScribbleTapped: { scribbleId in
+                        store.handleIntent(.scribbleTapped(id: scribbleId))
                     },
                     onExerciseTapped: { name in
-                        store.handleIntent(.exerciseTapped(name: name))
+                        // We do not have exercise details nav state here anymore, but could add it.
                     }
                 )
                 .padding(.horizontal)
@@ -176,5 +170,14 @@ public struct LedgerView: View {
             }
         }
         .presentationDetents([.medium])
+    }
+}
+
+extension LedgerState.GroupedScribbles {
+    var dateString: String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        return formatter.string(from: date)
     }
 }

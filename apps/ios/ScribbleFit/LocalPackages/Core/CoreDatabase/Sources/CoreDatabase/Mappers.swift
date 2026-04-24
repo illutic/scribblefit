@@ -2,6 +2,23 @@ import Foundation
 import CoreModel
 
 @MainActor
+public extension ExerciseEntity {
+    func toDomain() -> Exercise {
+        Exercise(
+            id: id,
+            canonicalName: name,
+            muscleGroup: muscleGroup,
+            sets: sets.map { $0.toDomain() }.sorted(by: { $0.setNumber < $1.setNumber }),
+            isDraft: isDraft,
+            createdAt: createdAt,
+            estimated1RM: estimated1RM,
+            intensity: intensity,
+            improvement: improvement
+        )
+    }
+}
+
+@MainActor
 public extension SetEntity {
     func toDomain() -> ExerciseSet {
         ExerciseSet(
@@ -16,21 +33,6 @@ public extension SetEntity {
 }
 
 @MainActor
-public extension ExerciseEntity {
-    func toDomain() -> Exercise {
-        Exercise(
-            id: id,
-            canonicalName: name,
-            muscleGroup: muscleGroup,
-            sets: sets.map { $0.toDomain() }.sorted(by: { $0.setNumber < $1.setNumber }),
-            isDraft: isDraft,
-            estimated1RM: estimated1RM,
-            intensity: intensity
-        )
-    }
-}
-
-@MainActor
 public extension ScribbleEntity {
     func toDomain() -> Scribble {
         Scribble(
@@ -39,24 +41,10 @@ public extension ScribbleEntity {
             status: ScribbleStatus(rawValue: status.uppercased()) ?? .failed,
             createdAt: createdAt,
             parsedJson: parsedJson,
-            workoutId: workoutId,
             exercises: exercises.map { $0.toDomain() }
         )
     }
 }
-
-@MainActor
-public extension WorkoutEntity {
-    func toDomain() -> Workout {
-        Workout(
-            id: id,
-            date: date,
-            exercises: exercises.map { $0.toDomain() },
-            notes: notes?.components(separatedBy: "\n")
-        )
-    }
-}
-
 
 @MainActor
 public extension Scribble {
@@ -66,24 +54,24 @@ public extension Scribble {
             rawText: rawText,
             status: status.rawValue,
             createdAt: createdAt,
-            parsedJson: parsedJson,
-            workoutId: workoutId
+            parsedJson: parsedJson
         )
-        entity.exercises = exercises.map { $0.toEntity() }
         return entity
     }
 }
 
 @MainActor
 public extension Exercise {
-    func toEntity() -> ExerciseEntity {
+    func toEntity(createdAt: Date? = nil) -> ExerciseEntity {
         let entity = ExerciseEntity(
             id: id,
             name: canonicalName,
             muscleGroup: muscleGroup,
+            createdAt: createdAt ?? self.createdAt,
             isDraft: isDraft,
             estimated1RM: estimated1RM,
-            intensity: intensity
+            intensity: intensity,
+            improvement: improvement
         )
         entity.sets = sets.map { $0.toEntity() }
         return entity

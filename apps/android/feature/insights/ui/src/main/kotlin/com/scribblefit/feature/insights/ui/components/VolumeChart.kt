@@ -3,7 +3,6 @@ package com.scribblefit.feature.insights.ui.components
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Surface
@@ -24,6 +23,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.scribblefit.core.designsystem.ScribbleFitTheme
 import com.scribblefit.feature.insights.domain.model.VolumeDataPoint
+import java.time.Instant
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 @Composable
@@ -80,7 +81,11 @@ internal fun VolumeChart(
 
                 // Y-axis labels
                 val yLabels = if (maxVolume > minVolume) {
-                    listOf(maxVolume to chartTop, midVolume to chartTop + chartHeight / 2f, minVolume to chartBottom)
+                    listOf(
+                        maxVolume to chartTop,
+                        midVolume to chartTop + chartHeight / 2f,
+                        minVolume to chartBottom
+                    )
                 } else {
                     listOf(maxVolume to chartTop + chartHeight / 2f)
                 }
@@ -91,7 +96,9 @@ internal fun VolumeChart(
                     drawText(
                         textLayoutResult = measured,
                         topLeft = Offset(
-                            x = (yAxisWidth - measured.size.width - with(density) { 12.dp.toPx() }).coerceAtLeast(0f),
+                            x = (yAxisWidth - measured.size.width - with(density) { 12.dp.toPx() }).coerceAtLeast(
+                                0f
+                            ),
                             y = y - measured.size.height / 2f
                         )
                     )
@@ -146,7 +153,11 @@ internal fun VolumeChart(
                     drawPath(
                         path = linePath,
                         color = lineColor,
-                        style = Stroke(width = strokeWidth, cap = StrokeCap.Round, join = StrokeJoin.Round)
+                        style = Stroke(
+                            width = strokeWidth,
+                            cap = StrokeCap.Round,
+                            join = StrokeJoin.Round
+                        )
                     )
                 }
 
@@ -164,11 +175,17 @@ internal fun VolumeChart(
                 }.distinct()
 
                 for (i in xLabelIndices) {
-                    val text = points[i].date.format(dateFormatter)
+                    val date = Instant.ofEpochMilli(points[i].date)
+                        .atZone(ZoneId.systemDefault())
+                        .toLocalDate()
+                    val text = dateFormatter.format(date)
                     val measured = textMeasurer.measure(text, labelStyle)
                     val p = pointOffset(i)
                     val labelX = (p.x - measured.size.width / 2f)
-                        .coerceIn(chartLeft - measured.size.width / 2f, size.width - measured.size.width)
+                        .coerceIn(
+                            chartLeft - measured.size.width / 2f,
+                            size.width - measured.size.width
+                        )
                     drawText(
                         textLayoutResult = measured,
                         topLeft = Offset(labelX, chartBottom + with(density) { 6.dp.toPx() })

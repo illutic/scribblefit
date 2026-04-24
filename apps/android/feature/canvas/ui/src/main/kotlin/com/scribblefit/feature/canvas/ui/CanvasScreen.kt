@@ -13,6 +13,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -23,13 +24,15 @@ import com.scribblefit.feature.canvas.ui.components.CanvasBody
 import com.scribblefit.feature.canvas.ui.components.CanvasFooter
 import com.scribblefit.feature.canvas.ui.components.CanvasTopBar
 import com.scribblefit.feature.canvas.ui.components.ScribbleConfirmationBottomSheet
+import com.scribblefit.feature.exercises.ui.components.edit.AddExerciseBottomSheet
 
-@OptIn(ExperimentalLayoutApi::class)
+@OptIn(ExperimentalLayoutApi::class, androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 internal fun CanvasScreen(
     state: CanvasState,
     onIntent: (CanvasIntent) -> Unit,
 ) {
+    val sheetState = rememberModalBottomSheetState()
     Scaffold(
         topBar = {
             CanvasTopBar(
@@ -54,8 +57,6 @@ internal fun CanvasScreen(
             ) {
                 CanvasBody(
                     state = state,
-                    onScribbleClick = { onIntent(CanvasIntent.ClickOnScribble(it)) },
-                    onExerciseClick = { onIntent(CanvasIntent.NavigateToExerciseDetails(it)) },
                     onIntent = onIntent,
                 )
 
@@ -103,7 +104,9 @@ internal fun CanvasScreen(
                     )
                 )
             },
-            onDeleteSet = { exId, setId -> onIntent(CanvasIntent.DeleteSet(exId, setId)) }
+            onDeleteSet = { exId, setId -> onIntent(CanvasIntent.DeleteSet(exId, setId)) },
+            onDeleteExercise = { onIntent(CanvasIntent.DeleteExercise(it)) },
+            onAddSet = { onIntent(CanvasIntent.AddSet(it)) },
         )
     }
 
@@ -135,6 +138,17 @@ internal fun CanvasScreen(
                 }
             },
             containerColor = ScribbleFitTheme.colors.surface
+        )
+    }
+
+    if (state.isAddExerciseSheetVisible) {
+        AddExerciseBottomSheet(
+            sheetState = sheetState,
+            weightUnitLabel = state.weightUnitLabel,
+            onDismiss = { onIntent(CanvasIntent.HideAddExerciseSheet) },
+            onSave = { name, muscle, sets, notes ->
+                onIntent(CanvasIntent.SaveManualExercise(name, muscle, sets, notes))
+            }
         )
     }
 }

@@ -5,12 +5,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.scribblefit.core.designsystem.ScribbleFitTheme
 import com.scribblefit.core.designsystem.components.TrainingExerciseCard
@@ -22,7 +19,7 @@ internal fun LoggedScribbleCard(
     state: CanvasState,
     scribble: ScribbleUiModel,
     onClick: () -> Unit,
-    onExerciseClick: (String) -> Unit
+    onExerciseClick: (Long) -> Unit
 ) {
     ScribbleCardContainer(
         onClick = onClick,
@@ -53,7 +50,7 @@ internal fun LoggedScribbleCard(
                         intensity = state.getIntensity(exercise),
                         improvement = state.getImprovement(exercise),
                         hasStats = exercise.hasStats,
-                        onClick = { onExerciseClick(exercise.name) },
+                        onClick = { onExerciseClick(exercise.id) },
                         fontSize = 28,
                         kerning = -1.0
                     )

@@ -31,7 +31,9 @@ class GetVolumeInsightsUseCaseTest {
                 VolumeDataPoint(startDate, 1000f),
                 VolumeDataPoint(endDate, 1200f)
             )
-            every { repository.getVolumeInsights(startMillis, endMillis) } returns flowOf(expectedData)
+            every { repository.getVolumeInsights(startMillis, endMillis) } returns flowOf(
+                expectedData
+            )
 
             // When & Then
             useCase(startDate, endDate).test {

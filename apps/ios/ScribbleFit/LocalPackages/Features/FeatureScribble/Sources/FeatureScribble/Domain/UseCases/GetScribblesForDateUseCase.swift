@@ -10,6 +10,6 @@ public struct GetScribblesForDateUseCase: Sendable {
     }
 
     public func execute(date: Date) -> AsyncStream<[Scribble]> {
-        repository.getScribbles(for: date)
+        repository.observeScribbles(for: date)
     }
 }

@@ -1,7 +1,7 @@
 # Feature Specification: Manual Mode (Direct Exercise Entry)
 
 ## 1. Overview
-Manual Mode provides an alternative workout entry method that bypasses the AI scribble parser entirely.
+Manual Mode provides an alternative training data entry method that bypasses the AI scribble parser entirely.
 When enabled, the Canvas screen replaces the freeform text input with an **"Add Exercise"** button
 that opens a structured form (bottom sheet) for entering exercises, sets, weights, and reps directly.
 
@@ -15,14 +15,14 @@ user toggles between them via a setting. The toggle is a global preference store
 - **As a User**, I want to add exercises via a structured form **so that** I don't rely on AI parsing
   accuracy.
 - **As a User**, I want to specify exercise name, muscle group, and multiple sets (weight × reps)
-  **so that** my workout data is precise.
+  **so that** my training data is precise.
 - **As a User**, I want to add and remove individual sets within the form **so that** I can log
   variable set counts.
 - **As a User**, I want to add optional notes to an exercise **so that** I can track RPE, tempo, or
   other observations.
 - **As a User**, I want manually-added exercises to appear in the Canvas alongside any existing
   scribbles **so that** I have a unified view of my session.
-- **As a User**, I want manually-added exercises to flow through the same confirm → workout pipeline
+- **As a User**, I want manually-added exercises to flow through the same confirm → log pipeline
   **so that** they appear in Insights and the Ledger identically to AI-parsed entries.
 
 ## 3. Acceptance Criteria
@@ -44,8 +44,8 @@ user toggles between them via a setting. The toggle is a global preference store
       input bar, floating above the bottom nav).
     - [ ] The button uses the design system's pill shape with primary styling.
     - [ ] Tapping the button opens the **Add Exercise Bottom Sheet** (shared component).
-    - [ ] Existing scribble cards (from previous AI-parsed sessions) remain visible and interactive.
-    - [ ] AI insight cards remain visible (they operate on workout data, not scribbles).
+    - [ ] Existing scribble cards remain visible and interactive.
+    - [ ] AI insight cards remain visible (they operate on training data, not raw scribbles).
 
 ### 3.3 Add Exercise Bottom Sheet
 Defined in `specs/add-exercise-bottom-sheet.md`. This shared component handles the input form for exercise details, sets, and notes.
@@ -53,7 +53,7 @@ Defined in `specs/add-exercise-bottom-sheet.md`. This shared component handles t
 ### 3.4 Data Pipeline Integration
 - [ ] When invoked from the Canvas in Manual Mode, saving the bottom sheet produces a `Scribble` object with status `SUCCESS`.
 - [ ] The `rawText` field on these scribbles should contain a human-readable summary (e.g., "Bench Press 100kg 3×10").
-- [ ] The confirmation flow, workout persistence, Insights aggregation, and Ledger display treat manual entries identically to AI-parsed entries.
+- [ ] The confirmation flow, persistence, Insights aggregation, and Ledger display treat manual entries identically to AI-parsed entries.
 
 ### 3.5 Contextual UI
 - [ ] **Header:** Same as Canvas — date navigation, settings icon.

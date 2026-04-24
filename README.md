@@ -1,107 +1,51 @@
 # ScribbleFit
 
-A cross-platform fitness tracking app that turns freeform text scribbles into structured workout data using AI. Built natively for Android and iOS with an offline-first, editorial minimalist design.
+A cross-platform fitness tracking app that turns freeform text scribbles into structured training data using AI. Built natively for Android and iOS with an offline-first, editorial minimalist design.
 
-## Concept
+## Core Concept
+ScribbleFit lets users jot down sessions in natural language (e.g., "bench press 3x10 80kg"). An LLM parses the text into structured exercises, sets, and reps -- no forms, no dropdowns. The interface is designed to feel like a premium physical journal.
 
-ScribbleFit lets users jot down workouts in natural language (e.g., "bench press 3x10 80kg"). An LLM parses the text into structured exercises, sets, and reps -- no forms, no dropdowns. The interface is designed to feel like a premium physical journal.
+## Key Features
+- **Canvas** -- Home screen for session entry via freeform text scribbles, parsed by AI into structured data.
+- **Ledger** -- Scrollable training history with date summaries and exercise details.
+- **Insights** -- AI-driven analytics, volume tracking, and personalized coaching feedback.
+- **Offline-First** -- All data is stored locally first, ensuring a smooth experience even without a connection.
+- **Privacy-Centric** -- Minimal data collection, with options for fully local LLM processing.
 
-## Features
+## Architecture (MVI)
+The project follows a strict Model-View-Intent architecture on both platforms, ensuring separation of concerns and reactive data flow.
 
-- **Canvas** -- Home screen for workout entry via freeform text scribbles, parsed by AI into structured data
-- **Ledger** -- Scrollable workout history with date summaries and exercise details
-- **Insights** -- AI-generated progress overviews, volume charts, frequency stats, and muscle distribution
-- **Settings** -- Theme (Light/Dark/System), AI provider (Cloud/Local), unit preferences (kg/lbs), data export
+### Layers
+1. **Domain** -- Business models and Use Cases (No dependencies).
+2. **Data** -- Repository implementations, persistence (Room/SwiftData), and AI integration.
+3. **UI** -- Jetpack Compose (Android) and SwiftUI (iOS) implementations.
 
-## Architecture
-
-Both platforms follow **MVI (Model-View-Intent)** with strict layer separation:
-
-```
-Domain (Models, Use Cases, Repository Interfaces)
-  |
-Data (Repository Implementations, Mappers, Persistence)
-  |
-UI (State, Intent, ViewModel/Store, Screens)
-```
+## Getting Started
 
 ### Android
-
-- **Language:** Kotlin
-- **UI:** 100% Jetpack Compose
-- **Persistence:** Room (offline-first)
-- **DI:** Hilt
-- **Concurrency:** Coroutines & Flow
-- **Build:** Gradle with convention plugins (`build-logic/`)
-- **Modules:** Multi-module (`core:database`, `core:designsystem`, `core:navigation`, `feature:canvas`, `feature:ai`, `feature:insights`, `feature:ledger`, `feature:settings`, etc.)
+1. Open `apps/android` in Android Studio.
+2. Add your Gemini API Key to `local.properties` as `GEMINI_API_KEY=your_key`.
+3. Build and Run.
 
 ### iOS
-
-- **Language:** Swift 6 (strict concurrency)
-- **UI:** 100% SwiftUI (no UIKit)
-- **Persistence:** SwiftData
-- **Concurrency:** async/await, `@Observable`, `@MainActor`
-- **Build:** Swift Package Manager
-- **Target:** iOS 17+ (iOS 26 enhancements via `#available`)
-
-## Design System
-
-**"Editorial Minimalism" -- The Digital Atelier**
-
-- Monochromatic palette (Rich Black on Pure White)
-- Inter typeface with dramatic scale contrast
-- Zero borders -- boundaries defined by white space and tonal shifts
-- Glassmorphism for floating elements (navigation, bottom sheets)
-- 12dp rounded corners, pill-shaped buttons
-
-See [`guidelines/DESIGN.md`](guidelines/DESIGN.md) for the full specification.
+1. Open `apps/ios/ScribbleFit` in Xcode 15+.
+2. Configure your development team for signing.
+3. Add your Gemini API Key to `LocalPackages/Core/Config/Data/Resources/Secrets.plist`.
+4. Build and Run.
 
 ## Project Structure
-
 ```
-scribblefit/
+.
 ├── apps/
-│   ├── android/          # Native Android app
-│   │   ├── app/          # Application module
-│   │   ├── core/         # Shared modules (database, designsystem, navigation, network, config)
-│   │   ├── feature/      # Feature modules (canvas, ai, insights, ledger, settings, etc.)
-│   │   └── build-logic/  # Gradle convention plugins
-│   └── ios/              # Native iOS app (SPM)
-├── guidelines/           # Architecture & design standards
-│   ├── DESIGN.md
-│   ├── project/          # Platform-specific project guidelines
-│   └── specification/    # Feature implementation workflows
-└── specs/                # Feature specifications (canvas, ledger, insights, settings)
+│   ├── android/       # Jetpack Compose App
+│   └── ios/           # SwiftUI App
+├── guidelines/        # Shared engineering standards
+├── specs/             # Feature specifications
+└── GEMINI.md          # Project overview for AI agents
 ```
 
-## AI Integration
+## AI Parsing
+ScribbleFit uses Google's Gemini models (Flash/Pro) for high-speed, accurate parsing of natural language scribbles into the standard project schema.
 
-ScribbleFit uses LLMs for:
-- **Scribble Parsing** -- Natural language to structured workout data
-- **Insights Generation** -- AI-powered progress summaries and trend analysis
-
-Supports both cloud (Gemini API) and on-device local models. AI provider is user-configurable in Settings.
-
-## Development
-
-### Android
-
-```bash
-./gradlew :app:assembleDebug
-```
-
-### iOS
-
-Open `apps/ios/ScribbleFit.xcodeproj` in Xcode or build via:
-
-```bash
-cd apps/ios && swift build
-```
-
-## Guidelines
-
-- [`guidelines/DESIGN.md`](guidelines/DESIGN.md) -- Design system specification
-- [`guidelines/project/android-project-guidelines.md`](guidelines/project/android-project-guidelines.md) -- Android architecture & patterns
-- [`guidelines/project/ios-project-guidelines.md`](guidelines/project/ios-project-guidelines.md) -- iOS architecture & patterns
-- [`guidelines/specification/android-guidelines.md`](guidelines/specification/android-guidelines.md) -- Android implementation workflow
-- [`guidelines/specification/ios-guidelines.md`](guidelines/specification/ios-guidelines.md) -- iOS implementation workflow
+## License
+MIT

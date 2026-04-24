@@ -11,8 +11,9 @@ let package = Package(
         .package(path: "../../Core/CoreModel"),
         .package(path: "../../Core/CoreDesignSystem"),
         .package(path: "../../Core/CoreCommon"),
-        .package(path: "../FeatureWorkouts"),
-        .package(path: "../FeatureExercises")
+        .package(path: "../FeatureExercises"),
+        .package(path: "../FeatureCanvas"),
+        .package(path: "../FeatureScribble")
     ],
     targets: [
         .target(
@@ -21,8 +22,9 @@ let package = Package(
                 .product(name: "CoreModel", package: "CoreModel"),
                 .product(name: "CoreDesignSystem", package: "CoreDesignSystem"),
                 .product(name: "CoreCommon", package: "CoreCommon"),
-                .product(name: "FeatureWorkouts", package: "FeatureWorkouts"),
-                .product(name: "FeatureExercises", package: "FeatureExercises")
+                .product(name: "FeatureExercises", package: "FeatureExercises"),
+                .product(name: "FeatureCanvas", package: "FeatureCanvas"),
+                .product(name: "FeatureScribble", package: "FeatureScribble")
             ]
         )
     ]

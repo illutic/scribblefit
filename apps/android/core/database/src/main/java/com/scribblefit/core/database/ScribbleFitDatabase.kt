@@ -1,45 +1,36 @@
 package com.scribblefit.core.database
 
-import androidx.room.AutoMigration
 import androidx.room.Database
 import androidx.room.RoomDatabase
 import com.scribblefit.core.database.dao.ExerciseDao
 import com.scribblefit.core.database.dao.ScribbleDao
-import com.scribblefit.core.database.dao.ScribbleTrackerDao
+import com.scribblefit.core.database.dao.SetDao
 import com.scribblefit.core.database.dao.SystemConfigDao
-import com.scribblefit.core.database.dao.WorkoutDao
-import com.scribblefit.core.database.dao.WorkoutExerciseDao
-import com.scribblefit.core.database.entity.config.SystemConfig
-import com.scribblefit.core.database.entity.exercise.Exercise
-import com.scribblefit.core.database.entity.exercise.WorkoutExercise
+import com.scribblefit.core.database.entity.config.SystemConfigEntity
+import com.scribblefit.core.database.entity.exercise.ExerciseEntity
 import com.scribblefit.core.database.entity.scribble.ScribbleEntity
-import com.scribblefit.core.database.entity.scribble.ScribbleExercise
-import com.scribblefit.core.database.entity.set.WorkoutSet
-import com.scribblefit.core.database.entity.workout.Workout
-
-private const val DATABASE_VERSION = 4
+import com.scribblefit.core.database.entity.set.SetEntity
 
 @Database(
     entities = [
-        Workout::class,
-        Exercise::class,
-        WorkoutExercise::class,
-        WorkoutSet::class,
         ScribbleEntity::class,
-        SystemConfig::class,
-        ScribbleExercise::class
+        ExerciseEntity::class,
+        SetEntity::class,
+        SystemConfigEntity::class,
     ],
-    version = DATABASE_VERSION,
-    autoMigrations = [
-        AutoMigration(from = 3, to = 4)
-    ],
+    version = 1,
     exportSchema = true
 )
 abstract class ScribbleFitDatabase : RoomDatabase() {
-    abstract fun workoutDao(): WorkoutDao
-    abstract fun exerciseDao(): ExerciseDao
-    abstract fun workoutTrackerDao(): WorkoutExerciseDao
     abstract fun scribbleDao(): ScribbleDao
+    abstract fun exerciseDao(): ExerciseDao
+    abstract fun setDao(): SetDao
     abstract fun systemConfigDao(): SystemConfigDao
-    abstract fun scribbleTrackerDao(): ScribbleTrackerDao
+
+    suspend fun clearAllData() {
+        scribbleDao().clearAllScribbles()
+        exerciseDao().clearAllExercises()
+        setDao().clearAllSets()
+        systemConfigDao().clearSystemConfig()
+    }
 }

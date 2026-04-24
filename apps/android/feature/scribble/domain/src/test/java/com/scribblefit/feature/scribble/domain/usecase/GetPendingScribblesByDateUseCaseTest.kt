@@ -21,26 +21,29 @@ class GetPendingScribblesByDateUseCaseTest {
     private val useCase = GetPendingScribblesByDateUseCase(scribbleRepository, testDispatcher)
 
     @Test
-    fun `when called, should convert date to millis and return flow from repository`() = runTest(testDispatcher) {
-        // Given
-        val date = LocalDate.of(2026, 3, 14)
-        val expectedMillis = date.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
-        val scribbles = listOf(
-            Scribble(
-                id = 1L,
-                rawText = "text",
-                parsedJson = null,
-                status = ScribbleStatus.PENDING,
-                createdAt = expectedMillis,
-                exercises = emptyList()
+    fun `when called, should convert date to millis and return flow from repository`() =
+        runTest(testDispatcher) {
+            // Given
+            val date = LocalDate.of(2026, 3, 14)
+            val expectedMillis = date.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
+            val scribbles = listOf(
+                Scribble(
+                    id = 1L,
+                    rawText = "text",
+                    parsedJson = null,
+                    status = ScribbleStatus.PENDING,
+                    createdAt = expectedMillis,
+                    exercises = emptyList()
+                )
             )
-        )
-        every { scribbleRepository.getPendingScribblesByDate(expectedMillis) } returns flowOf(scribbles)
+            every { scribbleRepository.getPendingScribblesByDate(expectedMillis) } returns flowOf(
+                scribbles
+            )
 
-        // When & Then
-        useCase(date).test {
-            assertEquals(scribbles, awaitItem())
-            awaitComplete()
+            // When & Then
+            useCase(date).test {
+                assertEquals(scribbles, awaitItem())
+                awaitComplete()
+            }
         }
-    }
 }

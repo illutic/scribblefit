@@ -12,7 +12,7 @@
 - **Swift 6 Concurrency:** Enforce `Sendable` domain models and `@MainActor` stores, repositories, and use cases.
 - **Actor-Isolated Mappers:** All `toDomain()` mapping extensions on `SwiftData` entities MUST be marked with `@MainActor` to comply with Swift 6 strict concurrency checks.
 - **Reactive Use Cases:** If a Use Case returns a data stream, it MUST return an `AsyncStream` and properly map the underlying repository's reactive stream to the domain model.
-- **Cross-Feature Dependencies:** Use Cases intended for cross-feature consumption MUST be marked `public` (including their initializers) to ensure visibility across SPM targets.
+- **Cross-Feature Dependencies:** Use Cases, Views, and Components intended for cross-feature consumption MUST be marked `public` (including their explicit initializers) to ensure visibility across SPM targets. Swift's default memberwise initializer is `internal` and will cause build errors in multi-module setups.
 - **AI Service Architecture:** Use the `FirebaseAI` SDK (v12.0.0+) and a `RoutingLLMService` to dynamically switch between `LocalLLMService` and `GeminiLLMService` based on user settings. This ensures logic is decoupled from the provider.
     - **Initializer Consistency:** Service initializers MUST maintain a consistent argument order. When adding new dependencies (e.g., to `RoutingLLMService`), ensure the call site in the Data layer matches the definition exactly.
     - **Dynamic Initialization:** LLM model instances MUST be initialized dynamically (e.g., via a getter or helper function) rather than stored as long-lived properties. This ensures they always pick up the latest reactive configuration (e.g., model name changes in `SystemConfig`) for each request.
@@ -28,42 +28,23 @@
 - **Store-Level Debouncing:** For expensive side effects (like AI generation) triggered by data changes, implement debouncing using a `Combine` `PassthroughSubject` or `Task.sleep` to prevent redundant calls.
 - **Prompt Parity:** AI prompts and response models MUST be strictly aligned with the Android implementation. Derived or redundant fields (e.g., `improvement`) MUST be removed to maintain cross-platform logic consistency.
 - **Implementation:** Mandate `SwiftData` from the start.
+- **Entity Naming Parity:** `SwiftData` entity names MUST strictly mirror their Domain model equivalents (e.g., `Exercise` -> `ExerciseEntity`) to prevent "entity mismatch" bugs during migration or mapping.
 - **Bidirectional Mapping:** All domain models intended for persistence MUST have a corresponding `toEntity()` mapping extension in the Data layer (e.g., in `Mappers.swift`).
 - **Object Identity Synchronization:** Every `save` or `insert` operation MUST perform a lookup by ID before creating a new entity. If an entity with the same ID exists in the `ModelContext`, it MUST be updated in place. This prevents duplicates and maintains the integrity of the object graph.
-- **Intelligent Synchronization Pattern:** When updating a parent entity that owns shared child relationships (e.g., a `Scribble` or `Workout` owning `Exercises`), the Repository MUST perform in-place synchronization instead of a blind "clear and re-insert". 
+- **Intelligent Synchronization Pattern:** When updating a `Scribble` entity that owns `Exercise` and `Set` records, the Repository MUST perform in-place synchronization instead of a blind "clear and re-insert". 
     1. **Iterative Update:** Match existing entities by ID. Update their properties in place instead of replacing the entire object.
-    2. **Orphan-Aware Deletion:** When a child is removed from a parent relationship, only call `modelContext.delete(child)` if the child has no other remaining parent relationships (e.g., an `Exercise` removed from a `Scribble` but still linked to a `Workout` MUST NOT be deleted).
-    3. **Recursive Sync:** Apply the same logic down the object graph (e.g., from `Exercise` to its `Sets`).
-    4. **Avoid Flickering:** This pattern prevents UI flickering in reactive streams and ensures data integrity for shared entities.
+    2. **Recursive Sync:** Apply the same logic down the object graph (e.g., from `Exercise` to its `Sets`).
+    3. **Avoid Flickering:** This pattern prevents UI flickering in reactive streams and ensures data integrity for shared entities.
 - **Codable Parity:** Domain models and entities MUST conform to `Codable` if they are part of data management (export/import).
-- **Data Parity (workoutId):** Cross-platform data parity MUST be maintained by linking `Scribble` and `Workout` entities via a `workoutId` field (UUID). This ID acts as the definitive linkage for identifying which workout was generated from a specific scribble, enabling seamless transitions between the Canvas and Ledger views.
 - **Status Enum Consistency:** Enforce uppercase raw values for status enums (e.g., `case failed = "FAILED"`) to ensure alignment with technical specifications and cross-platform (Android) implementation.
 - **Resilient Mapping:** When mapping from storage (String) to Domain (Enum), `toDomain()` mapping MUST use `.uppercased()` on the status string to handle case-insensitive database values safely.
 - **End-to-End Nullability:** Maintain nullability parity across all layers (Store -> Use Case -> Repository -> SwiftData). If a value can be cleared, the underlying schema and repository methods MUST support `Optional` types.
+- **Explicit Numeric Casting:** Avoid relying on implicit conversion for optional numeric types. When assigning an `Int` to a `Float?`, use `Float(value)`. For literals, use the correct suffix or decimal point (e.g., `0.0` for `Float`).
 - **Formatting Use Cases:** Complex formatting logic that requires business rules (e.g., grouping sets as "3x10, 1x8 @ 80kg") MUST be implemented as a Domain Use Case (e.g., `FormatExerciseSummaryUseCase`). This ensures identical formatting logic across Android and iOS and prevents "formatting leak" into the UI layer.
 - **Pure State Enforcement:** `State` structs MUST remain pure data containers. 
     - **No Logic Orchestration:** Use Cases MUST NOT be instantiated or orchestrated within the `State` struct or `Store` initializer. 
     - **Pre-Mapped UI Models:** Stores MUST inject the necessary formatting Use Cases and pass pre-mapped, ready-to-display UI models to the `State`. 
-
-## 7. History & Time Integrity
-- **Rolling History Pattern:** Features displaying historical data (e.g., Ledger, Insights) MUST default to a "Rolling 30-Day Window". This ensures the UI remains focused on recent, relevant activity while providing a consistent starting point across features.
-- **Local-First Time Policy:** Avoid manual UTC normalization or Unix timestamp arithmetic. All date-based queries MUST use local calendar ranges to define boundaries.
-    - **Query Start:** Use `Calendar.current.startOfDay(for: date)`.
-    - **Query End:** Use `Calendar.current.date(byAdding: .day, value: 1, to: startOfDay)!`.
-    - **Predicate:** Use `#Predicate` with `workout.date >= rangeStart && workout.date < rangeEnd`.
-    This policy is MANDATORY for all features dealing with aggregations (e.g., Insights, Frequency counts), ensuring data integrity regardless of the user's current timezone and preventing "missing history" bugs caused by UTC shifts.
-
-## 8. Data Visualization (Canvas Charting)
-- **Sequential Charting Pattern:** To ensure cross-platform parity and deterministic layering when using a primitive SwiftUI `Canvas`, all charts MUST be rendered in the following strict order:
-    1.  **Infrastructure (Y-Axis):** Draw axis labels and grid lines first to establish the vertical scale.
-    2.  **Atmosphere (Fill):** Draw area gradients next.
-    3.  **Skeleton (Path):** Draw the trend line (e.g., using cubic Bézier curves) over the fill.
-    4.  **Highlights (Points):** Draw data points using the "Halo Point Effect" to ensure they "sit" on top of the line.
-    5.  **Context (X-Axis):** Draw time-based labels last.
-- **Halo Point Effect:** To create visual separation between a data point and the trend line without using platform-specific shadows:
-    1.  **The Halo:** Draw a larger circle (radius `R1`) filled with the chart's background color (e.g., `.scribbleSurfaceContainerLow`).
-    2.  **The Point:** Draw a smaller circle (radius `R2 < R1`) in the primary data color centered on the same point.
-    3.  This pattern effectively "cuts out" the line behind the point, ensuring maximum legibility.
+- **Mutable State for Bindings:** Any property in a `State` struct that is bound to a UI control (e.g., `TextField`, `Toggle`, `Picker`) MUST be declared as `var` to support SwiftUI's two-way bindings.
 
 ## 3. UI & Design System (DRY)
 - **Native Navigation:** Prefer native `ToolbarItem` placements (`.principal`, `.topBarTrailing`) over custom `HeaderView` components.
@@ -109,10 +90,30 @@
 - **Bidirectional Localization:** Navigation labels and feature-specific strings MUST reside in the feature module's `Localizable.xcstrings`. Global strings reside in the main App's resources.
 
 ## 6. Daily History Grouping
-- **Goal:** Aggregation of multiple discrete logs (scribbles/sessions) into a single date-based view item for history-based features (e.g., Ledger).
+- **Goal:** Aggregation of multiple discrete logs (scribbles) into a single date-based view item for history-based features (e.g., Ledger).
 - **State-Managed Aggregation:** Aggregation MUST NOT happen in the Repository or Use Case. It MUST live in the UI `State` struct as a derived property.
-- **Flattened Hierarchy:** All child records (e.g., `Exercise`) from all sessions on a given date MUST be flattened into a single list within a `GroupedWorkouts` (or similar) UI struct.
+- **Flattened Hierarchy:** All child records (e.g., `Exercise`) from all scribbles on a given date MUST be flattened into a single list within a `GroupedScribbles` (or similar) UI struct.
 - **Sorting Consistency:**
     - **Days:** The main collection MUST be sorted by date descending (newest days first).
-    - **Intra-day:** Within each day, sessions or exercises SHOULD be flattened in chronological order (ascending by time).
+    - **Intra-day:** Within each day, scribbles or exercises SHOULD be ordered chronologically (ascending by time).
 - **UI Representation:** Each day MUST be represented by a single UI container (e.g., a Card with `.background(.ultraThinMaterial)`) containing a date header and the combined list of all activities for that day, regardless of how many individual sessions were recorded.
+
+## 7. History & Time Integrity
+- **Rolling History Pattern:** Features displaying historical data (e.g., Ledger, Insights) MUST default to a "Rolling 30-Day Window". This ensures the UI remains focused on recent, relevant activity while providing a consistent starting point across features.
+- **Local-First Time Policy:** Avoid manual UTC normalization or Unix timestamp arithmetic. All date-based queries MUST use local calendar ranges to define boundaries.
+    - **Query Start:** Use `Calendar.current.startOfDay(for: date)`.
+    - **Query End:** Use `Calendar.current.date(byAdding: .day, value: 1, to: startOfDay)!`.
+    - **Predicate:** Use `#Predicate` with `scribble.date >= rangeStart && scribble.date < rangeEnd`.
+    This policy is MANDATORY for all features dealing with aggregations (e.g., Insights, Frequency counts), ensuring data integrity regardless of the user's current timezone and preventing "missing history" bugs caused by UTC shifts.
+
+## 8. Data Visualization (Canvas Charting)
+- **Sequential Charting Pattern:** To ensure cross-platform parity and deterministic layering when using a primitive SwiftUI `Canvas`, all charts MUST be rendered in the following strict order:
+    1.  **Infrastructure (Y-Axis):** Draw axis labels and grid lines first to establish the vertical scale.
+    2.  **Atmosphere (Fill):** Draw area gradients next.
+    3.  **Skeleton (Path):** Draw the trend line (e.g., using cubic Bézier curves) over the fill.
+    4.  **Highlights (Points):** Draw data points using the "Halo Point Effect" to ensure they "sit" on top of the line.
+    5.  **Context (X-Axis):** Draw time-based labels last.
+- **Halo Point Effect:** To create visual separation between a data point and the trend line without using platform-specific shadows:
+    1.  **The Halo:** Draw a larger circle (radius `R1`) filled with the chart's background color (e.g., `.scribbleSurfaceContainerLow`).
+    2.  **The Point:** Draw a smaller circle (radius `R2 < R1`) in the primary data color centered on the same point.
+    3.  This pattern effectively "cuts out" the line behind the point, ensuring maximum legibility.

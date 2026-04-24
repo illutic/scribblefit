@@ -11,6 +11,7 @@ class FormatExerciseSummaryUseCase {
 
         // Group consecutive identical sets
         data class SetGroup(val weight: Float?, val reps: Int, var count: Int)
+
         val groups = mutableListOf<SetGroup>()
 
         for (set in exercise.sets) {

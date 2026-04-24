@@ -13,6 +13,7 @@ dependencies {
     implementation(project(":feature:ai:domain"))
     implementation(project(":core:database"))
     implementation(project(":core:config:domain"))
+    implementation(project(":core:coroutines"))
     implementation(libs.room.runtime)
     implementation(libs.room.ktx)
     implementation(libs.kotlinx.serialization.json)

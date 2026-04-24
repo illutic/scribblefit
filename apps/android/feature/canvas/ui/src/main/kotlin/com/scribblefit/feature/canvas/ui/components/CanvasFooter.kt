@@ -15,6 +15,11 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ArrowUpward
+import androidx.compose.material.icons.rounded.AutoGraph
+import androidx.compose.material.icons.rounded.CalendarMonth
+import androidx.compose.material.icons.rounded.EditNote
+import androidx.compose.material.icons.rounded.Home
+import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
@@ -31,16 +36,12 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.unit.dp
-import androidx.compose.material.icons.rounded.AutoGraph
-import androidx.compose.material.icons.rounded.CalendarMonth
-import androidx.compose.material.icons.rounded.Home
-import androidx.compose.material.icons.rounded.Settings
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import com.scribblefit.core.designsystem.BottomBar
 import com.scribblefit.core.designsystem.BottomBarUiItem
 import com.scribblefit.core.designsystem.ScribbleFitTheme
@@ -81,14 +82,14 @@ internal fun CanvasFooter(
                     Screen.Insights -> Icons.Rounded.AutoGraph
                     Screen.Ledger -> Icons.Rounded.CalendarMonth
                     Screen.Settings -> Icons.Rounded.Settings
-                    else -> return
+                    else -> Icons.Rounded.Home
                 }
                 val label = when (item.screen) {
                     Screen.Canvas -> stringResource(R.string.nav_canvas)
                     Screen.Insights -> stringResource(R.string.nav_insights)
                     Screen.Ledger -> stringResource(R.string.nav_ledger)
                     Screen.Settings -> stringResource(R.string.nav_settings)
-                    else -> return
+                    else -> ""
                 }
                 BottomBarUiItem(
                     screen = item.screen,
@@ -119,15 +120,27 @@ internal fun CanvasFooter(
                         isVisible = state.bottomBarState.isVisible,
                         onClick = { onIntent(CanvasIntent.NavigateToScreen(it)) }
                     )
+                    CanvasAddExerciseButton(
+                        onClick = { onIntent(CanvasIntent.ShowAddExerciseSheet) }
+                    )
                 }
             } else {
-                CanvasInputFooter(
-                    initialText = state.currentScribbleText,
-                    onTextChange = { onIntent(CanvasIntent.UpdateScribbleText(it)) },
-                    onSendClick = { onIntent(CanvasIntent.AddScribble(state.currentScribbleText)) },
-                    placeholder = state.textfieldPlaceholder,
-                    modifier = Modifier.fillMaxWidth()
-                )
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.Center
+                ) {
+                    CanvasInputFooter(
+                        initialText = state.currentScribbleText,
+                        onTextChange = { onIntent(CanvasIntent.UpdateScribbleText(it)) },
+                        onSendClick = { onIntent(CanvasIntent.AddScribble(state.currentScribbleText)) },
+                        placeholder = state.textfieldPlaceholder,
+                        modifier = Modifier.weight(1f)
+                    )
+
+                    CanvasAddExerciseButton(
+                        onClick = { onIntent(CanvasIntent.ShowAddExerciseSheet) }
+                    )
+                }
 
                 BottomBar(
                     items = bottomBarItems,
@@ -207,5 +220,28 @@ private fun CanvasInputFooter(
                 )
             }
         }
+    }
+}
+
+@Composable
+private fun CanvasAddExerciseButton(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    IconButton(
+        onClick = onClick,
+        modifier = modifier
+            .padding(ScribbleFitTheme.spacing.small)
+            .size(48.dp),
+        colors = IconButtonDefaults.iconButtonColors(
+            containerColor = ScribbleFitTheme.colors.surfaceContainerHigh,
+            contentColor = ScribbleFitTheme.colors.primary
+        )
+    ) {
+        Icon(
+            imageVector = Icons.Rounded.EditNote,
+            contentDescription = null,
+            modifier = Modifier.size(24.dp)
+        )
     }
 }

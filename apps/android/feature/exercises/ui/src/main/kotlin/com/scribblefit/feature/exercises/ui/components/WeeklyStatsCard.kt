@@ -12,7 +12,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.scribblefit.core.designsystem.ScribbleFitTheme
 import com.scribblefit.core.model.WeeklyStats
@@ -52,17 +51,17 @@ fun WeeklyStatsCard(
             ) {
                 StatItem(
                     label = activityLabel,
-                    value = "${stats.sessionsThisWeek}",
+                    value = "${stats.sessions}",
                     unit = sessionsUnitLabel
                 )
                 StatItem(
                     label = volumeLabel,
-                    value = "${stats.totalVolumeThisWeek.toInt()}",
+                    value = "${stats.totalVolume}",
                     unit = weightUnit
                 )
                 StatItem(
                     label = maxWeightLabel,
-                    value = "${stats.maxWeightThisWeek.toInt()}",
+                    value = "${stats.maxWeight}",
                     unit = weightUnit
                 )
             }

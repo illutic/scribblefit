@@ -10,11 +10,16 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.AutoGraph
 import androidx.compose.material.icons.rounded.CalendarMonth
 import androidx.compose.material.icons.rounded.Home
+import androidx.compose.material.icons.rounded.Refresh
 import androidx.compose.material.icons.rounded.Settings
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,6 +49,15 @@ internal fun InsightsScreen(
                         style = ScribbleFitTheme.typography.headlineSmall,
                         fontWeight = FontWeight.SemiBold,
                     )
+                },
+                actions = {
+                    IconButton(onClick = { onIntent(InsightsIntent.Refresh) }) {
+                        Icon(
+                            imageVector = Icons.Rounded.Refresh,
+                            contentDescription = "Refresh",
+                            tint = ScribbleFitTheme.colors.primary
+                        )
+                    }
                 }
             )
         },
@@ -78,10 +92,21 @@ internal fun InsightsScreen(
                 )
 
                 Box(modifier = Modifier.weight(1f)) {
+                    val indicatorState = rememberPullToRefreshState()
                     PullToRefreshBox(
                         isRefreshing = state.isLoading,
                         onRefresh = { onIntent(InsightsIntent.Refresh) },
-                        modifier = Modifier.fillMaxSize()
+                        modifier = Modifier.fillMaxSize(),
+                        state = indicatorState,
+                        indicator = {
+                            PullToRefreshDefaults.Indicator(
+                                state = indicatorState,
+                                isRefreshing = state.isLoading,
+                                containerColor = ScribbleFitTheme.colors.background,
+                                color = ScribbleFitTheme.colors.primary,
+                                modifier = Modifier.align(Alignment.TopCenter)
+                            )
+                        }
                     ) {
                         InsightsBody(
                             state = state,

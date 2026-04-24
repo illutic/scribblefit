@@ -1,99 +1,88 @@
 import Foundation
-import SwiftUI
 import CoreModel
+import CoreCommon
 
-public struct LedgerState: Sendable {
+public struct LedgerState: Equatable, Sendable {
+    public var scribbles: [Scribble]
+    public var isLoading: Bool
     public var startDate: Date
     public var endDate: Date
-    public var workouts: [Workout]
-    public var isLoading: Bool
+    public var navigationState: NavigationState?
     public var weightUnit: WeightUnit
-    public var navigationState: NavigationState? = nil
+
+    public var dateRangeString: String {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .none
+        return "\(formatter.string(from: startDate)) - \(formatter.string(from: endDate))"
+    }
 
     public enum NavigationState: Equatable, Sendable, Identifiable {
-        case exerciseDetails(String)
-        case workoutExercises(UUID)
+        case scribbleDetails(UUID)
 
         public var id: String {
             switch self {
-            case .exerciseDetails(let name):
-                return "exercise-\(name)"
-            case .workoutExercises(let uuid):
-                return "workout-\(uuid.uuidString)"
+            case .scribbleDetails(let uuid):
+                return "scribble-\(uuid.uuidString)"
             }
         }
     }
 
     public init(
-        startDate: Date = Calendar.current.date(byAdding: .day, value: -30, to: Date())!,
+        scribbles: [Scribble] = [],
+        isLoading: Bool = true,
+        startDate: Date = Calendar.current.date(byAdding: .month, value: -1, to: Date())!,
         endDate: Date = Date(),
-        workouts: [Workout] = [],
-        isLoading: Bool = false,
+        navigationState: NavigationState? = nil,
         weightUnit: WeightUnit = .kgs
     ) {
+        self.scribbles = scribbles
+        self.isLoading = isLoading
         self.startDate = startDate
         self.endDate = endDate
-        self.workouts = workouts
-        self.isLoading = isLoading
+        self.navigationState = navigationState
         self.weightUnit = weightUnit
     }
 
     public func copy(
+        scribbles: [Scribble]? = nil,
+        isLoading: Bool? = nil,
         startDate: Date? = nil,
         endDate: Date? = nil,
-        workouts: [Workout]? = nil,
-        isLoading: Bool? = nil,
-        weightUnit: WeightUnit? = nil,
-        navigationState: NavigationState?? = nil
+        navigationState: NavigationState?? = nil,
+        weightUnit: WeightUnit? = nil
     ) -> LedgerState {
         var newState = self
+        if let scribbles = scribbles { newState.scribbles = scribbles }
+        if let isLoading = isLoading { newState.isLoading = isLoading }
         if let startDate = startDate { newState.startDate = startDate }
         if let endDate = endDate { newState.endDate = endDate }
-        if let workouts = workouts { newState.workouts = workouts }
-        if let isLoading = isLoading { newState.isLoading = isLoading }
-        if let weightUnit = weightUnit { newState.weightUnit = weightUnit }
         if let navigationState = navigationState { newState.navigationState = navigationState }
+        if let weightUnit = weightUnit { newState.weightUnit = weightUnit }
         return newState
     }
 
-    // Formatting
-    public var dateRangeString: String {
-        let formatter = DateFormatter()
-        formatter.dateStyle = .medium
-        return "\(formatter.string(from: startDate)) – \(formatter.string(from: endDate))"
-    }
-
     public var isEmpty: Bool {
-        !isLoading && workouts.isEmpty
+        !isLoading && scribbles.isEmpty
     }
 
-    public struct GroupedWorkouts: Identifiable, Sendable {
-        public let id: String
+    public struct GroupedScribbles: Identifiable, Sendable {
+        public var id: Date { date }
         public let date: Date
-        public let workouts: [Workout]
-        public let exercises: [Exercise]
-
-        public var dateString: String {
-            let formatter = DateFormatter()
-            formatter.dateFormat = "EEEE, MMMM d"
-            return formatter.string(from: date)
-        }
+        public let scribbles: [Scribble]
     }
 
-    public var groupedWorkouts: [GroupedWorkouts] {
+    public var groupedScribbles: [GroupedScribbles] {
         let calendar = Calendar.current
-        let groups = Dictionary(grouping: workouts) { workout in
-            calendar.startOfDay(for: workout.date)
+        let groups = Dictionary(grouping: scribbles) { scribble in
+            calendar.startOfDay(for: scribble.createdAt)
         }
+        
         return groups.keys.sorted(by: >).map { date in
-            let dayWorkouts = groups[date]!.sorted(by: { $0.date < $1.date })
-            let dayExercises = dayWorkouts.flatMap { $0.exercises }
-
-            return GroupedWorkouts(
-                id: date.description,
+            let dayScribbles = groups[date]!.sorted(by: { $0.createdAt < $1.createdAt })
+            return GroupedScribbles(
                 date: date,
-                workouts: dayWorkouts,
-                exercises: dayExercises
+                scribbles: dayScribbles
             )
         }
     }

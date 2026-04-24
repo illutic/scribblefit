@@ -22,70 +22,73 @@ class EditScribbleUseCaseTest {
     private val useCase = EditScribbleUseCase(scribbleRepository, testDispatcher)
 
     @Test
-    fun `when scribble exists and text is not blank, should update scribble and return success`() = runTest(testDispatcher) {
-        // Given
-        val scribbleId = 1L
-        val oldText = "Old text"
-        val newText = "New text"
-        val existingScribble = Scribble(
-            id = scribbleId,
-            rawText = oldText,
-            parsedJson = null,
-            status = ScribbleStatus.PENDING,
-            createdAt = 123456789L,
-            exercises = emptyList()
-        )
-        
-        every { scribbleRepository.getScribble(scribbleId) } returns flowOf(existingScribble)
-        coEvery { scribbleRepository.updateScribble(any()) } returns Unit
+    fun `when scribble exists and text is not blank, should update scribble and return success`() =
+        runTest(testDispatcher) {
+            // Given
+            val scribbleId = 1L
+            val oldText = "Old text"
+            val newText = "New text"
+            val existingScribble = Scribble(
+                id = scribbleId,
+                rawText = oldText,
+                parsedJson = null,
+                status = ScribbleStatus.PENDING,
+                createdAt = 123456789L,
+                exercises = emptyList()
+            )
 
-        // When
-        val result = useCase(scribbleId, newText)
+            every { scribbleRepository.getScribble(scribbleId) } returns flowOf(existingScribble)
+            coEvery { scribbleRepository.updateScribble(any()) } returns Unit
 
-        // Then
-        assertTrue(result.isSuccess)
-        coVerify(exactly = 1) {
-            scribbleRepository.updateScribble(match {
-                it.id == scribbleId && it.rawText == newText && it.status == ScribbleStatus.PENDING
-            })
+            // When
+            val result = useCase(scribbleId, newText)
+
+            // Then
+            assertTrue(result.isSuccess)
+            coVerify(exactly = 1) {
+                scribbleRepository.updateScribble(match {
+                    it.id == scribbleId && it.rawText == newText && it.status == ScribbleStatus.PENDING
+                })
+            }
         }
-    }
 
     @Test
-    fun `when scribble does not exist, should return failure with ScribbleNotFoundException`() = runTest(testDispatcher) {
-        // Given
-        val scribbleId = 1L
-        every { scribbleRepository.getScribble(scribbleId) } returns flowOf()
+    fun `when scribble does not exist, should return failure with ScribbleNotFoundException`() =
+        runTest(testDispatcher) {
+            // Given
+            val scribbleId = 1L
+            every { scribbleRepository.getScribble(scribbleId) } returns flowOf()
 
-        // When
-        val result = useCase(scribbleId, "Some text")
+            // When
+            val result = useCase(scribbleId, "Some text")
 
-        // Then
-        assertTrue(result.isFailure)
-        assertTrue(result.exceptionOrNull() is ScribbleNotFoundException)
-        coVerify(exactly = 0) { scribbleRepository.updateScribble(any()) }
-    }
+            // Then
+            assertTrue(result.isFailure)
+            assertTrue(result.exceptionOrNull() is ScribbleNotFoundException)
+            coVerify(exactly = 0) { scribbleRepository.updateScribble(any()) }
+        }
 
     @Test
-    fun `when text is blank, should return failure with EmptyScribbleTextException`() = runTest(testDispatcher) {
-        // Given
-        val scribbleId = 1L
-        val existingScribble = Scribble(
-            id = scribbleId,
-            rawText = "Old text",
-            parsedJson = null,
-            status = ScribbleStatus.PENDING,
-            createdAt = 123456789L,
-            exercises = emptyList()
-        )
-        every { scribbleRepository.getScribble(scribbleId) } returns flowOf(existingScribble)
+    fun `when text is blank, should return failure with EmptyScribbleTextException`() =
+        runTest(testDispatcher) {
+            // Given
+            val scribbleId = 1L
+            val existingScribble = Scribble(
+                id = scribbleId,
+                rawText = "Old text",
+                parsedJson = null,
+                status = ScribbleStatus.PENDING,
+                createdAt = 123456789L,
+                exercises = emptyList()
+            )
+            every { scribbleRepository.getScribble(scribbleId) } returns flowOf(existingScribble)
 
-        // When
-        val result = useCase(scribbleId, "   ")
+            // When
+            val result = useCase(scribbleId, "   ")
 
-        // Then
-        assertTrue(result.isFailure)
-        assertTrue(result.exceptionOrNull() is EmptyScribbleTextException)
-        coVerify(exactly = 0) { scribbleRepository.updateScribble(any()) }
-    }
+            // Then
+            assertTrue(result.isFailure)
+            assertTrue(result.exceptionOrNull() is EmptyScribbleTextException)
+            coVerify(exactly = 0) { scribbleRepository.updateScribble(any()) }
+        }
 }

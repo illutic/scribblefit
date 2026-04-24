@@ -117,7 +117,7 @@ Before implementing any feature or making architectural decisions, read the rele
 Feature specifications live in `specs/`. Read the relevant spec before implementing:
 
 - `specs/canvas.md` -- Home screen, scribble entry, AI parsing
-- `specs/ledger.md` -- Workout history
+- `specs/ledger.md` -- Training history (Scribbles)
 - `specs/insights.md` -- AI analytics and charts
 - `specs/settings.md` -- User preferences and configuration
 
@@ -129,11 +129,12 @@ Entity -> Mapper -> Repository -> AppState -> AppViewModel -> MainActivity -> Se
 
 ## Entity Lifecycle
 
-- Distinguish canonical metadata (e.g., `Exercise`) from instance records (e.g., `WorkoutExercise`)
-- Use `OnConflictStrategy.IGNORE` with unique constraints; manually check ID on insertion failure
-- Map instance IDs (not canonical IDs) to domain model `id` fields
-- Atomic clear of children before re-insert on parent updates
-- `ForeignKey.CASCADE` for dependent cleanup; never delete canonical records as a side effect
+- `Scribble` is the primary root entity. When `status` is `COMPLETED`, it represents a logged session.
+- `Exercise` records are linked directly to a `Scribble`.
+- `Set` records are linked directly to an `Exercise`.
+- Use `OnConflictStrategy.REPLACE` for updates within a session.
+- Map instance IDs to domain model `id` fields.
+- `ForeignKey.CASCADE` ensures that deleting a `Scribble` cleans up all associated `Exercise` and `Set` records.
 
 ## Skills
 

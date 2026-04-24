@@ -3,30 +3,32 @@ import CoreModel
 
 @MainActor
 public final class GetMuscleDistributionInsightsUseCase {
-    private let workoutRepository: WorkoutRepository
+    private let scribbleRepository: ScribbleRepository
 
-    public init(workoutRepository: WorkoutRepository) {
-        self.workoutRepository = workoutRepository
+    public init(scribbleRepository: ScribbleRepository) {
+        self.scribbleRepository = scribbleRepository
     }
 
     public func execute(startDate: Date, endDate: Date) -> AsyncStream<[MuscleGroupDistribution]> {
-        let stream = workoutRepository.getWorkoutsInRange(startDate: startDate, endDate: endDate)
+        let stream = scribbleRepository.observeScribbles(startDate: startDate, endDate: endDate)
+
         return AsyncStream { continuation in
             Task {
-                for await workouts in stream {
-                    let data = calculateDistribution(workouts: workouts)
+                for await scribbles in stream {
+                    let completedScribbles = scribbles.filter { $0.status == .completed }
+                    let data = calculateDistribution(scribbles: completedScribbles)
                     continuation.yield(data)
                 }
             }
         }
     }
 
-    private func calculateDistribution(workouts: [Workout]) -> [MuscleGroupDistribution] {
+    private func calculateDistribution(scribbles: [Scribble]) -> [MuscleGroupDistribution] {
         var setsByGroup: [String: Int] = [:]
         var totalSets = 0
 
-        for workout in workouts {
-            for exercise in workout.exercises {
+        for scribble in scribbles {
+            for exercise in scribble.exercises {
                 let group = exercise.muscleGroup.isEmpty
                     ? String(localized: "Other")
                     : exercise.muscleGroup

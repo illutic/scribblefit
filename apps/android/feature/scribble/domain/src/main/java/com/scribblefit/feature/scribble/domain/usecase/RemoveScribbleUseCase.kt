@@ -1,7 +1,6 @@
 package com.scribblefit.feature.scribble.domain.usecase
 
 import com.scribblefit.core.common.runCatchingWithCancellation
-import com.scribblefit.feature.scribble.domain.ScribbleError
 import com.scribblefit.feature.scribble.domain.ScribbleRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext

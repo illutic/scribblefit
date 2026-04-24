@@ -28,37 +28,40 @@ class UpdateScribbleAsCompleteUseCaseTest {
     )
 
     @Test
-    fun `when called, should update all exercises to non-draft and mark scribble as complete`() = runTest(testDispatcher) {
-        // Given
-        val scribbleId = 1L
-        val exercise1 = Exercise(201L, "Bench Press", "Chest", emptyList(), isDraft = true)
-        val exercise2 = Exercise(202L, "Squat", "Legs", emptyList(), isDraft = true)
-        val scribble = Scribble(
-            id = scribbleId,
-            rawText = "raw text",
-            parsedJson = null,
-            status = ScribbleStatus.SUCCESS,
-            createdAt = 123456789L,
-            exercises = listOf(exercise1, exercise2)
-        )
+    fun `when called, should update all exercises to non-draft and mark scribble as complete`() =
+        runTest(testDispatcher) {
+            // Given
+            val scribbleId = 1L
+            val exercise1 = Exercise(201L, "Bench Press", "Chest", emptyList(), isDraft = true)
+            val exercise2 = Exercise(202L, "Squat", "Legs", emptyList(), isDraft = true)
+            val scribble = Scribble(
+                id = scribbleId,
+                rawText = "raw text",
+                parsedJson = null,
+                status = ScribbleStatus.SUCCESS,
+                createdAt = 123456789L,
+                exercises = listOf(exercise1, exercise2)
+            )
 
-        every { scribbleRepository.getScribbleWithExercises(scribbleId) } returns flowOf(scribble)
-        coEvery { markExerciseAsCompleteUseCase(any()) } returns Result.success(Unit)
-        coEvery { scribbleRepository.updateScribble(any()) } returns Unit
+            every { scribbleRepository.getScribbleWithExercises(scribbleId) } returns flowOf(
+                scribble
+            )
+            coEvery { markExerciseAsCompleteUseCase(any()) } returns Result.success(Unit)
+            coEvery { scribbleRepository.updateScribble(any()) } returns Unit
 
-        // When
-        val result = useCase.invoke(scribbleId)
+            // When
+            val result = useCase.invoke(scribbleId)
 
-        // Then
-        assertTrue(result.isSuccess)
-        coVerify {
-            markExerciseAsCompleteUseCase(exercise1)
-            markExerciseAsCompleteUseCase(exercise2)
-            scribbleRepository.updateScribble(match {
-                it.id == scribbleId && it.status == ScribbleStatus.COMPLETED
-            })
+            // Then
+            assertTrue(result.isSuccess)
+            coVerify {
+                markExerciseAsCompleteUseCase(exercise1)
+                markExerciseAsCompleteUseCase(exercise2)
+                scribbleRepository.updateScribble(match {
+                    it.id == scribbleId && it.status == ScribbleStatus.COMPLETED
+                })
+            }
         }
-    }
 
     @Test
     fun `when scribble not found, should return failure`() = runTest(testDispatcher) {

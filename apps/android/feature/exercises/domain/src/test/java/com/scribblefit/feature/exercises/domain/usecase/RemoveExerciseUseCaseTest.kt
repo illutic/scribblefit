@@ -17,17 +17,16 @@ class RemoveExerciseUseCaseTest {
     private val useCase = RemoveExerciseUseCase(repository, testDispatcher)
 
     @Test
-    fun `should call deleteWorkoutExercise on repository`() = runTest(testDispatcher) {
+    fun `should call deleteExercise on repository`() = runTest(testDispatcher) {
         // Given
         val exerciseId = 1L
-        val exercise = Exercise(exerciseId, "Bench Press", "Chest", emptyList())
-        coEvery { repository.deleteWorkoutExercise(exerciseId) } returns Unit
+        coEvery { repository.deleteExercise(exerciseId) } returns Unit
 
         // When
-        val result = useCase(exercise)
+        val result = useCase(exerciseId)
 
         // Then
         assertTrue(result.isSuccess)
-        coVerify(exactly = 1) { repository.deleteWorkoutExercise(exerciseId) }
+        coVerify(exactly = 1) { repository.deleteExercise(exerciseId) }
     }
 }

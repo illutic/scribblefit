@@ -9,9 +9,10 @@ class UpdateSetRepsUseCase(
     private val repository: SetRepository,
     private val coroutineDispatcher: CoroutineDispatcher
 ) {
-    suspend operator fun invoke(setId: Long, reps: Int): Result<Unit> = withContext(coroutineDispatcher) {
-        runCatchingWithCancellation {
-            repository.updateSetReps(setId, reps)
+    suspend operator fun invoke(setId: Long, reps: Int): Result<Unit> =
+        withContext(coroutineDispatcher) {
+            runCatchingWithCancellation {
+                repository.updateSetReps(setId, reps)
+            }
         }
-    }
 }

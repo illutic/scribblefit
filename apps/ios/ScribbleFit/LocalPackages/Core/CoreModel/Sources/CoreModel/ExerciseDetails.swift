@@ -33,11 +33,22 @@ public struct ExerciseTrends: Codable, Sendable {
     public let trendDirection: TrendDirection
     public let lastVolume: Float
     public let lastVolumeTrend: TrendDirection
+    public let intensity: Float
+    public let improvement: Float
     
-    public init(current1RM: Float, trendDirection: TrendDirection, lastVolume: Float, lastVolumeTrend: TrendDirection) {
+    public init(
+        current1RM: Float,
+        trendDirection: TrendDirection,
+        lastVolume: Float,
+        lastVolumeTrend: TrendDirection,
+        intensity: Float,
+        improvement: Float
+    ) {
         self.current1RM = current1RM
         self.trendDirection = trendDirection
         self.lastVolume = lastVolume
         self.lastVolumeTrend = lastVolumeTrend
+        self.intensity = intensity
+        self.improvement = improvement
     }
 }

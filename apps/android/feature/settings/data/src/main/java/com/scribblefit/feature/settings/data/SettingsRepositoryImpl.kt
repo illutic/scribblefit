@@ -1,76 +1,48 @@
 package com.scribblefit.feature.settings.data
 
-import com.scribblefit.core.database.dao.ScribbleTrackerDao
-import com.scribblefit.core.database.dao.WorkoutDao
+import com.scribblefit.core.database.ScribbleFitDatabase
 import com.scribblefit.feature.settings.domain.SettingsRepository
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import kotlinx.serialization.json.Json
 import javax.inject.Inject
 
 class SettingsRepositoryImpl @Inject constructor(
-    private val scribbleTrackerDao: ScribbleTrackerDao,
-    private val workoutDao: WorkoutDao,
-    private val json: Json
+    private val database: ScribbleFitDatabase,
+    private val json: Json,
+    private val coroutineDispatcher: CoroutineDispatcher
 ) : SettingsRepository {
 
     override suspend fun clearAllUserData() {
-        workoutDao.clearAllUserData()
+        database.clearAllData()
     }
 
-    override suspend fun exportUserData(): Flow<String> {
-        return combine(
-            scribbleTrackerDao.getAllScribblesWithExercises(),
-            workoutDao.getAllWorkoutsWithAllDetails()
-        ) { scribbles, workouts ->
-            val export = UserDataExport(
-                scribbles = scribbles.map { s ->
-                    ScribbleExport(
-                        id = s.scribble.scribbleId,
-                        rawText = s.scribble.rawText,
-                        status = s.scribble.status,
-                        createdAt = s.scribble.createdAt,
-                        exercises = s.exercises.map { e ->
-                            ScribbleExerciseExport(
-                                exerciseName = e.exercise.name,
-                                muscleGroup = e.exercise.muscleGroup,
-                                sets = e.sets.map { s ->
-                                    WorkoutSetExport(
-                                        setNumber = s.setNumber,
-                                        reps = s.reps,
-                                        weight = s.weight,
-                                        rpe = s.rpe,
-                                        notes = s.notes
-                                    )
-                                }
-                            )
-                        }
-                    )
-                },
-                workouts = workouts.map { w ->
-                    WorkoutExport(
-                        id = w.workout.workoutId,
-                        date = w.workout.workoutDate,
-                        notes = w.workout.notes,
-                        exercises = w.exercises.map { we ->
-                            WorkoutExerciseExport(
-                                exerciseName = we.exercise.name,
-                                muscleGroup = we.exercise.muscleGroup,
-                                sets = we.sets.map { s ->
-                                    WorkoutSetExport(
-                                        setNumber = s.setNumber,
-                                        reps = s.reps,
-                                        weight = s.weight,
-                                        rpe = s.rpe,
-                                        notes = s.notes
+    override suspend fun exportUserData(): Flow<String> =
+        database.scribbleDao()
+            .getAllScribblesWithExercises()
+            .flowOn(coroutineDispatcher)
+            .map { scribbles ->
+                val exportData = scribbles.map { scribble ->
+                    ExportScribble(
+                        createdAt = scribble.scribble.createdAt,
+                        exercises = scribble.exercises.map { exercise ->
+                            ExportExercise(
+                                name = exercise.exercise.name,
+                                sets = exercise.sets.map {
+                                    ExportSet(
+                                        setNumber = it.setNumber,
+                                        reps = it.reps,
+                                        weight = it.weight,
+                                        rpe = it.rpe,
+                                        notes = it.notes
                                     )
                                 }
                             )
                         }
                     )
                 }
-            )
-            json.encodeToString(export)
-        }
-    }
+                json.encodeToString(UserDataExport.serializer(), UserDataExport(exportData))
+            }
 }

@@ -4,7 +4,7 @@ import CoreDesignSystem
 import CoreCommon
 import FeatureSettings
 import FeatureExercises
-import FeatureWorkouts
+import FeatureScribble
 
 public struct CanvasView: View {
     @Bindable var store: CanvasStore
@@ -14,10 +14,16 @@ public struct CanvasView: View {
     let getExerciseDetailsUseCase: GetExerciseDetailsUseCase
     let getExerciseAIInsightUseCase: GetExerciseAIInsightUseCase
     let configRepository: ConfigRepository
-    let workoutRepository: WorkoutRepository
+    let exerciseRepository: ExerciseRepository
+    let manualEditScribbleUseCase: FeatureScribble.ManualEditScribbleUseCase
+    let createManualScribbleUseCase: FeatureScribble.CreateManualScribbleUseCase
+    let addManualExerciseUseCase: AddManualExerciseUseCase
+    let addSetToExerciseUseCase: AddSetToExerciseUseCase
+    let scribbleRepository: ScribbleRepository
+    let confirmScribbleUseCase: ConfirmScribbleUseCase
 
     @State private var selectedExerciseName: String? = nil
-    @State private var selectedWorkoutId: UUID? = nil
+    @State private var selectedScribbleId: UUID? = nil
     @State private var scribbleToDelete: UUID? = nil
     
     public init(
@@ -26,14 +32,26 @@ public struct CanvasView: View {
         getExerciseDetailsUseCase: GetExerciseDetailsUseCase,
         getExerciseAIInsightUseCase: GetExerciseAIInsightUseCase,
         configRepository: ConfigRepository,
-        workoutRepository: WorkoutRepository
+        exerciseRepository: ExerciseRepository,
+        manualEditScribbleUseCase: FeatureScribble.ManualEditScribbleUseCase,
+        createManualScribbleUseCase: FeatureScribble.CreateManualScribbleUseCase,
+        addManualExerciseUseCase: AddManualExerciseUseCase,
+        addSetToExerciseUseCase: AddSetToExerciseUseCase,
+        scribbleRepository: ScribbleRepository,
+        confirmScribbleUseCase: ConfirmScribbleUseCase
     ) {
         self.store = store
         self.settingsStore = settingsStore
         self.getExerciseDetailsUseCase = getExerciseDetailsUseCase
         self.getExerciseAIInsightUseCase = getExerciseAIInsightUseCase
         self.configRepository = configRepository
-        self.workoutRepository = workoutRepository
+        self.exerciseRepository = exerciseRepository
+        self.manualEditScribbleUseCase = manualEditScribbleUseCase
+        self.createManualScribbleUseCase = createManualScribbleUseCase
+        self.addManualExerciseUseCase = addManualExerciseUseCase
+        self.addSetToExerciseUseCase = addSetToExerciseUseCase
+        self.scribbleRepository = scribbleRepository
+        self.confirmScribbleUseCase = confirmScribbleUseCase
     }
 
     public var body: some View {
@@ -72,12 +90,21 @@ public struct CanvasView: View {
                 switch navState {
                 case .exerciseDetails(let name):
                     exerciseDetailsSheet(for: name)
-                case .workoutExercises(let id):
-                    workoutExercisesSheet(for: id)
+                case .scribbleDetails(let id):
+                    scribbleDetailsSheet(for: id)
                 }
             }
             .sheet(isPresented: $store.state.isSettingsVisible) {
                 settingsView()
+            }
+            .sheet(isPresented: $store.state.isAddExerciseSheetVisible) {
+                AddExerciseSheetView(
+                    weightUnitLabel: store.state.weightUnitLabel,
+                    onDismiss: { store.onIntent(.hideAddExerciseSheet) },
+                    onSave: { name, muscle, sets, notes in
+                        store.onIntent(.saveManualExercise(name: name, muscleGroup: muscle, sets: sets, notes: notes))
+                    }
+                )
             }
         }
     }
@@ -126,7 +153,7 @@ public struct CanvasView: View {
             emptyText: store.state.emptyScribbleText,
             onScribbleClick: { store.onIntent(.clickOnScribble($0)) },
             onExerciseClick: { name in store.onIntent(.navigateToExerciseDetails(name)) },
-            onWorkoutExercisesClick: { id in store.onIntent(.navigateToWorkoutExercises(id)) },
+            onScribbleDetailsClick: { id in store.onIntent(.navigateToScribbleDetails(id)) },
             onIntent: store.onIntent
         )
     }
@@ -135,7 +162,8 @@ public struct CanvasView: View {
         CanvasFooter(
             text: $store.state.currentScribbleText,
             isSending: store.state.isLoading,
-            onSend: { store.onIntent(.addScribble(store.state.currentScribbleText)) }
+            onSend: { store.onIntent(.addScribble(store.state.currentScribbleText)) },
+            onManualAdd: { store.onIntent(.showAddExerciseSheet) }
         )
     }
     
@@ -213,23 +241,14 @@ public struct CanvasView: View {
     }
     
     @ViewBuilder
-    private func workoutExercisesSheet(for id: UUID) -> some View {
-        WorkoutExercisesView(
-            store: WorkoutExercisesStore(
-                workoutId: id,
-                workoutRepository: workoutRepository,
+    private func scribbleDetailsSheet(for id: UUID) -> some View {
+        ScribbleDetailsView(
+            store: ScribbleDetailsStore(
+                scribbleId: id,
+                scribbleRepository: scribbleRepository,
                 configRepository: configRepository,
-                calculateWorkoutVolumeUseCase: CalculateWorkoutVolumeUseCase(),
-                formatWorkoutSummaryUseCase: FormatWorkoutSummaryUseCase(),
-                formatExerciseSummaryUseCase: FormatExerciseSummaryUseCase()
-            ),
-            onExerciseClick: { name in
-                selectedWorkoutId = nil
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                    selectedExerciseName = name
-                }
-            },
-            onDismiss: { selectedWorkoutId = nil }
+                confirmScribbleUseCase: confirmScribbleUseCase
+            )
         )
     }
 }

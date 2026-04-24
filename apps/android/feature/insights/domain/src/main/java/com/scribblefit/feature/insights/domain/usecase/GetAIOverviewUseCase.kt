@@ -1,34 +1,34 @@
 package com.scribblefit.feature.insights.domain.usecase
 
+import com.scribblefit.core.common.runCatchingWithCancellation
 import com.scribblefit.core.model.AIInsight
+import com.scribblefit.core.model.CurrentDate
 import com.scribblefit.feature.insights.domain.repository.InsightsRepository
-import com.scribblefit.feature.scribble.domain.ScribbleRepository
-import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
-import java.time.LocalTime
-import java.time.ZoneId
 
 class GetAIOverviewUseCase(
     private val repository: InsightsRepository,
-    private val scribbleRepository: ScribbleRepository,
+    private val coroutineDispatcher: CoroutineDispatcher
 ) {
     suspend operator fun invoke(
-        currentDate: LocalDate = LocalDate.now(),
+        currentDate: CurrentDate = CurrentDate(LocalDate.now()),
         lookUpDays: Long = 7
     ) = invoke(
-        startDate = currentDate.minusDays(lookUpDays),
+        startDate = CurrentDate(currentDate.date.minusDays(lookUpDays)),
         endDate = currentDate
     )
 
     suspend operator fun invoke(
-        startDate: LocalDate,
-        endDate: LocalDate
-    ): Result<List<AIInsight>> {
-        val startMillis = startDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-        val endMillis = endDate.atTime(LocalTime.MAX).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
-
-        val scribbles = scribbleRepository.getScribblesInRange(startMillis, endMillis).first()
-        val exercises = scribbles.flatMap { it.exercises }
-        return repository.getAIOverview(exercises)
+        startDate: CurrentDate,
+        endDate: CurrentDate
+    ): Result<List<AIInsight>> = withContext(coroutineDispatcher) {
+        runCatchingWithCancellation {
+            repository.getAIOverview(
+                startDate = startDate.startOfDayInMillis,
+                endDate = endDate.startOfDayInMillis
+            )
+        }
     }
 }

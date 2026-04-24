@@ -1,21 +1,16 @@
 package com.scribblefit.feature.scribble.data.di
 
 import com.scribblefit.core.coroutines.CoroutineDispatcherProvider
-import com.scribblefit.core.database.dao.ScribbleDao
-import com.scribblefit.core.database.dao.ScribbleTrackerDao
-import com.scribblefit.feature.exercises.domain.usecase.MarkExerciseAsCompleteUseCase
+import com.scribblefit.core.database.ScribbleFitDatabase
 import com.scribblefit.feature.scribble.data.ScribbleRepositoryImpl
 import com.scribblefit.feature.scribble.domain.ScribbleRepository
-import com.scribblefit.feature.scribble.domain.usecase.AddRawScribbleUseCase
-import com.scribblefit.feature.scribble.domain.usecase.EditScribbleUseCase
+import com.scribblefit.feature.scribble.domain.usecase.AddScribbleUseCase
+import com.scribblefit.feature.scribble.domain.usecase.ConfirmScribbleUseCase
+import com.scribblefit.feature.scribble.domain.usecase.CreateManualScribbleUseCase
 import com.scribblefit.feature.scribble.domain.usecase.GetPendingScribblesByDateUseCase
-import com.scribblefit.feature.scribble.domain.usecase.GetScribblesByDateUseCase
-import com.scribblefit.feature.scribble.domain.usecase.ManualEditScribbleUseCase
+import com.scribblefit.feature.scribble.domain.usecase.GetScribblesForDateUseCase
 import com.scribblefit.feature.scribble.domain.usecase.RemoveScribbleUseCase
-import com.scribblefit.feature.scribble.domain.usecase.UpdateScribbleAsCompleteUseCase
-import com.scribblefit.feature.scribble.domain.usecase.UpdateScribbleAsFailedUseCase
-import com.scribblefit.feature.scribble.domain.usecase.UpdateScribbleAsPendingUseCase
-import com.scribblefit.feature.scribble.domain.usecase.UpdateScribbleWithWorkoutUseCase
+import com.scribblefit.feature.scribble.domain.usecase.UpdateScribbleUseCase
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -32,36 +27,29 @@ internal object ScribbleDataModule {
     @Provides
     @Singleton
     fun provideScribbleRepository(
-        database: com.scribblefit.core.database.ScribbleFitDatabase,
-        scribbleDao: ScribbleDao,
-        scribbleTrackerDao: ScribbleTrackerDao,
-        workoutDao: com.scribblefit.core.database.dao.WorkoutDao,
-        workoutExerciseDao: com.scribblefit.core.database.dao.WorkoutExerciseDao,
+        database: ScribbleFitDatabase,
         coroutineDispatcherProvider: CoroutineDispatcherProvider
     ): ScribbleRepository = ScribbleRepositoryImpl(
-        database = database,
-        scribbleDao = scribbleDao,
-        scribbleTrackerDao = scribbleTrackerDao,
-        workoutDao = workoutDao,
-        workoutExerciseDao = workoutExerciseDao,
-        coroutineDispatcher = coroutineDispatcherProvider.io()
-    )
-
-    @Provides
-    fun provideAddRawScribbleUseCase(
-        scribbleRepository: ScribbleRepository,
-        coroutineDispatcherProvider: CoroutineDispatcherProvider
-    ): AddRawScribbleUseCase = AddRawScribbleUseCase(
-        scribbleRepository = scribbleRepository,
+        scribbleDao = database.scribbleDao(),
         coroutineDispatcher = coroutineDispatcherProvider.default()
     )
 
     @Provides
-    fun provideEditScribbleUseCase(
-        scribbleRepository: ScribbleRepository,
+    fun provideGetScribblesForDateUseCase(
+        repository: ScribbleRepository
+    ): GetScribblesForDateUseCase = GetScribblesForDateUseCase(repository)
+
+    @Provides
+    fun provideAddScribbleUseCase(
+        repository: ScribbleRepository
+    ): AddScribbleUseCase = AddScribbleUseCase(repository)
+
+    @Provides
+    fun provideConfirmScribbleUseCase(
+        repository: ScribbleRepository,
         coroutineDispatcherProvider: CoroutineDispatcherProvider
-    ): EditScribbleUseCase = EditScribbleUseCase(
-        scribbleRepository = scribbleRepository,
+    ): ConfirmScribbleUseCase = ConfirmScribbleUseCase(
+        scribbleRepository = repository,
         coroutineDispatcher = coroutineDispatcherProvider.default()
     )
 
@@ -70,15 +58,6 @@ internal object ScribbleDataModule {
         scribbleRepository: ScribbleRepository,
         coroutineDispatcherProvider: CoroutineDispatcherProvider
     ): GetPendingScribblesByDateUseCase = GetPendingScribblesByDateUseCase(
-        scribbleRepository = scribbleRepository,
-        coroutineDispatcher = coroutineDispatcherProvider.default()
-    )
-
-    @Provides
-    fun provideGetScribblesByDateUseCase(
-        scribbleRepository: ScribbleRepository,
-        coroutineDispatcherProvider: CoroutineDispatcherProvider
-    ): GetScribblesByDateUseCase = GetScribblesByDateUseCase(
         scribbleRepository = scribbleRepository,
         coroutineDispatcher = coroutineDispatcherProvider.default()
     )
@@ -93,49 +72,20 @@ internal object ScribbleDataModule {
     )
 
     @Provides
-    fun provideUpdateScribbleAsCompleteUseCase(
-        scribbleRepository: ScribbleRepository,
-        markExerciseAsCompleteUseCase: MarkExerciseAsCompleteUseCase,
-        coroutineDispatcherProvider: CoroutineDispatcherProvider
-    ): UpdateScribbleAsCompleteUseCase = UpdateScribbleAsCompleteUseCase(
-        scribbleRepository = scribbleRepository,
-        markExerciseAsCompleteUseCase = markExerciseAsCompleteUseCase,
-        coroutineDispatcher = coroutineDispatcherProvider.default()
-    )
-
-    @Provides
-    fun provideUpdateScribbleWithWorkoutUseCase(
+    fun provideUpdateScribbleUseCase(
         scribbleRepository: ScribbleRepository,
         coroutineDispatcherProvider: CoroutineDispatcherProvider
-    ): UpdateScribbleWithWorkoutUseCase = UpdateScribbleWithWorkoutUseCase(
+    ): UpdateScribbleUseCase = UpdateScribbleUseCase(
         scribbleRepository = scribbleRepository,
         coroutineDispatcher = coroutineDispatcherProvider.default()
     )
 
     @Provides
-    fun provideUpdateScribbleAsFailedUseCase(
+    fun provideCreateManualScribbleUseCase(
         scribbleRepository: ScribbleRepository,
         coroutineDispatcherProvider: CoroutineDispatcherProvider
-    ): UpdateScribbleAsFailedUseCase = UpdateScribbleAsFailedUseCase(
-        scribbleRepository = scribbleRepository,
-        coroutineDispatcher = coroutineDispatcherProvider.default()
-    )
-
-    @Provides
-    fun provideUpdateScribbleAsPendingUseCase(
-        scribbleRepository: ScribbleRepository,
-        coroutineDispatcherProvider: CoroutineDispatcherProvider
-    ): UpdateScribbleAsPendingUseCase = UpdateScribbleAsPendingUseCase(
-        scribbleRepository = scribbleRepository,
-        coroutineDispatcher = coroutineDispatcherProvider.default()
-    )
-
-    @Provides
-    fun provideManualEditScribbleUseCase(
-        scribbleRepository: ScribbleRepository,
-        coroutineDispatcherProvider: CoroutineDispatcherProvider
-    ): ManualEditScribbleUseCase =
-        ManualEditScribbleUseCase(
+    ): CreateManualScribbleUseCase =
+        CreateManualScribbleUseCase(
             scribbleRepository = scribbleRepository,
             coroutineDispatcher = coroutineDispatcherProvider.default()
         )

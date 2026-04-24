@@ -24,13 +24,8 @@ sealed interface Screen {
         override val isTop: Boolean = false
     }
 
-    data class ExerciseDetails(val exerciseName: String) : Screen {
-        override val route: String = "exercise_details/$exerciseName"
-        override val isTop: Boolean = false
-    }
-
-    data class WorkoutExercises(val workoutId: Long) : Screen {
-        override val route: String = "workout_exercises/$workoutId"
+    data class ExerciseDetails(val exerciseId: Long) : Screen {
+        override val route: String = "exercise_details/$exerciseId"
         override val isTop: Boolean = false
     }
 }

@@ -2,30 +2,27 @@ package com.scribblefit.feature.insights.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.scribblefit.core.model.CurrentDate
 import com.scribblefit.core.navigation.Navigator
-import com.scribblefit.feature.insights.domain.model.AIOverview
 import com.scribblefit.feature.insights.domain.usecase.GetAIOverviewUseCase
 import com.scribblefit.feature.insights.domain.usecase.GetFrequencyInsightsUseCase
 import com.scribblefit.feature.insights.domain.usecase.GetMuscleDistributionInsightsUseCase
 import com.scribblefit.feature.insights.domain.usecase.GetVolumeInsightsUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.asStateFlow
-import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
-import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
 
+@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 @HiltViewModel
 class InsightsViewModel @Inject constructor(
     private val getVolumeInsightsUseCase: GetVolumeInsightsUseCase,
@@ -36,56 +33,35 @@ class InsightsViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(InsightsState())
-    val state: StateFlow<InsightsState> = _state.asStateFlow()
+    private val refreshTrigger = MutableStateFlow(0L)
 
-    init {
-        observeData()
-    }
+    private val dateRangeFlow = combine(
+        _state.map { CurrentDate(it.startDate) }.distinctUntilChanged(),
+        _state.map { CurrentDate(it.endDate) }.distinctUntilChanged()
+    ) { start, end -> start to end }
 
-    @OptIn(kotlinx.coroutines.ExperimentalCoroutinesApi::class)
-    private fun observeData() {
-        viewModelScope.launch {
-            combine(
-                _state.map { it.startDate }.distinctUntilChanged(),
-                _state.map { it.endDate }.distinctUntilChanged(),
-                navigator.navState
-            ) { start, end, navState ->
-                Triple(start, end, navState)
-            }.collectLatest { (start, end, navState) ->
-                _state.update { it.copy(isLoading = true, bottomBarState = navState.bottomBarState) }
-                
-                combine(
-                    getVolumeInsightsUseCase(start, end),
-                    getFrequencyInsightsUseCase(start, end),
-                    getMuscleDistributionInsightsUseCase(start, end)
-                ) { volume, frequency, distribution ->
-                    _state.update {
-                        it.copy(
-                            volumePoints = volume,
-                            frequency = frequency,
-                            distribution = distribution,
-                            isLoading = false
-                        )
-                    }
-                    if (frequency.totalWorkouts >= 2) {
-                        loadAIOverview(start, end)
-                    }
-                }.catch { error ->
-                    _state.update { it.copy(isLoading = false, errorMessage = error.message) }
-                }.collect()
-            }
-        }
-    }
+    val state: StateFlow<InsightsState> = combine(
+        _state,
+        dateRangeFlow,
+        navigator.navState.map { it.bottomBarState }.distinctUntilChanged(),
+        refreshTrigger
+    ) { state, (start, end), bottomBarState, _ ->
+        state.copy(
+            frequency = getFrequencyInsightsUseCase(start, end).getOrNull(),
+            volumePoints = getVolumeInsightsUseCase(start, end).getOrNull().orEmpty(),
+            distribution = getMuscleDistributionInsightsUseCase(start, end).getOrNull().orEmpty(),
+            insights = getAIOverviewUseCase(start, end).getOrNull(),
+            bottomBarState = bottomBarState,
+            isLoading = false
+        )
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), InsightsState())
 
     fun onIntent(intent: InsightsIntent) {
         when (intent) {
             InsightsIntent.Refresh -> {
-                _state.update { it.copy(isLoading = true) }
-                // Re-observation will be triggered if dates change, or we can manually reload here
-                val s = _state.value.startDate
-                val e = _state.value.endDate
-                loadAIOverview(s, e)
+                refreshTrigger.update { System.currentTimeMillis() }
             }
+
             is InsightsIntent.NavigateToScreen -> navigator.navigateTo(intent.screen)
             is InsightsIntent.SelectPeriod -> selectPeriod(intent.period)
         }
@@ -103,34 +79,6 @@ class InsightsViewModel @Inject constructor(
                 selectedPeriod = period,
                 startDate = startDate,
                 endDate = now
-            )
-        }
-    }
-
-    private var aiJob: kotlinx.coroutines.Job? = null
-
-    private fun loadAIOverview(startDate: LocalDate, endDate: LocalDate) {
-        aiJob?.cancel()
-        aiJob = viewModelScope.launch {
-            _state.update { it.copy(isGeneratingAI = true) }
-
-            getAIOverviewUseCase(startDate, endDate).fold(
-                onSuccess = { insights ->
-                    _state.update {
-                        it.copy(
-                            isGeneratingAI = false,
-                            aiOverview = AIOverview(insights = insights)
-                        )
-                    }
-                },
-                onFailure = { error ->
-                    _state.update {
-                        it.copy(
-                            isGeneratingAI = false,
-                            errorMessage = error.message
-                        )
-                    }
-                }
             )
         }
     }

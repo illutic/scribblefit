@@ -4,17 +4,17 @@ This document tracks identified bugs, data integrity issues, and architectural g
 
 ## 🔴 Critical: Data Loss & Integrity
 
-### 1. Scribble Deletion Wipes Confirmed Workouts [FIXED]
-*   **Fix:** Updated `clearScribbleExercises` to only delete `workout_exercise` entries with `workoutId IS NULL`.
+### 1. Scribble Deletion Integrity [FIXED]
+*   **Fix:** Updated deletion logic to correctly use `ForeignKey.CASCADE` on `scribbles` -> `exercises` -> `sets`.
 
 ### 2. Pre-Confirmation Edits Are Discarded [FIXED]
-*   **Fix:** `ConfirmScribbleUseCase` now persists UI edits to the database before linking to a workout.
+*   **Fix:** `ConfirmScribbleUseCase` now persists UI edits to the database before marking status as `COMPLETED`.
 
 ### 3. Canvas Edits Are Not Persisted [FIXED]
-*   **Fix:** `CanvasViewModel` now calls persistence use cases for completed workouts.
+*   **Fix:** `CanvasViewModel` now implements debounced persistence for exercise and set updates.
 
 ### 4. Data Export Loss (Incomplete JSON) [FIXED]
-*   **Fix:** `exportUserData` now includes exercise sets for scribbles.
+*   **Fix:** `exportUserData` now includes the full hierarchy (Scribble -> Exercise -> Set).
 
 ---
 
@@ -24,7 +24,7 @@ This document tracks identified bugs, data integrity issues, and architectural g
 *   **Fix:** Added an in-memory tracking set in `ParsePendingScribblesUseCase` to prevent concurrent parsing of the same scribble.
 
 ### 6. Local AI Model Download "Hanging" [FIXED]
-*   **Fix:** Updated `LLMEngineProxy` to check `isSupported()` (which now checks for `AVAILABLE` status) and fallback to Cloud engine immediately. `LocalAIEngine` no longer blocks on download.
+*   **Fix:** Updated `LLMEngine` implementation to check for local availability and fallback to Cloud engine immediately.
 
 ### 7. "Parsing" Status Deadlock [FIXED]
 *   **Fix:** `ParsePendingScribblesUseCase` now retries `PARSING` scribbles on app start.
@@ -37,7 +37,7 @@ This document tracks identified bugs, data integrity issues, and architectural g
 ## 🔵 Minor / Maintenance
 
 ### 9. Brittle Date Arithmetic [FIXED]
-*   **Fix:** DAOs updated to use robust range queries (`createdAt >= :date AND createdAt < :date + 24h`) instead of fuzzy `ABS` or fixed constants.
+*   **Fix:** DAOs updated to use robust local calendar range queries.
 
 ### 10. Insights Period Inconsistency [FIXED]
 *   **Fix:** `InsightsViewModel` now passes selected date ranges to the AI overview use case.

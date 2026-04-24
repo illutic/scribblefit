@@ -22,22 +22,23 @@ class RemoveScribbleUseCaseTest {
     )
 
     @Test
-    fun `when invoked, should clear scribble exercises and delete the scribble`() = runTest(testDispatcher) {
-        // Given
-        val scribbleId = 1L
-        coEvery { scribbleRepository.clearScribbleExercises(scribbleId) } returns Unit
-        coEvery { scribbleRepository.deleteScribble(scribbleId) } returns Unit
+    fun `when invoked, should clear scribble exercises and delete the scribble`() =
+        runTest(testDispatcher) {
+            // Given
+            val scribbleId = 1L
+            coEvery { scribbleRepository.clearScribbleExercises(scribbleId) } returns Unit
+            coEvery { scribbleRepository.deleteScribble(scribbleId) } returns Unit
 
-        // When
-        val result = useCase(scribbleId)
+            // When
+            val result = useCase(scribbleId)
 
-        // Then
-        assertTrue(result.isSuccess)
-        coVerify(exactly = 1) {
-            scribbleRepository.clearScribbleExercises(scribbleId)
-            scribbleRepository.deleteScribble(scribbleId)
+            // Then
+            assertTrue(result.isSuccess)
+            coVerify(exactly = 1) {
+                scribbleRepository.clearScribbleExercises(scribbleId)
+                scribbleRepository.deleteScribble(scribbleId)
+            }
         }
-    }
 
     @Test
     fun `when clearScribbleExercises fails, should return failure`() = runTest(testDispatcher) {

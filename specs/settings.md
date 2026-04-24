@@ -5,11 +5,11 @@ The Settings feature allows users to configure and personalize the ScribbleFit e
 
 ## 2. User Stories
 - **As a User**, I want to choose between **Light, Dark, or System themes** **so that** the app matches my visual preference.
-- **As a User**, I want to choose my preferred **unit system (Metric vs. Imperial)** **so that** my workout data matches my equipment.
+- **As a User**, I want to choose my preferred **unit system (Metric vs. Imperial)** **so that** my training data matches my equipment.
 - **As a User**, I want to select between **Cloud (Gemini) or Local AI models** for parsing my scribbles **so that** I can balance accuracy and privacy.
 - **As a User**, I want to **securely enter my API Key** for cloud models **so that** the app can access advanced AI features.
-- **As a User**, I want to **export my entire workout history as JSON** **so that** I have a portable backup of my data.
-- **As a User**, I want to **delete all my data (Scribbles, Workouts, Exercises)** **so that** I can reset my progress or protect my privacy.
+- **As a User**, I want to **export my entire training history as JSON** **so that** I have a portable backup of my data.
+- **As a User**, I want to **delete all my data (Scribbles, Exercises, Sets)** **so that** I can reset my progress or protect my privacy.
 
 ## 3. Acceptance Criteria
 

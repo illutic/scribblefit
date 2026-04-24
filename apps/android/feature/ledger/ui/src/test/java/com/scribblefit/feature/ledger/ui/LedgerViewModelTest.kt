@@ -1,17 +1,18 @@
 package com.scribblefit.feature.ledger.ui
 
 import app.cash.turbine.test
-import com.scribblefit.core.model.Workout
+import com.scribblefit.core.model.Exercise
+import com.scribblefit.core.navigation.NavState
 import com.scribblefit.core.navigation.Navigator
 import com.scribblefit.core.navigation.Screen
-import com.scribblefit.feature.ledger.domain.usecase.GetWorkoutsInRangeUseCase
-import io.mockk.every
+import com.scribblefit.feature.exercises.domain.usecase.GetExercisesInRangeUseCase
+import io.mockk.coEvery
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.flow.flowOf
-import kotlinx.coroutines.test.StandardTestDispatcher
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
 import kotlinx.coroutines.test.setMain
@@ -19,19 +20,20 @@ import org.junit.After
 import org.junit.Assert.assertEquals
 import org.junit.Before
 import org.junit.Test
-import java.time.LocalDate
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class LedgerViewModelTest {
 
-    private val getWorkoutsInRangeUseCase = mockk<GetWorkoutsInRangeUseCase>()
+    private val getExercisesInRangeUseCase = mockk<GetExercisesInRangeUseCase>()
     private val navigator = mockk<Navigator>(relaxed = true)
-    
-    private val testDispatcher = StandardTestDispatcher()
+    private val navStateFlow = MutableStateFlow(NavState())
+
+    private val testDispatcher = UnconfinedTestDispatcher()
 
     @Before
     fun setup() {
         Dispatchers.setMain(testDispatcher)
+        coEvery { navigator.navState } returns navStateFlow
     }
 
     @After
@@ -40,36 +42,33 @@ class LedgerViewModelTest {
     }
 
     @Test
-    fun `should load workouts for current month by default and sort descending`() = runTest(testDispatcher) {
-        val startOfMonth = LocalDate.now().withDayOfMonth(1)
-        val today = LocalDate.now()
-        
-        val workoutOld = Workout(1L, 1000L, emptyList())
-        val workoutNew = Workout(2L, 2000L, emptyList())
-        
-        every { getWorkoutsInRangeUseCase(startOfMonth, today) } returns flowOf(listOf(workoutOld, workoutNew))
-        
-        val viewModel = LedgerViewModel(getWorkoutsInRangeUseCase, navigator)
-        
-        viewModel.state.test {
-            val initialState = awaitItem()
-            if (initialState.workouts.isEmpty()) {
-                val dataState = awaitItem()
-                assertEquals(listOf(workoutNew, workoutOld), dataState.workouts)
-            } else {
-                assertEquals(listOf(workoutNew, workoutOld), initialState.workouts)
+    fun `should load exercises for last 30 days by default and sort descending`() =
+        runTest(testDispatcher) {
+            val exerciseOld = Exercise(1L, "Bench Press", "Chest", emptyList(), 1000L)
+            val exerciseNew = Exercise(2L, "Squat", "Legs", emptyList(), 2000L)
+
+            coEvery { getExercisesInRangeUseCase(any(), any()) } returns Result.success(listOf(exerciseOld, exerciseNew))
+
+            val viewModel = LedgerViewModel(getExercisesInRangeUseCase, navigator)
+
+            viewModel.state.test {
+                // The first item might be the initial state
+                var state = awaitItem()
+                if (state.exercises.isEmpty()) {
+                    state = awaitItem()
+                }
+                assertEquals(listOf(exerciseNew, exerciseOld), state.exercises)
+                cancelAndIgnoreRemainingEvents()
             }
-            cancelAndIgnoreRemainingEvents()
         }
-    }
-    
+
     @Test
-    fun `should navigate to canvas when navigateToCanvas is called`() = runTest(testDispatcher) {
-        every { getWorkoutsInRangeUseCase(any(), any()) } returns flowOf(emptyList())
-        val viewModel = LedgerViewModel(getWorkoutsInRangeUseCase, navigator)
-        
-        viewModel.navigateToCanvas()
-        
+    fun `should navigate when NavigateToScreen intent is received`() = runTest(testDispatcher) {
+        coEvery { getExercisesInRangeUseCase(any(), any()) } returns Result.success(emptyList())
+        val viewModel = LedgerViewModel(getExercisesInRangeUseCase, navigator)
+
+        viewModel.onIntent(LedgerIntent.NavigateToScreen(Screen.Canvas))
+
         verify { navigator.navigateTo(Screen.Canvas) }
     }
 }

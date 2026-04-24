@@ -1,22 +1,30 @@
 package com.scribblefit.core.database.entity.scribble
 
 import androidx.room.Embedded
-import androidx.room.Junction
 import androidx.room.Relation
-import com.scribblefit.core.database.entity.exercise.WorkoutExercise
-import com.scribblefit.core.database.entity.exercise.WorkoutExerciseWithDetails
+import com.scribblefit.core.database.entity.exercise.ExerciseEntity
+import com.scribblefit.core.database.entity.exercise.ExerciseWithSets
+import com.scribblefit.core.database.entity.exercise.toDomain
+import com.scribblefit.core.model.Scribble
+import com.scribblefit.core.model.ScribbleStatus
 
-/**
- * Represents a scribble with all the exercises it generated.
- */
 data class ScribbleWithExercises(
-    @Embedded val scribble: ScribbleEntity,
+    @Embedded
+    val scribble: ScribbleEntity,
 
     @Relation(
-        entity = WorkoutExercise::class,
+        entity = ExerciseEntity::class,
         parentColumn = "scribbleId",
-        entityColumn = "workoutExerciseId",
-        associateBy = Junction(ScribbleExercise::class)
+        entityColumn = "scribbleId",
     )
-    val exercises: List<WorkoutExerciseWithDetails>
+    val exercises: List<ExerciseWithSets>
 )
+
+fun ScribbleWithExercises.toDomain(): Scribble =
+    Scribble(
+        id = scribble.scribbleId,
+        rawText = scribble.rawText,
+        status = ScribbleStatus.valueOf(scribble.status),
+        createdAt = scribble.createdAt,
+        exercises = exercises.map { it.toDomain() }
+    )

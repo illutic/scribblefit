@@ -7,7 +7,6 @@ import CoreDesignSystem
 import CoreCommon
 import FeatureAI
 import FeatureScribble
-import FeatureWorkouts
 import FeatureConfig
 import FeatureCanvas
 import FeatureSettings
@@ -15,6 +14,8 @@ import FeatureInsights
 import FeatureLedger
 import FeatureSets
 import FeatureExercises
+import FirebaseAppCheck
+import FirebaseAuth
 
 class ScribbleFitAppCheckProviderFactory: NSObject, AppCheckProviderFactory {
     func createProvider(with app: FirebaseApp) -> AppCheckProvider? {
@@ -34,8 +35,8 @@ struct ScribbleFitApp: App {
     // Repositories
     private let scribbleRepository: ScribbleRepository
     private let configRepository: ConfigRepository
-    private let workoutRepository: WorkoutRepository
     private let settingsRepository: SettingsRepository
+    private let exerciseRepository: ExerciseRepository
 
     // Providers
     private let llmProvider: LLMService
@@ -47,19 +48,20 @@ struct ScribbleFitApp: App {
     private let deleteScribbleUseCase: DeleteScribbleUseCase
     private let parsePendingScribblesUseCase: ParsePendingScribblesUseCase
     private let getAIOverviewUseCase: GetAIOverviewUseCase
-    private let getWorkoutsByDateUseCase: GetWorkoutsByDateUseCase
-    private let getWorkoutsInRangeUseCase: GetWorkoutsInRangeUseCase
     private let clearAllDataUseCase: ClearAllDataUseCase
     private let checkLocalSupportUseCase: CheckLocalSupportUseCase
     private let exportUserDataUseCase: ExportUserDataUseCase
     private let getVolumeInsightsUseCase: GetVolumeInsightsUseCase
     private let getFrequencyInsightsUseCase: GetFrequencyInsightsUseCase
     private let getMuscleDistributionInsightsUseCase: GetMuscleDistributionInsightsUseCase
-    private let updateScribbleWithWorkoutUseCase: UpdateScribbleWithWorkoutUseCase
     private let manualEditScribbleUseCase: ManualEditScribbleUseCase
+    private let createManualScribbleUseCase: CreateManualScribbleUseCase
     private let reorderSetsUseCase: ReorderSetsUseCase
     private let getExerciseDetailsUseCase: GetExerciseDetailsUseCase
     private let getExerciseAIInsightUseCase: GetExerciseAIInsightUseCase
+    private let addManualExerciseUseCase: AddManualExerciseUseCase
+    private let addSetToExerciseUseCase: AddSetToExerciseUseCase
+    private let calculateTrendsUseCase: CalculateTrendsUseCase
 
     // Stores
     private let canvasStore: CanvasStore
@@ -85,8 +87,7 @@ struct ScribbleFitApp: App {
             let schema = Schema([
                 ScribbleEntity.self,
                 ExerciseEntity.self,
-                SetEntity.self,
-                WorkoutEntity.self
+                SetEntity.self
             ])
 
             modelContainer = try ModelContainer(for: schema)
@@ -94,13 +95,13 @@ struct ScribbleFitApp: App {
             // Repositories
             let scribbleRepo = ScribbleRepositoryImpl(modelContainer: modelContainer)
             let configRepo = ConfigRepositoryImpl()
-            let workoutRepo = WorkoutRepositoryImpl(modelContainer: modelContainer)
             let settingsRepo = SettingsRepositoryImpl(modelContainer: modelContainer)
+            let exerciseRepo = ExerciseRepositoryImpl(modelContainer: modelContainer)
 
             self.scribbleRepository = scribbleRepo
             self.configRepository = configRepo
-            self.workoutRepository = workoutRepo
             self.settingsRepository = settingsRepo
+            self.exerciseRepository = exerciseRepo
 
             // AI Services
             let localLLM = LocalLLMService(configRepository: configRepo)
@@ -112,28 +113,32 @@ struct ScribbleFitApp: App {
             self.getScribblesForDateUseCase = GetScribblesForDateUseCase(repository: scribbleRepo)
             self.addRawScribbleUseCase = AddRawScribbleUseCase(repository: scribbleRepo)
             let removeScribbleUC = RemoveScribbleUseCase(repository: scribbleRepo)
-            self.confirmScribbleUseCase = ConfirmScribbleUseCase(scribbleRepository: scribbleRepo, workoutRepository: workoutRepo)
+            self.confirmScribbleUseCase = ConfirmScribbleUseCase(scribbleRepository: scribbleRepo)
             self.deleteScribbleUseCase = DeleteScribbleUseCase(removeScribbleUseCase: removeScribbleUC)
             self.parsePendingScribblesUseCase = ParsePendingScribblesUseCase(scribbleRepository: scribbleRepo, llmProvider: routingLLM)
-            self.getAIOverviewUseCase = GetAIOverviewUseCase(workoutRepository: workoutRepo, llmProvider: routingLLM)
-            self.getWorkoutsByDateUseCase = GetWorkoutsByDateUseCase(repository: workoutRepo)
-            self.getWorkoutsInRangeUseCase = GetWorkoutsInRangeUseCase(repository: workoutRepo)
+            self.getAIOverviewUseCase = GetAIOverviewUseCase(scribbleRepository: scribbleRepo, llmProvider: routingLLM)
 
             self.clearAllDataUseCase = ClearAllDataUseCase(repository: settingsRepo)
             self.checkLocalSupportUseCase = CheckLocalSupportUseCase(localLLM: localLLM)
             self.exportUserDataUseCase = ExportUserDataUseCase(repository: settingsRepo)
-            self.getVolumeInsightsUseCase = GetVolumeInsightsUseCase(workoutRepository: workoutRepo)
-            self.getFrequencyInsightsUseCase = GetFrequencyInsightsUseCase(workoutRepository: workoutRepo)
-            self.getMuscleDistributionInsightsUseCase = GetMuscleDistributionInsightsUseCase(workoutRepository: workoutRepo)
+            
+            self.getVolumeInsightsUseCase = GetVolumeInsightsUseCase(scribbleRepository: scribbleRepo)
+            self.getFrequencyInsightsUseCase = GetFrequencyInsightsUseCase(scribbleRepository: scribbleRepo)
+            self.getMuscleDistributionInsightsUseCase = GetMuscleDistributionInsightsUseCase(scribbleRepository: scribbleRepo)
 
             let reorderSetsUC = ReorderSetsUseCase()
             self.reorderSetsUseCase = reorderSetsUC
-            self.updateScribbleWithWorkoutUseCase = UpdateScribbleWithWorkoutUseCase(scribbleRepository: scribbleRepo, workoutRepository: workoutRepo)
+            
             let manualEditScribbleUC = ManualEditScribbleUseCase(scribbleRepository: scribbleRepo)
             self.manualEditScribbleUseCase = manualEditScribbleUC
+            self.createManualScribbleUseCase = CreateManualScribbleUseCase(scribbleRepository: scribbleRepo)
 
-            self.getExerciseDetailsUseCase = GetExerciseDetailsUseCase(workoutRepository: workoutRepo)
+            self.getExerciseDetailsUseCase = GetExerciseDetailsUseCase(scribbleRepository: scribbleRepo)
             self.getExerciseAIInsightUseCase = GetExerciseAIInsightUseCase(llmService: routingLLM)
+
+            self.addManualExerciseUseCase = AddManualExerciseUseCase(exerciseRepository: exerciseRepo)
+            self.addSetToExerciseUseCase = AddSetToExerciseUseCase(exerciseRepository: exerciseRepo)
+            self.calculateTrendsUseCase = CalculateTrendsUseCase(exerciseRepository: exerciseRepo)
 
             // Stores
             self.canvasStore = CanvasStore(
@@ -143,9 +148,10 @@ struct ScribbleFitApp: App {
                 deleteScribbleUseCase: deleteScribbleUseCase,
                 parsePendingScribblesUseCase: parsePendingScribblesUseCase,
                 getAIOverviewUseCase: getAIOverviewUseCase,
-                updateScribbleWithWorkoutUseCase: updateScribbleWithWorkoutUseCase,
                 manualEditScribbleUseCase: manualEditScribbleUC,
+                createManualScribbleUseCase: self.createManualScribbleUseCase,
                 reorderSetsUseCase: reorderSetsUC,
+                calculateTrendsUseCase: self.calculateTrendsUseCase,
                 configRepository: configRepo
             )
 
@@ -166,8 +172,7 @@ struct ScribbleFitApp: App {
             )
 
             self.ledgerStore = LedgerStore(
-                getWorkoutsInRangeUseCase: getWorkoutsInRangeUseCase,
-                configRepository: configRepo
+                scribbleRepository: scribbleRepo
             )
 
         } catch {
@@ -186,7 +191,13 @@ struct ScribbleFitApp: App {
                 getExerciseDetailsUseCase: getExerciseDetailsUseCase,
                 getExerciseAIInsightUseCase: getExerciseAIInsightUseCase,
                 configRepository: configRepository,
-                workoutRepository: workoutRepository
+                exerciseRepository: exerciseRepository,
+                manualEditScribbleUseCase: manualEditScribbleUseCase,
+                createManualScribbleUseCase: createManualScribbleUseCase,
+                addManualExerciseUseCase: addManualExerciseUseCase,
+                addSetToExerciseUseCase: addSetToExerciseUseCase,
+                scribbleRepository: scribbleRepository,
+                confirmScribbleUseCase: confirmScribbleUseCase
             )
         }
         .modelContainer(modelContainer)
@@ -202,7 +213,13 @@ struct ContentView: View {
     let getExerciseDetailsUseCase: GetExerciseDetailsUseCase
     let getExerciseAIInsightUseCase: GetExerciseAIInsightUseCase
     let configRepository: ConfigRepository
-    let workoutRepository: WorkoutRepository
+    let exerciseRepository: ExerciseRepository
+    let manualEditScribbleUseCase: ManualEditScribbleUseCase
+    let createManualScribbleUseCase: CreateManualScribbleUseCase
+    let addManualExerciseUseCase: AddManualExerciseUseCase
+    let addSetToExerciseUseCase: AddSetToExerciseUseCase
+    let scribbleRepository: ScribbleRepository
+    let confirmScribbleUseCase: ConfirmScribbleUseCase
 
     @State private var selectedTab = 0
 
@@ -214,7 +231,13 @@ struct ContentView: View {
                 getExerciseDetailsUseCase: getExerciseDetailsUseCase,
                 getExerciseAIInsightUseCase: getExerciseAIInsightUseCase,
                 configRepository: configRepository,
-                workoutRepository: workoutRepository
+                exerciseRepository: exerciseRepository,
+                manualEditScribbleUseCase: manualEditScribbleUseCase,
+                createManualScribbleUseCase: createManualScribbleUseCase,
+                addManualExerciseUseCase: addManualExerciseUseCase,
+                addSetToExerciseUseCase: addSetToExerciseUseCase,
+                scribbleRepository: scribbleRepository,
+                confirmScribbleUseCase: confirmScribbleUseCase
             )
             .tabItem {
                 Label(String(localized: "Today"), systemImage: "house.fill")
@@ -233,14 +256,18 @@ struct ContentView: View {
                 getExerciseDetailsUseCase: getExerciseDetailsUseCase,
                 getExerciseAIInsightUseCase: getExerciseAIInsightUseCase,
                 configRepository: configRepository,
-                workoutRepository: workoutRepository
+                exerciseRepository: exerciseRepository,
+                addManualExerciseUseCase: addManualExerciseUseCase,
+                addSetToExerciseUseCase: addSetToExerciseUseCase,
+                scribbleRepository: scribbleRepository,
+                confirmScribbleUseCase: confirmScribbleUseCase
             )
             .tabItem {
                 Label(String(localized: "Ledger"), systemImage: "person.fill")
             }
             .tag(2)
         }
-        .tint(.scribblePrimary)
+        .tint(Color.scribblePrimary)
         .preferredColorScheme(colorScheme)
     }
 

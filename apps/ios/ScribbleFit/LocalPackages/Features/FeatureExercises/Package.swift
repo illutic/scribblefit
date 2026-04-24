@@ -13,7 +13,7 @@ let package = Package(
         .package(path: "../../Core/CoreDesignSystem"),
         .package(path: "../../Core/CoreCommon"),
         .package(path: "../FeatureAI"),
-        .package(path: "../FeatureWorkouts")
+        .package(path: "../FeatureScribble")
     ],
     targets: [
         .target(
@@ -24,7 +24,7 @@ let package = Package(
                 .product(name: "CoreDesignSystem", package: "CoreDesignSystem"),
                 .product(name: "CoreCommon", package: "CoreCommon"),
                 .product(name: "FeatureAI", package: "FeatureAI"),
-                .product(name: "FeatureWorkouts", package: "FeatureWorkouts")
+                .product(name: "FeatureScribble", package: "FeatureScribble")
             ]
         )
     ]

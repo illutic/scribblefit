@@ -4,23 +4,23 @@ import CoreCommon
 
 @MainActor
 public final class GetExerciseDetailsUseCase {
-    private let workoutRepository: WorkoutRepository
+    private let scribbleRepository: ScribbleRepository
     
-    public init(workoutRepository: WorkoutRepository) {
-        self.workoutRepository = workoutRepository
+    public init(scribbleRepository: ScribbleRepository) {
+        self.scribbleRepository = scribbleRepository
     }
     
     public func execute(exerciseName: String) -> AsyncStream<ExerciseDetails> {
-        let stream = workoutRepository.getWorkoutsWithExercise(exerciseName: exerciseName)
+        let stream = scribbleRepository.observeScribblesWithExercise(exerciseName: exerciseName)
         
         return AsyncStream { continuation in
             Task {
-                for await workouts in stream {
-                    let history = workouts.sorted(by: { $0.date > $1.date }).flatMap { workout in
-                        workout.exercises.filter { $0.canonicalName == exerciseName }.map { exercise in
+                for await scribbles in stream {
+                    let history = scribbles.sorted(by: { $0.createdAt > $1.createdAt }).flatMap { scribble in
+                        scribble.exercises.filter { $0.canonicalName.lowercased() == exerciseName.lowercased() }.map { exercise in
                             ExerciseHistorySession(
-                                workoutId: workout.id,
-                                date: workout.date,
+                                workoutId: scribble.id,
+                                date: scribble.createdAt,
                                 exercise: exercise
                             )
                         }
@@ -54,15 +54,22 @@ public final class GetExerciseDetailsUseCase {
                         Calculations.calculate1RM(weight: $0.weight ?? 0, reps: $0.reps)
                     }.max() ?? 0
                     
-                    let previous1RM = (history.count > 1) ? history[1].exercise.sets.map {
-                        Calculations.calculate1RM(weight: $0.weight ?? 0, reps: $0.reps)
+                    let previousMax = (history.count > 1) ? history.dropFirst().map { session in
+                        session.exercise.sets.map {
+                            Calculations.calculate1RM(weight: $0.weight ?? 0, reps: $0.reps)
+                        }.max() ?? 0
                     }.max() ?? 0 : 0
                     
+                    let improvement = previousMax > 0 ? (current1RM - previousMax) / previousMax : 0
+                    
                     let trendDirection: TrendDirection = {
-                        if current1RM > previous1RM { return .improving }
-                        if current1RM < previous1RM { return .declining }
+                        let threshold: Float = 0.05
+                        if improvement > threshold { return .improving }
+                        if improvement < -threshold { return .declining }
                         return .stable
                     }()
+                    
+                    let intensity = maxWeightThisWeek > 0 ? current1RM / maxWeightThisWeek : 0
                     
                     let lastVolume = history.first?.exercise.sets.reduce(0) { $0 + ($1.weight ?? 0) * Float($1.reps) } ?? 0
                     let previousVolume = (history.count > 1) ? history[1].exercise.sets.reduce(0) { $0 + ($1.weight ?? 0) * Float($1.reps) } ?? 0 : 0
@@ -81,7 +88,9 @@ public final class GetExerciseDetailsUseCase {
                             current1RM: current1RM,
                             trendDirection: trendDirection,
                             lastVolume: lastVolume,
-                            lastVolumeTrend: lastVolumeTrend
+                            lastVolumeTrend: lastVolumeTrend,
+                            intensity: intensity,
+                            improvement: improvement
                         ),
                         history: history
                     )

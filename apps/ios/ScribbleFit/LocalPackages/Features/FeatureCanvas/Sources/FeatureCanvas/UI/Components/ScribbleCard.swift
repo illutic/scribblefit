@@ -7,7 +7,7 @@ struct ScribbleCard: View {
     let weightUnit: WeightUnit
     let onClick: () -> Void
     let onExerciseClick: (String) -> Void
-    let onWorkoutExercisesClick: (UUID) -> Void
+    let onScribbleDetailsClick: (UUID) -> Void
     let onIntent: (CanvasIntent) -> Void
     
     var body: some View {
@@ -15,17 +15,18 @@ struct ScribbleCard: View {
         case .pending, .parsing:
             PendingScribbleCard(scribble: scribble)
         case .success:
-            ParsedScribbleCard(scribble: scribble, weightUnit: weightUnit, onClick: onClick)
+            ParsedScribbleCard(
+                scribble: scribble,
+                weightUnit: weightUnit,
+                onClick: onClick,
+                onExerciseClick: onExerciseClick
+            )
         case .completed:
             LoggedScribbleCard(
                 scribble: scribble,
                 weightUnit: weightUnit,
                 onClick: {
-                    if let workoutId = scribble.workoutId {
-                        onWorkoutExercisesClick(workoutId)
-                    } else {
-                        onClick()
-                    }
+                    onScribbleDetailsClick(scribble.id)
                 },
                 onExerciseClick: onExerciseClick
             )
@@ -48,7 +49,7 @@ private struct PendingScribbleCard: View {
                     .tint(Color.scribblePrimary)
                     .scaleEffect(0.8)
                 
-                Text(String(localized: "Parsing workout data…"))
+                Text(String(localized: "Parsing training data…"))
                     .font(.scribbleLabelMedium)
                     .foregroundStyle(Color.scribbleMidGray)
             }
@@ -69,38 +70,50 @@ private struct ParsedScribbleCard: View {
     let scribble: Scribble
     let weightUnit: WeightUnit
     let onClick: () -> Void
+    let onExerciseClick: (String) -> Void
     
     var body: some View {
-        Button(action: onClick) {
-            VStack(alignment: .leading, spacing: 20) {
-                HStack(alignment: .top) {
-                    VStack(alignment: .leading, spacing: 8) {
-                        ScribbleRawText(text: scribble.rawText)
-                        
-                        if scribble.exercises.isEmpty {
-                            Text(String(localized: "No exercises detected"))
-                                .font(.scribbleLabelMedium)
-                                .foregroundStyle(Color.scribbleMidGray.opacity(0.6))
-                                .padding(.top, 4)
-                        } else {
+        VStack(alignment: .leading, spacing: 20) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 12) {
+                    ScribbleRawText(text: scribble.rawText)
+                    
+                    if scribble.exercises.isEmpty {
+                        Text(String(localized: "No exercises detected"))
+                            .font(.scribbleLabelMedium)
+                            .foregroundStyle(Color.scribbleMidGray.opacity(0.6))
+                            .padding(.top, 4)
+                    } else {
+                        VStack(alignment: .leading, spacing: 16) {
                             ForEach(scribble.exercises) { exercise in
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(exercise.canonicalName)
-                                        .font(.system(size: 24, weight: .bold))
-                                        .kerning(-0.5)
-                                        .foregroundStyle(Color.scribblePrimary)
-                                    
-                                    Text(exercise.summary(weightUnit: weightUnit))
-                                        .font(.scribbleBodyMedium)
-                                        .foregroundStyle(Color.scribbleMidGray)
+                                Button(action: { onExerciseClick(exercise.canonicalName) }) {
+                                    HStack {
+                                        VStack(alignment: .leading, spacing: 4) {
+                                            Text(exercise.canonicalName)
+                                                .font(.system(size: 24, weight: .bold))
+                                                .kerning(-0.5)
+                                                .foregroundStyle(Color.scribblePrimary)
+                                            
+                                            Text(exercise.summary(weightUnit: weightUnit))
+                                                .font(.scribbleBodyMedium)
+                                                .foregroundStyle(Color.scribbleMidGray)
+                                        }
+                                        Spacer()
+                                        Image(systemName: "chevron.right")
+                                            .font(.system(size: 14, weight: .bold))
+                                            .foregroundStyle(Color.scribbleMidGray.opacity(0.3))
+                                    }
                                 }
-                                .padding(.top, 4)
+                                .buttonStyle(.plain)
                             }
                         }
+                        .padding(.top, 4)
                     }
-                    
-                    Spacer()
-                    
+                }
+                
+                Spacer()
+                
+                Button(action: onClick) {
                     Circle()
                         .fill(Color.scribblePrimary)
                         .frame(width: 36, height: 36)
@@ -110,25 +123,28 @@ private struct ParsedScribbleCard: View {
                                 .foregroundStyle(Color.scribbleOnPrimary)
                         }
                 }
-                
+                .buttonStyle(.plain)
+            }
+            
+            Button(action: onClick) {
                 Text(String(localized: "TAP TO CONFIRM").uppercased())
                     .font(.scribbleLabelMedium)
                     .fontWeight(.bold)
                     .kerning(1)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
                     .background(Color.scribblePrimary.opacity(0.05))
                     .clipShape(RoundedRectangle(cornerRadius: 8))
                     .foregroundStyle(Color.scribblePrimary)
             }
-            .padding(20)
-            .scribbleGlass(cornerRadius: 16)
-            .overlay {
-                RoundedRectangle(cornerRadius: 16)
-                    .stroke(Color.scribblePrimary.opacity(0.05), lineWidth: 0.5)
-            }
+            .buttonStyle(.plain)
         }
-        .buttonStyle(.plain)
+        .padding(20)
+        .scribbleGlass(cornerRadius: 16)
+        .overlay {
+            RoundedRectangle(cornerRadius: 16)
+                .stroke(Color.scribblePrimary.opacity(0.05), lineWidth: 0.5)
+        }
     }
 }
 
@@ -138,8 +154,12 @@ private struct LoggedScribbleCard: View {
     let onClick: () -> Void
     let onExerciseClick: (String) -> Void
     
+    private var weightUnitLabel: String {
+        weightUnit == .kgs ? "kg" : "lbs"
+    }
+    
     var body: some View {
-        VStack(alignment: .leading, spacing: 20) {
+        VStack(alignment: .leading, spacing: 16) {
             if scribble.exercises.isEmpty {
                 Button(action: onClick) {
                     VStack(alignment: .leading, spacing: 8) {
@@ -155,7 +175,7 @@ private struct LoggedScribbleCard: View {
             } else {
                 ForEach(scribble.exercises) { exercise in
                     Button(action: { onExerciseClick(exercise.canonicalName) }) {
-                        VStack(alignment: .leading, spacing: 20) {
+                        VStack(alignment: .leading, spacing: 16) {
                             HStack(alignment: .center) {
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text(exercise.canonicalName)
@@ -184,25 +204,18 @@ private struct LoggedScribbleCard: View {
                                     .background(Color.scribblePrimary.opacity(0.05))
                                     .clipShape(Capsule())
                                     .foregroundStyle(Color.scribblePrimary)
+                                } else {
+                                    Image(systemName: "chevron.right")
+                                        .font(.system(size: 14, weight: .bold))
+                                        .foregroundStyle(Color.scribbleMidGray.opacity(0.3))
                                 }
                             }
                             
-                            if exercise.estimated1RM != nil || exercise.intensity != nil {
-                                HStack(spacing: 12) {
-                                    if let oneRm = exercise.estimated1RM {
-                                        StatCardView(
-                                            label: String(localized: "EST. 1RM"),
-                                            value: "\(Int(oneRm))\(weightUnit == .kgs ? String(localized: "kg") : String(localized: "lbs"))"
-                                        )
-                                    }
-                                    if let intensity = exercise.intensity {
-                                        StatCardView(
-                                            label: String(localized: "INTENSITY"),
-                                            value: "\(Int(intensity * 100))%"
-                                        )
-                                    }
-                                }
-                            }
+                            ExerciseStatsView(
+                                estimated1RM: exercise.estimated1RM.map { "\(Int($0))\(weightUnitLabel)" },
+                                intensity: exercise.intensity.map { "\(Int($0 * 100))%" },
+                                improvement: exercise.improvement.map { "\(($0 >= 0 ? "+" : ""))\(Int($0 * 100))% VS LAST SESSION" }
+                            )
                             
                             if exercise != scribble.exercises.last {
                                 Divider()
@@ -216,7 +229,10 @@ private struct LoggedScribbleCard: View {
         }
         .padding(20)
         .scribbleGlass(cornerRadius: 16)
-        .opacity(0.8)
+        .opacity(0.9)
+        .onTapGesture {
+            onClick()
+        }
     }
 }
 

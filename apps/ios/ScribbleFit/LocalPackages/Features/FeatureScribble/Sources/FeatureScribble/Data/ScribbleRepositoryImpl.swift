@@ -15,7 +15,7 @@ public final class ScribbleRepositoryImpl: ScribbleRepository {
         self.modelContext = modelContainer.mainContext
     }
 
-    public func getScribbles(for date: Date) -> AsyncStream<[Scribble]> {
+    public func observeScribbles(for date: Date) -> AsyncStream<[Scribble]> {
         let (stream, continuation) = AsyncStream.makeStream(of: [Scribble].self)
         
         let cancellable = changeSubject
@@ -49,14 +49,85 @@ public final class ScribbleRepositoryImpl: ScribbleRepository {
         return stream
     }
 
+    public func observeScribbles(startDate: Date, endDate: Date) -> AsyncStream<[Scribble]> {
+        let (stream, continuation) = AsyncStream.makeStream(of: [Scribble].self)
+        
+        let cancellable = changeSubject
+            .prepend(())
+            .sink { [weak self] _ in
+                guard let self = self else { return }
+                Task { @MainActor in
+                    do {
+                        let predicate = #Predicate<ScribbleEntity> { scribble in
+                            scribble.createdAt >= startDate && scribble.createdAt < endDate
+                        }
+                        
+                        let descriptor = FetchDescriptor<ScribbleEntity>(predicate: predicate, sortBy: [SortDescriptor(\.createdAt)])
+                        
+                        let entities = try self.modelContext.fetch(descriptor)
+                        continuation.yield(entities.map { $0.toDomain() })
+                    } catch {
+                        continuation.yield([])
+                    }
+                }
+            }
+        
+        continuation.onTermination = { [cancellable] _ in
+            cancellable.cancel()
+        }
+        
+        return stream
+    }
+
+    public func observeScribblesWithExercise(exerciseName: String) -> AsyncStream<[Scribble]> {
+        let (stream, continuation) = AsyncStream.makeStream(of: [Scribble].self)
+        
+        let cancellable = changeSubject
+            .prepend(())
+            .sink { [weak self] _ in
+                guard let self = self else { return }
+                Task { @MainActor in
+                    do {
+                        // SwiftData predicates are limited with nested collections, 
+                        // so we fetch all completed scribbles and filter in-memory for now.
+                        // In a production app with many scribbles, we'd use a more efficient query.
+                        let completedStatus = ScribbleStatus.completed.rawValue
+                        let predicate = #Predicate<ScribbleEntity> { scribble in
+                            scribble.status == completedStatus
+                        }
+                        
+                        let descriptor = FetchDescriptor<ScribbleEntity>(
+                            predicate: predicate,
+                            sortBy: [SortDescriptor(\.createdAt, order: .reverse)]
+                        )
+                        
+                        let entities = try self.modelContext.fetch(descriptor)
+                        let scribbles = entities.map { $0.toDomain() }
+                            .filter { scribble in
+                                scribble.exercises.contains(where: { $0.canonicalName.lowercased() == exerciseName.lowercased() })
+                            }
+                        
+                        continuation.yield(scribbles)
+                    } catch {
+                        continuation.yield([])
+                    }
+                }
+            }
+        
+        continuation.onTermination = { [cancellable] _ in
+            cancellable.cancel()
+        }
+        
+        return stream
+    }
+
     public func addScribble(_ scribble: Scribble) async throws {
         let entity = ScribbleEntity(
             id: scribble.id,
             rawText: scribble.rawText,
             status: scribble.status.rawValue,
             createdAt: scribble.createdAt,
-            parsedJson: scribble.parsedJson,
-            workoutId: scribble.workoutId
+            parsedJson: scribble.parsedJson
         )
         modelContext.insert(entity)
         entity.exercises = try modelContext.syncExercises(for: scribble.exercises)
@@ -75,7 +146,6 @@ public final class ScribbleRepositoryImpl: ScribbleRepository {
             entity.status = scribble.status.rawValue
             entity.createdAt = scribble.createdAt
             entity.parsedJson = scribble.parsedJson
-            entity.workoutId = scribble.workoutId
             
             // Sync exercises
             entity.exercises = try modelContext.syncExercises(for: scribble.exercises)
@@ -105,15 +175,32 @@ public final class ScribbleRepositoryImpl: ScribbleRepository {
         descriptor.fetchLimit = 1
         
         if let scribble = try modelContext.fetch(descriptor).first {
-            // Only delete exercises if they are not linked to a workout
             for exercise in scribble.exercises {
-                if exercise.workout == nil {
-                    modelContext.delete(exercise)
-                }
+                modelContext.delete(exercise)
             }
             scribble.exercises = []
             try modelContext.save()
             changeSubject.send()
         }
+    }
+    
+    public func confirmScribble(_ scribble: Scribble) async throws {
+        let scribbleId = scribble.id
+        let scribblePredicate = #Predicate<ScribbleEntity> { $0.id == scribbleId }
+        var scribbleDescriptor = FetchDescriptor<ScribbleEntity>(predicate: scribblePredicate)
+        scribbleDescriptor.fetchLimit = 1
+        
+        guard let scribbleEntity = try modelContext.fetch(scribbleDescriptor).first else {
+            throw ScribbleError.notFound(scribbleId)
+        }
+        
+        // Mark Scribble as Completed
+        scribbleEntity.status = ScribbleStatus.completed.rawValue
+        
+        // Sync and Link Exercises
+        scribbleEntity.exercises = try modelContext.syncExercises(for: scribble.exercises)
+        
+        try modelContext.save()
+        changeSubject.send()
     }
 }

@@ -14,18 +14,19 @@ public struct CanvasState: Equatable, Sendable {
     public var weightUnit: WeightUnit = .kgs
     public var isInputExpanded: Bool = false
     public var isSettingsVisible: Bool = false
+    public var isAddExerciseSheetVisible: Bool = false
     public var navigationState: NavigationState? = nil
 
     public enum NavigationState: Equatable, Sendable, Identifiable {
         case exerciseDetails(String)
-        case workoutExercises(UUID)
+        case scribbleDetails(UUID)
 
         public var id: String {
             switch self {
             case .exerciseDetails(let name):
                 return "exercise-\(name)"
-            case .workoutExercises(let uuid):
-                return "workout-\(uuid.uuidString)"
+            case .scribbleDetails(let uuid):
+                return "scribble-\(uuid.uuidString)"
             }
         }
     }
@@ -45,6 +46,7 @@ public struct CanvasState: Equatable, Sendable {
         weightUnit: WeightUnit? = nil,
         isInputExpanded: Bool? = nil,
         isSettingsVisible: Bool? = nil,
+        isAddExerciseSheetVisible: Bool? = nil,
         navigationState: NavigationState?? = nil
     ) -> CanvasState {
         var newState = self
@@ -60,6 +62,7 @@ public struct CanvasState: Equatable, Sendable {
         if let weightUnit = weightUnit { newState.weightUnit = weightUnit }
         if let isInputExpanded = isInputExpanded { newState.isInputExpanded = isInputExpanded }
         if let isSettingsVisible = isSettingsVisible { newState.isSettingsVisible = isSettingsVisible }
+        if let isAddExerciseSheetVisible = isAddExerciseSheetVisible { newState.isAddExerciseSheetVisible = isAddExerciseSheetVisible }
         if let navigationState = navigationState { newState.navigationState = navigationState }
         return newState
     }

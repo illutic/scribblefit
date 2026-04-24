@@ -28,7 +28,7 @@ fun ExerciseDetailsScreen(
     viewModel: ExerciseDetailsViewModel
 ) {
     val state by viewModel.state.collectAsState()
-    
+
     ExerciseDetailsContent(
         state = state,
         onIntent = viewModel::onIntent
@@ -62,44 +62,41 @@ private fun ExerciseDetailsContent(
                     .widthIn(max = 600.dp),
                 verticalArrangement = Arrangement.spacedBy(ScribbleFitTheme.spacing.extraLarge)
             ) {
-                state.details?.let { details ->
-                    ExerciseInsightCard(
-                        insight = state.aiInsight,
-                        isGenerating = state.isGeneratingAI,
-                        recommendationLabel = state.recommendationLabel,
-                        noInsightsText = state.noInsightsText
-                    )
-                    
-                    WeeklyStatsCard(
-                        stats = details.weeklyStats,
-                        weightUnit = state.weightUnitLabel,
-                        titleLabel = state.weeklyPerformanceLabel,
-                        activityLabel = state.activityLabel,
-                        sessionsUnitLabel = state.sessionsUnitLabel,
-                        volumeLabel = state.volumeLabel,
-                        maxWeightLabel = state.maxWeightLabel
-                    )
-                    
-                    TrendsSection(
-                        trends = details.trends,
-                        weightUnit = state.weightUnitLabel,
-                        titleLabel = state.trendsLabel,
-                        viewAllLabel = state.viewAllLabel,
-                        current1rmLabel = state.current1rmLabel,
-                        lastVolumeLabel = state.lastVolumeLabel,
-                        onViewAllClick = { /* TODO */ },
-                        getTrendDirectionText = { state.getTrendDirectionText(it) }
-                    )
-                    
-                    HistorySection(
-                        historyCount = details.history.size,
-                        titleLabel = state.historyLabel,
-                        viewAllSessionsText = state.viewAllSessionsText,
-                        totalSessionsText = state.getTotalSessionsText(details.history.size),
-                        onViewHistoryClick = { /* TODO */ }
-                    )
-                }
-                
+                ExerciseInsightCard(
+                    insight = state.aiInsight,
+                    isGenerating = state.isGeneratingAI,
+                    recommendationLabel = state.recommendationLabel,
+                    noInsightsText = state.noInsightsText
+                )
+
+                WeeklyStatsCard(
+                    stats = state.weeklyStats ?: return@Column,
+                    weightUnit = state.weightUnitLabel,
+                    titleLabel = state.weeklyPerformanceLabel,
+                    activityLabel = state.activityLabel,
+                    sessionsUnitLabel = state.sessionsUnitLabel,
+                    volumeLabel = state.volumeLabel,
+                    maxWeightLabel = state.maxWeightLabel
+                )
+
+                TrendsSection(
+                    trends = state.trends ?: return@Column,
+                    weightUnit = state.weightUnitLabel,
+                    titleLabel = state.trendsLabel,
+                    viewAllLabel = state.viewAllLabel,
+                    current1rmLabel = state.current1rmLabel,
+                    onViewAllClick = { /* TODO */ },
+                    getTrendDirectionText = { state.getTrendDirectionText(it) }
+                )
+
+                HistorySection(
+                    historyCount = state.weeklyStats.sessions,
+                    titleLabel = state.historyLabel,
+                    viewAllSessionsText = state.viewAllSessionsText,
+                    totalSessionsText = state.getTotalSessionsText(state.weeklyStats.sessions),
+                    onViewHistoryClick = { /* TODO */ }
+                )
+
                 Spacer(modifier = Modifier.height(ScribbleFitTheme.spacing.large))
             }
         }

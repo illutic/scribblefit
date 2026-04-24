@@ -4,7 +4,6 @@ import com.scribblefit.core.config.domain.ConfigRepository
 import com.scribblefit.core.config.domain.LLMProvider
 import com.scribblefit.core.model.AIInsight
 import com.scribblefit.core.model.Exercise
-import com.scribblefit.core.model.ExercisePerformanceInsight
 import com.scribblefit.feature.ai.domain.LLMEngine
 import com.scribblefit.feature.ai.domain.ParsedWorkoutResult
 
@@ -16,7 +15,7 @@ internal class RoutingLLMEngine(
 
     private suspend fun getActiveEngine(): LLMEngine {
         val config = configRepository.config.value
-        return when (config.preferredLlmProvider) {
+        return when (config.localConfig.preferredLlmProvider) {
             LLMProvider.GEMINI -> geminiEngine
             LLMProvider.LOCAL -> {
                 if (localEngine.isSupported()) {
@@ -36,7 +35,7 @@ internal class RoutingLLMEngine(
         return getActiveEngine().generateInsightsSummary(exercises)
     }
 
-    override suspend fun generateExerciseInsight(history: String): Result<ExercisePerformanceInsight> {
+    override suspend fun generateExerciseInsight(history: String): Result<AIInsight> {
         return getActiveEngine().generateExerciseInsight(history)
     }
 

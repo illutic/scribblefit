@@ -1,25 +1,26 @@
 package com.scribblefit.feature.insights.domain.usecase
 
+import com.scribblefit.core.common.runCatchingWithCancellation
+import com.scribblefit.core.model.CurrentDate
 import com.scribblefit.feature.insights.domain.model.FrequencyData
 import com.scribblefit.feature.insights.domain.repository.InsightsRepository
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flowOn
-import java.time.LocalDate
-import java.time.LocalTime
-import java.time.ZoneId
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.withContext
 
 class GetFrequencyInsightsUseCase(
     private val repository: InsightsRepository,
     private val coroutineDispatcher: CoroutineDispatcher
 ) {
-    operator fun invoke(
-        startDate: LocalDate,
-        endDate: LocalDate
-    ): Flow<FrequencyData> {
-        val startMillis = startDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-        val endMillis = endDate.atTime(LocalTime.MAX).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
-        return repository.getFrequencyInsights(startMillis, endMillis)
-            .flowOn(coroutineDispatcher)
+    suspend operator fun invoke(
+        startDate: CurrentDate,
+        endDate: CurrentDate
+    ): Result<FrequencyData> = withContext(coroutineDispatcher) {
+        runCatchingWithCancellation {
+            repository.getFrequencyInsights(
+                startDate = startDate.startOfDayInMillis,
+                endDate = endDate.startOfDayInMillis
+            ).firstOrNull() ?: error("No frequency data available")
+        }
     }
 }

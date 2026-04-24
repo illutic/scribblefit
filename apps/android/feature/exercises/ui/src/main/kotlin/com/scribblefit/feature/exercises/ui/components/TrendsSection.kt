@@ -18,7 +18,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -33,7 +32,6 @@ fun TrendsSection(
     titleLabel: String,
     viewAllLabel: String,
     current1rmLabel: String,
-    lastVolumeLabel: String,
     onViewAllClick: () -> Unit,
     getTrendDirectionText: @Composable (TrendDirection) -> String,
     modifier: Modifier = Modifier
@@ -51,7 +49,7 @@ fun TrendsSection(
                 fontWeight = FontWeight.Bold,
                 letterSpacing = 1.sp
             )
-            
+
             TextButton(onClick = onViewAllClick) {
                 Text(
                     text = viewAllLabel,
@@ -74,14 +72,8 @@ fun TrendsSection(
         ) {
             TrendItem(
                 label = current1rmLabel,
-                value = "${trends.current1RM.toInt()}$weightUnit",
+                value = "${trends.estimated1RM.toInt()}$weightUnit",
                 direction = trends.trendDirection,
-                getTrendDirectionText = getTrendDirectionText
-            )
-            TrendItem(
-                label = lastVolumeLabel,
-                value = "${trends.lastVolume.toInt()}$weightUnit",
-                direction = trends.lastVolumeTrend,
                 getTrendDirectionText = getTrendDirectionText
             )
         }
@@ -108,7 +100,7 @@ private fun TrendItem(
                 fontWeight = FontWeight.Medium
             )
         }
-        
+
         Row(verticalAlignment = Alignment.CenterVertically) {
             Text(
                 text = value,
@@ -116,9 +108,9 @@ private fun TrendItem(
                 color = ScribbleFitTheme.colors.primary,
                 fontWeight = FontWeight.Bold
             )
-            
+
             Spacer(modifier = Modifier.width(ScribbleFitTheme.spacing.smallLarger))
-            
+
             TrendBadge(
                 direction = direction,
                 text = getTrendDirectionText(direction)
@@ -132,7 +124,6 @@ private fun TrendBadge(direction: TrendDirection, text: String) {
     val color = when (direction) {
         TrendDirection.IMPROVING -> ScribbleFitTheme.colors.successGreen
         TrendDirection.STABLE -> ScribbleFitTheme.colors.midGray
-        TrendDirection.PLATEAUED -> ScribbleFitTheme.colors.warningOrange
         TrendDirection.DECLINING -> ScribbleFitTheme.colors.dangerRed
     }
 

@@ -10,7 +10,7 @@ struct CanvasBodyView: View {
     let emptyText: String
     let onScribbleClick: (Scribble) -> Void
     let onExerciseClick: (String) -> Void
-    let onWorkoutExercisesClick: (UUID) -> Void
+    let onScribbleDetailsClick: (UUID) -> Void
     let onIntent: (CanvasIntent) -> Void
     
     var body: some View {
@@ -40,7 +40,7 @@ struct CanvasBodyView: View {
                                 weightUnit: weightUnit,
                                 onClick: { onScribbleClick(scribble) },
                                 onExerciseClick: onExerciseClick,
-                                onWorkoutExercisesClick: onWorkoutExercisesClick,
+                                onScribbleDetailsClick: onScribbleDetailsClick,
                                 onIntent: onIntent
                             )
                         }
@@ -154,3 +154,4 @@ private extension AIInsight {
         }
     }
 }
+

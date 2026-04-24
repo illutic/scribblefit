@@ -1,15 +1,22 @@
 package com.scribblefit.core.config.domain
 
 data class SystemConfig(
-    val summaryPrompt: String,
-    val suggestionPrompt: String,
-    val insightPrompt: String,
-    val parsePrompt: String,
-    val preferredLlmProvider: LLMProvider,
-    val updatedAt: Long,
-    val weightUnit: Weight,
-    val themePreference: ThemePreference,
-    val isDynamicTheme: Boolean,
+    val localConfig: LocalConfig = LocalConfig(),
+    val remoteConfig: RemoteConfig = RemoteConfig()
+)
+
+data class LocalConfig(
+    val preferredLlmProvider: LLMProvider = LLMProvider.GEMINI,
+    val weightUnit: Weight = Weight.KGS,
+    val themePreference: ThemePreference = ThemePreference.SYSTEM,
+    val isDynamicTheme: Boolean = true,
+)
+
+data class RemoteConfig(
+    val suggestionPrompt: String = SUGGESTION_PROMPT,
+    val summaryPrompt: String = SUMMARY_PROMPT,
+    val insightPrompt: String = INSIGHT_PROMPT,
+    val parsePrompt: String = PARSE_PROMPT,
 ) {
     companion object {
         const val SUGGESTION_PROMPT = """
@@ -25,13 +32,13 @@ data class SystemConfig(
             {{#system}}
             You are ScribbleFit AI, a fitness analysis assistant.
             Generate one actionable training suggestion based on the workout context provided within <workout_context> tags.
-            Output ONLY this JSON (no markdown, no extra text):
-            {
-              "text": "suggestion text", 
-              "emoji": "emoji",
-              "type":"RECOVERY|PATTERN|MILESTONE|REST"
-            }
-            type must be exactly one of: RECOVERY, PATTERN, MILESTONE, REST
+            Output ONLY this JSON schema (no markdown, no extra text):
+            [
+              {
+                "insightType": "advice",
+                "text": "A suggestion for recovery, pattern, milestone or rest"
+              }
+            ]
             {{/system}}
 
             Context:
@@ -88,13 +95,10 @@ data class SystemConfig(
             Analyze the exercise history provided within <exercise_history> tags and generate a performance insight.
             Output ONLY this JSON (no markdown, no extra text):
             {
-              "estimated1RM": number,
-              "prDetected": true|false,
-              "trendDirection":"IMPROVING|STABLE|PLATEAUED|DECLINING",
-              "breakdownText":"2-3 sentence analysis"
+              "insightType": "trend",
+              "text": "2-3 sentence analysis of progress, estimated 1RM, and trends."
             }
-            Use Epley formula (weight * (1 + reps/30)) for 1RM estimate. 
-            trendDirection must be exactly one of: IMPROVING, STABLE, PLATEAUED, DECLINING
+            Use Epley formula (weight * (1 + reps/30)) for 1RM estimate in the text.
             {{/system}}
 
             History:
@@ -114,19 +118,15 @@ data class SystemConfig(
             {{#system}}
             You are ScribbleFit AI, a fitness parsing assistant.
             Parse raw gym shorthand provided within <workout_scribble> tags into this JSON schema:
-            {
-              "exercises": [{ 
-                "canonical_name": "String", 
-                "muscle_group": "String", 
-                "sets": [{ "weight": number|null, "reps": integer, "setNumber": integer, "rpe": number|null, "notes": "String|null" }],
-                "estimated_1rm": number|null,
-                "intensity": number|null
-              }]
-            }
-            Use Epley formula (weight * (1 + reps/30)) for 1RM estimate if possible. 
-            Intensity should be a decimal (e.g. 0.85 for 85%).
+            [
+              { 
+                "name": "String", 
+                "muscleGroup": "String", 
+                "sets": [{ "setNumber": integer, "reps": integer, "weight": number|null, "rpe": number|null, "notes": "String|null" }]
+              }
+            ]
             Reps are always required, weight can be null if not provided or not parsable.
-            Output ONLY valid JSON. No extra text, no markdown, no apologies. If you can't parse any exercises, return {"exercises": []}.
+            Output ONLY valid JSON. No extra text, no markdown, no apologies. If you can't parse any exercises, return [].
             {{/system}}
 
             Input: {{rawText}}

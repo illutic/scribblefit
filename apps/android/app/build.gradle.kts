@@ -40,8 +40,6 @@ dependencies {
     implementation(project(":feature:exercises:data"))
     implementation(project(":feature:exercises:domain"))
     implementation(project(":feature:exercises:ui"))
-    implementation(project(":feature:workouts:data"))
-    implementation(project(":feature:workouts:domain"))
     implementation(project(":feature:sets:data"))
     implementation(project(":feature:sets:domain"))
     implementation(project(":feature:scribble:data"))
@@ -50,8 +48,6 @@ dependencies {
     implementation(project(":feature:insights:data"))
     implementation(project(":feature:insights:ui"))
 
-    implementation(project(":feature:ledger:domain"))
-    implementation(project(":feature:ledger:data"))
     implementation(project(":feature:ledger:ui"))
 
     implementation(project(":feature:canvas:ui"))

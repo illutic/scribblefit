@@ -10,9 +10,10 @@ class UpdateExerciseUseCase(
     private val repository: ExerciseRepository,
     private val coroutineDispatcher: CoroutineDispatcher
 ) {
-    suspend operator fun invoke(exercise: Exercise): Result<Unit> = withContext(coroutineDispatcher) {
-        runCatchingWithCancellation {
-            repository.updateExercise(exercise)
+    suspend operator fun invoke(exercise: Exercise): Result<Unit> =
+        withContext(coroutineDispatcher) {
+            runCatchingWithCancellation {
+                repository.updateExercise(exercise)
+            }
         }
-    }
 }

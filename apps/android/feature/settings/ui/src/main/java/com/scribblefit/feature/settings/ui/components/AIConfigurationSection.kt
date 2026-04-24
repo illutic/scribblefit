@@ -22,11 +22,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.scribblefit.core.config.domain.LLMProvider
 import com.scribblefit.core.designsystem.ScribbleFitTheme
-import com.scribblefit.feature.settings.ui.SettingsIntent
-import com.scribblefit.feature.settings.ui.SettingsState
 import com.scribblefit.core.designsystem.SegmentedSelector
 import com.scribblefit.feature.settings.ui.SettingsDivider
+import com.scribblefit.feature.settings.ui.SettingsIntent
 import com.scribblefit.feature.settings.ui.SettingsSection
+import com.scribblefit.feature.settings.ui.SettingsState
 
 @Composable
 internal fun AIConfigurationSection(
@@ -46,9 +46,9 @@ internal fun AIConfigurationSection(
                     fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
                 )
                 Text(
-                    text = if (state.llmProvider == LLMProvider.GEMINI) 
-                        "Cloud-based parsing via Gemini for Firebase" 
-                    else 
+                    text = if (state.llmProvider == LLMProvider.GEMINI)
+                        "Cloud-based parsing via Gemini for Firebase"
+                    else
                         "On-device parsing via Gemini Nano",
                     style = ScribbleFitTheme.typography.labelMedium,
                     color = ScribbleFitTheme.colors.midGray

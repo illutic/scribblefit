@@ -1,12 +1,11 @@
 package com.scribblefit.feature.canvas.ui
 
-import android.content.res.Configuration
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
-import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.intl.Locale
 import com.scribblefit.core.config.domain.Weight
+import com.scribblefit.core.model.AIInsight
 import com.scribblefit.core.model.Scribble
 import com.scribblefit.core.model.ScribbleStatus
 import com.scribblefit.core.navigation.BottomBarState
@@ -20,9 +19,9 @@ data class ExerciseUiModel(
     val id: Long,
     val name: String,
     val formattedSummary: String,
-    val estimated1RMValue: Int?,
-    val intensityValue: Int?,
-    val improvementValue: Int?,
+    val estimated1RMValue: Float?,
+    val intensityValue: Float?,
+    val improvementValue: Float?,
     val hasStats: Boolean,
     val firstSetWeight: Float,
     val totalSets: Int,
@@ -46,12 +45,13 @@ data class CanvasState(
     val scribbleUiModels: List<ScribbleUiModel> = emptyList(),
     val selectedScribble: Scribble? = null,
     val bottomBarState: BottomBarState = BottomBarState(),
-    val aiInsights: List<com.scribblefit.core.model.AIInsight> = emptyList(),
+    val aiInsights: List<AIInsight> = emptyList(),
     val isGeneratingInsights: Boolean = false,
     val isDatePickerVisible: Boolean = false,
     val weightUnit: Weight = Weight.KGS,
     val showDeleteConfirmation: Boolean = false,
     val deletingScribbleId: Long? = null,
+    val isAddExerciseSheetVisible: Boolean = false,
 ) {
     val dateString: String by lazy { currentDate.format(dateFormatter) }
 
@@ -72,9 +72,10 @@ data class CanvasState(
 
     @Composable
     @ReadOnlyComposable
-    fun getEstimated1RM(exercise: ExerciseUiModel): String? = exercise.estimated1RMValue?.let {
-        stringResource(R.string.canvas_estimated_1rm_value_format, it, weightUnitLabel)
-    }
+    fun getEstimated1RM(exercise: ExerciseUiModel): String? =
+        exercise.estimated1RMValue?.let {
+            stringResource(R.string.canvas_estimated_1rm_value_format, it, weightUnitLabel)
+        }
 
     @Composable
     @ReadOnlyComposable
@@ -190,6 +191,7 @@ data class CanvasState(
             stringResource(R.string.canvas_weight_unit_lb)
         }
 
-    val isLandscape: Boolean
-        @Composable @ReadOnlyComposable get() = LocalConfiguration.current.orientation == Configuration.ORIENTATION_LANDSCAPE
+    val addSetLabel: String
+        @Composable @ReadOnlyComposable
+        get() = stringResource(R.string.canvas_add_set)
 }

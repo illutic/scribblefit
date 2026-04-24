@@ -56,7 +56,7 @@ fun HistorySection(
                     tint = ScribbleFitTheme.colors.primary,
                     modifier = Modifier.size(24.dp)
                 )
-                
+
                 Column(
                     modifier = Modifier
                         .padding(horizontal = ScribbleFitTheme.spacing.medium)
@@ -74,7 +74,7 @@ fun HistorySection(
                         color = ScribbleFitTheme.colors.midGray
                     )
                 }
-                
+
                 Icon(
                     imageVector = Icons.Default.KeyboardArrowRight,
                     contentDescription = null,

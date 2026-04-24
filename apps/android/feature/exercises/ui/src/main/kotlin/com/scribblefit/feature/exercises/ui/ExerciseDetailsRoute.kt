@@ -6,11 +6,11 @@ import androidx.hilt.navigation.compose.hiltViewModel
 
 @Composable
 fun ExerciseDetailsRoute(
-    exerciseName: String,
+    exerciseId: Long,
     viewModel: ExerciseDetailsViewModel = hiltViewModel()
 ) {
-    LaunchedEffect(exerciseName) {
-        viewModel.onIntent(ExerciseDetailsIntent.LoadDetails(exerciseName))
+    LaunchedEffect(exerciseId) {
+        viewModel.onIntent(ExerciseDetailsIntent.LoadDetails(exerciseId))
     }
     ExerciseDetailsScreen(viewModel = viewModel)
 }

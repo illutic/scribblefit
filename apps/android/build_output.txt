@@ -1,0 +1,121 @@
+> Task :build-logic:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :build-logic:pluginDescriptors UP-TO-DATE
+> Task :build-logic:processResources UP-TO-DATE
+> Task :build-logic:compileKotlin
+> Task :build-logic:compileJava NO-SOURCE
+> Task :build-logic:classes UP-TO-DATE
+> Task :build-logic:jar UP-TO-DATE
+> Task :core:common:preBuild UP-TO-DATE
+> Task :core:common:preDebugBuild UP-TO-DATE
+> Task :core:common:writeDebugAarMetadata UP-TO-DATE
+> Task :core:designsystem:preBuild UP-TO-DATE
+> Task :core:designsystem:preDebugBuild UP-TO-DATE
+> Task :core:designsystem:writeDebugAarMetadata UP-TO-DATE
+> Task :core:model:preBuild UP-TO-DATE
+> Task :core:model:preDebugBuild UP-TO-DATE
+> Task :core:model:writeDebugAarMetadata UP-TO-DATE
+> Task :core:navigation:preBuild UP-TO-DATE
+> Task :core:navigation:preDebugBuild UP-TO-DATE
+> Task :core:navigation:writeDebugAarMetadata UP-TO-DATE
+> Task :feature:ledger:domain:preBuild UP-TO-DATE
+> Task :feature:ledger:domain:preDebugBuild UP-TO-DATE
+> Task :feature:ledger:domain:writeDebugAarMetadata UP-TO-DATE
+> Task :feature:ledger:ui:preBuild UP-TO-DATE
+> Task :feature:ledger:ui:preDebugBuild UP-TO-DATE
+> Task :feature:workouts:domain:preBuild UP-TO-DATE
+> Task :feature:workouts:domain:preDebugBuild UP-TO-DATE
+> Task :feature:workouts:domain:writeDebugAarMetadata UP-TO-DATE
+> Task :feature:ledger:ui:checkDebugAarMetadata UP-TO-DATE
+> Task :feature:ledger:ui:mergeDebugJniLibFolders UP-TO-DATE
+> Task :feature:ledger:ui:mergeDebugNativeLibs NO-SOURCE
+> Task :feature:ledger:ui:stripDebugDebugSymbols NO-SOURCE
+> Task :feature:ledger:ui:copyDebugJniLibsProjectAndLocalJars UP-TO-DATE
+> Task :core:common:generateDebugResources UP-TO-DATE
+> Task :core:common:packageDebugResources UP-TO-DATE
+> Task :core:common:processDebugNavigationResources UP-TO-DATE
+> Task :core:common:parseDebugLocalResources UP-TO-DATE
+> Task :core:common:generateDebugRFile UP-TO-DATE
+> Task :core:common:compileDebugKotlin UP-TO-DATE
+> Task :core:common:javaPreCompileDebug UP-TO-DATE
+> Task :core:common:compileDebugJavaWithJavac NO-SOURCE
+> Task :core:common:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :core:designsystem:generateDebugResources UP-TO-DATE
+> Task :core:designsystem:packageDebugResources UP-TO-DATE
+> Task :core:designsystem:processDebugNavigationResources UP-TO-DATE
+> Task :core:designsystem:parseDebugLocalResources UP-TO-DATE
+> Task :core:designsystem:generateDebugRFile UP-TO-DATE
+> Task :core:navigation:generateDebugResources UP-TO-DATE
+> Task :core:navigation:packageDebugResources UP-TO-DATE
+> Task :core:navigation:processDebugNavigationResources UP-TO-DATE
+> Task :core:navigation:parseDebugLocalResources UP-TO-DATE
+> Task :core:navigation:generateDebugRFile UP-TO-DATE
+> Task :core:navigation:compileDebugKotlin UP-TO-DATE
+> Task :core:navigation:javaPreCompileDebug UP-TO-DATE
+> Task :core:navigation:compileDebugJavaWithJavac NO-SOURCE
+> Task :core:navigation:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :core:designsystem:compileDebugKotlin UP-TO-DATE
+> Task :core:designsystem:javaPreCompileDebug UP-TO-DATE
+> Task :core:designsystem:compileDebugJavaWithJavac NO-SOURCE
+> Task :core:designsystem:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :core:model:generateDebugResources UP-TO-DATE
+> Task :core:model:packageDebugResources UP-TO-DATE
+> Task :core:model:processDebugNavigationResources UP-TO-DATE
+> Task :core:model:parseDebugLocalResources UP-TO-DATE
+> Task :core:model:generateDebugRFile UP-TO-DATE
+> Task :core:model:compileDebugKotlin UP-TO-DATE
+> Task :core:model:javaPreCompileDebug UP-TO-DATE
+> Task :core:model:compileDebugJavaWithJavac NO-SOURCE
+> Task :core:model:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :feature:ledger:domain:generateDebugResources UP-TO-DATE
+> Task :feature:ledger:domain:packageDebugResources UP-TO-DATE
+> Task :feature:ledger:domain:processDebugNavigationResources UP-TO-DATE
+> Task :feature:ledger:domain:parseDebugLocalResources UP-TO-DATE
+> Task :feature:ledger:domain:generateDebugRFile UP-TO-DATE
+> Task :feature:workouts:domain:generateDebugResources UP-TO-DATE
+> Task :feature:workouts:domain:packageDebugResources UP-TO-DATE
+> Task :feature:workouts:domain:processDebugNavigationResources UP-TO-DATE
+> Task :feature:workouts:domain:parseDebugLocalResources UP-TO-DATE
+> Task :feature:workouts:domain:generateDebugRFile UP-TO-DATE
+> Task :feature:workouts:domain:compileDebugKotlin UP-TO-DATE
+> Task :feature:workouts:domain:javaPreCompileDebug UP-TO-DATE
+> Task :feature:workouts:domain:compileDebugJavaWithJavac NO-SOURCE
+> Task :feature:workouts:domain:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :feature:ledger:domain:compileDebugKotlin UP-TO-DATE
+> Task :feature:ledger:domain:javaPreCompileDebug UP-TO-DATE
+> Task :feature:ledger:domain:compileDebugJavaWithJavac NO-SOURCE
+> Task :feature:ledger:domain:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :feature:ledger:ui:generateDebugResources UP-TO-DATE
+> Task :feature:ledger:ui:packageDebugResources UP-TO-DATE
+> Task :feature:ledger:ui:processDebugNavigationResources UP-TO-DATE
+> Task :feature:ledger:ui:parseDebugLocalResources UP-TO-DATE
+> Task :feature:ledger:ui:generateDebugRFile UP-TO-DATE
+> Task :feature:ledger:ui:extractDeepLinksForAarDebug UP-TO-DATE
+> Task :feature:ledger:ui:generateDebugAssets UP-TO-DATE
+> Task :feature:ledger:ui:mergeDebugAssets UP-TO-DATE
+> Task :core:common:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :core:designsystem:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :core:model:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :core:navigation:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :feature:ledger:domain:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :feature:ledger:ui:javaPreCompileDebug UP-TO-DATE
+> Task :feature:workouts:domain:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :feature:ledger:ui:prepareDebugArtProfile UP-TO-DATE
+> Task :feature:ledger:ui:prepareLintJarForPublish UP-TO-DATE
+> Task :feature:ledger:ui:processDebugManifest UP-TO-DATE
+> Task :feature:ledger:ui:writeDebugAarMetadata UP-TO-DATE
+> Task :feature:ledger:ui:kspDebugKotlin
+> Task :feature:ledger:ui:extractDebugAnnotations
+> Task :feature:ledger:ui:compileDebugKotlin
+> Task :feature:ledger:ui:compileDebugJavaWithJavac
+> Task :feature:ledger:ui:processDebugJavaRes UP-TO-DATE
+> Task :feature:ledger:ui:mergeDebugJavaResource UP-TO-DATE
+> Task :feature:ledger:ui:transformDebugClassesWithAsm
+> Task :feature:ledger:ui:mergeDebugGeneratedProguardFiles UP-TO-DATE
+> Task :feature:ledger:ui:mergeDebugConsumerProguardFiles UP-TO-DATE
+> Task :feature:ledger:ui:syncDebugLibJars
+> Task :feature:ledger:ui:bundleDebugAar
+> Task :feature:ledger:ui:assembleDebug
+
+BUILD SUCCESSFUL in 7s
+90 actionable tasks: 8 executed, 82 up-to-date
+Consider enabling configuration cache to speed up this build: https://docs.gradle.org/9.4.0/userguide/configuration_cache_enabling.html

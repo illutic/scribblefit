@@ -30,7 +30,7 @@ internal fun StatsRow(state: InsightsState) {
         horizontalArrangement = Arrangement.spacedBy(ScribbleFitTheme.spacing.small),
     ) {
         StatCard(
-            value = frequency.totalWorkouts.toString(),
+            value = frequency.totalExercises.toString(),
             label = state.getSessionsLabel(),
             modifier = Modifier.weight(1f),
         )

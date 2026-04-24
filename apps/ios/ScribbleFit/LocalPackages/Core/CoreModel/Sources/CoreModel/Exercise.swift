@@ -6,8 +6,10 @@ public struct Exercise: Identifiable, Equatable, Sendable, Codable {
     public let muscleGroup: String
     public let sets: [ExerciseSet]
     public let isDraft: Bool
+    public let createdAt: Date
     public let estimated1RM: Float?
     public let intensity: Float?
+    public let improvement: Float?
 
     public init(
         id: UUID = UUID(),
@@ -15,16 +17,20 @@ public struct Exercise: Identifiable, Equatable, Sendable, Codable {
         muscleGroup: String,
         sets: [ExerciseSet] = [],
         isDraft: Bool = false,
+        createdAt: Date = Date(),
         estimated1RM: Float? = nil,
-        intensity: Float? = nil
+        intensity: Float? = nil,
+        improvement: Float? = nil
     ) {
         self.id = id
         self.canonicalName = canonicalName
         self.muscleGroup = muscleGroup
         self.sets = sets
         self.isDraft = isDraft
+        self.createdAt = createdAt
         self.estimated1RM = estimated1RM
         self.intensity = intensity
+        self.improvement = improvement
     }
 
     public func summary(weightUnit: WeightUnit) -> String {
@@ -68,8 +74,10 @@ public struct Exercise: Identifiable, Equatable, Sendable, Codable {
         muscleGroup: String? = nil,
         sets: [ExerciseSet]? = nil,
         isDraft: Bool? = nil,
-        estimated1RM: Float? = nil,
-        intensity: Float? = nil
+        createdAt: Date? = nil,
+        estimated1RM: Float?? = nil,
+        intensity: Float?? = nil,
+        improvement: Float?? = nil
     ) -> Exercise {
         return .init(
             id: id ?? self.id,
@@ -77,8 +85,10 @@ public struct Exercise: Identifiable, Equatable, Sendable, Codable {
             muscleGroup: muscleGroup ?? self.muscleGroup,
             sets: sets ?? self.sets,
             isDraft: isDraft ?? self.isDraft,
+            createdAt: createdAt ?? self.createdAt,
             estimated1RM: estimated1RM ?? self.estimated1RM,
-            intensity: intensity ?? self.intensity
+            intensity: intensity ?? self.intensity,
+            improvement: improvement ?? self.improvement
         )
     }
 }

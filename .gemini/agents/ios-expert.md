@@ -21,14 +21,16 @@ You are a senior iOS engineer specializing in ScribbleFit's Pure SwiftUI MVI arc
 - **No Base Classes:** Every `Store`, `Repository`, and `UseCase` must be autonomous.
 - **Store (ViewModel):** `@Observable` and `@MainActor` classes. Orchestrate UI state via Use Cases. Zero business logic.
 - **State:** A simple `struct` representing the entire UI state. Resolves all UI strings (labels, hints, and formatted messages) using `LocalizedStringResource` or pre-resolved `String` values.
+- **Mutable State for Bindings:** Any property in a `State` struct that is bound to a UI control (e.g., `TextField`, `Toggle`, `Picker`) MUST be declared as `var` to support SwiftUI's two-way bindings.
 - **Formatting:** Complex string formatting logic (e.g., grouping sets like "3x10, 1x8 @ 80kg") MUST be encapsulated in Domain Use Cases (e.g., `FormatExerciseSummaryUseCase`) to ensure parity with Android. 
 - **Pure State Enforcement:** `State` structs MUST remain pure data containers. Use Cases MUST NOT be orchestrated within the `State` or `Store` initializers. Stores MUST inject formatting Use Cases and pass pre-mapped UI models to the `State`.
 - **Immutable State Updates:** `State` structs and Domain models MUST implement a `copy()` function to support Kotlin-style immutable updates (e.g., `state = state.copy(isLoading: true)`). Avoid direct property mutation in Stores.
 - **Intent:** User actions handled by the Store.
+- **Explicit Numeric Casting:** Avoid relying on implicit conversion for optional numeric types. When assigning an `Int` to a `Float?`, use `Float(value)`. For literals, use the correct suffix or decimal point (e.g., `0.0` for `Float`).
 - **Best-in-Class Defaults (Editorial Minimalism):** Challenge the need for new user-facing settings. Prefer hardcoding optimal defaults (e.g., `gemini-2.0-flash`) in the data layer to reduce domain and state complexity.
 - **Use Cases:** The *only* place for business logic. Must conform to `Sendable` and be isolated to `@MainActor` when interacting with the Store or Repository.
     - **Reactive Streams:** Use cases returning data streams MUST return an `AsyncStream`.
-    - **Cross-Feature Visibility:** Use Cases intended for cross-feature consumption MUST be marked `public` (including their initializers).
+    - **Cross-Feature Visibility:** Use Cases, Views, and Components intended for cross-feature consumption MUST be marked `public` (including their explicit initializers) to ensure visibility across SPM targets.
 
 ### 2. UI & Design System
 - **Contextual Splitting:** Views MUST be split into contextual components (e.g., `HeaderView`, `BodyView`, `FooterView`) implemented as separate `View` types.
@@ -46,6 +48,7 @@ You are a senior iOS engineer specializing in ScribbleFit's Pure SwiftUI MVI arc
 
 ### 3. Data & Persistence
 - **Offline-First:** SwiftData is the primary "source of truth."
+- **Entity Naming Parity:** `SwiftData` entity names MUST strictly mirror their Domain model equivalents (e.g., `Exercise` -> `ExerciseEntity`) to prevent "entity mismatch" bugs during migration or mapping.
 - **Reactive Repositories:** Repository protocols defined in Domain. Stream-based getters MUST be reactive (`AsyncStream`).
     - **Object Identity Synchronization:** Every `save` or `insert` operation MUST perform a lookup by ID before creating a new entity. If an entity with the same ID exists in the `ModelContext`, it MUST be updated in place. This prevents duplicates and maintains the integrity of the object graph.
     - **Intelligent Synchronization Pattern:** When updating a parent entity that owns shared child relationships (e.g., `Scribble` -> `Exercise`), the Repository MUST NOT perform a blind "clear and re-insert". Instead: (1) Match existing entities by ID and update their properties in place, (2) Only call `modelContext.delete(child)` if the child has no remaining parent relationships (orphan-check), (3) Insert only truly new entities, and (4) Recursively apply this sync to deep relationships (e.g., `Exercise` -> `Set`).

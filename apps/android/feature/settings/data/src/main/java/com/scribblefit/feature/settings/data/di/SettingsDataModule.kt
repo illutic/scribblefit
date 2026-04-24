@@ -1,8 +1,8 @@
 package com.scribblefit.feature.settings.data.di
 
 import com.scribblefit.core.config.domain.ConfigRepository
-import com.scribblefit.core.database.dao.ScribbleTrackerDao
-import com.scribblefit.core.database.dao.WorkoutDao
+import com.scribblefit.core.coroutines.CoroutineDispatcherProvider
+import com.scribblefit.core.database.ScribbleFitDatabase
 import com.scribblefit.feature.ai.domain.LLMEngine
 import com.scribblefit.feature.ai.domain.LocalEngine
 import com.scribblefit.feature.settings.data.SettingsRepositoryImpl
@@ -25,13 +25,13 @@ internal object SettingsDataModule {
     @Provides
     @Singleton
     fun provideSettingsRepository(
-        scribbleTrackerDao: ScribbleTrackerDao,
-        workoutDao: WorkoutDao,
-        json: Json
+        database: ScribbleFitDatabase,
+        json: Json,
+        coroutineProvider: CoroutineDispatcherProvider
     ): SettingsRepository = SettingsRepositoryImpl(
-        scribbleTrackerDao = scribbleTrackerDao,
-        workoutDao = workoutDao,
-        json = json
+        database = database,
+        json = json,
+        coroutineDispatcher = coroutineProvider.io()
     )
 
     @Provides

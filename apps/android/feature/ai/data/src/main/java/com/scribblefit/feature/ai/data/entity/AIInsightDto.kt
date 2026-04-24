@@ -7,9 +7,12 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 internal enum class InsightTypeDto {
-    @SerialName("summary") SUMMARY,
-    @SerialName("trend") TREND,
-    @SerialName("advice") ADVICE
+    @SerialName("summary")
+    SUMMARY,
+    @SerialName("trend")
+    TREND,
+    @SerialName("advice")
+    ADVICE
 }
 
 @Serializable

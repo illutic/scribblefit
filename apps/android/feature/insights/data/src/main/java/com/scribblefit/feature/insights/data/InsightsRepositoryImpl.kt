@@ -1,120 +1,102 @@
 package com.scribblefit.feature.insights.data
 
-import com.scribblefit.core.coroutines.CoroutineDispatcherProvider
-import com.scribblefit.core.database.dao.WorkoutDao
+import com.scribblefit.core.database.dao.ExerciseDao
+import com.scribblefit.core.database.entity.exercise.toDomain
 import com.scribblefit.core.model.AIInsight
-import com.scribblefit.core.model.Exercise
-import com.scribblefit.core.model.InsightType
 import com.scribblefit.feature.ai.domain.LLMEngine
 import com.scribblefit.feature.insights.domain.model.FrequencyData
 import com.scribblefit.feature.insights.domain.model.MuscleGroupDistribution
 import com.scribblefit.feature.insights.domain.model.VolumeDataPoint
 import com.scribblefit.feature.insights.domain.repository.InsightsRepository
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
+import java.time.Duration
 import java.time.Instant
-import java.time.ZoneId
-import java.time.temporal.ChronoUnit
-import javax.inject.Inject
 
-class InsightsRepositoryImpl @Inject constructor(
-    private val workoutDao: WorkoutDao,
+class InsightsRepositoryImpl(
+    private val exerciseDao: ExerciseDao,
     private val llmEngine: LLMEngine,
-    private val dispatcherProvider: CoroutineDispatcherProvider
+    private val coroutineDispatcher: CoroutineDispatcher
 ) : InsightsRepository {
-
     override fun getVolumeInsights(
         startDate: Long,
         endDate: Long
-    ): Flow<List<VolumeDataPoint>> {
-        return workoutDao.getWorkoutsWithAllDetailsInRange(startDate, endDate).map { workouts ->
-            workouts.map { workoutWithDetails ->
-                val totalVolume = workoutWithDetails.exercises.sumOf { exerciseWithDetails ->
-                    exerciseWithDetails.sets.sumOf { set ->
-                        ((set.weight ?: 0f) * set.reps).toDouble()
+    ): Flow<List<VolumeDataPoint>> =
+        exerciseDao.getExercisesWithSetsInRange(startDate, endDate)
+            .flowOn(coroutineDispatcher)
+            .map { exercisesWithSets ->
+                val exercises = exercisesWithSets.map { it.toDomain() }
+                val volumeByDay = exercises
+                    .groupBy { exercise -> exercise.createdAt }
+                    .mapValues { (_, exercisesOnDay) ->
+                        exercisesOnDay.sumOf { exercise ->
+                            exercise.sets.sumOf { set ->
+                                set.reps * (set.weight?.toDouble() ?: 0.0)
+                            }
+                        }
                     }
-                }.toFloat()
 
-                VolumeDataPoint(
-                    date = Instant.ofEpochMilli(workoutWithDetails.workout.workoutDate)
-                        .atZone(ZoneId.systemDefault())
-                        .toLocalDate(),
-                    volume = totalVolume
-                )
+                volumeByDay
+                    .map { (timestamp, volume) -> VolumeDataPoint(timestamp, volume.toFloat()) }
+                    .sortedBy { it.date }
             }
-        }
-    }
 
     override fun getFrequencyInsights(
         startDate: Long,
         endDate: Long
-    ): Flow<FrequencyData> {
-        return workoutDao.getWorkoutsWithAllDetailsInRange(startDate, endDate).map { workouts ->
-            if (workouts.isEmpty()) return@map FrequencyData(0, 0f, 0)
+    ): Flow<FrequencyData> =
+        exerciseDao.getExercisesWithSetsInRange(startDate, endDate)
+            .flowOn(coroutineDispatcher)
+            .map { exercisesWithSets ->
+                val exercises = exercisesWithSets.map { it.toDomain() }
+                val totalExercises = exercises.size
 
-            val totalWorkouts = workouts.size
-            val totalExercises = workouts.sumOf { it.exercises.size }
-            val firstWorkoutDate = Instant.ofEpochMilli(workouts.first().workout.workoutDate)
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate()
-            val lastWorkoutDate = Instant.ofEpochMilli(workouts.last().workout.workoutDate)
-                .atZone(ZoneId.systemDefault())
-                .toLocalDate()
+                val startDate = Instant.ofEpochMilli(startDate)
+                val endDate = Instant.ofEpochMilli(endDate)
+                val weeks = Duration.between(startDate, endDate).toDays() / 7
+                val workoutsPerWeek = totalExercises / weeks
 
-            val weeks =
-                ChronoUnit.WEEKS.between(firstWorkoutDate, lastWorkoutDate).coerceAtLeast(1L)
-            val workoutsPerWeek = totalWorkouts.toFloat() / weeks.toFloat()
-
-            FrequencyData(totalWorkouts, workoutsPerWeek, totalExercises)
-        }
-    }
+                FrequencyData(
+                    workoutsPerWeek = workoutsPerWeek,
+                    totalExercises = totalExercises
+                )
+            }
 
     override fun getMuscleDistributionInsights(
         startDate: Long,
         endDate: Long
-    ): Flow<List<MuscleGroupDistribution>> {
-        return workoutDao.getWorkoutsWithAllDetailsInRange(startDate, endDate).map { workouts ->
-            val muscleGroupCounts = mutableMapOf<String, Int>()
-            var totalExercises = 0
+    ): Flow<List<MuscleGroupDistribution>> =
+        exerciseDao.getExercisesWithSetsInRange(startDate, endDate)
+            .flowOn(coroutineDispatcher)
+            .map { exercisesWithSets ->
+                val exercises = exercisesWithSets.map { it.toDomain() }
+                val muscleGroupCounts = exercises
+                    .map { it.muscleGroup }
+                    .groupingBy { it }
+                    .eachCount()
 
-            workouts.forEach { workoutWithDetails ->
-                workoutWithDetails.exercises.forEach { exerciseWithDetails ->
-                    val muscleGroup = exerciseWithDetails.exercise.muscleGroup
-                    muscleGroupCounts[muscleGroup] =
-                        muscleGroupCounts.getOrDefault(muscleGroup, 0) + 1
-                    totalExercises++
-                }
-            }
-
-            if (totalExercises == 0) return@map emptyList()
-
-            muscleGroupCounts.map { (muscleGroup, count) ->
-                MuscleGroupDistribution(
-                    muscleGroup = muscleGroup,
-                    percentage = (count.toFloat() / totalExercises.toFloat()) * 100f
-                )
-            }.sortedByDescending { it.percentage }
-        }
-    }
-
-    override suspend fun getAIOverview(exercises: List<Exercise>): Result<List<AIInsight>> =
-        withContext(dispatcherProvider.io()) {
-            try {
-                if (exercises.isEmpty()) {
-                    return@withContext Result.success(
-                        listOf(
-                            AIInsight(
-                                InsightType.SUMMARY,
-                                "Start your session by scribbling your first workout!"
-                            )
-                        )
+                val totalMuscleGroups = muscleGroupCounts.values.sum().toFloat()
+                muscleGroupCounts.map { (muscleGroup, count) ->
+                    MuscleGroupDistribution(
+                        muscleGroup = muscleGroup,
+                        percentage = (count / totalMuscleGroups) * 100f
                     )
-                }
-
-                llmEngine.generateInsightsSummary(exercises)
-            } catch (e: Exception) {
-                Result.failure(e)
+                }.sortedByDescending { it.percentage }
             }
-        }
+
+    override suspend fun getAIOverview(
+        startDate: Long,
+        endDate: Long
+    ): List<AIInsight> = withContext(coroutineDispatcher) {
+        val exercisesWithSets = exerciseDao.getExercisesWithSetsInRange(startDate, endDate)
+            .firstOrNull() ?: return@withContext emptyList()
+        val exercises = exercisesWithSets.map { it.toDomain() }
+
+        if (exercises.isEmpty()) return@withContext emptyList()
+        llmEngine.generateInsightsSummary(exercises).getOrThrow()
+    }
 }

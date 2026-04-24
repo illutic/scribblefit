@@ -6,7 +6,6 @@ public struct Scribble: Identifiable, Equatable, Sendable, Codable {
     public var status: ScribbleStatus
     public let createdAt: Date
     public var parsedJson: String?
-    public var workoutId: UUID?
     public var exercises: [Exercise]
 
     public init(
@@ -15,7 +14,6 @@ public struct Scribble: Identifiable, Equatable, Sendable, Codable {
         status: ScribbleStatus,
         createdAt: Date = Date(),
         parsedJson: String? = nil,
-        workoutId: UUID? = nil,
         exercises: [Exercise] = []
     ) {
         self.id = id
@@ -23,7 +21,6 @@ public struct Scribble: Identifiable, Equatable, Sendable, Codable {
         self.status = status
         self.createdAt = createdAt
         self.parsedJson = parsedJson
-        self.workoutId = workoutId
         self.exercises = exercises
     }
 
@@ -31,14 +28,12 @@ public struct Scribble: Identifiable, Equatable, Sendable, Codable {
         rawText: String? = nil,
         status: ScribbleStatus? = nil,
         parsedJson: String?? = nil,
-        workoutId: UUID?? = nil,
         exercises: [Exercise]? = nil
     ) -> Scribble {
         var newScribble = self
         if let rawText = rawText { newScribble.rawText = rawText }
         if let status = status { newScribble.status = status }
         if let parsedJson = parsedJson { newScribble.parsedJson = parsedJson }
-        if let workoutId = workoutId { newScribble.workoutId = workoutId }
         if let exercises = exercises { newScribble.exercises = exercises }
         return newScribble
     }

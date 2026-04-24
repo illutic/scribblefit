@@ -10,14 +10,29 @@ import com.scribblefit.feature.canvas.ui.ScribbleUiModel
 internal fun ScribbleCard(
     state: CanvasState,
     scribble: ScribbleUiModel,
-    onClick: () -> Unit,
-    onExerciseClick: ((exerciseName: String) -> Unit),
     onIntent: (CanvasIntent) -> Unit
 ) {
     when (scribble.status) {
-        ScribbleStatus.PENDING, ScribbleStatus.PARSING -> PendingScribbleCard(state, scribble)
-        ScribbleStatus.SUCCESS -> ParsedScribbleCard(state, scribble, onClick)
-        ScribbleStatus.COMPLETED -> LoggedScribbleCard(state, scribble, onClick, onExerciseClick)
+        ScribbleStatus.PENDING, ScribbleStatus.PARSING -> PendingScribbleCard(
+            state = state,
+            scribble = scribble,
+        )
+
+        ScribbleStatus.SUCCESS -> ParsedScribbleCard(
+            state = state,
+            scribble = scribble,
+            onClick = { onIntent(CanvasIntent.ClickOnScribble(scribble.scribble)) },
+        )
+
+        ScribbleStatus.COMPLETED -> LoggedScribbleCard(
+            state = state,
+            scribble = scribble,
+            onClick = { onIntent(CanvasIntent.ClickOnScribble(scribble.scribble)) },
+            onExerciseClick = { exerciseId ->
+                onIntent(CanvasIntent.NavigateToExerciseDetails(exerciseId))
+            }
+        )
+
         ScribbleStatus.FAILED -> FailedScribbleCard(
             state = state,
             scribble = scribble,

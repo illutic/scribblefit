@@ -96,26 +96,23 @@
     8.  **Feature Settings:** Update `SettingsState`, `SettingsIntent`, and `SettingsViewModel` in `:feature:settings:ui` to allow user modification, ensuring the `updateConfig` utility is used for persistence.
 
 ## 7. Entity Lifecycle & Deletion Logic
-- **Canonical vs. Instance Records:** Distinguish between canonical metadata (e.g., `Exercise`) and instance performance records (e.g., `WorkoutExercise`).
-- **Unique Constraints:** Canonical entities MUST use `unique` indices on identifying columns (e.g., `name`).
-- **Data Parity (workoutId):** Cross-platform data parity MUST be maintained by linking `Scribble` and `Workout` entities via a `workoutId` field (Long). This ID acts as the definitive linkage for identifying which workout was generated from a specific scribble, enabling seamless transitions between the Canvas and Ledger views.
-- **Conflict Resolution:** For `unique` column insertions, use `OnConflictStrategy.IGNORE`. Repository methods MUST manually check for the existing record's ID if insertion returns `-1L` to prevent duplicates.
-- **Mapping Integrity:** Mappers converting instance hierarchies (e.g., `WorkoutExerciseWithDetails`) to domain models MUST map the instance's unique primary key (e.g., `workoutExerciseId`) to the domain model's `id`. This ensures subsequent deletion or update operations target the specific instance, not the canonical record.
-- **Intelligent Synchronization Pattern:** When updating a parent record that owns shared child instances (e.g., a Scribble or Workout owning Exercises), the Repository MUST perform in-place synchronization instead of a blind "clear and re-insert".
+- **Root Entity:** `Scribble` is the primary root entity for all training data.
+- **Instance Records:** `Exercise` and `Set` records are instance-specific and linked to a `Scribble`.
+- **Status-Driven Lifecycle:** Scribbles transition from `PENDING` -> `PARSING` -> `SUCCESS` -> `COMPLETED`. A `COMPLETED` scribble is officially logged in the history.
+- **Data Parity:** Cross-platform data parity MUST be maintained by using identical IDs for `Scribble`, `Exercise`, and `Set` records.
+- **Intelligent Synchronization Pattern:** When updating a `Scribble` that owns `Exercise` and `Set` instances, the Repository MUST perform in-place synchronization instead of a blind "clear and re-insert".
     1. **Iterative Update:** Match existing items by ID. Update their properties in place instead of replacing the entire record.
-    2. **Orphan-Aware Deletion:** When a child is removed from a parent relationship, only delete the child record if it has no other remaining parent relationships (e.g., a `WorkoutExercise` removed from a `Scribble` but still linked to a `Workout` MUST NOT be deleted).
-    3. **Recursive Sync:** Apply the same logic down the object graph (e.g., from `Exercise` to its `Sets`).
-    4. **Maintain Identity:** This prevents UI flickering and maintains object identity in reactive streams.
-- **CASCADE Precision:** Deletion logic MUST target the instance record (e.g., `WorkoutExercise`). Rely on `ForeignKey.CASCADE` to ensure atomic cleanup of dependent child records (e.g., `WorkoutSet`). Use cases MUST avoid redundant manual checks or deletions for entities handled by CASCADE. Never delete canonical metadata as a side effect of removing an instance.
+    2. **Maintain Identity:** This prevents UI flickering and maintains object identity in reactive streams.
+- **CASCADE Precision:** Rely on `ForeignKey.CASCADE` to ensure atomic cleanup of dependent child records (e.g., deleting a `Scribble` removes its `Exercise` records, which in turn removes their `Set` records).
 
 ## 8. Daily History Grouping
-- **Goal:** Aggregating multiple discrete logs (scribbles/sessions) into a single date-based view item for history-based features (e.g., Ledger).
+- **Goal:** Aggregating multiple discrete logs (scribbles) into a single date-based view item for history-based features (e.g., Ledger).
 - **State-Managed Aggregation:** Aggregation logic MUST NOT live in the Repository or Use Case. It MUST reside in the UI `State` data class as a derived property.
-- **Flattened Hierarchy:** All child records (e.g., `Exercise`) from all sessions on a given date MUST be flattened into a single list within a `DailyWorkout` (or similar) UI model.
+- **Flattened Hierarchy:** All child records (e.g., `Exercise`) from all scribbles on a given date SHOULD be flattened or grouped within a `DailyWorkout` (or similar) UI model.
 - **Sorting Consistency:**
     - **Days:** The main collection MUST be sorted by date descending (newest days first).
-    - **Intra-day:** Within each day, sessions or exercises SHOULD be flattened in chronological order (ascending by time).
-- **UI Representation:** Each day MUST be represented by a single UI container (e.g., a Card with `scribbleGlass`) containing a date header and the combined list of all activities for that day, regardless of how many individual sessions were recorded.
+    - **Intra-day:** Within each day, scribbles or exercises SHOULD be ordered chronologically (ascending by time).
+- **UI Representation:** Each day MUST be represented by a single UI container (e.g., a Card with `scribbleGlass`) containing a date header and the combined list of all activities for that day.
 
 ## 9. History & Time Integrity
 - **Rolling History Pattern:** Features displaying historical data (e.g., Ledger, Insights) MUST default to a "Rolling 30-Day Window" (e.g., `LocalDate.now().minusDays(30)` to `LocalDate.now()`). This ensures the UI remains focused on recent, relevant activity while providing a consistent starting point across features.

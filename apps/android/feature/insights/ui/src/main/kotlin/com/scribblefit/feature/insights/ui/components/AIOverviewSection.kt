@@ -38,7 +38,7 @@ internal fun AIOverviewSection(state: InsightsState) {
     if (state.isGeneratingAI) {
         AIOverviewShimmer()
     } else {
-        val insights = state.aiOverview?.insights ?: return
+        val insights = state.insights ?: return
         val summary = insights.firstOrNull { it.insightType == InsightType.SUMMARY }
             ?: insights.firstOrNull()
             ?: return

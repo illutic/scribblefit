@@ -12,25 +12,25 @@ import javax.inject.Inject
 
 @HiltViewModel
 class AppViewModel
-    @Inject
-    constructor(
-        private val navigator: Navigator,
-        configRepository: ConfigRepository,
-    ) : ViewModel() {
-        val appState =
-            combine(
-                navigator.navState,
-                configRepository.config,
-            ) { navState, config ->
-                AppState(
-                    navState = navState,
-                    themePreference = config.themePreference,
-                    isDynamicTheme = config.isDynamicTheme,
-                )
-            }.stateIn(viewModelScope, SharingStarted.Eagerly, AppState())
+@Inject
+constructor(
+    private val navigator: Navigator,
+    configRepository: ConfigRepository,
+) : ViewModel() {
+    val appState =
+        combine(
+            navigator.navState,
+            configRepository.config,
+        ) { navState, config ->
+            AppState(
+                navState = navState,
+                themePreference = config.localConfig.themePreference,
+                isDynamicTheme = config.localConfig.isDynamicTheme,
+            )
+        }.stateIn(viewModelScope, SharingStarted.Eagerly, AppState())
 
-        fun onIntent(appIntent: AppIntent) =
-            when (appIntent) {
-                AppIntent.NavigateBack -> navigator.goBack()
-            }
-    }
+    fun onIntent(appIntent: AppIntent) =
+        when (appIntent) {
+            AppIntent.NavigateBack -> navigator.goBack()
+        }
+}

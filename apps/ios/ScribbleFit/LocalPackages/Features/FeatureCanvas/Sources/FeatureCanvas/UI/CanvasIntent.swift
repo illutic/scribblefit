@@ -20,6 +20,13 @@ public enum CanvasIntent: Sendable {
     case updateSetWeight(UUID, UUID, String)
     case updateSetReps(UUID, UUID, String)
     case deleteSet(UUID, UUID) // exerciseId, setId
+    case addSet(UUID)
+    case deleteExercise(UUID)
+    
+    // Manual Entry
+    case showAddExerciseSheet
+    case hideAddExerciseSheet
+    case saveManualExercise(name: String, muscleGroup: String, sets: [ExerciseSet], notes: String)
 
     // Scribble Dialog
     case confirmScribble(Scribble)
@@ -30,6 +37,6 @@ public enum CanvasIntent: Sendable {
     case navigateToSettings
     case dismissSettings
     case navigateToExerciseDetails(String)
-    case navigateToWorkoutExercises(UUID)
+    case navigateToScribbleDetails(UUID)
     case dismissDetails
 }

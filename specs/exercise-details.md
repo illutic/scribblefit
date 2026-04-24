@@ -10,7 +10,7 @@ The Exercise Details screen provides a deep dive into a specific exercise's perf
 - **As a User**, I want to access a complete history of all sessions where I performed this exercise **so that** I can review my past performance in detail.
 
 ## 3. Acceptance Criteria
-- [x] **Navigation:** Accessible by tapping an exercise in the Canvas (logged scribble card), the Workout Exercises list screen, or the Ledger. (Android: `Screen.ExerciseDetails(exerciseName)` data class; iOS: `selectedExerciseName` sheet binding.) Implemented 2026-04-21.
+- [x] **Navigation:** Accessible by tapping an exercise in the Canvas (logged scribble card), the Scribble Details screen, or the Ledger. (Android: `Screen.ExerciseDetails(exerciseName)` data class; iOS: `selectedExerciseName` sheet binding.) Implemented 2026-04-21.
 - [ ] **AI Insight Card:**
     - [ ] Display a prominent card with a specific recommendation (e.g., "Increase weight by 5 lb based on your last session's performance").
     - [ ] Include a visual indicator (e.g., fire emoji) for positive reinforcement.

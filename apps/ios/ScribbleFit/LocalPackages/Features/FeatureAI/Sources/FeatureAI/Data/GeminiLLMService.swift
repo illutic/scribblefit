@@ -127,7 +127,8 @@ private struct ExerciseDto: Codable {
             sets: sets.map { $0.toDomain() },
             isDraft: false,
             estimated1RM: estimated1rm,
-            intensity: intensity
+            intensity: intensity,
+            improvement: nil
         )
     }
 }

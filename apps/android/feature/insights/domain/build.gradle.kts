@@ -11,5 +11,4 @@ dependencies {
     implementation(project(":core:model"))
     implementation(project(":core:common"))
     implementation(project(":core:coroutines"))
-    implementation(project(":feature:scribble:domain"))
 }

@@ -10,7 +10,6 @@ let package = Package(
     dependencies: [
         .package(path: "../../Core/CoreModel"),
         .package(path: "../../Core/CoreDesignSystem"),
-        .package(path: "../FeatureWorkouts"),
         .package(path: "../FeatureAI")
     ],
     targets: [
@@ -19,7 +18,6 @@ let package = Package(
             dependencies: [
                 .product(name: "CoreModel", package: "CoreModel"),
                 .product(name: "CoreDesignSystem", package: "CoreDesignSystem"),
-                .product(name: "FeatureWorkouts", package: "FeatureWorkouts"),
                 .product(name: "FeatureAI", package: "FeatureAI")
             ]
         )

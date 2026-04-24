@@ -39,6 +39,18 @@ struct TrendsSection: View {
                 )
                 
                 TrendItem(
+                    label: String(localized: "Intensity"),
+                    value: "\(Int(trends.intensity * 100))%",
+                    direction: .stable // Intensity doesn't have a trend direction in this view
+                )
+                
+                TrendItem(
+                    label: String(localized: "Weight vs Last"),
+                    value: "\(trends.improvement >= 0 ? "+" : "")\(Int(trends.improvement * 100))%",
+                    direction: trends.trendDirection
+                )
+                
+                TrendItem(
                     label: String(localized: "Last Volume"),
                     value: "\(Int(trends.lastVolume))\(weightUnit)",
                     direction: trends.lastVolumeTrend

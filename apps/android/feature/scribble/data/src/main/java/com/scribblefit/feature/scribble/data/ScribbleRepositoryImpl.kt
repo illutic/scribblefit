@@ -1,20 +1,9 @@
 package com.scribblefit.feature.scribble.data
 
-import androidx.room.withTransaction
-import com.scribblefit.core.database.ScribbleFitDatabase
 import com.scribblefit.core.database.dao.ScribbleDao
-import com.scribblefit.core.database.dao.ScribbleTrackerDao
-import com.scribblefit.core.database.dao.WorkoutDao
-import com.scribblefit.core.database.dao.WorkoutExerciseDao
-import com.scribblefit.core.database.entity.scribble.ScribbleExercise
-import com.scribblefit.core.database.entity.scribble.ScribbleStatus
-import com.scribblefit.core.database.entity.exercise.Exercise as EntityExercise
-import com.scribblefit.core.database.entity.exercise.WorkoutExercise as EntityWorkoutExercise
-import com.scribblefit.core.database.entity.set.WorkoutSet as EntityWorkoutSet
-import com.scribblefit.core.database.mapper.toDomain
-import com.scribblefit.core.database.mapper.toEntity
+import com.scribblefit.core.database.entity.scribble.toDomain
+import com.scribblefit.core.database.entity.scribble.toEntity
 import com.scribblefit.core.model.Scribble
-import com.scribblefit.core.model.Exercise as DomainExercise
 import com.scribblefit.feature.scribble.domain.ScribbleRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
@@ -26,167 +15,30 @@ import kotlinx.coroutines.withContext
  * Implementation of ScribbleRepository.
  */
 internal class ScribbleRepositoryImpl(
-    private val database: ScribbleFitDatabase,
     private val scribbleDao: ScribbleDao,
-    private val scribbleTrackerDao: ScribbleTrackerDao,
-    private val workoutDao: WorkoutDao,
-    private val workoutExerciseDao: WorkoutExerciseDao,
     private val coroutineDispatcher: CoroutineDispatcher,
 ) : ScribbleRepository {
-
-    override suspend fun saveScribbleExercises(
-        scribbleId: Long,
-        exercises: List<DomainExercise>,
-    ) = withContext(coroutineDispatcher) {
-        val exerciseEntities = exercises.map { it.toEntity() }
-        val workoutExerciseEntities = exercises.map { domainExercise ->
-            EntityWorkoutExercise(
-                workoutId = null,
-                exerciseId = 0, // Assigned in transaction
-                estimated1RM = domainExercise.estimated1RM,
-                intensity = domainExercise.intensity,
-                improvement = domainExercise.improvement,
-            )
-        }
-        val setsPerExercise = exercises.map { domainExercise ->
-            domainExercise.sets.map { domainSet ->
-                EntityWorkoutSet(
-                    workoutExerciseId = 0, // Assigned in transaction
-                    setNumber = domainSet.setNumber,
-                    reps = domainSet.reps,
-                    weight = domainSet.weight,
-                    rpe = domainSet.rpe,
-                    notes = domainSet.notes,
-                )
-            }
-        }
-
-        scribbleTrackerDao.insertScribbleExercisesWithDetails(
-            scribbleId = scribbleId,
-            exercises = exerciseEntities,
-            workoutExercises = workoutExerciseEntities,
-            setsPerExercise = setsPerExercise,
-        )
-    }
-
-    override suspend fun updateScribbleExercises(
-        scribbleId: Long,
-        exercises: List<DomainExercise>,
-    ) = withContext(coroutineDispatcher) {
-        database.withTransaction {
-            scribbleTrackerDao.clearScribbleExercises(scribbleId)
-            saveScribbleExercises(scribbleId, exercises)
-        }
-    }
-
-    override suspend fun updateScribbleExercisesToWorkout(
-        scribbleId: Long,
-        workoutId: Long,
-    ) = withContext(coroutineDispatcher) {
-        val exerciseIds = scribbleTrackerDao.getWorkoutExerciseIdsForScribble(scribbleId)
-        exerciseIds.forEach { workoutExerciseId ->
-            workoutExerciseDao.updateWorkoutId(workoutExerciseId, workoutId)
-        }
-    }
-
     override suspend fun insertScribble(scribble: Scribble): Long =
         withContext(coroutineDispatcher) {
             scribbleDao.insertScribble(scribble.toEntity())
         }
 
-    override suspend fun updateScribble(scribble: Scribble) =
-        withContext(coroutineDispatcher) {
-            scribbleDao.updateScribble(scribble.toEntity())
-        }
+    override suspend fun updateScribble(scribble: Scribble) = withContext(coroutineDispatcher) {
+        scribbleDao.updateScribble(scribble.toEntity())
+    }
 
-    override suspend fun deleteScribble(scribbleId: Long) =
-        withContext(coroutineDispatcher) {
-            scribbleDao.deleteScribble(scribbleId)
-        }
-
-    override suspend fun clearScribbleExercises(scribbleId: Long) =
-        withContext(coroutineDispatcher) {
-            scribbleTrackerDao.clearScribbleExercises(scribbleId)
-        }
-
-    override suspend fun addExerciseToScribble(
-        scribbleId: Long,
-        workoutExerciseId: Long,
-    ): Long =
-        withContext(coroutineDispatcher) {
-            val entity =
-                ScribbleExercise(
-                    scribbleId = scribbleId,
-                    workoutExerciseId = workoutExerciseId,
-                )
-            scribbleTrackerDao.insertScribbleExercise(entity)
-        }
-
-    override suspend fun confirmScribble(
-        scribble: Scribble,
-        workout: com.scribblefit.core.model.Workout
-    ) = withContext(coroutineDispatcher) {
-        val exerciseEntities = scribble.exercises.map { it.toEntity() }
-        val workoutEntity = workout.toEntity()
-        val setsPerExercise = scribble.exercises.map { domainExercise ->
-            domainExercise.sets.map { domainSet ->
-                EntityWorkoutSet(
-                    workoutExerciseId = 0,
-                    setNumber = domainSet.setNumber,
-                    reps = domainSet.reps,
-                    weight = domainSet.weight,
-                    rpe = domainSet.rpe,
-                    notes = domainSet.notes,
-                )
-            }
-        }
-        val exerciseStats = scribble.exercises.map { exercise ->
-            com.scribblefit.core.database.dao.ExerciseStats(
-                estimated1RM = exercise.estimated1RM,
-                intensity = exercise.intensity,
-                improvement = exercise.improvement,
-            )
-        }
-
-        scribbleTrackerDao.confirmScribble(
-            scribbleId = scribble.id,
-            exercises = exerciseEntities,
-            workout = workoutEntity,
-            setsPerExercise = setsPerExercise,
-            exerciseStats = exerciseStats
-        )
+    override suspend fun deleteScribble(scribbleId: Long) = withContext(coroutineDispatcher) {
+        scribbleDao.deleteScribble(scribbleId)
     }
 
     override fun getScribble(scribbleId: Long): Flow<Scribble> =
-        scribbleDao
-            .getScribbleById(scribbleId)
+        scribbleDao.getScribbleWithExercises(scribbleId)
+            .map { it?.toDomain() ?: error("Scribble not found") }
             .flowOn(coroutineDispatcher)
-            .map { it.toDomain() }
-
-    override fun getScribbleWithExercises(scribbleId: Long): Flow<Scribble> =
-        scribbleTrackerDao
-            .getScribbleWithExercises(scribbleId)
-            .flowOn(coroutineDispatcher)
-            .map { it.toDomain() }
-
-    override fun getPendingScribblesByDate(date: Long): Flow<List<Scribble>> =
-        scribbleDao
-            .getScribblesByStatusesAndDate(
-                listOf(ScribbleStatus.PENDING.name, ScribbleStatus.PARSING.name),
-                date
-            )
-            .flowOn(coroutineDispatcher)
-            .map { list -> list.map { it.toDomain() } }
 
     override fun getScribblesByDate(date: Long): Flow<List<Scribble>> =
-        scribbleDao
-            .getAllScribblesByDate(date)
+        scribbleDao.getScribblesWithExercisesForDate(date)
+            .map { it.map { scribbleWithExercises -> scribbleWithExercises.toDomain() } }
             .flowOn(coroutineDispatcher)
-            .map { list -> list.map { it.toDomain() } }
 
-    override fun getScribblesInRange(startDate: Long, endDate: Long): Flow<List<Scribble>> =
-        scribbleDao
-            .getScribblesInRange(startDate, endDate)
-            .flowOn(coroutineDispatcher)
-            .map { list -> list.map { it.toDomain() } }
 }

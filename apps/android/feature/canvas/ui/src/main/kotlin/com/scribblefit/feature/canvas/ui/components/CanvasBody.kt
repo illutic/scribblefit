@@ -45,17 +45,13 @@ import androidx.compose.ui.unit.sp
 import com.scribblefit.core.designsystem.ScribbleFitTheme
 import com.scribblefit.core.model.AIInsight
 import com.scribblefit.core.model.InsightType
-import com.scribblefit.core.model.Scribble
 import com.scribblefit.feature.canvas.ui.CanvasIntent
 import com.scribblefit.feature.canvas.ui.CanvasState
-import com.scribblefit.feature.canvas.ui.ScribbleUiModel
 import com.scribblefit.feature.canvas.ui.components.card.ScribbleCard
 
 @Composable
 internal fun CanvasBody(
     state: CanvasState,
-    onScribbleClick: (Scribble) -> Unit,
-    onExerciseClick: (exerciseName: String) -> Unit,
     onIntent: (CanvasIntent) -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -97,8 +93,6 @@ internal fun CanvasBody(
                 ScribbleCard(
                     state = state,
                     scribble = scribble,
-                    onClick = { onScribbleClick(scribble.scribble) },
-                    onExerciseClick = onExerciseClick,
                     onIntent = onIntent
                 )
             }

@@ -1,7 +1,5 @@
 package com.scribblefit.core.common
 
-import kotlin.math.roundToInt
-
 object Calculations {
     /**
      * Epley formula: Weight × (1 + Reps/30)

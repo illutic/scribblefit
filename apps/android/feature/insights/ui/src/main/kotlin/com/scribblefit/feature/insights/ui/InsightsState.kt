@@ -3,9 +3,9 @@ package com.scribblefit.feature.insights.ui
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.res.stringResource
+import com.scribblefit.core.model.AIInsight
 import com.scribblefit.core.navigation.BottomBarState
 import com.scribblefit.core.navigation.Screen
-import com.scribblefit.feature.insights.domain.model.AIOverview
 import com.scribblefit.feature.insights.domain.model.FrequencyData
 import com.scribblefit.feature.insights.domain.model.MuscleGroupDistribution
 import com.scribblefit.feature.insights.domain.model.VolumeDataPoint
@@ -21,7 +21,7 @@ data class InsightsState(
     val volumePoints: List<VolumeDataPoint> = emptyList(),
     val frequency: FrequencyData? = null,
     val distribution: List<MuscleGroupDistribution> = emptyList(),
-    val aiOverview: AIOverview? = null,
+    val insights: List<AIInsight>? = null,
     val errorMessage: String? = null,
     val selectedPeriod: InsightsPeriod = InsightsPeriod.WEEKLY,
     val startDate: LocalDate = LocalDate.now().minusWeeks(1),
@@ -29,7 +29,7 @@ data class InsightsState(
     val bottomBarState: BottomBarState = BottomBarState(selectedTab = Screen.Insights),
 ) {
     val isEmpty: Boolean
-        get() = !isLoading && (frequency == null || frequency.totalWorkouts < 2)
+        get() = !isLoading && (frequency == null || frequency.totalExercises < 2)
 
     val titleRes: Int = R.string.insights_title
     val emptyTitleRes: Int = R.string.insights_empty_title

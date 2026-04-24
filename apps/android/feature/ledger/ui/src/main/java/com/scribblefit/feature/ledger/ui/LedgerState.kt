@@ -3,9 +3,10 @@ package com.scribblefit.feature.ledger.ui
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.res.stringResource
-import com.scribblefit.core.model.Workout
+import com.scribblefit.core.model.Exercise
 import com.scribblefit.core.navigation.BottomBarState
 import com.scribblefit.core.navigation.Screen
+import java.time.Instant
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -16,16 +17,13 @@ private val workoutHeaderFormatter =
 
 data class DailyWorkout(
     val date: LocalDate,
-    val workouts: List<Workout>,
-) {
-    val exercises: List<com.scribblefit.core.model.Exercise>
-        get() = workouts.sortedBy { it.date }.flatMap { it.exercises }
-}
+    val exercises: List<Exercise>
+)
 
 data class LedgerState(
     val isLoading: Boolean = false,
     val showDatePicker: Boolean = false,
-    val workouts: List<Workout> = emptyList(),
+    val exercises: List<Exercise> = emptyList(),
     val startDate: LocalDate = LocalDate.now().minusDays(30),
     val endDate: LocalDate = LocalDate.now(),
     val bottomBarState: BottomBarState = BottomBarState(selectedTab = Screen.Ledger),
@@ -35,14 +33,14 @@ data class LedgerState(
         get() = "${startDate.format(dateRangeFormatter)} – ${endDate.format(dateRangeFormatter)}"
 
     val groupedWorkouts: List<DailyWorkout>
-        get() = workouts.groupBy { it.date.toLocalDate() }
-            .map { (date, workouts) ->
+        get() = exercises
+            .groupBy { Instant.ofEpochMilli(it.createdAt) }
+            .map { (timestamp, exercises) ->
                 DailyWorkout(
-                    date = date,
-                    workouts = workouts.sortedBy { it.date }
+                    date = timestamp.toLocalDate(),
+                    exercises = exercises
                 )
             }
-            .sortedByDescending { it.date }
 
     fun getWorkoutDateHeader(date: LocalDate): String = date.format(workoutHeaderFormatter)
 

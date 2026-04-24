@@ -1,9 +1,11 @@
 import Foundation
+import CoreModel
+import CoreCommon
 
 public enum LedgerIntent: Sendable {
     case refresh
     case updateDateRange(startDate: Date, endDate: Date)
-    case workoutTapped(id: UUID)
+    case scribbleTapped(id: UUID)
     case exerciseTapped(name: String)
     case dismissDetails
 }

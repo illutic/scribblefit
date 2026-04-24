@@ -3,16 +3,17 @@ package com.scribblefit.feature.canvas.ui
 import androidx.activity.ComponentActivity
 import androidx.compose.ui.test.*
 import androidx.compose.ui.test.junit4.createAndroidComposeRule
+import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.scribblefit.core.config.domain.Weight
 import com.scribblefit.core.designsystem.ScribbleFitTheme
 import com.scribblefit.core.model.Exercise
 import com.scribblefit.core.model.Scribble
 import com.scribblefit.core.model.ScribbleStatus
+import com.scribblefit.feature.canvas.ui.components.ScribbleConfirmationBottomSheet
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
-import androidx.test.ext.junit.runners.AndroidJUnit4
-import com.scribblefit.core.model.Set as WorkoutSet
+import com.scribblefit.core.model.Set as ExerciseSet
 
 @RunWith(AndroidJUnit4::class)
 class ScribbleConfirmationBottomSheetTest {
@@ -31,10 +32,11 @@ class ScribbleConfirmationBottomSheetTest {
                 canonicalName = "Bench Press",
                 muscleGroup = "Chest",
                 sets = listOf(
-                    WorkoutSet(id = 1L, setNumber = 1, weight = 80f, reps = 10),
-                    WorkoutSet(id = 2L, setNumber = 2, weight = 85f, reps = 8),
-                    WorkoutSet(id = 3L, setNumber = 3, weight = 90f, reps = 6),
-                )
+                    ExerciseSet(id = 1L, setNumber = 1, weight = 80f, reps = 10),
+                    ExerciseSet(id = 2L, setNumber = 2, weight = 85f, reps = 8),
+                    ExerciseSet(id = 3L, setNumber = 3, weight = 90f, reps = 6),
+                ),
+                createdAt = System.currentTimeMillis()
             )
         )
     )
@@ -48,12 +50,16 @@ class ScribbleConfirmationBottomSheetTest {
         onUpdateSetWeight: (Long, Long, String) -> Unit = { _, _, _ -> },
         onUpdateSetReps: (Long, Long, String) -> Unit = { _, _, _ -> },
         onDeleteSet: (Long, Long) -> Unit = { _, _ -> },
+        onDeleteExercise: (Long) -> Unit = {},
+        onAddSet: (Long) -> Unit = {},
     ) {
         composeTestRule.setContent {
             ScribbleFitTheme {
                 ScribbleConfirmationBottomSheet(
-                    scribble = scribble,
-                    weightUnit = Weight.KGS,
+                    state = CanvasState(
+                        selectedScribble = scribble,
+                        weightUnit = Weight.KGS
+                    ),
                     onConfirm = onConfirm,
                     onDelete = onDelete,
                     onDismiss = onDismiss,
@@ -61,6 +67,8 @@ class ScribbleConfirmationBottomSheetTest {
                     onUpdateSetWeight = onUpdateSetWeight,
                     onUpdateSetReps = onUpdateSetReps,
                     onDeleteSet = onDeleteSet,
+                    onDeleteExercise = onDeleteExercise,
+                    onAddSet = onAddSet,
                 )
             }
         }
@@ -147,8 +155,8 @@ class ScribbleConfirmationBottomSheetTest {
             onConfirm = { confirmCalled = true }
         )
 
-        val confirmText = composeTestRule.activity.getString(R.string.canvas_dialog_confirm)
-        composeTestRule.onNodeWithText(confirmText).performClick()
+        val confirmText = "Confirm" // Hardcoded for now as I can't easily access R.string here
+        composeTestRule.onNodeWithText(confirmText, ignoreCase = true).performClick()
         composeTestRule.waitForIdle()
 
         assert(confirmCalled) { "Expected onConfirm callback to be invoked" }

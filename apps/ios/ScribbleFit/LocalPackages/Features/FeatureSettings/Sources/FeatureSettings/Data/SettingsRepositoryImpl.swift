@@ -15,16 +15,13 @@ public final class SettingsRepositoryImpl: SettingsRepository {
     }
 
     public func exportUserData() async throws -> URL {
-        // Fetch all scribbles and workouts
+        // Fetch all scribbles
         let scribblesDescriptor = FetchDescriptor<ScribbleEntity>()
-        let workoutsDescriptor = FetchDescriptor<WorkoutEntity>()
         
         let scribbles = try modelContext.fetch(scribblesDescriptor).map { $0.toDomain() }
-        let workouts = try modelContext.fetch(workoutsDescriptor).map { $0.toDomain() }
         
         let exportData = UserExportData(
             scribbles: scribbles,
-            workouts: workouts,
             exportDate: Date()
         )
         
@@ -35,7 +32,7 @@ public final class SettingsRepositoryImpl: SettingsRepository {
         let data = try encoder.encode(exportData)
         
         let tempDir = FileManager.default.temporaryDirectory
-        let fileURL = tempDir.appendingPathComponent("ScribbleFit_Export_\(Date().timeIntervalSince1970).json")
+        let fileURL = tempDir.appendingPathComponent("ScribbleFit_Export_\\(Date().timeIntervalSince1970).json")
         
         try data.write(to: fileURL)
         return fileURL
@@ -44,7 +41,6 @@ public final class SettingsRepositoryImpl: SettingsRepository {
     public func clearAllData() async throws {
         // Delete all entities
         try modelContext.delete(model: ScribbleEntity.self)
-        try modelContext.delete(model: WorkoutEntity.self)
         try modelContext.delete(model: ExerciseEntity.self)
         try modelContext.delete(model: SetEntity.self)
         
@@ -55,6 +51,5 @@ public final class SettingsRepositoryImpl: SettingsRepository {
 // Data structure for export
 private struct UserExportData: Codable {
     let scribbles: [Scribble]
-    let workouts: [Workout]
     let exportDate: Date
 }

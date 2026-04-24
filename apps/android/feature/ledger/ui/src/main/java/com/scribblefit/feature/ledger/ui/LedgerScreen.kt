@@ -44,11 +44,11 @@ internal fun LedgerScreen(
     )
 
     Scaffold(
-        topBar = { 
+        topBar = {
             LedgerHeader(
                 title = state.ledgerTitle,
                 onRefreshClick = { onIntent(LedgerIntent.Refresh) }
-            ) 
+            )
         },
         containerColor = ScribbleFitTheme.colors.surface
     ) { paddingValues ->

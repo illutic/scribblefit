@@ -11,6 +11,29 @@
     <string name="workout_exercises_weight_unit_lb">lb</string>
     <string name="workout_exercises_volume_format">%1$s %2$s</string>
     <string name="workout_exercises_back">Back</string>
+    <string name="workout_exercises_finish_button">FINISH &amp; LOG</string>
+    <string name="workout_exercises_add_exercise_button">ADD EXERCISE</string>
+    <string name="workout_exercises_notes_label">SESSION NOTES</string>
+    <string name="workout_exercises_notes_placeholder">How was your session? Add details here...</string>
+    <string name="workout_exercises_add_set_label">Add Set</string>
+    <string name="workout_exercises_delete_set_content_description">Delete Set</string>
+    <string name="workout_exercises_set_reps_separator">x</string>
+    <string name="workout_exercises_reps_label">reps</string>
+
+    <!-- Add Exercise Bottom Sheet -->
+    <string name="add_exercise_title">New Entry</string>
+    <string name="add_exercise_close">Close</string>
+    <string name="add_exercise_save">SAVE</string>
+    <string name="add_exercise_label_exercise">EXERCISE</string>
+    <string name="add_exercise_placeholder_name">e.g. Bench Press</string>
+    <string name="add_exercise_label_muscle">MUSCLE GROUP</string>
+    <string name="add_exercise_placeholder_muscle">e.g. Chest</string>
+    <string name="add_exercise_label_sets">SETS</string>
+    <string name="add_exercise_placeholder_reps">reps</string>
+    <string name="add_exercise_label_reps_short">r</string>
+    <string name="add_exercise_button_add_set">+ ADD SET</string>
+    <string name="add_exercise_label_notes">NOTES</string>
+    <string name="add_exercise_placeholder_notes">Add session notes...</string>
 
     <!-- Exercise Details Strings -->
     <string name="exercise_details_recommendation">RECOMMENDATION</string>

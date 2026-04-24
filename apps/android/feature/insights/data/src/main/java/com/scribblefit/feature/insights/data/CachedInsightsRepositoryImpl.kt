@@ -1,7 +1,6 @@
 package com.scribblefit.feature.insights.data
 
 import com.scribblefit.core.model.AIInsight
-import com.scribblefit.core.model.Exercise
 import com.scribblefit.feature.insights.domain.model.FrequencyData
 import com.scribblefit.feature.insights.domain.model.MuscleGroupDistribution
 import com.scribblefit.feature.insights.domain.model.VolumeDataPoint
@@ -83,17 +82,18 @@ class CachedInsightsRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getAIOverview(exercises: List<Exercise>): Result<List<AIInsight>> =
+    override suspend fun getAIOverview(
+        startDate: Long,
+        endDate: Long
+    ): List<AIInsight> =
         withContext(coroutineDispatcher) {
-            val cacheKey = exercises.joinToString(separator = ",") { "${it.id}" }
+            val cacheKey = "$startDate-$endDate"
             val cachedData = cachedOverview[cacheKey]
             if (cachedData != null) {
-                Result.success(cachedData)
+                cachedData
             } else {
-                val result = insightsRepository.getAIOverview(exercises)
-                result.onSuccess { insights ->
-                    cachedOverview[cacheKey] = insights
-                }
+                val result = insightsRepository.getAIOverview(startDate, endDate)
+                cachedOverview[cacheKey] = result
                 result
             }
         }

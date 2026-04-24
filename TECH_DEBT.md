@@ -15,6 +15,12 @@ from project guidelines. Fixed items are archived in `fixed_tech_debt.md`.
 
 ### 42. Date Pattern Hardcoded in State (Android)
 *   **Severity:** Low
-*   **Files:** `WorkoutExercisesState.kt`, `CanvasState.kt`
+*   **Files:** `CanvasState.kt`, `LedgerState.kt`
 *   **Problem:** Date patterns are hardcoded in static formatters.
 *   **Fix:** Move patterns to `strings.xml`.
+
+### 43. Ledger Navigation Missing (Android)
+*   **Severity:** Low
+*   **File:** `LedgerContent.kt`
+*   **Problem:** Tapping a session in the Ledger does not navigate anywhere (`onClick = {}`).
+*   **Fix:** Implement navigation to the Canvas screen for the selected date, ideally with the specific scribble expanded.

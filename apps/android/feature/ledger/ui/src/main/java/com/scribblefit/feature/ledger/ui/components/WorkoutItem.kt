@@ -2,7 +2,6 @@ package com.scribblefit.feature.ledger.ui.components
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -19,12 +18,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.scribblefit.core.designsystem.ScribbleFitTheme
 import com.scribblefit.core.designsystem.scribbleGlass
-import com.scribblefit.core.model.Workout
+import com.scribblefit.core.model.Exercise
 
 @Composable
 internal fun WorkoutItem(
     title: String,
-    exercises: List<com.scribblefit.core.model.Exercise>,
+    exercises: List<Exercise>,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {

@@ -2,11 +2,11 @@ import Foundation
 
 public struct ExerciseSet: Identifiable, Equatable, Sendable, Codable {
     public let id: UUID
-    public let setNumber: Int
-    public let weight: Float?
-    public let reps: Int
-    public let rpe: Float?
-    public let notes: String?
+    public var setNumber: Int
+    public var weight: Float?
+    public var reps: Int
+    public var rpe: Float?
+    public var notes: String?
 
     public init(
         id: UUID = UUID(),

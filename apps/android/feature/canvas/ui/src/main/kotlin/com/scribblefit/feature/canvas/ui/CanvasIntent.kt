@@ -47,9 +47,25 @@ sealed interface CanvasIntent {
 
     // Manual Editing
     data class UpdateExerciseName(val exerciseId: Long, val newName: String) : CanvasIntent
-    data class UpdateSetWeight(val exerciseId: Long, val setId: Long, val newWeight: String) : CanvasIntent
-    data class UpdateSetReps(val exerciseId: Long, val setId: Long, val newReps: String) : CanvasIntent
+    data class UpdateSetWeight(val exerciseId: Long, val setId: Long, val newWeight: String) :
+        CanvasIntent
+
+    data class UpdateSetReps(val exerciseId: Long, val setId: Long, val newReps: String) :
+        CanvasIntent
+
     data class DeleteSet(val exerciseId: Long, val setId: Long) : CanvasIntent
+    data class DeleteExercise(val exerciseId: Long) : CanvasIntent
+    data class AddSet(val exerciseId: Long) : CanvasIntent
+
+    // Manual Entry
+    data object ShowAddExerciseSheet : CanvasIntent
+    data object HideAddExerciseSheet : CanvasIntent
+    data class SaveManualExercise(
+        val name: String,
+        val muscleGroup: String,
+        val sets: List<com.scribblefit.core.model.Set>,
+        val notes: String
+    ) : CanvasIntent
 
     // Navigation
     data object NavigateBack : CanvasIntent
@@ -59,10 +75,10 @@ sealed interface CanvasIntent {
     ) : CanvasIntent
 
     data class NavigateToExerciseDetails(
-        val exerciseName: String,
+        val exerciseId: Long,
     ) : CanvasIntent
 
     data class NavigateToWorkoutExercises(
-        val workoutId: Long,
+        val date: Long,
     ) : CanvasIntent
 }

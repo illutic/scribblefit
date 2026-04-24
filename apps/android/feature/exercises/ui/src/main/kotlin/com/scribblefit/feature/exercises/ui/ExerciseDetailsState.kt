@@ -4,14 +4,16 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.res.stringResource
 import com.scribblefit.core.config.domain.Weight
-import com.scribblefit.core.model.ExerciseDetails
-import com.scribblefit.core.model.ExercisePerformanceInsight
+import com.scribblefit.core.model.AIInsight
+import com.scribblefit.core.model.ExerciseTrends
+import com.scribblefit.core.model.WeeklyStats
 
 data class ExerciseDetailsState(
     val exerciseName: String = "",
     val isLoading: Boolean = false,
-    val details: ExerciseDetails? = null,
-    val aiInsight: ExercisePerformanceInsight? = null,
+    val trends: ExerciseTrends? = null,
+    val weeklyStats: WeeklyStats? = null,
+    val aiInsight: AIInsight? = null,
     val isGeneratingAI: Boolean = false,
     val weightUnit: Weight = Weight.KGS,
     val error: String? = null,
@@ -87,7 +89,6 @@ data class ExerciseDetailsState(
         when (direction) {
             com.scribblefit.core.model.TrendDirection.IMPROVING -> stringResource(R.string.trend_improving)
             com.scribblefit.core.model.TrendDirection.STABLE -> stringResource(R.string.trend_stable)
-            com.scribblefit.core.model.TrendDirection.PLATEAUED -> stringResource(R.string.trend_plateaued)
             com.scribblefit.core.model.TrendDirection.DECLINING -> stringResource(R.string.trend_declining)
         }
 }

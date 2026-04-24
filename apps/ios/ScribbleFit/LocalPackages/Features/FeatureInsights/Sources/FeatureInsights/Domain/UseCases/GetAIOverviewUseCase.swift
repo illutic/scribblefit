@@ -3,26 +3,27 @@ import CoreModel
 
 @MainActor
 public final class GetAIOverviewUseCase {
-    private let workoutRepository: WorkoutRepository
+    private let scribbleRepository: ScribbleRepository
     private let llmProvider: LLMService
 
-    public init(workoutRepository: WorkoutRepository, llmProvider: LLMService) {
-        self.workoutRepository = workoutRepository
+    public init(scribbleRepository: ScribbleRepository, llmProvider: LLMService) {
+        self.scribbleRepository = scribbleRepository
         self.llmProvider = llmProvider
     }
 
     public func execute(date: Date, lookbackDays: Int = 7) async throws -> [AIInsight] {
         let calendar = Calendar.current
         let startDate = calendar.date(byAdding: .day, value: -lookbackDays, to: date) ?? date
-        let stream = workoutRepository.getWorkoutsInRange(startDate: startDate, endDate: date)
+        let stream = scribbleRepository.observeScribbles(startDate: startDate, endDate: date)
         
-        var workouts: [Workout] = []
+        var scribbles: [Scribble] = []
         for await value in stream {
-            workouts = value
+            scribbles = value
             break
         }
         
-        let exercises = workouts.flatMap { $0.exercises }
+        let completedScribbles = scribbles.filter { $0.status == .completed }
+        let exercises = completedScribbles.flatMap { $0.exercises }
 
         guard !exercises.isEmpty else {
             return [AIInsight(insightType: .summary, text: "Start your session by scribbling your first workout!")]

@@ -18,8 +18,10 @@ class MarkExerciseAsCompleteUseCaseTest {
     @Test
     fun `should call updateExerciseUseCase with isDraft false`() = runTest(testDispatcher) {
         // Given
-        val exercise = Exercise(1L, "Bench Press", "Chest", emptyList(), isDraft = true)
-        coEvery { updateExerciseUseCase(exercise.copy(isDraft = false)) } returns Result.success(Unit)
+        val exercise = Exercise(1L, "Bench Press", "Chest", emptyList(), 0L, isDraft = true)
+        coEvery { updateExerciseUseCase(exercise.copy(isDraft = false)) } returns Result.success(
+            Unit
+        )
 
         // When
         val result = useCase(exercise)

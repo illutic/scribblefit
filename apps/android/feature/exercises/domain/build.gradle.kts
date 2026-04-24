@@ -12,7 +12,7 @@ dependencies {
     implementation(project(":core:common"))
     implementation(project(":feature:sets:domain"))
     implementation(project(":feature:ai:domain"))
-    implementation(project(":feature:workouts:domain"))
+    implementation(project(":feature:scribble:domain"))
     implementation(project(":core:config:domain"))
 
     implementation(libs.coroutines.core)

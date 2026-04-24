@@ -9,11 +9,11 @@ android {
 }
 
 dependencies {
-    implementation(project(":feature:ledger:domain"))
     implementation(project(":core:designsystem"))
     implementation(project(":core:navigation"))
     implementation(project(":core:common"))
     implementation(project(":core:model"))
+    implementation(project(":feature:exercises:domain"))
 
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

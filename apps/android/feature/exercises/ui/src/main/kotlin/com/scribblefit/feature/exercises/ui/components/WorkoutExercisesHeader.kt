@@ -18,6 +18,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.scribblefit.core.designsystem.ScribbleFitTheme
+import com.scribblefit.core.designsystem.TopBar
 import com.scribblefit.core.designsystem.components.StatCard
 
 @Composable
@@ -37,39 +38,38 @@ internal fun WorkoutExercisesHeader(
         modifier = modifier
             .fillMaxWidth()
             .padding(
-                start = ScribbleFitTheme.spacing.small,
-                end = ScribbleFitTheme.spacing.large,
-                top = ScribbleFitTheme.spacing.medium,
                 bottom = ScribbleFitTheme.spacing.medium
             ),
-        verticalArrangement = Arrangement.spacedBy(ScribbleFitTheme.spacing.medium)
+        verticalArrangement = Arrangement.spacedBy(ScribbleFitTheme.spacing.medium),
+        horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Row(
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            IconButton(onClick = onBackClick) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
-                    contentDescription = backContentDescription,
-                    tint = ScribbleFitTheme.colors.primary,
-                    modifier = Modifier.size(24.dp)
+        TopBar(
+            modifier = Modifier.fillMaxWidth(),
+            title = {
+                Text(
+                    text = dateString,
+                    style = ScribbleFitTheme.typography.headlineSmall,
+                    fontWeight = FontWeight.Bold,
+                    color = ScribbleFitTheme.colors.primary
                 )
-            }
-            Text(
-                text = dateString,
-                style = ScribbleFitTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                color = ScribbleFitTheme.colors.primary
-            )
-        }
+            },
+            navigationIcon = {
+                IconButton(onClick = onBackClick) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
+                        contentDescription = backContentDescription,
+                        tint = ScribbleFitTheme.colors.primary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            },
+        )
 
         Row(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(horizontal = ScribbleFitTheme.spacing.medium)
                 .widthIn(max = 600.dp)
-                .align(Alignment.CenterHorizontally),
-            horizontalArrangement = Arrangement.spacedBy(ScribbleFitTheme.spacing.medium)
+                .padding(horizontal = ScribbleFitTheme.spacing.medium),
+            horizontalArrangement = Arrangement.spacedBy(ScribbleFitTheme.spacing.medium),
         ) {
             StatCard(
                 label = exercisesLabel,

@@ -19,7 +19,7 @@ class UpdateExerciseUseCaseTest {
     @Test
     fun `should call updateExercise on repository`() = runTest(testDispatcher) {
         // Given
-        val exercise = Exercise(1L, "Bench Press", "Chest", emptyList())
+        val exercise = Exercise(1L, "Bench Press", "Chest", emptyList(), 0L)
         coEvery { repository.updateExercise(exercise) } returns Unit
 
         // When

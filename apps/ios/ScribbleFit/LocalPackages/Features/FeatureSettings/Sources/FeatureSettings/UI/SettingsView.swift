@@ -17,37 +17,39 @@ public struct SettingsView: View {
                 Color.scribbleBackground.ignoresSafeArea()
                 
                 ScrollView {
-                    SettingsAppearanceSection(
-                        theme: Binding(
-                            get: { store.state.config.themePreference },
-                            set: { store.onIntent(.updateTheme($0)) }
+                    VStack(spacing: 16){
+                        SettingsAppearanceSection(
+                            theme: Binding(
+                                get: { store.state.config.themePreference },
+                                set: { store.onIntent(.updateTheme($0)) }
+                            )
                         )
-                    )
-                    
-                    SettingsAISection(
-                        provider: Binding(
-                            get: { store.state.config.preferredLlmProvider },
-                            set: { store.onIntent(.updateLlmProvider($0)) }
-                        ),
-                        isLocalSupported: store.state.isLocalLlmSupported,
-                        onIntent: store.onIntent
-                    )
-                    
-                    SettingsUnitSection(
-                        unit: Binding(
-                            get: { store.state.config.weightUnit },
-                            set: { store.onIntent(.updateWeightUnit($0)) }
+                        
+                        SettingsAISection(
+                            provider: Binding(
+                                get: { store.state.config.preferredLlmProvider },
+                                set: { store.onIntent(.updateLlmProvider($0)) }
+                            ),
+                            isLocalSupported: store.state.isLocalLlmSupported,
+                            onIntent: store.onIntent
                         )
-                    )
-                    
-                    SettingsDataSection(
-                        isExporting: store.state.isExporting,
-                        onIntent: store.onIntent
-                    )
+                        
+                        SettingsUnitSection(
+                            unit: Binding(
+                                get: { store.state.config.weightUnit },
+                                set: { store.onIntent(.updateWeightUnit($0)) }
+                            )
+                        )
+                        
+                        SettingsDataSection(
+                            isExporting: store.state.isExporting,
+                            onIntent: store.onIntent
+                        )
+                        
+                        SettingsFooter()
+                    }
                 }
                 .padding(.horizontal, 24)
-                
-                SettingsFooter()
             }
             .toolbar {
                 ToolbarItem(placement: .title) {

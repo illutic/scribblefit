@@ -3,18 +3,24 @@ package com.scribblefit.feature.canvas.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.scribblefit.core.config.domain.ConfigRepository
+import com.scribblefit.core.model.CurrentDate
 import com.scribblefit.core.model.Scribble
 import com.scribblefit.core.model.ScribbleStatus
+import com.scribblefit.core.model.Set
 import com.scribblefit.core.navigation.Navigator
 import com.scribblefit.core.navigation.Screen
-import com.scribblefit.feature.canvas.domain.ConfirmScribbleUseCase
-import com.scribblefit.feature.canvas.domain.DeleteScribbleUseCase
-import com.scribblefit.feature.canvas.domain.GetScribblesForDateUseCase
+import com.scribblefit.feature.scribble.domain.usecase.AddScribbleUseCase
+import com.scribblefit.feature.scribble.domain.usecase.ConfirmScribbleUseCase
+import com.scribblefit.feature.scribble.domain.usecase.GetScribblesForDateUseCase
 import com.scribblefit.feature.canvas.domain.ParsePendingScribblesUseCase
+import com.scribblefit.feature.exercises.domain.usecase.CalculateTrendsUseCase
 import com.scribblefit.feature.exercises.domain.usecase.FormatExerciseSummaryUseCase
+import com.scribblefit.feature.exercises.domain.usecase.RemoveExerciseUseCase
+import com.scribblefit.feature.exercises.domain.usecase.UpdateExerciseUseCase
 import com.scribblefit.feature.insights.domain.usecase.GetAIOverviewUseCase
-import com.scribblefit.feature.scribble.domain.usecase.AddRawScribbleUseCase
-import com.scribblefit.feature.scribble.domain.usecase.ManualEditScribbleUseCase
+import com.scribblefit.feature.scribble.domain.usecase.CreateManualScribbleUseCase
+import com.scribblefit.feature.scribble.domain.usecase.RemoveScribbleUseCase
+import com.scribblefit.feature.sets.domain.usecase.AddSetToExerciseUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -33,20 +39,24 @@ import javax.inject.Inject
 @HiltViewModel
 class CanvasViewModel @Inject constructor(
     private val getScribblesForDateUseCase: GetScribblesForDateUseCase,
-    private val addRawScribbleUseCase: AddRawScribbleUseCase,
+    private val addScribbleUseCase: AddScribbleUseCase,
     private val confirmScribbleUseCase: ConfirmScribbleUseCase,
-    private val deleteScribbleUseCase: DeleteScribbleUseCase,
+    private val deleteScribbleUseCase: RemoveScribbleUseCase,
+    private val updateExerciseUseCase: UpdateExerciseUseCase,
+    private val removeExerciseUseCase: RemoveExerciseUseCase,
+    private val addSetToExerciseUseCase: AddSetToExerciseUseCase,
     private val parsePendingScribblesUseCase: ParsePendingScribblesUseCase,
-    private val manualEditScribbleUseCase: ManualEditScribbleUseCase,
+    private val createManualScribbleUseCase: CreateManualScribbleUseCase,
     private val getAIInsightsUseCase: GetAIOverviewUseCase,
     private val formatExerciseSummaryUseCase: FormatExerciseSummaryUseCase,
+    private val calculateTrendsUseCase: CalculateTrendsUseCase,
     private val configRepository: ConfigRepository,
     private val navigator: Navigator,
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(CanvasState())
     private val currentDateValue get() = _state.value.currentDate
-    private val currentDate = _state.map { it.currentDate }.distinctUntilChanged()
+    private val currentDate = _state.map { CurrentDate(it.currentDate) }.distinctUntilChanged()
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private val scribblesForDate = currentDate.flatMapLatest { date ->
@@ -54,7 +64,7 @@ class CanvasViewModel @Inject constructor(
     }
 
     private val preferredWeight =
-        configRepository.config.map { it.weightUnit }.distinctUntilChanged()
+        configRepository.config.map { it.localConfig.weightUnit }.distinctUntilChanged()
 
     val state = combine(
         _state,
@@ -75,20 +85,19 @@ class CanvasViewModel @Inject constructor(
                         val totalSets = exercise.sets.size
                         val repsPerSet = firstSet?.reps ?: 0
                         val weightValue = firstSet?.weight ?: 0f
+                        val trends = calculateTrendsUseCase(exercise.id)
 
                         ExerciseUiModel(
                             id = exercise.id,
                             name = exercise.canonicalName,
                             formattedSummary = formatExerciseSummaryUseCase(exercise, weightUnit),
-                            estimated1RMValue = exercise.estimated1RM?.toInt(),
-                            intensityValue = exercise.intensity?.let { (it * 100).toInt() },
-                            improvementValue = exercise.improvement?.toInt(),
-                            hasStats = exercise.estimated1RM != null ||
-                                    exercise.intensity != null ||
-                                    exercise.improvement != null,
                             firstSetWeight = weightValue,
                             totalSets = totalSets,
-                            repsPerSet = repsPerSet
+                            repsPerSet = repsPerSet,
+                            estimated1RMValue = trends.getOrNull()?.estimated1RM,
+                            intensityValue = trends.getOrNull()?.intensity,
+                            improvementValue = trends.getOrNull()?.improvement,
+                            hasStats = trends.getOrNull() != null,
                         )
                     },
                     scribble = scribble
@@ -130,6 +139,11 @@ class CanvasViewModel @Inject constructor(
             is CanvasIntent.UpdateExerciseName,
             is CanvasIntent.UpdateSetWeight,
             is CanvasIntent.UpdateSetReps,
+            is CanvasIntent.DeleteExercise,
+            is CanvasIntent.AddSet,
+            is CanvasIntent.SaveManualExercise,
+            is CanvasIntent.ShowAddExerciseSheet,
+            is CanvasIntent.HideAddExerciseSheet,
             is CanvasIntent.DeleteSet -> handleEditIntent(intent)
 
             CanvasIntent.NavigateBack,
@@ -237,6 +251,26 @@ class CanvasViewModel @Inject constructor(
                 deleteSet(intent.exerciseId, intent.setId)
             }
 
+            is CanvasIntent.DeleteExercise -> {
+                deleteExercise(intent.exerciseId)
+            }
+
+            is CanvasIntent.AddSet -> {
+                addSet(intent.exerciseId)
+            }
+
+            CanvasIntent.ShowAddExerciseSheet -> {
+                _state.update { it.copy(isAddExerciseSheetVisible = true) }
+            }
+
+            CanvasIntent.HideAddExerciseSheet -> {
+                _state.update { it.copy(isAddExerciseSheetVisible = false) }
+            }
+
+            is CanvasIntent.SaveManualExercise -> {
+                saveManualExercise(intent.name, intent.muscleGroup, intent.sets)
+            }
+
             else -> {}
         }
     }
@@ -252,11 +286,11 @@ class CanvasViewModel @Inject constructor(
             }
 
             is CanvasIntent.NavigateToExerciseDetails -> {
-                navigator.navigateTo(Screen.ExerciseDetails(intent.exerciseName))
+                navigator.navigateTo(Screen.ExerciseDetails(intent.exerciseId))
             }
 
             is CanvasIntent.NavigateToWorkoutExercises -> {
-                navigator.navigateTo(Screen.WorkoutExercises(intent.workoutId))
+                navigator.navigateTo(Screen.Ledger)
             }
 
             else -> {}
@@ -266,7 +300,7 @@ class CanvasViewModel @Inject constructor(
     private fun addScribble(text: String) {
         if (text.isBlank()) return
         viewModelScope.launch {
-            addRawScribbleUseCase(text, currentDateValue)
+            addScribbleUseCase(text, CurrentDate(currentDateValue))
             _state.update { it.copy(currentScribbleText = "") }
         }
     }
@@ -284,8 +318,6 @@ class CanvasViewModel @Inject constructor(
             }
 
             ScribbleStatus.COMPLETED -> {
-                val workoutId = scribble.workoutId ?: return
-                navigator.navigateTo(Screen.WorkoutExercises(workoutId = workoutId))
             }
 
             else -> {}
@@ -315,36 +347,83 @@ class CanvasViewModel @Inject constructor(
     }
 
     private fun updateExerciseName(exerciseId: Long, newName: String) {
-        val scribble = _state.value.selectedScribble ?: return
         viewModelScope.launch {
-            manualEditScribbleUseCase.updateExerciseName(scribble.id, exerciseId, newName)
+            val scribble = _state.value.selectedScribble ?: return@launch
+            val exercise = scribble.exercises.find { it.id == exerciseId } ?: return@launch
+            updateExerciseUseCase(exercise.copy(canonicalName = newName))
         }
     }
 
     private fun updateSetWeight(exerciseId: Long, setId: Long, newWeight: String) {
-        val scribble = _state.value.selectedScribble ?: return
-        val weight = newWeight.toFloatOrNull() ?: return
         viewModelScope.launch {
-            manualEditScribbleUseCase.updateSetWeight(scribble.id, exerciseId, setId, weight)
+            val scribble = _state.value.selectedScribble ?: return@launch
+            val weight = newWeight.toFloatOrNull() ?: return@launch
+            val exercise = scribble.exercises.find { it.id == exerciseId } ?: return@launch
+            val newExercise = exercise.copy(
+                sets = exercise.sets.map {
+                    if (it.id == setId) it.copy(weight = weight) else it
+                }
+            )
+
+            updateExerciseUseCase(newExercise)
         }
     }
 
     private fun updateSetReps(exerciseId: Long, setId: Long, newReps: String) {
-        val scribble = _state.value.selectedScribble ?: return
-        val reps = newReps.toIntOrNull() ?: return
         viewModelScope.launch {
-            manualEditScribbleUseCase.updateSetReps(scribble.id, exerciseId, setId, reps)
+            val scribble = _state.value.selectedScribble ?: return@launch
+            val reps = newReps.toIntOrNull() ?: return@launch
+            val exercise = scribble.exercises.find { it.id == exerciseId } ?: return@launch
+            val newExercise = exercise.copy(
+                sets = exercise.sets.map {
+                    if (it.id == setId) it.copy(reps = reps) else it
+                }
+            )
+
+            updateExerciseUseCase(newExercise)
         }
     }
 
     private fun deleteSet(exerciseId: Long, setId: Long) {
-        val scribble = _state.value.selectedScribble ?: return
         viewModelScope.launch {
-            manualEditScribbleUseCase.deleteSet(scribble.id, exerciseId, setId)
+            val scribble = _state.value.selectedScribble ?: return@launch
+            val exercise = scribble.exercises.find { it.id == exerciseId } ?: return@launch
+            val newExercise = exercise.copy(
+                sets = exercise.sets.filterNot { it.id == setId }
+            )
+
+            updateExerciseUseCase(newExercise)
         }
     }
 
-    private fun loadAIInsights(date: LocalDate) {
+    private fun deleteExercise(exerciseId: Long) {
+        viewModelScope.launch {
+            removeExerciseUseCase(exerciseId)
+        }
+    }
+
+    private fun addSet(exerciseId: Long) {
+        viewModelScope.launch {
+            val scribble = _state.value.selectedScribble ?: return@launch
+            val exercise = scribble.exercises.find { it.id == exerciseId } ?: return@launch
+            addSetToExerciseUseCase(exercise)
+        }
+    }
+
+    private fun saveManualExercise(
+        name: String,
+        muscleGroup: String,
+        sets: List<Set>
+    ) {
+        viewModelScope.launch {
+            val date = CurrentDate(_state.value.currentDate)
+            createManualScribbleUseCase(name, muscleGroup, sets, date).onSuccess {
+                _state.update { it.copy(isAddExerciseSheetVisible = false) }
+            }
+        }
+    }
+
+    private fun loadAIInsights(date: CurrentDate) {
         viewModelScope.launch {
             _state.update { it.copy(isGeneratingInsights = true) }
             val insights = getAIInsightsUseCase(date)

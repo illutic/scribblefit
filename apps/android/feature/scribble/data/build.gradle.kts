@@ -13,6 +13,5 @@ dependencies {
     implementation(project(":core:model"))
     implementation(project(":feature:sets:domain"))
     implementation(project(":feature:exercises:domain"))
-    implementation(project(":feature:workouts:domain"))
     implementation(project(":feature:scribble:domain"))
 }

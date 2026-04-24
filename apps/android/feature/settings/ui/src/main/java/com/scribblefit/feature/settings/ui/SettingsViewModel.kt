@@ -3,7 +3,7 @@ package com.scribblefit.feature.settings.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.scribblefit.core.config.domain.ConfigRepository
-import com.scribblefit.core.config.domain.SystemConfig
+import com.scribblefit.core.config.domain.LocalConfig
 import com.scribblefit.feature.settings.domain.CheckLocalSupportUseCase
 import com.scribblefit.feature.settings.domain.ClearUserDataUseCase
 import com.scribblefit.feature.settings.domain.ExportUserDataUseCase
@@ -34,10 +34,10 @@ class SettingsViewModel @Inject constructor(
             configRepository.config.collect { config ->
                 _state.update {
                     it.copy(
-                        theme = config.themePreference,
-                        isDynamicTheme = config.isDynamicTheme,
-                        weightUnit = config.weightUnit,
-                        llmProvider = config.preferredLlmProvider,
+                        theme = config.localConfig.themePreference,
+                        isDynamicTheme = config.localConfig.isDynamicTheme,
+                        weightUnit = config.localConfig.weightUnit,
+                        llmProvider = config.localConfig.preferredLlmProvider,
                     )
                 }
             }
@@ -70,10 +70,10 @@ class SettingsViewModel @Inject constructor(
         }
     }
 
-    private fun updateConfig(update: (SystemConfig) -> SystemConfig) {
+    private fun updateConfig(update: (LocalConfig) -> LocalConfig) {
         viewModelScope.launch {
             val currentConfig = configRepository.config.value
-            updateSystemConfigUseCase(update(currentConfig))
+            updateSystemConfigUseCase(currentConfig.copy(localConfig = update(currentConfig.localConfig)))
         }
     }
 

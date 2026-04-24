@@ -1,11 +1,9 @@
 package com.scribblefit.core.designsystem
 
 import android.app.Activity
-import android.app.LocalActivityManager
 import android.content.Context
 import android.content.ContextWrapper
 import android.os.Build
-import android.util.Log
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -22,17 +20,13 @@ import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalFontFamilyResolver
 import androidx.compose.ui.platform.LocalView
-import androidx.compose.ui.platform.LocalWindowInfo
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.font.createFontFamilyResolver
 import androidx.compose.ui.unit.sp
 import androidx.core.view.WindowCompat
-import kotlinx.coroutines.CoroutineExceptionHandler
 
 private val InterFontFamily = FontFamily(
     Font(
@@ -126,7 +120,9 @@ fun ScribbleFitTheme(
     val colorScheme = when {
         Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && isDynamicTheme -> {
             val context = LocalContext.current
-            if (isSystemInDarkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+            if (isSystemInDarkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(
+                context
+            )
         }
 
         else -> if (isSystemInDarkTheme) {

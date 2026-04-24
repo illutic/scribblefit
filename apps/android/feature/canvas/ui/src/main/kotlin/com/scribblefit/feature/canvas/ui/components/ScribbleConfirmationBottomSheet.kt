@@ -25,6 +25,7 @@ import com.scribblefit.core.designsystem.ScribbleFitTheme
 import com.scribblefit.core.model.Scribble
 import com.scribblefit.feature.canvas.ui.CanvasState
 import com.scribblefit.feature.canvas.ui.R
+import com.scribblefit.feature.exercises.ui.components.edit.ExerciseEditItem
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -37,6 +38,8 @@ internal fun ScribbleConfirmationBottomSheet(
     onUpdateSetWeight: (Long, Long, String) -> Unit,
     onUpdateSetReps: (Long, Long, String) -> Unit,
     onDeleteSet: (Long, Long) -> Unit,
+    onDeleteExercise: (Long) -> Unit,
+    onAddSet: (Long) -> Unit
 ) {
     val scribble = state.selectedScribble ?: return
     val sheetState = rememberModalBottomSheetState()
@@ -78,11 +81,17 @@ internal fun ScribbleConfirmationBottomSheet(
                     items(scribble.exercises) { exercise ->
                         ExerciseEditItem(
                             exercise = exercise,
-                            state = state,
                             onUpdateExerciseName = onUpdateExerciseName,
                             onUpdateSetWeight = onUpdateSetWeight,
                             onUpdateSetReps = onUpdateSetReps,
-                            onDeleteSet = onDeleteSet
+                            onDeleteSet = onDeleteSet,
+                            weightUnitLabel = state.weightUnitLabel,
+                            setRepsSeparator = state.setRepsSeparator,
+                            repsLabel = state.repsLabel,
+                            deleteSetContentDescription = state.deleteSetContentDescription,
+                            addSetLabel = state.addSetLabel,
+                            onDeleteExercise = onDeleteExercise,
+                            onAddSet = onAddSet,
                         )
                     }
 

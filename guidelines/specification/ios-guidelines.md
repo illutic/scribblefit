@@ -21,9 +21,11 @@ Each Store must be autonomous using `@Observable` and must be isolated to `@Main
 - **Repository Protocol:** Define the contract here. Stream-based getters MUST be reactive.
 - **Use Cases:** Explicitly isolated to `@MainActor` to match the Store and Repository, or conform to `Sendable`.
     - **Reactive Streams:** Use cases returning data streams MUST return an `AsyncStream`.
-    - **Visibility:** Use Cases intended for cross-feature consumption MUST be marked `public` (including their initializers) to ensure visibility across SPM targets.
+    - **Visibility:** Use Cases, Views, and Components intended for cross-feature consumption MUST be marked `public` (including their explicit initializers) to ensure visibility across SPM targets.
+- **Explicit Numeric Casting:** Avoid relying on implicit conversion for optional numeric types. When assigning an `Int` to a `Float?`, use `Float(value)`. For literals, use the correct suffix or decimal point (e.g., `0.0` for `Float`).
 
-### 3. Data Layer (The Implementation)
+## 3. Data Layer (The Implementation)
+
 - **Reactive Repositories:** Use `Combine.PassthroughSubject` or `Observation` to signal data changes to open `AsyncStream` cursors. This is critical for real-time UI updates.
 - **SwiftData Concurrency:** Handling `ModelContext` requires strict actor boundaries. Use `@preconcurrency import Combine` where necessary.
 - **Secure Storage:** Use a Keychain wrapper (e.g., `KeychainHelper`) for sensitive data (API keys, tokens).

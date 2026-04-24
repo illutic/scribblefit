@@ -18,6 +18,7 @@ dependencies {
     implementation(project(":feature:scribble:domain"))
     implementation(project(":feature:insights:domain"))
     implementation(project(":feature:exercises:domain"))
+    implementation(project(":feature:exercises:ui"))
     implementation(project(":feature:sets:domain"))
     implementation(project(":core:config:domain"))
 

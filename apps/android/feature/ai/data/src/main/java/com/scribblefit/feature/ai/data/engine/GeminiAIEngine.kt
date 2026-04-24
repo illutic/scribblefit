@@ -7,13 +7,11 @@ import com.google.firebase.ai.type.generationConfig
 import com.scribblefit.core.config.domain.ConfigRepository
 import com.scribblefit.core.model.AIInsight
 import com.scribblefit.core.model.Exercise
-import com.scribblefit.core.model.ExercisePerformanceInsight
 import com.scribblefit.feature.ai.data.entity.AIInsightDto
-import com.scribblefit.feature.ai.data.entity.WorkoutDto
+import com.scribblefit.feature.ai.data.entity.ExerciseDto
 import com.scribblefit.feature.ai.data.entity.toDomain
 import com.scribblefit.feature.ai.domain.LLMEngine
 import com.scribblefit.feature.ai.domain.ParsedWorkoutResult
-import com.scribblefit.feature.ai.domain.ParsingStatus
 import kotlinx.serialization.json.Json
 
 internal class GeminiAIEngine(
@@ -21,7 +19,7 @@ internal class GeminiAIEngine(
     private val json: Json
 ) : LLMEngine {
     private val config get() = configRepository.config.value
-    
+
     private fun getModel() = Firebase.ai(backend = GenerativeBackend.googleAI()).generativeModel(
         modelName = "gemini-2.5-flash-lite",
         generationConfig = generationConfig {
@@ -34,21 +32,20 @@ internal class GeminiAIEngine(
     override suspend fun parseWorkout(rawText: String): Result<ParsedWorkoutResult> = runCatching {
         // Sanitize input to prevent prompt injection by escaping delimiters
         val sanitizedInput = rawText.replace("""[\{\}]""".toRegex(), " ")
-        val prompt = config.parsePrompt.replace("{{rawText}}", "<workout_scribble>$sanitizedInput</workout_scribble>")
-        val startMs = System.currentTimeMillis()
-        
+        val prompt = config.remoteConfig.parsePrompt.replace(
+            "{{rawText}}",
+            "<workout_scribble>$sanitizedInput</workout_scribble>"
+        )
+
         val response = getModel().generateContent(prompt)
         val responseText = response.text ?: error("No response from Gemini")
         val cleanJson = responseText.replaceFirst("```json", "").replaceFirst("```", "").trim()
-        
-        val workout = json.decodeFromString<WorkoutDto>(cleanJson)
+
+        val exercises = json.decodeFromString<List<ExerciseDto>>(cleanJson)
 
         ParsedWorkoutResult(
-            workout = workout.toDomain(),
             rawText = rawText,
-            status = ParsingStatus.SUCCESS,
-            parsedJson = responseText,
-            processingTimeMs = System.currentTimeMillis() - startMs
+            exercises = exercises.map { it.toDomain() }
         )
     }
 
@@ -60,7 +57,10 @@ internal class GeminiAIEngine(
             }
 
             val sanitizedContext = context.replace("""[\{\}]""".toRegex(), " ")
-            val prompt = config.summaryPrompt.replace("{{workoutData}}", "<workout_history>$sanitizedContext</workout_history>")
+            val prompt = config.remoteConfig.summaryPrompt.replace(
+                "{{workoutData}}",
+                "<workout_history>$sanitizedContext</workout_history>"
+            )
 
             val response = getModel().generateContent(prompt)
             val responseText = response.text ?: error("No response from Gemini")
@@ -70,15 +70,18 @@ internal class GeminiAIEngine(
             dtos.map { it.toDomain() }
         }
 
-    override suspend fun generateExerciseInsight(history: String): Result<ExercisePerformanceInsight> =
+    override suspend fun generateExerciseInsight(history: String): Result<AIInsight> =
         runCatching {
             val sanitizedHistory = history.replace("""[\{\}]""".toRegex(), " ")
-            val prompt = config.insightPrompt.replace("{{exerciseHistory}}", "<exercise_history>$sanitizedHistory</exercise_history>")
+            val prompt = config.remoteConfig.insightPrompt.replace(
+                "{{exerciseHistory}}",
+                "<exercise_history>$sanitizedHistory</exercise_history>"
+            )
 
             val response = getModel().generateContent(prompt)
             val responseText = response.text ?: error("No response from Gemini")
             val cleanJson = responseText.replaceFirst("```json", "").replaceFirst("```", "").trim()
 
-            json.decodeFromString<ExercisePerformanceInsight>(cleanJson)
+            json.decodeFromString<AIInsightDto>(cleanJson).toDomain()
         }
 }

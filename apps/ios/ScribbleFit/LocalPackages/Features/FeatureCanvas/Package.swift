@@ -14,12 +14,10 @@ let package = Package(
         .package(path: "../../Core/CoreFirebase"),
         .package(path: "../../Core/CoreCommon"),
         .package(path: "../FeatureScribble"),
-        .package(path: "../FeatureWorkouts"),
         .package(path: "../FeatureAI"),
         .package(path: "../FeatureConfig"),
         .package(path: "../FeatureSettings"),
         .package(path: "../FeatureInsights"),
-        .package(path: "../FeatureLedger"),
         .package(path: "../FeatureSets"),
         .package(path: "../FeatureExercises")
     ],
@@ -33,12 +31,10 @@ let package = Package(
                 .product(name: "CoreFirebase", package: "CoreFirebase"),
                 .product(name: "CoreCommon", package: "CoreCommon"),
                 .product(name: "FeatureScribble", package: "FeatureScribble"),
-                .product(name: "FeatureWorkouts", package: "FeatureWorkouts"),
                 .product(name: "FeatureAI", package: "FeatureAI"),
                 .product(name: "FeatureConfig", package: "FeatureConfig"),
                 .product(name: "FeatureSettings", package: "FeatureSettings"),
                 .product(name: "FeatureInsights", package: "FeatureInsights"),
-                .product(name: "FeatureLedger", package: "FeatureLedger"),
                 .product(name: "FeatureSets", package: "FeatureSets"),
                 .product(name: "FeatureExercises", package: "FeatureExercises")
             ]

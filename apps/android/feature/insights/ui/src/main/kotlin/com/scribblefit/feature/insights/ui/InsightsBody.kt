@@ -97,7 +97,12 @@ private fun InsightsLoadingContent(
         }
 
         item { EmptySection(title = state.getThisWeek(), placeholder = state.getNothingToShow()) }
-        item { EmptySection(title = state.getExercisesLabel(), placeholder = state.getNothingToShow()) }
+        item {
+            EmptySection(
+                title = state.getExercisesLabel(),
+                placeholder = state.getNothingToShow()
+            )
+        }
     }
 }
 
@@ -147,7 +152,12 @@ private fun InsightsEmptyContent(
         }
 
         item { EmptySection(title = state.getThisWeek(), placeholder = state.getNothingToShow()) }
-        item { EmptySection(title = state.getExercisesLabel(), placeholder = state.getNothingToShow()) }
+        item {
+            EmptySection(
+                title = state.getExercisesLabel(),
+                placeholder = state.getNothingToShow()
+            )
+        }
     }
 }
 
@@ -194,7 +204,7 @@ private fun InsightsDataContent(
         ),
         verticalArrangement = Arrangement.spacedBy(ScribbleFitTheme.spacing.large),
     ) {
-        if (state.aiOverview != null || state.isGeneratingAI) {
+        if (state.insights != null || state.isGeneratingAI) {
             item {
                 AIOverviewSection(state = state)
             }

@@ -5,7 +5,7 @@ The **Add Exercise Bottom Sheet** is a reusable UI component for manual exercise
 
 This component is shared across multiple features:
 - **Canvas (Manual Mode):** To create new scribbles directly.
-- **Workout Details:** To manually add missing exercises to an existing workout session.
+- **Scribble Details:** To manually add missing exercises to an existing training session.
 
 ## 2. User Stories
 - **As a User**, I want to enter exercise details manually **so that** I can accurately log my training without relying on AI parsing.
@@ -49,7 +49,7 @@ This component is shared across multiple features:
     - At least one set must have both Weight > 0 and Reps > 0.
 - [ ] **Output:**
     - When used in **Canvas**, creates a `Scribble` with status `SUCCESS` and structured exercise data.
-    - When used in **Workout Details**, adds a new `WorkoutExercise` to the current workout session.
+    - When used in **Scribble Details**, adds a new `Exercise` to the current session.
     - The `rawText` of the resulting entry (for display purposes) should be generated as: `[Exercise Name] [Weight][Unit] [Sets]x[Reps]`.
 
 ## 4. Development Guidelines (Android)

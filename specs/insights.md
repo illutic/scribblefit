@@ -1,7 +1,7 @@
 # Feature Specification: Insights (Data Visualization)
 
 ## 1. Overview
-The Insights feature provides a data-driven view of the user's progress. It aggregates workout data from the Ledger and visualizes it through charts and statistics, helping users understand their training volume, frequency, and overall progress. It also includes AI-generated summaries for personalized coaching.
+The Insights feature provides a data-driven view of the user's progress. It aggregates training data from Scribbles (specifically COMPLETED ones) and visualizes it through charts and statistics, helping users understand their training volume, frequency, and overall progress. It also includes AI-generated summaries for personalized coaching.
 
 ## 2. User Stories
 - **As a User**, I want to see an AI-generated overview of my progress **so that** I can get quick, personalized insights.
@@ -58,8 +58,8 @@ The Insights feature provides a data-driven view of the user's progress. It aggr
     - Use **Vico** for the Weekly Activity and Monthly Trends charts.
     - Use custom Canvas or a dedicated library for the Volume Distribution pie chart.
     - Implement `InsightsHeader`, `AIOverviewCard`, and `ExerciseProgressList`.
-- **AI Integration:** Use `:feature:ai:domain`'s `LLMEngine` to generate the summary based on workout statistics.
-- **Database:** Room with `Flow` to reactively update stats as new workouts are added.
+- **AI Integration:** Use `:feature:ai:domain`'s `LLMEngine` to generate the summary based on exercise statistics.
+- **Database:** Room with `Flow` to reactively update stats as new scribbles are added.
 
 ## 4. Development Guidelines (iOS)
 - **Architecture:** MVI (State, Intent, @Observable Store).

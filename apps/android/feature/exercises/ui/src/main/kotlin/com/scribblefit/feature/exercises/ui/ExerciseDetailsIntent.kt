@@ -1,7 +1,7 @@
 package com.scribblefit.feature.exercises.ui
 
 sealed class ExerciseDetailsIntent {
-    data class LoadDetails(val exerciseName: String) : ExerciseDetailsIntent()
+    data class LoadDetails(val exerciseId: Long) : ExerciseDetailsIntent()
     object RefreshAIInsight : ExerciseDetailsIntent()
     object NavigateBack : ExerciseDetailsIntent()
 }

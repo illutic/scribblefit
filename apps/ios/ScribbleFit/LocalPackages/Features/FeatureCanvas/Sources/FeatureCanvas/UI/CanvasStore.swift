@@ -5,6 +5,7 @@ import CoreModel
 import FeatureScribble
 import FeatureInsights
 import FeatureSets
+import FeatureExercises
 
 @Observable
 @MainActor
@@ -17,9 +18,10 @@ public final class CanvasStore {
     private let deleteScribbleUseCase: DeleteScribbleUseCase
     private let parsePendingScribblesUseCase: ParsePendingScribblesUseCase
     private let getAIOverviewUseCase: GetAIOverviewUseCase
-    private let updateScribbleWithWorkoutUseCase: UpdateScribbleWithWorkoutUseCase
     private let manualEditScribbleUseCase: ManualEditScribbleUseCase
+    private let createManualScribbleUseCase: CreateManualScribbleUseCase
     private let reorderSetsUseCase: ReorderSetsUseCase
+    private let calculateTrendsUseCase: CalculateTrendsUseCase
     private let configRepository: ConfigRepository
     
     private var observationTask: Task<Void, Never>?
@@ -34,9 +36,10 @@ public final class CanvasStore {
         deleteScribbleUseCase: DeleteScribbleUseCase,
         parsePendingScribblesUseCase: ParsePendingScribblesUseCase,
         getAIOverviewUseCase: GetAIOverviewUseCase,
-        updateScribbleWithWorkoutUseCase: UpdateScribbleWithWorkoutUseCase,
         manualEditScribbleUseCase: ManualEditScribbleUseCase,
+        createManualScribbleUseCase: CreateManualScribbleUseCase,
         reorderSetsUseCase: ReorderSetsUseCase,
+        calculateTrendsUseCase: CalculateTrendsUseCase,
         configRepository: ConfigRepository
     ) {
         self.getScribblesForDateUseCase = getScribblesForDateUseCase
@@ -45,9 +48,10 @@ public final class CanvasStore {
         self.deleteScribbleUseCase = deleteScribbleUseCase
         self.parsePendingScribblesUseCase = parsePendingScribblesUseCase
         self.getAIOverviewUseCase = getAIOverviewUseCase
-        self.updateScribbleWithWorkoutUseCase = updateScribbleWithWorkoutUseCase
         self.manualEditScribbleUseCase = manualEditScribbleUseCase
+        self.createManualScribbleUseCase = createManualScribbleUseCase
         self.reorderSetsUseCase = reorderSetsUseCase
+        self.calculateTrendsUseCase = calculateTrendsUseCase
         self.configRepository = configRepository
         
         setupConfigObservation()
@@ -64,10 +68,11 @@ public final class CanvasStore {
         case .onPreviousDayClick, .onNextDayClick, .showDatePicker, .dismissDatePicker, .onDateSelected:
             handleDateIntent(intent)
             
-        case .updateExerciseName, .updateSetWeight, .updateSetReps, .deleteSet:
+        case .updateExerciseName, .updateSetWeight, .updateSetReps, .deleteSet, .addSet, .deleteExercise,
+             .showAddExerciseSheet, .hideAddExerciseSheet, .saveManualExercise:
             handleEditIntent(intent)
             
-        case .navigateToSettings, .dismissSettings, .toggleInputExpansion:
+        case .navigateToSettings, .dismissSettings, .toggleInputExpansion, .navigateToScribbleDetails, .dismissDetails, .navigateToExerciseDetails:
             handleUIIntent(intent)
             
         default:
@@ -84,8 +89,8 @@ public final class CanvasStore {
         case .clickOnScribble(let scribble):
             if scribble.status == .success {
                 state = state.copy(selectedScribble: scribble)
-            } else if scribble.status == .completed, let workoutId = scribble.workoutId {
-                state = state.copy(navigationState: .workoutExercises(workoutId))
+            } else if scribble.status == .completed {
+                state = state.copy(navigationState: .scribbleDetails(scribble.id))
             }
         case .dismissScribbleDialog:
             state = state.copy(selectedScribble: .some(nil))
@@ -136,6 +141,16 @@ public final class CanvasStore {
             updateSetReps(exerciseId: exerciseId, setId: setId, newReps: newReps)
         case .deleteSet(let exerciseId, let setId):
             deleteSet(exerciseId: exerciseId, setId: setId)
+        case .addSet(let exerciseId):
+            addSet(exerciseId: exerciseId)
+        case .deleteExercise(let exerciseId):
+            deleteExercise(exerciseId: exerciseId)
+        case .showAddExerciseSheet:
+            state = state.copy(isAddExerciseSheetVisible: true)
+        case .hideAddExerciseSheet:
+            state = state.copy(isAddExerciseSheetVisible: false)
+        case .saveManualExercise(let name, let muscle, let sets, let notes):
+            saveManualExercise(name: name, muscleGroup: muscle, sets: sets)
         default:
             break
         }
@@ -151,8 +166,8 @@ public final class CanvasStore {
             state = state.copy(isInputExpanded: !state.isInputExpanded)
         case .navigateToExerciseDetails(let name):
             state = state.copy(navigationState: .exerciseDetails(name))
-        case .navigateToWorkoutExercises(let id):
-            state = state.copy(navigationState: .workoutExercises(id))
+        case .navigateToScribbleDetails(let id):
+            state = state.copy(navigationState: .scribbleDetails(id))
         case .dismissDetails:
             state = state.copy(navigationState: .some(nil))
         default:
@@ -243,6 +258,59 @@ public final class CanvasStore {
                     return ex
                 })
                 state = state.copy(selectedScribble: updated)
+            }
+        }
+    }
+
+    private func addSet(exerciseId: UUID) {
+        guard let selectedScribble = state.selectedScribble else { return }
+        Task {
+            try? await manualEditScribbleUseCase.addSet(
+                scribbleId: selectedScribble.id,
+                exerciseId: exerciseId
+            )
+            // Local update
+            if let selected = state.selectedScribble {
+                let updated = selected.copy(exercises: selected.exercises.map { ex in
+                    if ex.id == exerciseId {
+                        let nextNumber = (ex.sets.map { $0.setNumber }.max() ?? 0) + 1
+                        let newSet = ExerciseSet(id: UUID(), setNumber: nextNumber, weight: 0.0, reps: 0)
+                        return ex.copy(sets: ex.sets + [newSet])
+                    }
+                    return ex
+                })
+                state = state.copy(selectedScribble: updated)
+            }
+        }
+    }
+
+    private func deleteExercise(exerciseId: UUID) {
+        guard let selectedScribble = state.selectedScribble else { return }
+        Task {
+            try? await manualEditScribbleUseCase.deleteExercise(
+                scribbleId: selectedScribble.id,
+                exerciseId: exerciseId
+            )
+            // Local update
+            if let selected = state.selectedScribble {
+                let updated = selected.copy(exercises: selected.exercises.filter { $0.id != exerciseId })
+                state = state.copy(selectedScribble: updated)
+            }
+        }
+    }
+
+    private func saveManualExercise(name: String, muscleGroup: String, sets: [ExerciseSet]) {
+        Task {
+            do {
+                try await createManualScribbleUseCase.execute(
+                    exerciseName: name,
+                    muscleGroup: muscleGroup,
+                    sets: sets,
+                    date: state.currentDate
+                )
+                state = state.copy(isAddExerciseSheetVisible: false)
+            } catch {
+                state = state.copy(error: error.localizedDescription)
             }
         }
     }
@@ -347,15 +415,48 @@ public final class CanvasStore {
             let stream = getScribblesForDateUseCase.execute(date: state.currentDate)
             for await scribbles in stream {
                 if Task.isCancelled { break }
-                state = state.copy(scribbles: scribbles)
                 
-                if scribbles.contains(where: { $0.status == .pending }) {
+                var augmentedScribbles: [Scribble] = []
+                
+                for scribble in scribbles {
+                    if scribble.status == .completed {
+                        let augmentedExercises = await withTaskGroup(of: (Int, Exercise).self) { group in
+                            for (index, exercise) in scribble.exercises.enumerated() {
+                                group.addTask {
+                                    let trends = await self.calculateTrendsUseCase.execute(exercise: exercise)
+                                    let augmented = exercise.copy(
+                                        estimated1RM: trends?.current1RM,
+                                        intensity: trends?.intensity,
+                                        improvement: trends?.improvement
+                                    )
+                                    return (index, augmented)
+                                }
+                            }
+                            
+                            var results: [(Int, Exercise)] = []
+                            for await result in group {
+                                results.append(result)
+                            }
+                            return results.sorted(by: { $0.0 < $1.0 }).map { $0.1 }
+                        }
+                        
+                        var augmentedScribble = scribble
+                        augmentedScribble.exercises = augmentedExercises
+                        augmentedScribbles.append(augmentedScribble)
+                    } else {
+                        augmentedScribbles.append(scribble)
+                    }
+                }
+                
+                state = state.copy(scribbles: augmentedScribbles)
+                
+                if augmentedScribbles.contains(where: { $0.status == .pending }) {
                     triggerParsing()
                 }
                 
                 // Keep selectedScribble in sync if it's being edited
                 if let selected = state.selectedScribble,
-                   let updated = scribbles.first(where: { $0.id == selected.id }) {
+                   let updated = augmentedScribbles.first(where: { $0.id == selected.id }) {
                     state = state.copy(selectedScribble: updated)
                 }
             }

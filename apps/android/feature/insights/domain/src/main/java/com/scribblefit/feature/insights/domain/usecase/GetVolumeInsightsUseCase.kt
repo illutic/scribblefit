@@ -1,22 +1,28 @@
 package com.scribblefit.feature.insights.domain.usecase
 
+import com.scribblefit.core.common.runCatchingWithCancellation
+import com.scribblefit.core.model.CurrentDate
 import com.scribblefit.feature.insights.domain.model.VolumeDataPoint
 import com.scribblefit.feature.insights.domain.repository.InsightsRepository
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flowOn
-import java.time.LocalDate
-import java.time.LocalTime
-import java.time.ZoneId
+import kotlinx.coroutines.withContext
 
 class GetVolumeInsightsUseCase(
     private val repository: InsightsRepository,
     private val coroutineDispatcher: CoroutineDispatcher
 ) {
-    operator fun invoke(startDate: LocalDate, endDate: LocalDate): Flow<List<VolumeDataPoint>> {
-        val startMillis = startDate.atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
-        val endMillis = endDate.atTime(LocalTime.MAX).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
-        return repository.getVolumeInsights(startMillis, endMillis)
-            .flowOn(coroutineDispatcher)
-    }
+    suspend operator fun invoke(
+        startDate: CurrentDate,
+        endDate: CurrentDate
+    ): Result<List<VolumeDataPoint>> =
+        withContext(coroutineDispatcher) {
+            runCatchingWithCancellation {
+                repository.getVolumeInsights(
+                    startDate = startDate.startOfDayInMillis,
+                    endDate = endDate.startOfDayInMillis
+                ).flowOn(coroutineDispatcher).firstOrNull() ?: emptyList()
+            }
+        }
 }

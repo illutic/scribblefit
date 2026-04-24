@@ -46,13 +46,48 @@ extension Font {
     public static let scribbleTitleMedium = Font.system(size: 18, weight: .medium)
     public static let scribbleBodyMedium = Font.system(size: 14, weight: .regular)
     public static let scribbleLabelMedium = Font.system(size: 12, weight: .semibold)
+    public static let scribbleLabelSmall = Font.system(size: 10, weight: .bold)
 }
 
-public struct ScribbleFitSpacing {
+public struct ScribbleFitTheme: Sendable {
+    public struct Typography: Sendable {
+        public let displayLarge = Font.scribbleDisplayLarge
+        public let headlineSmall = Font.scribbleHeadlineSmall
+        public let titleMedium = Font.scribbleTitleMedium
+        public let bodyMedium = Font.scribbleBodyMedium
+        public let labelMedium = Font.scribbleLabelMedium
+        public let labelSmall = Font.system(size: 10, weight: .bold)
+        
+        public init() {}
+    }
+    
+    public struct Colors: Sendable {
+        public let primary = Color.scribblePrimary
+        public let onPrimary = Color.scribbleOnPrimary
+        public let background = Color.scribbleBackground
+        public let surface = Color.scribbleSurface
+        public let surfaceContainerLow = Color.scribbleSurfaceContainerLow
+        public let surfaceContainerHigh = Color.scribbleSurfaceContainerHigh
+        public let midGray = Color.scribbleMidGray
+        public let dangerRed = Color.scribbleDanger
+        public let successGreen = Color.scribbleSuccess
+        public let warningOrange = Color.scribbleWarning
+        
+        public init() {}
+    }
+    
+    public static let typography = Typography()
+    public static let colors = Colors()
+    public static let spacing = ScribbleFitSpacing()
+}
+
+public struct ScribbleFitSpacing: Sendable {
     public static let small: CGFloat = 8
     public static let medium: CGFloat = 16
     public static let large: CGFloat = 24
     public static let screenPadding: CGFloat = 24
+    
+    public init() {}
 }
 
 extension ThemePreference {
