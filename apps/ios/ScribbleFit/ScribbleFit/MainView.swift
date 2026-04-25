@@ -66,17 +66,6 @@ public struct MainView: View {
             }
             .tag(AppTab.workout)
             
-            // Analytics Tab
-            NavigationStack(path: $navManager.analyticsPath) {
-                AnalyticsView()
-                    .navigationTitle(AppTab.analytics.title)
-                    .navigationBarTitleDisplayMode(.inline)
-            }
-            .tabItem {
-                Label(AppTab.analytics.title, systemImage: AppTab.analytics.icon)
-            }
-            .tag(AppTab.analytics)
-            
             // Exercises Tab
             NavigationStack(path: $navManager.exercisesPath) {
                 ExercisesView()
