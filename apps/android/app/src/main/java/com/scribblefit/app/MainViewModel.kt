@@ -4,27 +4,30 @@ import android.content.Context
 import android.provider.Settings
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.scribblefit.core.config.domain.ConfigRepository
 import com.scribblefit.core.navigation.Navigator
 import com.scribblefit.core.navigation.Screen
-import com.scribblefit.feature.ai.domain.engine.AuthRepository
-import com.scribblefit.feature.ai.domain.engine.ConfigRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
     @ApplicationContext private val context: Context,
-    private val authRepository: AuthRepository,
     private val configRepository: ConfigRepository,
     private val navigator: Navigator
 ) : ViewModel() {
     private val _isInitialized = MutableStateFlow(false)
     val isInitialized: StateFlow<Boolean> = _isInitialized
-    val backStack = navigator.backStack
+    val backStack = navigator.navState
+        .map { it.backStack }
+        .stateIn(viewModelScope, SharingStarted.Eagerly, listOf(Screen.Canvas))
 
     init {
         initializeApplication()
@@ -43,13 +46,8 @@ class MainViewModel @Inject constructor(
                 Settings.Secure.getString(context.contentResolver, Settings.Secure.ANDROID_ID)
                     ?: "unknown_device"
 
-            // 2. Perform Login/Auth if needed
-            if (!authRepository.isLogged()) {
-                authRepository.login(deviceId)
-            }
-
-            // 3. Sync Metadata (prompt config)
-            configRepository.syncMetadata()
+            // 2. Sync Metadata (prompt config)
+            // configRepository.syncMetadata()
 
             _isInitialized.value = true
         }

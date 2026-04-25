@@ -18,7 +18,7 @@ public final class SettingsRepositoryImpl: SettingsRepository {
         let config = await database.getConfig()
 
         return AppSettings(
-            aiProvider: LLMProvider(rawValue: config?.preferredLlmProvider ?? "proxy") ?? .proxy,
+            aiProvider: LLMProvider(rawValue: config?.preferredLlmProvider ?? "gemini") ?? .gemini,
             weightUnit: WeightUnit(rawValue: config?.weightUnit ?? "lbs") ?? .lbs,
             themePreference: ThemePreference(rawValue: config?.themePreference ?? "system") ?? .system,
             selectedModel: config?.preferredModel.isEmpty == false ? config?.preferredModel : nil

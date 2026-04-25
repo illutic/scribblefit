@@ -1,6 +1,7 @@
 plugins {
     id("scribblefit.android.library")
     id("scribblefit.android.hilt")
+    id("scribblefit.android.unit.test")
     alias(libs.plugins.kotlin.serialization)
 }
 

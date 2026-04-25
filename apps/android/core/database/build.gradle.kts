@@ -2,6 +2,7 @@ plugins {
     id("scribblefit.android.library.compose")
     id("scribblefit.android.room")
     id("scribblefit.android.hilt")
+    id("scribblefit.android.unit.test")
 }
 
 android {

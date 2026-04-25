@@ -36,10 +36,10 @@
             <InsightsFilterSettings>
               <option name="connection">
                 <ConnectionSetting>
-                  <option name="appId" value="PLACEHOLDER" />
-                  <option name="mobileSdkAppId" value="" />
-                  <option name="projectId" value="" />
-                  <option name="projectNumber" value="" />
+                  <option name="appId" value="com.scribblefit.app" />
+                  <option name="mobileSdkAppId" value="1:1067651470105:android:8abc754057158811b82b88" />
+                  <option name="projectId" value="scribblefit" />
+                  <option name="projectNumber" value="1067651470105" />
                 </ConnectionSetting>
               </option>
               <option name="signal" value="SIGNAL_UNSPECIFIED" />

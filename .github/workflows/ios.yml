@@ -32,9 +32,9 @@ jobs:
 
     - name: Test
       run: |
-        xcodebuild -project ScribbleFit.xcodeproj \
+        xcodebuild test -project ScribbleFit.xcodeproj \
           -scheme ScribbleFit \
-          -destination 'platform=iOS Simulator,name=iPhone 15,OS=latest' \
+          -destination 'platform=iOS Simulator,name=iPhone 16' \
           clean test CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
 
     - name: Build Archive

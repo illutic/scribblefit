@@ -5,28 +5,20 @@ public import Combine
 
 @MainActor
 public final class AppViewModel: ObservableObject {
-    private let authRepository: AuthRepository
     private let configRepository: ConfigRepository
     
     @Published public var isInitialized: Bool = false
     
-    public init(authRepository: AuthRepository, configRepository: ConfigRepository) {
-        self.authRepository = authRepository
+    public init(configRepository: ConfigRepository) {
         self.configRepository = configRepository
     }
     
     public func initialize() {
         Task {
             // 1. Get/Generate Device ID
-            // For iOS we typically use identifierForVendor
-            let deviceId = UIDevice.current.identifierForVendor?.uuidString ?? "ios_unknown"
+            let _ = UIDevice.current.identifierForVendor?.uuidString ?? "ios_unknown"
             
-            // 2. Perform Login/Auth if needed
             do {
-                if try await !authRepository.isLogged() {
-                    try await authRepository.login(deviceId: deviceId)
-                }
-                
                 // 3. Sync Metadata (prompt config)
                 try await configRepository.syncMetadata()
             } catch {

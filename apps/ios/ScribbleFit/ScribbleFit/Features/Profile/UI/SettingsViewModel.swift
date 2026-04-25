@@ -6,7 +6,6 @@ import Combine
 public final class SettingsViewModel: ObservableObject {
     private let settingsRepository: SettingsRepository
     private let modelRepository: ModelRepository
-    private let secureKeyStorage: SecureKeyStorage
     private let navManager: NavigationManager
 
     @Published public var uiState = SettingsUiState()
@@ -14,12 +13,10 @@ public final class SettingsViewModel: ObservableObject {
     public init(
         settingsRepository: SettingsRepository,
         modelRepository: ModelRepository,
-        secureKeyStorage: SecureKeyStorage,
         navManager: NavigationManager
     ) {
         self.settingsRepository = settingsRepository
         self.modelRepository = modelRepository
-        self.secureKeyStorage = secureKeyStorage
         self.navManager = navManager
 
         loadSettings()
@@ -29,9 +26,9 @@ public final class SettingsViewModel: ObservableObject {
         Task {
             do {
                 let settings = try await settingsRepository.getSettings()
-                let apiKey = try await secureKeyStorage.getApiKey() ?? ""
+                let apiKey = "" // Key storage removed
                 self.uiState = SettingsUiState(settings: settings, apiKey: apiKey, isLoading: false)
-                if (settings.aiProvider == .openai || settings.aiProvider == .gemini) && !apiKey.isEmpty {
+                if settings.aiProvider == .gemini && !apiKey.isEmpty {
                     await fetchModels()
                 }
             } catch {
@@ -44,9 +41,9 @@ public final class SettingsViewModel: ObservableObject {
     public func updateApiKey(_ key: String) {
         uiState.apiKey = key
         Task {
-            try? await secureKeyStorage.saveApiKey(key)
+            // Key storage removed
             let provider = uiState.settings.aiProvider
-            if (provider == .openai || provider == .gemini) && !key.isEmpty {
+            if provider == .gemini && !key.isEmpty {
                 await fetchModels()
             } else {
                 uiState.availableModels = []
@@ -59,7 +56,7 @@ public final class SettingsViewModel: ObservableObject {
             AppSettings(aiProvider: provider, weightUnit: current.weightUnit, themePreference: current.themePreference, selectedModel: nil)
         }
         uiState.availableModels = []
-        if (provider == .openai || provider == .gemini) && !uiState.apiKey.isEmpty {
+        if provider == .gemini && !uiState.apiKey.isEmpty {
             Task { await fetchModels() }
         }
     }
@@ -95,7 +92,7 @@ public final class SettingsViewModel: ObservableObject {
     public func fetchModels() async {
         let provider = uiState.settings.aiProvider
         let apiKey = uiState.apiKey
-        guard !apiKey.isEmpty, provider == .openai || provider == .gemini else { return }
+        guard !apiKey.isEmpty, provider == .gemini else { return }
 
         uiState.isLoadingModels = true
         uiState.modelLoadError = nil
@@ -123,7 +120,7 @@ public final class SettingsViewModel: ObservableObject {
 }
 
 public struct SettingsUiState {
-    public var settings: AppSettings = AppSettings(aiProvider: .proxy, weightUnit: .lbs, themePreference: .system)
+    public var settings: AppSettings = AppSettings(aiProvider: .gemini, weightUnit: .lbs, themePreference: .system)
     public var apiKey: String = ""
     public var isLoading: Bool = true
     public var availableModels: [String] = []

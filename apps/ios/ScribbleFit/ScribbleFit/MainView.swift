@@ -3,15 +3,12 @@ import SwiftUI
 public struct MainView: View {
     @StateObject private var navManager = NavigationManager()
     
-    // Repositories
     private let canvasRepository: CanvasRepository
     private let analysisRepository: AnalysisRepository
     private let userRepository: UserRepository
     private let settingsRepository: SettingsRepository
     private let modelRepository: ModelRepository
-    private let secureKeyStorage: SecureKeyStorage
     
-    // Use Cases
     private let processScribbleUseCase: ProcessScribbleUseCase
     private let executeQuickActionUseCase: ExecuteQuickActionUseCase
     private let confirmWorkoutUseCase: ConfirmWorkoutUseCase
@@ -23,7 +20,6 @@ public struct MainView: View {
         userRepository: UserRepository,
         settingsRepository: SettingsRepository,
         modelRepository: ModelRepository,
-        secureKeyStorage: SecureKeyStorage,
         processScribbleUseCase: ProcessScribbleUseCase,
         executeQuickActionUseCase: ExecuteQuickActionUseCase,
         confirmWorkoutUseCase: ConfirmWorkoutUseCase,
@@ -34,7 +30,6 @@ public struct MainView: View {
         self.userRepository = userRepository
         self.settingsRepository = settingsRepository
         self.modelRepository = modelRepository
-        self.secureKeyStorage = secureKeyStorage
         self.processScribbleUseCase = processScribbleUseCase
         self.executeQuickActionUseCase = executeQuickActionUseCase
         self.confirmWorkoutUseCase = confirmWorkoutUseCase
@@ -61,7 +56,6 @@ public struct MainView: View {
                         SettingsView(viewModel: SettingsViewModel(
                             settingsRepository: settingsRepository,
                             modelRepository: modelRepository,
-                            secureKeyStorage: secureKeyStorage,
                             navManager: navManager
                         ))
                     }
@@ -108,7 +102,6 @@ public struct MainView: View {
                         SettingsView(viewModel: SettingsViewModel(
                             settingsRepository: settingsRepository,
                             modelRepository: modelRepository,
-                            secureKeyStorage: secureKeyStorage,
                             navManager: navManager
                         ))
                     }

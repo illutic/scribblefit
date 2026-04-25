@@ -8,48 +8,37 @@ struct ScribbleFitApp: App {
     // Dependencies
     private let syncRepository: SyncRepository
     private let ledgerRepository: LedgerRepository
-    private let authRepository: AuthRepository
     private let configRepository: ConfigRepository
     private let analysisRepository: AnalysisRepository
     private let canvasRepository: CanvasRepository
     private let userRepository: UserRepository
     private let settingsRepository: SettingsRepository
     private let modelRepository: ModelRepository
-    private let secureKeyStorage: SecureKeyStorage
     private let database: ScribbleFitDatabase
     
     init() {
         // In a real app, we'd use a proper DI container
-        let keychain = KeychainSecureKeyStorage()
         let network = ScribbleFitNetworkClient.shared
         let database = ScribbleFitDatabase.shared
         self.database = database
-        self.secureKeyStorage = keychain
         
         let syncRepo = SyncRepositoryImpl(database: database)
         let ledgerRepo = LedgerRepositoryImpl(database: database)
-        let authRepo = AuthRepositoryImpl(networkClient: network, secureKeyStorage: keychain)
-        let configRepo = ConfigRepositoryImpl(networkClient: network, database: database)
+        let configRepo = ConfigRepositoryImpl(database: database)
         let analysisRepo = AnalysisRepositoryImpl(database: database)
-        let telemetryRepo = TelemetryRepositoryImpl(networkClient: network)
         
         // AI Engines
-        let openAIEngine = OpenAIEngine(secureKeyStorage: keychain, configRepository: configRepo)
-        let geminiAIEngine = GeminiAIEngine(secureKeyStorage: keychain, configRepository: configRepo)
-        let proxyEngine = ScribbleFitProxyEngine(networkClient: network, secureKeyStorage: keychain, configRepository: configRepo)
+        let geminiAIEngine = GeminiAIEngine(apiKey: "", configRepository: configRepo)
         let localAIEngine = LocalAIEngine(configRepository: configRepo)
         
         let dynamicEngine = DynamicLLMEngine(
-            openAIEngine: openAIEngine,
             geminiAIEngine: geminiAIEngine,
-            proxyEngine: proxyEngine,
             localAIEngine: localAIEngine,
             configRepository: configRepo
         )
         
         let syncWorkoutUseCase = SyncWorkoutUseCase(
             syncRepository: syncRepo,
-            telemetryRepository: telemetryRepo,
             engine: dynamicEngine,
             configRepository: configRepo
         )
@@ -64,7 +53,6 @@ struct ScribbleFitApp: App {
 
         self.syncRepository = syncRepo
         self.ledgerRepository = ledgerRepo
-        self.authRepository = authRepo
         self.configRepository = configRepo
         self.analysisRepository = analysisRepo
         self.canvasRepository = canvasRepo
@@ -73,7 +61,6 @@ struct ScribbleFitApp: App {
         self.modelRepository = modelRepo
 
         _appViewModel = StateObject(wrappedValue: AppViewModel(
-            authRepository: authRepo,
             configRepository: configRepo
         ))
     }
@@ -88,7 +75,6 @@ struct ScribbleFitApp: App {
                         userRepository: userRepository,
                         settingsRepository: settingsRepository,
                         modelRepository: modelRepository,
-                        secureKeyStorage: secureKeyStorage,
                         processScribbleUseCase: ProcessScribbleUseCase(canvasRepository: canvasRepository),
                         executeQuickActionUseCase: ExecuteQuickActionUseCase(canvasRepository: canvasRepository),
                         confirmWorkoutUseCase: ConfirmWorkoutUseCase(sessionRepository: WorkoutSessionRepositoryImpl(database: database), ledgerRepository: ledgerRepository),

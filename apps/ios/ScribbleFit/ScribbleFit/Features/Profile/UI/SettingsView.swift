@@ -16,8 +16,6 @@ public struct SettingsView: View {
 
                     PreferenceItem(label: "Provider") {
                         Menu {
-                            Button("ScribbleFit AI") { viewModel.updateProvider(.proxy) }
-                            Button("OpenAI") { viewModel.updateProvider(.openai) }
                             Button("Gemini") { viewModel.updateProvider(.gemini) }
                             Button("Local") { viewModel.updateProvider(.local) }
                         } label: {
@@ -38,7 +36,7 @@ public struct SettingsView: View {
                     }
 
                     let provider = viewModel.uiState.settings.aiProvider
-                    if provider == .openai || provider == .gemini {
+                    if provider == .gemini {
                         VStack(alignment: .leading, spacing: 8) {
                             Text("API Key")
                                 .font(ScribbleFitFont.labelMedium())
@@ -49,7 +47,7 @@ public struct SettingsView: View {
                                     get: { viewModel.uiState.apiKey },
                                     set: { viewModel.updateApiKey($0) }
                                 ),
-                                placeholder: provider == .openai ? "sk-..." : "AIza..."
+                                placeholder: "AIza..."
                             )
                         }
 
@@ -148,8 +146,6 @@ public struct SettingsView: View {
 
     private func providerLabel(_ provider: LLMProvider) -> String {
         switch provider {
-        case .proxy: return "ScribbleFit AI"
-        case .openai: return "OpenAI"
         case .gemini: return "Gemini"
         case .local: return "Local"
         }

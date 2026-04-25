@@ -5,7 +5,7 @@ import Foundation
  */
 public actor GeminiAIEngine: LLMEngine, AnalysisEngine {
     private let session: URLSession
-    private let secureKeyStorage: SecureKeyStorage
+    private let apiKey: String
     private let configRepository: ConfigRepository
     private let jsonDecoder = JSONDecoder()
     private let jsonEncoder = JSONEncoder()
@@ -14,11 +14,11 @@ public actor GeminiAIEngine: LLMEngine, AnalysisEngine {
     private var activeModelPath: String?
     
     public init(
-        secureKeyStorage: SecureKeyStorage,
+        apiKey: String,
         configRepository: ConfigRepository,
         session: URLSession = .shared
     ) {
-        self.secureKeyStorage = secureKeyStorage
+        self.apiKey = apiKey
         self.configRepository = configRepository
         self.session = session
     }
@@ -26,7 +26,7 @@ public actor GeminiAIEngine: LLMEngine, AnalysisEngine {
     public func parseWorkout(rawText: String) async -> ParsedWorkoutResult {
         let startTime = Date()
         do {
-            guard let apiKey = try await secureKeyStorage.getApiKey(), !apiKey.isEmpty else {
+            guard !apiKey.isEmpty else {
                  throw NSError(domain: "GeminiAIEngine", code: 0, userInfo: [NSLocalizedDescriptionKey: "API key is missing"])
             }
 
@@ -60,7 +60,7 @@ public actor GeminiAIEngine: LLMEngine, AnalysisEngine {
     }
     
     public func generateSuggestion(context: String) async throws -> AnalysisSuggestion {
-        guard let apiKey = try await secureKeyStorage.getApiKey(), !apiKey.isEmpty else {
+        guard !apiKey.isEmpty else {
             throw NSError(domain: "GeminiAIEngine", code: 0, userInfo: [NSLocalizedDescriptionKey: "API key is missing"])
         }
         let content = try await callGemini(apiKey: apiKey, prompt: AnalysisPrompts.getSuggestionPrompt(context: context), userMessage: "Generate suggestion in JSON format.")
@@ -82,7 +82,7 @@ public actor GeminiAIEngine: LLMEngine, AnalysisEngine {
     }
     
     public func generateSummary(period: SummaryPeriod, workoutData: String) async throws -> AnalysisSummary {
-        guard let apiKey = try await secureKeyStorage.getApiKey(), !apiKey.isEmpty else {
+        guard !apiKey.isEmpty else {
             throw NSError(domain: "GeminiAIEngine", code: 0, userInfo: [NSLocalizedDescriptionKey: "API key is missing"])
         }
         let content = try await callGemini(apiKey: apiKey, prompt: AnalysisPrompts.getSummaryPrompt(period: period.rawValue, data: workoutData), userMessage: "Generate summary in JSON format.")
@@ -122,7 +122,7 @@ public actor GeminiAIEngine: LLMEngine, AnalysisEngine {
     }
     
     public func generateExerciseInsight(exerciseName: String, historyData: String) async throws -> ExerciseInsight {
-        guard let apiKey = try await secureKeyStorage.getApiKey(), !apiKey.isEmpty else {
+        guard !apiKey.isEmpty else {
             throw NSError(domain: "GeminiAIEngine", code: 0, userInfo: [NSLocalizedDescriptionKey: "API key is missing"])
         }
         let content = try await callGemini(apiKey: apiKey, prompt: AnalysisPrompts.getExerciseInsightPrompt(name: exerciseName, history: historyData), userMessage: "Analyze \(exerciseName) in JSON format.")

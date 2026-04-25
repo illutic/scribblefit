@@ -4,30 +4,24 @@ import Foundation
  * Orchestrator engine that implements dynamic fallback logic between different LLM providers.
  */
 public final class DynamicLLMEngine: LLMEngine, AnalysisEngine {
-    private let openAIEngine: LLMEngine
     private let geminiAIEngine: LLMEngine
-    private let proxyEngine: LLMEngine
     private let localAIEngine: LocalAIEngine
     private let configRepository: ConfigRepository
     
     public init(
-        openAIEngine: LLMEngine,
         geminiAIEngine: LLMEngine,
-        proxyEngine: LLMEngine,
         localAIEngine: LocalAIEngine,
         configRepository: ConfigRepository
     ) {
-        self.openAIEngine = openAIEngine
         self.geminiAIEngine = geminiAIEngine
-        self.proxyEngine = proxyEngine
         self.localAIEngine = localAIEngine
         self.configRepository = configRepository
     }
     
     public func parseWorkout(rawText: String) async -> ParsedWorkoutResult {
         let config = await configRepository.getConfig()
-        let preferredString = config?.preferredLlmProvider ?? "proxy"
-        let preferred = LLMProvider(rawValue: preferredString) ?? .proxy
+        let preferredString = config?.preferredLlmProvider ?? "gemini"
+        let preferred = LLMProvider(rawValue: preferredString) ?? .gemini
         
         let engines = getEnginePriorityList(preferred: preferred)
         var lastResult: ParsedWorkoutResult?
@@ -50,8 +44,8 @@ public final class DynamicLLMEngine: LLMEngine, AnalysisEngine {
     
     public func generateSuggestion(context: String) async throws -> AnalysisSuggestion {
         let config = await configRepository.getConfig()
-        let preferredString = config?.preferredLlmProvider ?? "proxy"
-        let preferred = LLMProvider(rawValue: preferredString) ?? .proxy
+        let preferredString = config?.preferredLlmProvider ?? "gemini"
+        let preferred = LLMProvider(rawValue: preferredString) ?? .gemini
         let engines = getAnalysisEnginePriorityList(preferred: preferred)
         
         var lastError: Error?
@@ -67,8 +61,8 @@ public final class DynamicLLMEngine: LLMEngine, AnalysisEngine {
     
     public func generateSummary(period: SummaryPeriod, workoutData: String) async throws -> AnalysisSummary {
         let config = await configRepository.getConfig()
-        let preferredString = config?.preferredLlmProvider ?? "proxy"
-        let preferred = LLMProvider(rawValue: preferredString) ?? .proxy
+        let preferredString = config?.preferredLlmProvider ?? "gemini"
+        let preferred = LLMProvider(rawValue: preferredString) ?? .gemini
         let engines = getAnalysisEnginePriorityList(preferred: preferred)
         
         var lastError: Error?
@@ -84,8 +78,8 @@ public final class DynamicLLMEngine: LLMEngine, AnalysisEngine {
     
     public func generateExerciseInsight(exerciseName: String, historyData: String) async throws -> ExerciseInsight {
         let config = await configRepository.getConfig()
-        let preferredString = config?.preferredLlmProvider ?? "proxy"
-        let preferred = LLMProvider(rawValue: preferredString) ?? .proxy
+        let preferredString = config?.preferredLlmProvider ?? "gemini"
+        let preferred = LLMProvider(rawValue: preferredString) ?? .gemini
         let engines = getAnalysisEnginePriorityList(preferred: preferred)
         
         var lastError: Error?
@@ -101,10 +95,8 @@ public final class DynamicLLMEngine: LLMEngine, AnalysisEngine {
     
     private func getEnginePriorityList(preferred: LLMProvider) -> [LLMEngine] {
         switch preferred {
-        case .openai: return [openAIEngine, geminiAIEngine, proxyEngine, localAIEngine]
-        case .gemini: return [geminiAIEngine, openAIEngine, proxyEngine, localAIEngine]
-        case .proxy: return [proxyEngine, geminiAIEngine, openAIEngine, localAIEngine]
-        case .local: return [localAIEngine, geminiAIEngine, openAIEngine, proxyEngine]
+        case .gemini: return [geminiAIEngine, localAIEngine]
+        case .local: return [localAIEngine, geminiAIEngine]
         }
     }
     

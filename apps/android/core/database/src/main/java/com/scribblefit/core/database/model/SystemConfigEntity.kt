@@ -3,7 +3,7 @@ package com.scribblefit.core.database.model
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
-import com.scribblefit.feature.ai.domain.model.LLMProvider
+import com.scribblefit.core.config.domain.LLMProvider
 
 @Entity(tableName = "System_Config")
 data class SystemConfigEntity(
@@ -16,7 +16,7 @@ data class SystemConfigEntity(
     @ColumnInfo(name = "exercise_version")
     val exerciseVersion: String = "0.0.0",
     @ColumnInfo(name = "preferred_llm_provider")
-    val preferredLlmProvider: LLMProvider = LLMProvider.PROXY,
+    val preferredLlmProvider: LLMProvider = LLMProvider.GEMINI,
     @ColumnInfo(name = "preferred_model", defaultValue = "")
     val preferredModel: String = "",
     @ColumnInfo(name = "parsing_mode")

@@ -2,17 +2,15 @@ import Foundation
 import SwiftData
 
 public final class ConfigRepositoryImpl: ConfigRepository {
-    private let networkClient: ScribbleFitNetworkClient
     private let database: ScribbleFitDatabase
     
-    public init(networkClient: ScribbleFitNetworkClient, database: ScribbleFitDatabase) {
-        self.networkClient = networkClient
+    public init(database: ScribbleFitDatabase) {
         self.database = database
     }
     
     @MainActor
     public convenience init() {
-        self.init(networkClient: .shared, database: .shared)
+        self.init(database: .shared)
     }
     
     public func getConfig() async -> SystemConfig? {
@@ -24,22 +22,6 @@ public final class ConfigRepositoryImpl: ConfigRepository {
     }
     
     public func syncMetadata() async throws {
-        let metadata = try await networkClient.getMetadata()
-        let currentConfig = await getConfig()
-        
-        if currentConfig == nil || currentConfig?.promptVersion != metadata.promptVersion {
-            let promptConfig = try await networkClient.getPromptConfig()
-            let newConfig = SystemConfig(
-                id: "config",
-                promptVersion: promptConfig.version,
-                promptText: promptConfig.prompt,
-                exerciseVersion: metadata.exerciseVersion,
-                updatedAt: Date()
-            )
-            await updateConfig(newConfig)
-        }
+        // No-op, network removed
     }
-    
 }
-
-

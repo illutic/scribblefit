@@ -18,7 +18,7 @@ public final class SystemConfig {
         promptVersion: String,
         promptText: String = defaultPrompt,
         exerciseVersion: String = "0.0.0",
-        preferredLlmProvider: String = "proxy",
+        preferredLlmProvider: String = "gemini",
         preferredModel: String = "",
         weightUnit: String = "lbs",
         themePreference: String = "system",

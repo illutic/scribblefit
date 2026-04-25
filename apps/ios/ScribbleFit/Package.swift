@@ -44,25 +44,5 @@ let package = Package(
             ],
             path: "Sources/ScribbleFitAggregator"
         ),
-        // Tests
-        .testTarget(
-            name: "ScribbleFitTests",
-            dependencies: [
-                "ScribbleFitAggregator",
-                .product(name: "FeatureCanvas", package: "FeatureCanvas"),
-                .product(name: "FeatureSettings", package: "FeatureSettings"),
-                .product(name: "FeatureInsights", package: "FeatureInsights"),
-                .product(name: "FeatureLedger", package: "FeatureLedger"),
-                .product(name: "CoreModel", package: "CoreModel"),
-                .product(name: "CoreDatabase", package: "CoreDatabase"),
-                .product(name: "FeatureAI", package: "FeatureAI"),
-                .product(name: "FeatureScribble", package: "FeatureScribble"),
-                .product(name: "FeatureConfig", package: "FeatureConfig"),
-                .product(name: "CoreFirebase", package: "CoreFirebase"),
-                .product(name: "FeatureSets", package: "FeatureSets"),
-                .product(name: "FeatureExercises", package: "FeatureExercises")
-            ],
-            path: "ScribbleFitTests"
-        ),
     ]
 )
