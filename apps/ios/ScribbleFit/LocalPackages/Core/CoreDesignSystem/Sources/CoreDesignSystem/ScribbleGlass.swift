@@ -10,17 +10,12 @@ public struct ScribbleGlassModifier: ViewModifier {
     @MainActor
     public func body(content: Content) -> some View {
         let shape = RoundedRectangle(cornerRadius: cornerRadius)
-        if #available(iOS 26.0, macOS 26.0, *) {
-            content
-                .glassEffect(in: shape)
-        } else {
-            content
-                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: cornerRadius))
-                .overlay(
-                    shape
-                        .stroke(Color.white.opacity(0.15), lineWidth: 0.5)
-                )
-        }
+        content
+            .background(.ultraThinMaterial, in: shape)
+            .overlay(
+                shape
+                    .stroke(Color.white.opacity(0.15), lineWidth: 0.5)
+            )
     }
 }
 
