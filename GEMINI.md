@@ -1,68 +1,151 @@
-# GEMINI Context: ScribbleFit
+# GEMINI.md
 
-## 🏋️ Project Overview
-ScribbleFit is a fully native mobile fitness application designed to eliminate the friction of logging workouts. It uses AI to parse raw, messy gym shorthand (e.g., *"Bench 135x5, 135x5"*) into clean, structured database entries.
+## Project Overview
 
-### Core Engineering Principles
-1.  **Offline-First Resilience:** All data is written to a local queue and processed/synced in the background. The UI never blocks for network requests.
-2.  **Utilitarian Minimalism:** Hyper-minimalist, airy, and text-focused UI. Pure white backgrounds, rich black text, and soft gray input pills.
-3.  **Event-Driven Intelligence:** AI features are triggered by database insert events, not cron jobs.
-4.  **Robust Abstraction:** Prioritize interfaces for all services to ensure testability and modularity. Avoid hardcoding; use configuration files or environment variables for all variable parameters.
-5.  **Feature-Based Architecture:** Organize code by features (e.g., `feature:ai`). Each feature should be further sub-grouped into `domain` (pure business logic and interfaces) and `data` (implementations and external dependencies). Cross-cutting concerns should reside in `core` packages.
-6.  **Strict Clean Architecture:** Maintain a rigorous separation of concerns. The `domain` layer must be pure (no dependencies on frameworks, network, or database modules) and contain only business logic, models, and interfaces. Domain modules may depend on other domain modules to share business logic, but cross-feature dependencies are strictly restricted to `domain-to-domain` only. The `data` layer handles all external integrations and must map Data Transfer Objects (DTOs) to domain models before returning them. Dependencies must always point inwards toward the `domain`.
-7.  **Centralized Configuration:** Maintain all environmental and application-wide constants (e.g., API base URLs, feature toggles) in a dedicated configuration module or class to ensure consistency across the project.
+ScribbleFit is a cross-platform (Android + iOS) fitness tracking app. Users write freeform text
+scribbles that are parsed by AI into structured workout data. The app follows MVI architecture on
+both platforms with strict layer separation (Domain -> Data -> UI).
 
-## 🛠️ Tech Stack
-- **Android:** Kotlin & Jetpack Compose, Room Database, WorkManager for background tasks.
-- **iOS:** Swift & SwiftUI, SwiftData or SQLite.swift, `BGTaskScheduler` for background tasks.
-- **Backend/API:** Ktor Edge Functions (Supabase or Cloudflare Workers) as an MCP orchestration server.
-- **AI Engine:** OpenAI or Anthropic for high-speed, structured JSON parsing.
+## Epistemological Rigour
 
-## 🏗️ Architecture
-- **Local Storage (Source of Truth):** Room (Android) / SwiftData (iOS).
-- **Offline-First Parser:** Background workers (`WorkManager`/`BGTaskScheduler`) process the `Sync_Queue`.
-- **Edge API:** Orchestrates metadata sync, exercise dictionary seeding, and LLM proxying for text parsing.
+IMPORTANT: When creating a PR, never claim something is fixed without evidence. Always state your
+certainty level:
 
-## 🎨 UI/UX Design System
-- **Aesthetic:** Minimalist, airy, text-focused.
-- **Color Palette:** Pure White (`#FFFFFF`), Very Soft Gray (`#F7F7F8`), Rich Black (`#101010`).
-- **Typography:** System Native (SF Pro on iOS, Roboto/Inter on Android).
-- **Key Screens:** Intelligent Canvas (Home), Structured Ledger (Workout Summary), Insights Dashboard (Analytics), Exercise Library, and Duo Dashboard (Social).
+| Level            | Meaning         | Evidence                     |
+|------------------|-----------------|------------------------------|
+| **INSUFFICIENT** | Looks right     | Visual inspection only       |
+| **WEAK**         | Compiles        | Build succeeds               |
+| **MODERATE**     | Manual test     | Ran the app / checked output |
+| **STRONG**       | Automated tests | Unit/screen tests pass       |
 
-## 🚀 Building and Running
-The project structure is planned to be scaffolded into `apps/` and `api/` directories.
+Always provide the certainty level and the proof when reporting on changes.
 
-### Android (`apps/android`) - *Planned*
-- **Build:** `./gradlew assembleDebug`
-- **Run:** `./gradlew installDebug`
-- **Test:** `./gradlew test`
+## Rules
 
-### iOS (`apps/ios`) - *Planned*
-- *Status: Scaffolding pending.*
+**Boy Scout:** Fix completely with tests, or don't touch it. No TODOs without Jira tickets. No
+partial refactors. No features beyond scope.
 
-### API (`api`) - *Planned*
-- **Deploy:** `npm run deploy`
-- **Dev:** `npm run dev`
+**Tech Debt:** Any code added that does not strictly adhere to these guidelines (due to time 
+constraints or technical blockers) MUST be documented in `TECH_DEBT.md`.
 
-## 📝 Development Conventions
-- **Strict Adherence to Minimalism:** Do not deviate from the design system. Strip away default corporate styling.
-- **Assume Offline:** Always read/write to the local database first.
-- **Native Performance:** Avoid web-views or cross-platform wrappers.
-- **Sync Logic:** All AI parsing must happen through the background sync queue to ensure offline resilience.
+**Certainty Levels** — never claim "fixed" without evidence:
 
-## 📏 Linting & Quality Standards
-- **Detekt Adherence:** Rigorously follow Detekt rules to ensure code maintainability.
-    - **Complexity:** Avoid `CyclomaticComplexMethod` (maintain < 15) and `LongMethod` (< 60 lines).
-    - **Naming:** Follow standard Kotlin naming conventions; avoid hungarian notation or redundant prefixes.
-- **Jetpack Compose Best Practices:**
-    - **Function Naming:** Composable functions must be PascalCase and start with a Noun (e.g., `CanvasFeed`).
-    - **Modifier Usage:** Every Composable that emits a layout should accept a `Modifier` as its first optional parameter and apply it to its root element.
-    - **State Hoisting:** Prefer stateless Composables with state hoisted to a caller or ViewModel.
-    - **Performance:** Avoid excessive parameters (> 10) and ensure heavy computations are wrapped in `remember` or moved to the ViewModel.
-    - **Layout Stability:** Use `Stable` or `Immutable` annotations for UI models where necessary to minimize unnecessary recompositions.
+| Level        | Meaning         | Evidence                     |
+|--------------|-----------------|------------------------------|
+| INSUFFICIENT | Looks right     | Visual inspection only       |
+| WEAK         | Compiles        | Build succeeds               |
+| MODERATE     | Manual test     | Ran the app / checked output |
+| STRONG       | Automated tests | Unit/screen tests pass       |
 
-## 🗂️ Key Documentation
-- `README.md`: Project overview and agent instructions.
-- `ARCHITECTURE_SPEC.md`: Detailed local storage, background worker, and API specifications.
-- `AI_PARSER_SPEC.md`: Specification for Bring-Your-Own-Key (BYOK) and managed AI parsing.
-- `UI_UX_SPEC.md`: Global design system and screen-by-screen requirements.
+Always state level + proof when reporting changes.
+
+**Prove It With Tests:** If you are not certain that an implementation works correctly, write a
+test for it before reporting it as done. Use unit tests for domain/data logic, Compose UI tests
+(Android) or XCUITests (iOS) for UI behaviour, or both. A certainty level of WEAK or INSUFFICIENT
+is not acceptable for merged code — escalate to STRONG by adding automated tests.
+
+**Compilation Rule:** A task is NOT complete until the application compiles successfully on ALL target platforms. For cross-platform changes, verify BOTH Android and iOS builds.
+
+**QA Verification:** ALWAYS run the `qa-agent` after proving your changes with tests and verifying compilation. This agent 
+verifies that the implementation meets all acceptance criteria in the feature spec and updates the 
+`specs/[feature].md` file accordingly.
+
+**Critical Review:** ALWAYS consult the `critical-reviewer` subagent before finalizing any code 
+change. This agent assumes you are wrong and the codebase is wrong, helping identify hidden flaws 
+and architectural violations.
+
+**Post-Implementation Retrospection:** Run the `retrospection-agent` after every successful code 
+change (and after the `critical-reviewer` has passed). This agent formalizes learnings, refines 
+guidelines, and identifies repeatable patterns to improve future implementation efficiency.
+
+**Session Learning:** Suggest `/retrospection` at the end of substantive sessions.
+
+## Guidelines
+
+Before implementing any feature or making architectural decisions, read the relevant guidelines:
+
+- **Design System:** `guidelines/DESIGN.md` -- Editorial Minimalism ("Digital Atelier"),
+  monochromatic palette, zero borders, glassmorphism
+- **Android Project Guidelines:** `guidelines/project/android-project-guidelines.md` -- MVI, Hilt,
+  Room, Compose, coroutines
+- **iOS Project Guidelines:** `guidelines/project/ios-project-guidelines.md` -- Pure SwiftUI MVI,
+  SwiftData, Swift 6 concurrency
+- **Android Implementation Workflow:** `guidelines/specification/android-guidelines.md` --
+  Committing strategy, UI splitting, adaptive layouts
+- **iOS Implementation Workflow:** `guidelines/specification/ios-guidelines.md` -- Committing
+  strategy, native aesthetics, Swift Charts
+
+## Architecture Rules
+
+- **MVI without base classes** -- Every ViewModel/Store, Repository, and UseCase is autonomous
+- **Zero business logic in ViewModels/Stores** -- All logic lives in Use Cases (SRP)
+- **Layer order:** Domain (models, use cases, interfaces) -> Data (implementations, mappers,
+  persistence) -> UI (state, intent, screens)
+- **Commit each layer separately** following the convention: `feat(domain):`, `feat(core):`,
+  `feat(data):`, `feat(ai):`, `feat(ui):`
+- **Core isolation:** Changes to `core:` modules must be committed before feature layers
+
+## Android Specifics
+
+- **UI:** 100% Jetpack Compose with `:core:designsystem` tokens
+- **Strings:** Zero hardcoded strings. Resolve all UI text in `State` via
+  `@get:Composable @get:ReadOnlyComposable` getters from `strings.xml`
+- **DI:** Hilt. Use Cases in `:domain` must NOT use `@Inject`; provide them via `@Module` in `:data`
+- **Persistence:** Room with `@Transaction` for atomic fetching
+- **Coroutines:** `Dispatchers.Default` for domain, `Dispatchers.IO` for I/O
+- **Screen splitting:** Split at 300 lines into contextual components (`Header`, `Body`, `Footer`)
+- **IME:** Use `adjustResize` + `.imePadding()` + `.imeNestedScroll()`
+- **Adaptive:** Constrain width-sensitive elements with `.widthIn(max = 300.dp)` on screens >600dp
+- **Status enums:** Uppercase raw values, use `.uppercase()` in mappers
+- **AI:** Integrate via `:feature:ai:domain`'s `LLMEngine`
+
+## iOS Specifics
+
+- **UI:** 100% SwiftUI (no UIKit). Target iOS 17+, use iOS 26 enhancements via `#available`
+- **Strings:** Resolve all UI text in State/Store. Contextual components receive pre-resolved
+  strings
+- **Concurrency:** Swift 6 strict concurrency -- `Sendable` models, `@MainActor` stores/repos/use
+  cases
+- **Persistence:** SwiftData with reactive `AsyncStream` repositories
+- **Mapping:** `@MainActor` on `toDomain()` extensions, bidirectional mapping required
+- **AI:** `RoutingLLMService` for dynamic cloud/local switching
+- **Status enums:** Uppercase raw values (e.g., `case failed = "FAILED"`), use `.uppercased()` in
+  mapping
+
+## Feature Specs
+
+Feature specifications live in `specs/`. Read the relevant spec before implementing:
+
+- `specs/canvas.md` -- Home screen, scribble entry, AI parsing
+- `specs/ledger.md` -- Training history (Scribbles)
+- `specs/insights.md` -- AI analytics and charts
+- `specs/settings.md` -- User preferences and configuration
+
+## Configuration Management
+
+Adding a global setting follows an 8-step synchronization pattern across Domain -> Database
+Entity -> Mapper -> Repository -> AppState -> AppViewModel -> MainActivity -> Settings UI. See
+`guidelines/project/android-project-guidelines.md` Section 6 for details.
+
+## Entity Lifecycle
+
+- `Scribble` is the primary root entity. When `status` is `COMPLETED`, it represents a logged session.
+- `Exercise` records are linked directly to a `Scribble`.
+- `Set` records are linked directly to an `Exercise`.
+- Use `OnConflictStrategy.REPLACE` for updates within a session.
+- Map instance IDs to domain model `id` fields.
+- `ForeignKey.CASCADE` ensures that deleting a `Scribble` cleans up all associated `Exercise` and `Set` records.
+
+## Skills
+
+- **feature-spec-creator** (`/spec [feature]`) -- Generate a technical feature specification
+- **spec-implementer** (`/build [feature]`) -- Implement a feature spec layer-by-layer
+- **retrospection** (`/retrospect [feature]`) -- Analyze implementation and update guidelines
+
+## Agents
+
+- `android-expert` -- Senior Android engineer for Kotlin/Compose/Room/Hilt work
+- `ios-expert` -- Senior iOS engineer for Swift/SwiftUI/SwiftData work
+- `critical-reviewer` -- Harsh senior architect who assumes everything is wrong and hunts for flaws
+- `retrospection-agent` -- Architect focused on formalizing patterns and refining guidelines after implementation
+- `qa-agent` -- Meticulous QA engineer who verifies implementations against acceptance criteria in specs

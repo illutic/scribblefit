@@ -24,18 +24,21 @@ rootProject.name = "scribblefit-android"
 includeBuild("build-logic")
 
 include(":app")
-include(":core:database")
-include(":core:network")
-include(":core:designsystem")
-include(":core:navigation")
-include(":feature:ai:domain")
-include(":feature:ai:data")
-include(":feature:canvas:domain")
-include(":feature:canvas:data")
-include(":feature:canvas:ui")
-include(":feature:ledger")
-include(":feature:analytics:domain")
-include(":feature:analytics:data")
-include(":feature:profile:domain")
-include(":feature:profile:data")
-include(":feature:profile:ui")
+include(
+    ":core:database",
+    ":core:designsystem",
+    ":core:navigation",
+    ":core:coroutines",
+    ":core:model",
+    ":core:common",
+    ":core:config:domain",
+    ":core:config:data"
+)
+include(":feature:ai:domain", ":feature:ai:data")
+include(":feature:scribble:domain", ":feature:scribble:data")
+include(":feature:exercises:domain", ":feature:exercises:data", ":feature:exercises:ui")
+include(":feature:sets:domain", ":feature:sets:data")
+include(":feature:insights:domain", ":feature:insights:data", ":feature:insights:ui")
+include(":feature:canvas:ui", ":feature:canvas:domain", ":feature:canvas:data")
+include(":feature:ledger:ui")
+include(":feature:settings:domain", ":feature:settings:data", ":feature:settings:ui")

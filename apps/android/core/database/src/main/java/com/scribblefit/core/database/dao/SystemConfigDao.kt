@@ -1,19 +1,20 @@
 package com.scribblefit.core.database.dao
 
 import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
 import androidx.room.Query
-import androidx.room.Upsert
-import com.scribblefit.core.database.model.SystemConfigEntity
+import com.scribblefit.core.database.entity.config.SystemConfigEntity
 import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface SystemConfigDao {
-    @Upsert
-    suspend fun upsertConfig(config: SystemConfigEntity)
+    @Query("SELECT * FROM system_config LIMIT 1")
+    fun getSystemConfig(): Flow<SystemConfigEntity?>
 
-    @Query("SELECT * FROM System_Config WHERE id = :id")
-    fun getConfig(id: String = "config"): Flow<SystemConfigEntity?>
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertSystemConfig(config: SystemConfigEntity)
 
-    @Query("DELETE FROM System_Config")
-    suspend fun deleteAll()
+    @Query("DELETE FROM system_config")
+    suspend fun clearSystemConfig()
 }

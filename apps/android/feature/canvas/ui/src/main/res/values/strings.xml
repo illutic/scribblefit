@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="canvas_app_name">ScribbleFit</string>
+    <string name="canvas_empty_scribble_text">Start scribbling.\n Type your first set below.</string>
+    <string name="canvas_textfield_placeholder">What did you lift today?</string>
+    <string name="canvas_error_unknown">An unknown error occurred.</string>
+    <string name="canvas_send_workout">Send workout</string>
+    <string name="canvas_workout_input_field">Workout input field</string>
+    <string name="canvas_workout_input_hint">Type your workout shorthand here to log it.</string>
+    <string name="canvas_input_enabled">Enabled</string>
+    <string name="canvas_input_disabled">Disabled</string>
+    <string name="canvas_status_pending">Pending</string>
+    <string name="canvas_status_parsing">Parsing</string>
+    <string name="canvas_status_completed">Completed</string>
+    <string name="canvas_status_failed">Failed</string>
+    <string name="canvas_dialog_title">Confirm Workout</string>
+    <string name="canvas_dialog_confirm">Confirm</string>
+    <string name="canvas_dialog_delete">Delete</string>
+    <string name="canvas_dialog_edit">Edit</string>
+    <string name="canvas_delete_dialog_title">Delete Scribble?</string>
+    <string name="canvas_delete_dialog_text">Are you sure you want to delete this scribble? This action cannot be undone.</string>
+    <string name="canvas_delete_confirm">Delete</string>
+    <string name="canvas_delete_cancel">Cancel</string>
+    <string name="canvas_weight_unit_kg">kg</string>
+    <string name="canvas_weight_unit_lb">lb</string>
+    <string name="canvas_profile_button">Profile</string>
+    <string name="canvas_previous_day">Previous Day</string>
+    <string name="canvas_next_day">Next Day</string>
+    <string name="canvas_settings_button">Settings</string>
+
+    <!-- Canvas Feature Strings -->
+    <string name="canvas_ai_insights">AI INSIGHTS</string>
+    <string name="canvas_close">Close</string>
+    <string name="canvas_parsing_workout_data">Parsing workout data…</string>
+    <string name="canvas_tap_to_confirm">Tap to confirm &amp; save</string>
+    <string name="canvas_tap_to_confirm_action">TAP TO CONFIRM</string>
+    <string name="canvas_logged">Logged</string>
+    <string name="canvas_parsed">Parsed</string>
+    <string name="canvas_retry_action">RETRY</string>
+    <string name="canvas_remove_action">REMOVE</string>
+    <string name="canvas_estimated_1rm">Estimated 1RM</string>
+    <string name="canvas_intensity">Intensity</string>
+    <string name="canvas_last_session_improvement_format">%1$s %2$s from last session</string>
+    <string name="canvas_failed_to_parse_workout">Failed to parse workout</string>
+    <string name="canvas_edit">Edit</string>
+    <string name="canvas_retry">Retry</string>
+    <string name="canvas_remove">Remove</string>
+    <string name="canvas_workout_summary_format">%1$s %2$.2f %3$s • %4$d sets • %5$d reps</string>
+    <string name="canvas_exercise_item_summary_format">%1$.1f %2$s • %3$d sets • %4$d reps</string>
+    <string name="canvas_last_session_improvement_label_format">%1$s %2$s VS LAST SESSION</string>
+    <string name="canvas_set_format">%1$s %2$dx%3$d</string>
+    <string name="canvas_collapse">Collapse</string>
+    <string name="canvas_expand_search">Expand search</string>
+    <string name="canvas_estimated_1rm_value_format">%1$.2f %2$s</string>
+    <string name="canvas_intensity_value_format">%1$.2f%%</string>
+    <string name="canvas_set_label">Set %1$d: </string>
+    <string name="canvas_reps_label">reps</string>
+    <string name="canvas_set_reps_separator"> x </string>
+    <string name="canvas_delete_set_content_description">Remove set</string>
+    <string name="canvas_add_set">Add Set</string>
+
+    <!-- Navigation Labels -->
+    <string name="nav_canvas">Canvas</string>
+    <string name="nav_insights">Insights</string>
+    <string name="nav_ledger">Ledger</string>
+    <string name="nav_settings">Settings</string>
+</resources>

@@ -1,7 +1,6 @@
 plugins {
     id("scribblefit.android.library")
     id("scribblefit.android.hilt")
-    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -9,14 +8,10 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:model"))
+    implementation(project(":core:coroutines"))
     implementation(project(":feature:canvas:domain"))
+    implementation(project(":feature:scribble:domain"))
+    implementation(project(":feature:exercises:domain"))
     implementation(project(":feature:ai:domain"))
-    implementation(project(":feature:ai:data"))
-    implementation(project(":feature:ledger"))
-    implementation(project(":feature:analytics:domain"))
-    implementation(project(":feature:analytics:data"))
-    implementation(project(":core:database"))
-
-    implementation(libs.hilt.android)
-    implementation(libs.kotlinx.serialization.json)
 }

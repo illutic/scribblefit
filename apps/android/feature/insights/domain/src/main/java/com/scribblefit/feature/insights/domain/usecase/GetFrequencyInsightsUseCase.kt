@@ -1,0 +1,26 @@
+package com.scribblefit.feature.insights.domain.usecase
+
+import com.scribblefit.core.common.runCatchingWithCancellation
+import com.scribblefit.core.model.CurrentDate
+import com.scribblefit.feature.insights.domain.model.FrequencyData
+import com.scribblefit.feature.insights.domain.repository.InsightsRepository
+import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.withContext
+
+class GetFrequencyInsightsUseCase(
+    private val repository: InsightsRepository,
+    private val coroutineDispatcher: CoroutineDispatcher
+) {
+    suspend operator fun invoke(
+        startDate: CurrentDate,
+        endDate: CurrentDate
+    ): Result<FrequencyData> = withContext(coroutineDispatcher) {
+        runCatchingWithCancellation {
+            repository.getFrequencyInsights(
+                startDate = startDate.startOfDayInMillis,
+                endDate = endDate.startOfDayInMillis
+            ).firstOrNull() ?: error("No frequency data available")
+        }
+    }
+}

@@ -39,6 +39,7 @@ class AndroidLibraryComposeConventionPlugin : Plugin<Project> {
                 add("implementation", platform(bom))
                 add("androidTestImplementation", platform(bom))
                 add("implementation", libs.findLibrary("androidx-material3").get())
+                add("implementation", libs.findLibrary("androidx-viewmodel-compose").get())
                 add("implementation", libs.findLibrary("androidx-ui").get())
                 add("implementation", libs.findLibrary("androidx-ui-tooling-preview").get())
                 add("debugImplementation", libs.findLibrary("androidx-ui-tooling").get())

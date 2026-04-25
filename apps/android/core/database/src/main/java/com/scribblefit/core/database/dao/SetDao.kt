@@ -1,29 +1,25 @@
 package com.scribblefit.core.database.dao
 
 import androidx.room.Dao
-import androidx.room.Delete
+import androidx.room.Insert
 import androidx.room.Query
-import androidx.room.Upsert
-import com.scribblefit.core.database.model.SetEntity
-import kotlinx.coroutines.flow.Flow
+import androidx.room.Update
+import com.scribblefit.core.database.entity.set.SetEntity
 
 @Dao
 interface SetDao {
-    @Upsert
-    suspend fun upsertSet(set: SetEntity)
+    @Insert
+    suspend fun insertSet(setEntity: SetEntity): Long
 
-    @Upsert
-    suspend fun upsertSets(sets: List<SetEntity>)
+    @Update
+    suspend fun updateSet(setEntity: SetEntity)
 
-    @Delete
-    suspend fun deleteSet(set: SetEntity)
+    @Query("SELECT * FROM sets WHERE setId = :setId")
+    suspend fun getSetById(setId: Long): SetEntity?
 
-    @Query("SELECT * FROM Sets WHERE id = :id")
-    fun getSetById(id: String): Flow<SetEntity?>
+    @Query("DELETE FROM sets WHERE setId = :setId")
+    suspend fun deleteSet(setId: Long)
 
-    @Query("SELECT * FROM Sets WHERE workout_id = :workoutId")
-    fun getSetsForWorkout(workoutId: String): Flow<List<SetEntity>>
-
-    @Query("DELETE FROM Sets")
-    suspend fun deleteAll()
+    @Query("DELETE FROM sets")
+    suspend fun clearAllSets()
 }

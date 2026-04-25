@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="common_estimated_1rm">EST. 1RM</string>
+    <string name="common_intensity">INTENSITY</string>
+    <string name="common_last_session">VS LAST SESSION</string>
+</resources>

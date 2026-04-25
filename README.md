@@ -1,44 +1,51 @@
-# 🏋️ ScribbleFit: Native "Zero-UI" Fitness Tracker
+# ScribbleFit
 
-## 📖 Project Overview
+A cross-platform fitness tracking app that turns freeform text scribbles into structured training data using AI. Built natively for Android and iOS with an offline-first, editorial minimalist design.
 
-ScribbleFit is a fully native mobile fitness application designed to eliminate the friction of
-logging workouts. Instead of navigating complex dropdown menus mid-workout, users input raw, messy
-gym shorthand via text or voice (e.g., *"Bench 135x5, 135x5. Incline taken so did DBs"*). A
-background AI parser instantly translates this into clean, structured local database entries.
+## Core Concept
+ScribbleFit lets users jot down sessions in natural language (e.g., "bench press 3x10 80kg"). An LLM parses the text into structured exercises, sets, and reps -- no forms, no dropdowns. The interface is designed to feel like a premium physical journal.
 
-## 🎯 Core Engineering Principles
+## Key Features
+- **Canvas** -- Home screen for session entry via freeform text scribbles, parsed by AI into structured data.
+- **Ledger** -- Scrollable training history with date summaries and exercise details.
+- **Insights** -- AI-driven analytics, volume tracking, and personalized coaching feedback.
+- **Offline-First** -- All data is stored locally first, ensuring a smooth experience even without a connection.
+- **Privacy-Centric** -- Minimal data collection, with options for fully local LLM processing.
 
-1. **Offline-First Resilience:** Gym network connections are unreliable. The app must never block
-   the UI waiting for a network request. All data is written to a local queue and processed/synced
-   quietly in the background.
-2. **Utilitarian Minimalism:** The UI is hyper-minimalist, airy, and text-focused. We use a crisp
-   Light Mode (pure white backgrounds, rich black text, soft gray input pills) with zero heavy drop
-   shadows or cluttered gridlines.
-3. **Event-Driven Intelligence:** AI features do not run on wasteful cron jobs. They are triggered
-   strictly by database insert events.
+## Architecture (MVI)
+The project follows a strict Model-View-Intent architecture on both platforms, ensuring separation of concerns and reactive data flow.
 
-## 🛠️ Tech Stack
+### Layers
+1. **Domain** -- Business models and Use Cases (No dependencies).
+2. **Data** -- Repository implementations, persistence (Room/SwiftData), and AI integration.
+3. **UI** -- Jetpack Compose (Android) and SwiftUI (iOS) implementations.
 
-* **iOS Target:** Swift & SwiftUI. Local Storage via SwiftData or SQLite.swift. Background tasks via
-  `BGTaskScheduler`.
-* **Android Target:** Kotlin & Jetpack Compose. Local Storage via Room Database. Background tasks
-  via `WorkManager`.
-* **Backend / API:** The API should be a KTOR server application acting as an MCP orchestration server.
-* **AI Engine:** OpenAI or Anthropic for high-speed, strictly structured JSON parsing.
+## Getting Started
 
-## 🗂️ Documentation Reference
+### Android
+1. Open `apps/android` in Android Studio.
+2. Add your Gemini API Key to `local.properties` as `GEMINI_API_KEY=your_key`.
+3. Build and Run.
 
-* **`UI_UX_SPEC.md`:** Contains the exact visual requirements and component hierarchies for the core
-  screens.
-* **`ARCHITECTURE_SPEC.md`:** Contains the background queue logic, local database schemas, and API
-  endpoint structures.
+### iOS
+1. Open `apps/ios/ScribbleFit` in Xcode 15+.
+2. Configure your development team for signing.
+3. Add your Gemini API Key to `LocalPackages/Core/Config/Data/Resources/Secrets.plist`.
+4. Build and Run.
 
-## ⚠️ Agent Instructions
+## Project Structure
+```
+.
+├── apps/
+│   ├── android/       # Jetpack Compose App
+│   └── ios/           # SwiftUI App
+├── guidelines/        # Shared engineering standards
+├── specs/             # Feature specifications
+└── GEMINI.md          # Project overview for AI agents
+```
 
-* **Strict Adherence:** Do not deviate from the minimalist design system. Rely on native UI
-  frameworks (SwiftUI/Compose) but strip away default corporate styling to achieve the requested
-  clean aesthetic.
-* **Assume Offline:** When writing data fetching or posting logic, always read/write to the local
-  database first.
-* **Native Performance:** Avoid web-views or cross-platform wrappers.
+## AI Parsing
+ScribbleFit uses Google's Gemini models (Flash/Pro) for high-speed, accurate parsing of natural language scribbles into the standard project schema.
+
+## License
+MIT

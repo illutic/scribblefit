@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_title">Settings</string>
+    <string name="settings_appearance">Appearance</string>
+    <string name="settings_theme">Theme</string>
+    <string name="settings_theme_system">System Default</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
+    <string name="settings_dynamic_theme">Dynamic Theme</string>
+    <string name="settings_dynamic_theme_description">Use system colors (Android 12+)</string>
+    <string name="settings_units">Units</string>
+    <string name="settings_unit_system">Unit System</string>
+    <string name="settings_weight_preference">Weight preference</string>
+    <string name="settings_unit_kgs">kg</string>
+    <string name="settings_unit_lbs">lbs</string>
+    <string name="settings_ai">AI Configuration</string>
+    <string name="settings_ai_engine_title">AI ENGINE</string>
+    <string name="settings_ai_provider">Provider</string>
+    <string name="settings_ai_provider_cloud">Cloud</string>
+    <string name="settings_ai_provider_local">Local</string>
+    <string name="settings_ai_local_unsupported">This device does not support on-device AI. Please use Cloud.</string>
+    <string name="settings_data_title">DATA</string>
+    <string name="settings_data_management">Data Management</string>
+    <string name="settings_export_workout_ledger">Export Workout Ledger</string>
+    <string name="settings_json_format">JSON format</string>
+    <string name="settings_export_data">Export Data (JSON)</string>
+    <string name="settings_clear_data">Clear All Data</string>
+    <string name="settings_clear_data_confirm_title">Clear All Data?</string>
+    <string name="settings_clear_data_confirm_message">This will permanently delete all your scribbles and workouts. This action cannot be undone.</string>
+    <string name="settings_clear_data_confirm_button">Delete Everything</string>
+    <string name="settings_cancel">Cancel</string>
+    <string name="settings_about">About</string>
+    <string name="settings_version">VERSION %s</string>
+    <string name="settings_copyright">© 2026 ScribbleFit AI</string>
+    <string name="settings_privacy_policy">Privacy Policy</string>
+    <string name="settings_terms_of_service">Terms of Service</string>
+
+    <!-- Navigation Labels -->
+    <string name="nav_canvas">Canvas</string>
+    <string name="nav_insights">Insights</string>
+    <string name="nav_ledger">Ledger</string>
+    <string name="nav_settings">Settings</string>
+</resources>

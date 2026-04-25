@@ -1,0 +1,21 @@
+// swift-tools-version: 6.0
+import PackageDescription
+
+let package = Package(
+    name: "CoreDatabase",
+    platforms: [.iOS(.v17)],
+    products: [
+        .library(name: "CoreDatabase", targets: ["CoreDatabase"])
+    ],
+    dependencies: [
+        .package(path: "../CoreModel")
+    ],
+    targets: [
+        .target(
+            name: "CoreDatabase",
+            dependencies: [
+                .product(name: "CoreModel", package: "CoreModel")
+            ]
+        )
+    ]
+)

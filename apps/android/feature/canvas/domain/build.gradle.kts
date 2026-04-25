@@ -7,6 +7,11 @@ android {
 }
 
 dependencies {
+    implementation(project(":core:model"))
+    implementation(project(":core:coroutines"))
+    implementation(project(":core:common"))
+    implementation(project(":feature:scribble:domain"))
+    implementation(project(":feature:exercises:domain"))
     implementation(project(":feature:ai:domain"))
-    implementation(project(":feature:ledger"))
+    implementation(libs.slf4j.android)
 }

@@ -1,5 +1,4 @@
 plugins {
-    id("scribblefit.android.library")
     id("scribblefit.android.library.compose")
 }
 
@@ -8,7 +7,9 @@ android {
 }
 
 dependencies {
-    api(libs.androidx.material3)
-    api(libs.androidx.ui.tooling.preview)
-    debugImplementation(libs.androidx.ui.tooling)
+    implementation(project(":core:navigation"))
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.ui.text.google.fonts)
+    api(libs.androidx.material.icons)
+    api(libs.androidx.material.icons.extended)
 }

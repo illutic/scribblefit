@@ -1,6 +1,7 @@
 plugins {
     id("scribblefit.android.application.compose")
     id("scribblefit.android.hilt")
+    alias(libs.plugins.google.services)
 }
 
 android {
@@ -10,27 +11,60 @@ android {
         applicationId = "com.scribblefit.app"
         versionCode = 1
         versionName = "1.0"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android-optimize.txt"),
+                "proguard-rules.pro"
+            )
+        }
+    }
+
+    buildFeatures {
+        buildConfig = true
     }
 }
 
 dependencies {
-    implementation(project(":feature:canvas:ui"))
-    implementation(project(":feature:canvas:domain"))
-    implementation(project(":feature:canvas:data"))
-    implementation(project(":feature:ledger"))
-    implementation(project(":feature:ai:domain"))
-    implementation(project(":feature:ai:data"))
-    implementation(project(":feature:profile:ui"))
-    implementation(project(":feature:profile:domain"))
-    implementation(project(":feature:profile:data"))
+    implementation(project(":core:database"))
     implementation(project(":core:designsystem"))
     implementation(project(":core:navigation"))
-    implementation(project(":core:database"))
-    implementation(project(":core:network"))
+    implementation(project(":core:config:data"))
+    implementation(project(":core:config:domain"))
+    implementation(project(":feature:ai:domain"))
+    implementation(project(":feature:ai:data"))
+    implementation(project(":feature:exercises:data"))
+    implementation(project(":feature:exercises:domain"))
+    implementation(project(":feature:exercises:ui"))
+    implementation(project(":feature:sets:data"))
+    implementation(project(":feature:sets:domain"))
+    implementation(project(":feature:scribble:data"))
+    implementation(project(":feature:scribble:domain"))
+    implementation(project(":feature:insights:domain"))
+    implementation(project(":feature:insights:data"))
+    implementation(project(":feature:insights:ui"))
 
-    implementation(libs.androidx.navigation.compose)
+    implementation(project(":feature:ledger:ui"))
+
+    implementation(project(":feature:canvas:ui"))
+    implementation(project(":feature:canvas:data"))
+    implementation(project(":feature:settings:ui"))
+    implementation(project(":feature:settings:data"))
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.activity.compose)
     implementation(libs.androidx.navigation3.runtime)
     implementation(libs.androidx.navigation3.ui)
-    implementation(libs.hilt.work)
-    ksp(libs.hilt.work.compiler)
+    implementation(libs.androidx.material3)
+
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.auth)
+    implementation(libs.firebase.firestore)
+    implementation(libs.firebase.ai)
+    implementation(libs.firebase.appcheck.playintegrity)
+    implementation(libs.firebase.appcheck.debug)
 }

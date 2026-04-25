@@ -47,5 +47,13 @@ gradlePlugin {
             id = "scribblefit.android.hilt"
             implementationClass = "AndroidHiltConventionPlugin"
         }
+        register("androidComposeTest") {
+            id = "scribblefit.android.compose.test"
+            implementationClass = "AndroidComposeTestConventionPlugin"
+        }
+        register("androidUnitTest") {
+            id = "scribblefit.android.unit.test"
+            implementationClass = "AndroidUnitTestConventionPlugin"
+        }
     }
 }
