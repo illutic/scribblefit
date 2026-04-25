@@ -1,0 +1,53 @@
+name: iOS CI/CD
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build_test_deploy:
+    runs-on: macos-latest
+    permissions:
+      contents: read
+      packages: write
+    defaults:
+      run:
+        working-directory: apps/ios/ScribbleFit
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Select Xcode
+      run: sudo xcode-select -s /Applications/Xcode.app
+
+    - name: Lint
+      run: |
+        if which swiftlint >/dev/null; then
+          swiftlint
+        else
+          echo "SwiftLint not found. Continuing build..."
+        fi
+
+    - name: Test
+      run: |
+        xcodebuild -project ScribbleFit.xcodeproj \
+          -scheme ScribbleFit \
+          -destination 'platform=iOS Simulator,name=iPhone 15,OS=latest' \
+          clean test CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
+
+    - name: Build Archive
+      run: |
+        xcodebuild archive -project ScribbleFit.xcodeproj \
+          -scheme ScribbleFit \
+          -archivePath ScribbleFit.xcarchive \
+          -destination 'generic/platform=iOS' \
+          CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
+
+    - name: Upload Artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ios-archive
+        path: apps/ios/ScribbleFit/ScribbleFit.xcarchive
+
