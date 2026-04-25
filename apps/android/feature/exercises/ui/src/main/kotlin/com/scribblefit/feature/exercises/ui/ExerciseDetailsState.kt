@@ -46,6 +46,14 @@ data class ExerciseDetailsState(
         @Composable @ReadOnlyComposable
         get() = stringResource(R.string.exercise_details_current_1rm)
 
+    val intensityLabel: String
+        @Composable @ReadOnlyComposable
+        get() = stringResource(R.string.exercise_details_intensity)
+
+    val weightVsLastLabel: String
+        @Composable @ReadOnlyComposable
+        get() = stringResource(R.string.exercise_details_weight_vs_last)
+
     val lastVolumeLabel: String
         @Composable @ReadOnlyComposable
         get() = stringResource(R.string.exercise_details_last_volume)

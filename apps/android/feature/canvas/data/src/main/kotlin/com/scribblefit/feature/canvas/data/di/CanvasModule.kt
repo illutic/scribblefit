@@ -2,12 +2,8 @@ package com.scribblefit.feature.canvas.data.di
 
 import com.scribblefit.core.coroutines.CoroutineDispatcherProvider
 import com.scribblefit.feature.ai.domain.LLMEngine
-import com.scribblefit.feature.scribble.domain.usecase.AddScribbleUseCase
-import com.scribblefit.feature.scribble.domain.usecase.ConfirmScribbleUseCase
-import com.scribblefit.feature.scribble.domain.usecase.GetScribblesForDateUseCase
 import com.scribblefit.feature.canvas.domain.ParsePendingScribblesUseCase
 import com.scribblefit.feature.exercises.domain.usecase.AddExerciseUseCase
-import com.scribblefit.feature.scribble.domain.ScribbleRepository
 import com.scribblefit.feature.scribble.domain.usecase.GetPendingScribblesByDateUseCase
 import com.scribblefit.feature.scribble.domain.usecase.UpdateScribbleUseCase
 import dagger.Module

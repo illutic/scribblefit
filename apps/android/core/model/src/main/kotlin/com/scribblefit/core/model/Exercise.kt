@@ -24,5 +24,7 @@ data class ExerciseTrends(
     val estimated1RM: Float,
     val intensity: Float,
     val improvement: Float,
-    val trendDirection: TrendDirection
+    val trendDirection: TrendDirection,
+    val lastVolume: Float = 0f,
+    val lastVolumeTrend: TrendDirection = TrendDirection.STABLE
 )

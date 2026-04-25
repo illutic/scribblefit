@@ -35,11 +35,21 @@ class CalculateTrendsUseCase(
                 val improvement = calculateImprovement(estimated1RM, previousMax)
                 val trendDirection = determineTrendDirection(improvement)
 
+                val lastVolume = calculateVolume(exercise)
+                val previousSession = sortedExercises.lastOrNull { it.id != exercise.id }
+                val lastVolumeTrend = if (previousSession == null) {
+                    TrendDirection.STABLE
+                } else {
+                    determineVolumeTrendDirection(lastVolume, calculateVolume(previousSession))
+                }
+
                 ExerciseTrends(
                     estimated1RM = estimated1RM,
                     intensity = intensity,
                     improvement = improvement,
-                    trendDirection = trendDirection
+                    trendDirection = trendDirection,
+                    lastVolume = lastVolume,
+                    lastVolumeTrend = lastVolumeTrend
                 )
             }
         }
@@ -58,6 +68,20 @@ class CalculateTrendsUseCase(
 
     private fun calculateIntensity(estimated1RM: Float, maxWeight: Float): Float {
         return if (maxWeight > 0) estimated1RM / maxWeight else 0f
+    }
+
+    private fun calculateVolume(exercise: Exercise): Float {
+        return exercise.sets.sumOf { set ->
+            ((set.weight ?: 0f) * set.reps).toDouble()
+        }.toFloat()
+    }
+
+    private fun determineVolumeTrendDirection(current: Float, previous: Float): TrendDirection {
+        return when {
+            current > previous -> TrendDirection.IMPROVING
+            current < previous -> TrendDirection.DECLINING
+            else -> TrendDirection.STABLE
+        }
     }
 
     private fun calculateEstimated1RM(exercise: Exercise): Float {

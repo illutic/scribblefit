@@ -30,6 +30,7 @@ import com.scribblefit.feature.ledger.ui.components.EmptyLedgerContent
 import com.scribblefit.feature.ledger.ui.components.LedgerContent
 import com.scribblefit.feature.ledger.ui.components.LedgerHeader
 import com.scribblefit.feature.ledger.ui.components.LedgerLoadingContent
+import com.scribblefit.feature.ledger.ui.components.ScribbleDetailsBottomSheet
 
 @Composable
 internal fun LedgerScreen(
@@ -78,7 +79,7 @@ internal fun LedgerScreen(
                             LedgerLoadingContent(modifier = Modifier.fillMaxSize())
                         }
 
-                        state.groupedWorkouts.isEmpty() -> {
+                        state.groupedScribbles.isEmpty() -> {
                             EmptyLedgerContent(
                                 modifier = Modifier.fillMaxSize(),
                                 title = state.emptyTitle,
@@ -130,5 +131,16 @@ internal fun LedgerScreen(
                 }
             }
         }
+    }
+
+    if (state.selectedScribble != null) {
+        ScribbleDetailsBottomSheet(
+            state = state,
+            onExerciseClick = { exerciseId ->
+                onIntent(LedgerIntent.DismissScribbleDetails)
+                onIntent(LedgerIntent.NavigateToExerciseDetails(exerciseId))
+            },
+            onDismiss = { onIntent(LedgerIntent.DismissScribbleDetails) }
+        )
     }
 }

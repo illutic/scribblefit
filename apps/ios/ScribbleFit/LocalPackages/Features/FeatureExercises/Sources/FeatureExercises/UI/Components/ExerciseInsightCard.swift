@@ -3,7 +3,7 @@ import CoreModel
 import CoreDesignSystem
 
 struct ExerciseInsightCard: View {
-    let insight: ExercisePerformanceInsight?
+    let insight: AIInsight?
     let isGenerating: Bool
     
     var body: some View {
@@ -18,17 +18,17 @@ struct ExerciseInsightCard: View {
                 .padding(.vertical, 8)
             } else if let insight = insight {
                 HStack(alignment: .top, spacing: 8) {
-                    Text("🔥")
+                    Text(insight.insightType == .advice ? "💡" : "📈")
                         .font(.system(size: 20))
                     
                     VStack(alignment: .leading, spacing: 12) {
-                        Text(String(localized: "RECOMMENDATION"))
+                        Text(insight.insightType == .advice ? String(localized: "ADVICE") : String(localized: "TREND"))
                             .font(.scribbleLabelMedium)
                             .fontWeight(.bold)
                             .kerning(1)
                             .foregroundStyle(Color.scribbleMidGray)
                         
-                        Text(insight.breakdownText)
+                        Text(insight.text)
                             .font(.scribbleBodyMedium)
                             .fontWeight(.regular)
                             .foregroundStyle(Color.scribblePrimary)

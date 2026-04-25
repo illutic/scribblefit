@@ -109,13 +109,10 @@ public struct SystemConfig: Equatable, Sendable, Codable {
         Analyze the exercise history below and generate a performance insight.
         Output ONLY this JSON (no markdown, no extra text):
         {
-          "estimated1RM": number,
-          "prDetected": true|false,
-          "trendDirection":"IMPROVING|STABLE|PLATEAUED|DECLINING",
-          "breakdownText":"2-3 sentence analysis"
+          "insightType": "trend",
+          "text": "2-3 sentence analysis of progress, estimated 1RM, and trends."
         }
-        Use Epley formula (weight * (1 + reps/30)) for 1RM estimate. 
-        trendDirection must be exactly one of: IMPROVING, STABLE, PLATEAUED, DECLINING
+        Use Epley formula (weight * (1 + reps/30)) for 1RM estimate in the text.
         {{/system}}
 
         History:
@@ -137,10 +134,10 @@ public struct SystemConfig: Equatable, Sendable, Codable {
         Parse raw gym shorthand into this JSON schema:
         {
           "exercises": [{ 
-            "canonical_name": "String", 
-            "muscle_group": "String", 
+            "canonicalName": "String", 
+            "muscleGroup": "String", 
             "sets": [{ "weight": number|null, "reps": integer, "setNumber": integer, "rpe": number|null, "notes": "String|null" }],
-            "estimated_1rm": number|null,
+            "estimated1RM": number|null,
             "intensity": number|null
           }]
         }

@@ -80,7 +80,7 @@ public struct ManualEditScribbleUseCase: Sendable {
                 let newSet = ExerciseSet(
                     id: UUID(),
                     setNumber: nextNumber,
-                    weight: 0,
+                    weight: Float(0.0),
                     reps: 0
                 )
                 return exercise.copy(sets: exercise.sets + [newSet])

@@ -3,46 +3,61 @@ package com.scribblefit.feature.ledger.ui
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.res.stringResource
+import com.scribblefit.core.config.domain.Weight
 import com.scribblefit.core.model.Exercise
+import com.scribblefit.core.model.Scribble
 import com.scribblefit.core.navigation.BottomBarState
 import com.scribblefit.core.navigation.Screen
 import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
 private val dateRangeFormatter = DateTimeFormatter.ofPattern("MMM d, yyyy", Locale.getDefault())
 private val workoutHeaderFormatter =
     DateTimeFormatter.ofPattern("EEEE, MMMM d", Locale.getDefault())
+private val timeFormatter = DateTimeFormatter.ofPattern("h:mm a", Locale.getDefault())
 
-data class DailyWorkout(
+data class DailyScribbles(
     val date: LocalDate,
-    val exercises: List<Exercise>
+    val scribbles: List<Scribble>
 )
 
 data class LedgerState(
     val isLoading: Boolean = false,
     val showDatePicker: Boolean = false,
-    val exercises: List<Exercise> = emptyList(),
+    val scribbles: List<Scribble> = emptyList(),
+    val selectedScribble: Scribble? = null,
     val startDate: LocalDate = LocalDate.now().minusDays(30),
     val endDate: LocalDate = LocalDate.now(),
+    val weightUnit: Weight = Weight.KGS,
     val bottomBarState: BottomBarState = BottomBarState(selectedTab = Screen.Ledger),
     val error: Throwable? = null,
 ) {
     val dateRangeString: String
         get() = "${startDate.format(dateRangeFormatter)} – ${endDate.format(dateRangeFormatter)}"
 
-    val groupedWorkouts: List<DailyWorkout>
-        get() = exercises
-            .groupBy { Instant.ofEpochMilli(it.createdAt) }
-            .map { (timestamp, exercises) ->
-                DailyWorkout(
-                    date = timestamp.toLocalDate(),
-                    exercises = exercises
+    val groupedScribbles: List<DailyScribbles>
+        get() = scribbles
+            .groupBy { it.createdAt.toLocalDate() }
+            .map { (date, scribbles) ->
+                DailyScribbles(
+                    date = date,
+                    scribbles = scribbles.sortedBy { it.createdAt }
                 )
             }
+            .sortedByDescending { it.date }
 
-    fun getWorkoutDateHeader(date: LocalDate): String = date.format(workoutHeaderFormatter)
+    fun getDateHeader(date: LocalDate): String = date.format(workoutHeaderFormatter)
+
+    val weightUnitLabel: String
+        @Composable @ReadOnlyComposable
+        get() = if (weightUnit == Weight.KGS) {
+            stringResource(R.string.ledger_weight_unit_kg)
+        } else {
+            stringResource(R.string.ledger_weight_unit_lb)
+        }
 
     val ledgerTitle: String
         @Composable @ReadOnlyComposable get() = stringResource(R.string.ledger_title)
@@ -55,10 +70,39 @@ data class LedgerState(
 
     val loadingText: String
         @Composable @ReadOnlyComposable get() = stringResource(R.string.ledger_loading)
+
+    val scribbleBadgeLabel: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.ledger_scribble_badge)
+
+    val scribbleDetailsTitle: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.ledger_scribble_details_title)
+
+    val exercisesLabel: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.ledger_scribble_details_exercises_label)
+
+    val loggedLabel: String
+        @Composable @ReadOnlyComposable get() = stringResource(R.string.ledger_scribble_details_logged)
+
+    fun formatExerciseSummary(exercise: Exercise): String {
+        if (exercise.sets.isEmpty()) return ""
+        val unitLabel = if (weightUnit == Weight.KGS) "kg" else "lb"
+        val totalSets = exercise.sets.size
+        val totalReps = exercise.sets.sumOf { it.reps }
+        val maxWeight = exercise.sets.mapNotNull { it.weight }.maxOrNull()
+        return if (maxWeight != null) {
+            "%.1f%s • %d sets x %d reps".format(maxWeight, unitLabel, totalSets, totalReps)
+        } else {
+            "%d sets • %d reps".format(totalSets, totalReps)
+        }
+    }
 }
 
-internal fun java.time.Instant.toLocalDate(): LocalDate =
-    java.time.LocalDateTime.ofInstant(this, java.time.ZoneId.systemDefault()).toLocalDate()
-
 internal fun Long.toLocalDate(): LocalDate =
-    java.time.Instant.ofEpochMilli(this).toLocalDate()
+    Instant.ofEpochMilli(this)
+        .atZone(ZoneId.systemDefault())
+        .toLocalDate()
+
+internal fun Long.toTimeString(): String =
+    Instant.ofEpochMilli(this)
+        .atZone(ZoneId.systemDefault())
+        .format(timeFormatter)

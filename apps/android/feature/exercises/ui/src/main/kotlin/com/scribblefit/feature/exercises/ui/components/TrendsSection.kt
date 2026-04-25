@@ -11,7 +11,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowRight
+import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -32,6 +32,9 @@ fun TrendsSection(
     titleLabel: String,
     viewAllLabel: String,
     current1rmLabel: String,
+    intensityLabel: String,
+    weightVsLastLabel: String,
+    lastVolumeLabel: String,
     onViewAllClick: () -> Unit,
     getTrendDirectionText: @Composable (TrendDirection) -> String,
     modifier: Modifier = Modifier
@@ -58,7 +61,7 @@ fun TrendsSection(
                     fontWeight = FontWeight.Bold
                 )
                 Icon(
-                    imageVector = Icons.Default.KeyboardArrowRight,
+                    imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
                     contentDescription = null,
                     tint = ScribbleFitTheme.colors.primary,
                     modifier = Modifier.size(16.dp)
@@ -74,6 +77,27 @@ fun TrendsSection(
                 label = current1rmLabel,
                 value = "${trends.estimated1RM.toInt()}$weightUnit",
                 direction = trends.trendDirection,
+                getTrendDirectionText = getTrendDirectionText
+            )
+
+            TrendItem(
+                label = intensityLabel,
+                value = "${(trends.intensity * 100).toInt()}%",
+                direction = TrendDirection.STABLE,
+                getTrendDirectionText = getTrendDirectionText
+            )
+
+            TrendItem(
+                label = weightVsLastLabel,
+                value = "${if (trends.improvement >= 0) "+" else ""}${(trends.improvement * 100).toInt()}%",
+                direction = trends.trendDirection,
+                getTrendDirectionText = getTrendDirectionText
+            )
+
+            TrendItem(
+                label = lastVolumeLabel,
+                value = "${trends.lastVolume.toInt()}$weightUnit",
+                direction = trends.lastVolumeTrend,
                 getTrendDirectionText = getTrendDirectionText
             )
         }

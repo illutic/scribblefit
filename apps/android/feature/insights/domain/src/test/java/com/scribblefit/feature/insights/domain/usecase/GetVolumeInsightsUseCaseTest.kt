@@ -25,9 +25,9 @@ class GetVolumeInsightsUseCaseTest {
         val startDate = CurrentDate(LocalDate.now().minusDays(7))
         val endDate = CurrentDate(LocalDate.now())
         val expectedData = listOf(VolumeDataPoint(1000L, 100f))
-        
-        coEvery { 
-            repository.getVolumeInsights(startDate.startOfDayInMillis, endDate.startOfDayInMillis) 
+
+        coEvery {
+            repository.getVolumeInsights(startDate.startOfDayInMillis, endDate.startOfDayInMillis)
         } returns flowOf(expectedData)
 
         // When
@@ -44,9 +44,9 @@ class GetVolumeInsightsUseCaseTest {
         val startDate = CurrentDate(LocalDate.now().minusDays(7))
         val endDate = CurrentDate(LocalDate.now())
         val exception = RuntimeException("DB Error")
-        
-        coEvery { 
-            repository.getVolumeInsights(startDate.startOfDayInMillis, endDate.startOfDayInMillis) 
+
+        coEvery {
+            repository.getVolumeInsights(startDate.startOfDayInMillis, endDate.startOfDayInMillis)
         } throws exception
 
         // When

@@ -91,11 +91,11 @@ public struct ScribbleFitSpacing: Sendable {
 }
 
 extension ThemePreference {
-    public func getColorScheme() -> ColorScheme? {
+    public func getColorScheme() -> ColorScheme {
         switch self {
         case .dark: return .dark
         case .light: return .light
-        case .system: return nil
+        case .system: return .light
         }
     }
 }

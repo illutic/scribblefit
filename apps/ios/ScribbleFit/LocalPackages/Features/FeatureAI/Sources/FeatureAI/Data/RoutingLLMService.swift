@@ -41,7 +41,7 @@ public final class RoutingLLMService: LLMService {
         return try await activeService.generateInsightsSummary(exercises: exercises)
     }
 
-    public func generateExerciseInsight(history: String) async throws -> ExercisePerformanceInsight {
+    public func generateExerciseInsight(history: String) async throws -> AIInsight {
         return try await activeService.generateExerciseInsight(history: history)
     }
 }

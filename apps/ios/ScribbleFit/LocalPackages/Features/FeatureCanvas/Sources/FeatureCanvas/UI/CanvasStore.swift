@@ -419,33 +419,24 @@ public final class CanvasStore {
                 var augmentedScribbles: [Scribble] = []
                 
                 for scribble in scribbles {
+                    var augmentedExercises: [Exercise] = []
+                    
                     if scribble.status == .completed {
-                        let augmentedExercises = await withTaskGroup(of: (Int, Exercise).self) { group in
-                            for (index, exercise) in scribble.exercises.enumerated() {
-                                group.addTask {
-                                    let trends = await self.calculateTrendsUseCase.execute(exercise: exercise)
-                                    let augmented = exercise.copy(
-                                        estimated1RM: trends?.current1RM,
-                                        intensity: trends?.intensity,
-                                        improvement: trends?.improvement
-                                    )
-                                    return (index, augmented)
-                                }
-                            }
-                            
-                            var results: [(Int, Exercise)] = []
-                            for await result in group {
-                                results.append(result)
-                            }
-                            return results.sorted(by: { $0.0 < $1.0 }).map { $0.1 }
+                        for exercise in scribble.exercises {
+                            let trends = await calculateTrendsUseCase.execute(exercise: exercise)
+                            augmentedExercises.append(exercise.copy(
+                                estimated1RM: trends?.current1RM,
+                                intensity: trends?.intensity,
+                                improvement: trends?.improvement
+                            ))
                         }
-                        
-                        var augmentedScribble = scribble
-                        augmentedScribble.exercises = augmentedExercises
-                        augmentedScribbles.append(augmentedScribble)
                     } else {
-                        augmentedScribbles.append(scribble)
+                        augmentedExercises.append(contentsOf: scribble.exercises)
                     }
+                    
+                    var augmentedScribble = scribble
+                    augmentedScribble.exercises = augmentedExercises
+                    augmentedScribbles.append(augmentedScribble)
                 }
                 
                 state = state.copy(scribbles: augmentedScribbles)

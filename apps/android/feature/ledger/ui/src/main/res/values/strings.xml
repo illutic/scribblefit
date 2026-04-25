@@ -6,6 +6,12 @@
     <string name="ledger_loading">Loading history…</string>
     <string name="ledger_workout_details_navigation">View details</string>
     <string name="ledger_date_range_format">%1$s – %2$s</string>
+    <string name="ledger_scribble_badge">Scribble</string>
+    <string name="ledger_scribble_details_title">Scribble</string>
+    <string name="ledger_scribble_details_exercises_label">EXERCISES</string>
+    <string name="ledger_scribble_details_logged">LOGGED</string>
+    <string name="ledger_weight_unit_kg">kg</string>
+    <string name="ledger_weight_unit_lb">lb</string>
 
     <!-- Navigation Labels -->
     <string name="nav_canvas">Canvas</string>

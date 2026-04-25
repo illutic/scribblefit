@@ -85,6 +85,9 @@ private fun ExerciseDetailsContent(
                     titleLabel = state.trendsLabel,
                     viewAllLabel = state.viewAllLabel,
                     current1rmLabel = state.current1rmLabel,
+                    intensityLabel = state.intensityLabel,
+                    weightVsLastLabel = state.weightVsLastLabel,
+                    lastVolumeLabel = state.lastVolumeLabel,
                     onViewAllClick = { /* TODO */ },
                     getTrendDirectionText = { state.getTrendDirectionText(it) }
                 )

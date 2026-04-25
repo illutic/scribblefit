@@ -1,20 +1,33 @@
 import SwiftUI
 import CoreDesignSystem
 import CoreModel
+import FeatureExercises
 
 public struct ScribbleDetailsView: View {
     @State private var store: ScribbleDetailsStore
     @Environment(\.dismiss) private var dismiss
 
-    public init(store: ScribbleDetailsStore) {
+    private let getExerciseDetailsUseCase: GetExerciseDetailsUseCase
+    private let getExerciseAIInsightUseCase: GetExerciseAIInsightUseCase
+    private let configRepository: ConfigRepository
+
+    public init(
+        store: ScribbleDetailsStore,
+        getExerciseDetailsUseCase: GetExerciseDetailsUseCase,
+        getExerciseAIInsightUseCase: GetExerciseAIInsightUseCase,
+        configRepository: ConfigRepository
+    ) {
         _store = State(initialValue: store)
+        self.getExerciseDetailsUseCase = getExerciseDetailsUseCase
+        self.getExerciseAIInsightUseCase = getExerciseAIInsightUseCase
+        self.configRepository = configRepository
     }
 
     public var body: some View {
         NavigationStack {
             ZStack {
                 Color.scribbleBackground.ignoresSafeArea()
-                
+
                 if store.state.isLoading && store.state.scribble == nil {
                     ProgressView()
                         .tint(Color.scribblePrimary)
@@ -25,7 +38,7 @@ public struct ScribbleDetailsView: View {
                         Text(error)
                             .foregroundStyle(Color.red)
                             .multilineTextAlignment(.center)
-                        
+
                         Button("Retry") {
                             // Retry logic
                         }
@@ -47,6 +60,20 @@ public struct ScribbleDetailsView: View {
                 }
             }
         }
+        .sheet(item: Binding(
+            get: { store.state.selectedExerciseName.map { ExerciseNavItem(name: $0) } },
+            set: { if $0 == nil { store.onIntent(.dismissExerciseDetails) } }
+        )) { item in
+            ExerciseDetailsView(
+                store: ExerciseDetailsStore(
+                    exerciseName: item.name,
+                    getExerciseDetailsUseCase: getExerciseDetailsUseCase,
+                    getExerciseAIInsightUseCase: getExerciseAIInsightUseCase,
+                    configRepository: configRepository
+                ),
+                onDismiss: { store.onIntent(.dismissExerciseDetails) }
+            )
+        }
     }
 
     private func content(_ scribble: Scribble) -> some View {
@@ -57,7 +84,7 @@ public struct ScribbleDetailsView: View {
                     Text("Scribble")
                         .font(.headline)
                         .foregroundStyle(Color.scribbleMidGray)
-                    
+
                     Text(scribble.rawText)
                         .font(.body)
                         .padding()
@@ -75,7 +102,12 @@ public struct ScribbleDetailsView: View {
                         .padding(.horizontal)
 
                     ForEach(scribble.exercises) { exercise in
-                        ExerciseRow(exercise: exercise, weightUnit: store.state.weightUnit)
+                        Button {
+                            store.onIntent(.exerciseTapped(name: exercise.canonicalName))
+                        } label: {
+                            ExerciseRow(exercise: exercise, weightUnit: store.state.weightUnit)
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
 
@@ -102,6 +134,11 @@ public struct ScribbleDetailsView: View {
             }
         }
     }
+}
+
+private struct ExerciseNavItem: Identifiable {
+    let name: String
+    var id: String { name }
 }
 
 private struct ExerciseRow: View {

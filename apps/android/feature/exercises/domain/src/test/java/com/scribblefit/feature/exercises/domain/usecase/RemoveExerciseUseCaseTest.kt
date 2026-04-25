@@ -1,6 +1,5 @@
 package com.scribblefit.feature.exercises.domain.usecase
 
-import com.scribblefit.core.model.Exercise
 import com.scribblefit.feature.exercises.domain.ExerciseRepository
 import io.mockk.coEvery
 import io.mockk.coVerify

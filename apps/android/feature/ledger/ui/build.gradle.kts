@@ -13,7 +13,8 @@ dependencies {
     implementation(project(":core:navigation"))
     implementation(project(":core:common"))
     implementation(project(":core:model"))
-    implementation(project(":feature:exercises:domain"))
+    implementation(project(":core:config:domain"))
+    implementation(project(":feature:scribble:domain"))
 
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)

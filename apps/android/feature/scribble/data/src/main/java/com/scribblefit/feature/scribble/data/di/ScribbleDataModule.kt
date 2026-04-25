@@ -9,6 +9,7 @@ import com.scribblefit.feature.scribble.domain.usecase.ConfirmScribbleUseCase
 import com.scribblefit.feature.scribble.domain.usecase.CreateManualScribbleUseCase
 import com.scribblefit.feature.scribble.domain.usecase.GetPendingScribblesByDateUseCase
 import com.scribblefit.feature.scribble.domain.usecase.GetScribblesForDateUseCase
+import com.scribblefit.feature.scribble.domain.usecase.GetScribblesInRangeUseCase
 import com.scribblefit.feature.scribble.domain.usecase.RemoveScribbleUseCase
 import com.scribblefit.feature.scribble.domain.usecase.UpdateScribbleUseCase
 import dagger.Module
@@ -81,6 +82,13 @@ internal object ScribbleDataModule {
         scribbleRepository = scribbleRepository,
         coroutineDispatcher = coroutineDispatcherProvider.default()
     )
+
+    @Provides
+    fun provideGetScribblesInRangeUseCase(
+        repository: ScribbleRepository,
+        coroutineDispatcherProvider: CoroutineDispatcherProvider
+    ): GetScribblesInRangeUseCase =
+        GetScribblesInRangeUseCase(repository, coroutineDispatcherProvider.default())
 
     @Provides
     fun provideCreateManualScribbleUseCase(

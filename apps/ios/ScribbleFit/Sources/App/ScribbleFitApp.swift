@@ -16,6 +16,7 @@ import FeatureSets
 import FeatureExercises
 import FirebaseAppCheck
 import FirebaseAuth
+import FirebaseCore
 
 class ScribbleFitAppCheckProviderFactory: NSObject, AppCheckProviderFactory {
     func createProvider(with app: FirebaseApp) -> AppCheckProvider? {
@@ -110,64 +111,92 @@ struct ScribbleFitApp: App {
             self.llmProvider = routingLLM
 
             // Use Cases
-            self.getScribblesForDateUseCase = GetScribblesForDateUseCase(repository: scribbleRepo)
-            self.addRawScribbleUseCase = AddRawScribbleUseCase(repository: scribbleRepo)
-            let removeScribbleUC = RemoveScribbleUseCase(repository: scribbleRepo)
-            self.confirmScribbleUseCase = ConfirmScribbleUseCase(scribbleRepository: scribbleRepo)
-            self.deleteScribbleUseCase = DeleteScribbleUseCase(removeScribbleUseCase: removeScribbleUC)
-            self.parsePendingScribblesUseCase = ParsePendingScribblesUseCase(scribbleRepository: scribbleRepo, llmProvider: routingLLM)
-            self.getAIOverviewUseCase = GetAIOverviewUseCase(scribbleRepository: scribbleRepo, llmProvider: routingLLM)
-
-            self.clearAllDataUseCase = ClearAllDataUseCase(repository: settingsRepo)
-            self.checkLocalSupportUseCase = CheckLocalSupportUseCase(localLLM: localLLM)
-            self.exportUserDataUseCase = ExportUserDataUseCase(repository: settingsRepo)
+            let getScribblesForDateUC = GetScribblesForDateUseCase(repository: scribbleRepo)
+            self.getScribblesForDateUseCase = getScribblesForDateUC
             
-            self.getVolumeInsightsUseCase = GetVolumeInsightsUseCase(scribbleRepository: scribbleRepo)
-            self.getFrequencyInsightsUseCase = GetFrequencyInsightsUseCase(scribbleRepository: scribbleRepo)
-            self.getMuscleDistributionInsightsUseCase = GetMuscleDistributionInsightsUseCase(scribbleRepository: scribbleRepo)
+            let addRawScribbleUC = AddRawScribbleUseCase(repository: scribbleRepo)
+            self.addRawScribbleUseCase = addRawScribbleUC
+            
+            let removeScribbleUC = RemoveScribbleUseCase(repository: scribbleRepo)
+            let confirmScribbleUC = ConfirmScribbleUseCase(scribbleRepository: scribbleRepo)
+            self.confirmScribbleUseCase = confirmScribbleUC
+            
+            let deleteScribbleUC = DeleteScribbleUseCase(removeScribbleUseCase: removeScribbleUC)
+            self.deleteScribbleUseCase = deleteScribbleUC
+            
+            let parsePendingScribblesUC = ParsePendingScribblesUseCase(scribbleRepository: scribbleRepo, llmProvider: routingLLM)
+            self.parsePendingScribblesUseCase = parsePendingScribblesUC
+            
+            let getAIOverviewUC = GetAIOverviewUseCase(scribbleRepository: scribbleRepo, llmProvider: routingLLM)
+            self.getAIOverviewUseCase = getAIOverviewUC
+
+            let clearAllDataUC = ClearAllDataUseCase(repository: settingsRepo)
+            self.clearAllDataUseCase = clearAllDataUC
+            
+            let checkLocalSupportUC = CheckLocalSupportUseCase(localLLM: localLLM)
+            self.checkLocalSupportUseCase = checkLocalSupportUC
+            
+            let exportUserDataUC = ExportUserDataUseCase(repository: settingsRepo)
+            self.exportUserDataUseCase = exportUserDataUC
+            
+            let getVolumeInsightsUC = GetVolumeInsightsUseCase(scribbleRepository: scribbleRepo)
+            self.getVolumeInsightsUseCase = getVolumeInsightsUC
+            
+            let getFrequencyInsightsUC = GetFrequencyInsightsUseCase(scribbleRepository: scribbleRepo)
+            self.getFrequencyInsightsUseCase = getFrequencyInsightsUC
+            
+            let getMuscleDistributionInsightsUC = GetMuscleDistributionInsightsUseCase(scribbleRepository: scribbleRepo)
+            self.getMuscleDistributionInsightsUseCase = getMuscleDistributionInsightsUC
 
             let reorderSetsUC = ReorderSetsUseCase()
             self.reorderSetsUseCase = reorderSetsUC
             
             let manualEditScribbleUC = ManualEditScribbleUseCase(scribbleRepository: scribbleRepo)
             self.manualEditScribbleUseCase = manualEditScribbleUC
-            self.createManualScribbleUseCase = CreateManualScribbleUseCase(scribbleRepository: scribbleRepo)
+            
+            let createManualScribbleUC = CreateManualScribbleUseCase(scribbleRepository: scribbleRepo)
+            self.createManualScribbleUseCase = createManualScribbleUC
 
-            self.getExerciseDetailsUseCase = GetExerciseDetailsUseCase(scribbleRepository: scribbleRepo)
-            self.getExerciseAIInsightUseCase = GetExerciseAIInsightUseCase(llmService: routingLLM)
+            let getExerciseDetailsUC = GetExerciseDetailsUseCase(scribbleRepository: scribbleRepo)
+            self.getExerciseDetailsUseCase = getExerciseDetailsUC
+            
+            let getExerciseAIInsightUC = GetExerciseAIInsightUseCase(llmService: routingLLM)
+            self.getExerciseAIInsightUseCase = getExerciseAIInsightUC
 
             self.addManualExerciseUseCase = AddManualExerciseUseCase(exerciseRepository: exerciseRepo)
             self.addSetToExerciseUseCase = AddSetToExerciseUseCase(exerciseRepository: exerciseRepo)
-            self.calculateTrendsUseCase = CalculateTrendsUseCase(exerciseRepository: exerciseRepo)
+            
+            let calculateTrendsUC = CalculateTrendsUseCase(exerciseRepository: exerciseRepo)
+            self.calculateTrendsUseCase = calculateTrendsUC
 
             // Stores
             self.canvasStore = CanvasStore(
-                getScribblesForDateUseCase: getScribblesForDateUseCase,
-                addRawScribbleUseCase: addRawScribbleUseCase,
-                confirmScribbleUseCase: confirmScribbleUseCase,
-                deleteScribbleUseCase: deleteScribbleUseCase,
-                parsePendingScribblesUseCase: parsePendingScribblesUseCase,
-                getAIOverviewUseCase: getAIOverviewUseCase,
+                getScribblesForDateUseCase: getScribblesForDateUC,
+                addRawScribbleUseCase: addRawScribbleUC,
+                confirmScribbleUseCase: confirmScribbleUC,
+                deleteScribbleUseCase: deleteScribbleUC,
+                parsePendingScribblesUseCase: parsePendingScribblesUC,
+                getAIOverviewUseCase: getAIOverviewUC,
                 manualEditScribbleUseCase: manualEditScribbleUC,
-                createManualScribbleUseCase: self.createManualScribbleUseCase,
+                createManualScribbleUseCase: createManualScribbleUC,
                 reorderSetsUseCase: reorderSetsUC,
-                calculateTrendsUseCase: self.calculateTrendsUseCase,
+                calculateTrendsUseCase: calculateTrendsUC,
                 configRepository: configRepo
             )
 
             self.settingsStore = SettingsStore(
                 configRepository: configRepo,
                 settingsRepository: settingsRepo,
-                checkLocalSupportUseCase: checkLocalSupportUseCase,
-                clearAllDataUseCase: clearAllDataUseCase,
-                exportUserDataUseCase: exportUserDataUseCase
+                checkLocalSupportUseCase: checkLocalSupportUC,
+                clearAllDataUseCase: clearAllDataUC,
+                exportUserDataUseCase: exportUserDataUC
             )
 
             self.insightsStore = InsightsStore(
-                getAIOverviewUseCase: getAIOverviewUseCase,
-                getVolumeInsightsUseCase: getVolumeInsightsUseCase,
-                getFrequencyInsightsUseCase: getFrequencyInsightsUseCase,
-                getMuscleDistributionInsightsUseCase: getMuscleDistributionInsightsUseCase,
+                getAIOverviewUseCase: getAIOverviewUC,
+                getVolumeInsightsUseCase: getVolumeInsightsUC,
+                getFrequencyInsightsUseCase: getFrequencyInsightsUC,
+                getMuscleDistributionInsightsUseCase: getMuscleDistributionInsightsUC,
                 configRepository: configRepo
             )
 
@@ -268,14 +297,6 @@ struct ContentView: View {
             .tag(2)
         }
         .tint(Color.scribblePrimary)
-        .preferredColorScheme(colorScheme)
-    }
-
-    private var colorScheme: ColorScheme? {
-        switch settingsStore.state.config.themePreference {
-        case .light: return .light
-        case .dark: return .dark
-        case .system: return nil
-        }
+        .preferredColorScheme(settingsStore.state.config.themePreference.getColorScheme())
     }
 }

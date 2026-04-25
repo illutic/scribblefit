@@ -41,6 +41,8 @@
     <string name="exercise_details_trends">TRENDS</string>
     <string name="exercise_details_view_all">VIEW ALL</string>
     <string name="exercise_details_current_1rm">Current 1RM</string>
+    <string name="exercise_details_weight_vs_last">Weight vs Last</string>
+    <string name="exercise_details_intensity">Intensity</string>
     <string name="exercise_details_last_volume">Last Volume</string>
     <string name="exercise_details_history">HISTORY</string>
     <string name="exercise_details_view_all_sessions">View all tracked sessions</string>

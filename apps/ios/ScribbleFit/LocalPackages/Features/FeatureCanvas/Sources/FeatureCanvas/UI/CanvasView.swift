@@ -89,7 +89,7 @@ public struct CanvasView: View {
             )) { navState in
                 switch navState {
                 case .exerciseDetails(let name):
-                    exerciseDetailsSheet(for: name)
+                    exerciseDetailsSheet(for: name, onDismiss: { store.onIntent(.dismissDetails) })
                 case .scribbleDetails(let id):
                     scribbleDetailsSheet(for: id)
                 }
@@ -228,7 +228,7 @@ public struct CanvasView: View {
     }
     
     @ViewBuilder
-    private func exerciseDetailsSheet(for name: String) -> some View {
+    private func exerciseDetailsSheet(for name: String, onDismiss onDismiss: @escaping () -> Void) -> some View {
         ExerciseDetailsView(
             store: ExerciseDetailsStore(
                 exerciseName: name,
@@ -236,7 +236,7 @@ public struct CanvasView: View {
                 getExerciseAIInsightUseCase: getExerciseAIInsightUseCase,
                 configRepository: configRepository
             ),
-            onDismiss: { selectedExerciseName = nil }
+            onDismiss: onDismiss
         )
     }
     
@@ -248,7 +248,10 @@ public struct CanvasView: View {
                 scribbleRepository: scribbleRepository,
                 configRepository: configRepository,
                 confirmScribbleUseCase: confirmScribbleUseCase
-            )
+            ),
+            getExerciseDetailsUseCase: getExerciseDetailsUseCase,
+            getExerciseAIInsightUseCase: getExerciseAIInsightUseCase,
+            configRepository: configRepository
         )
     }
 }

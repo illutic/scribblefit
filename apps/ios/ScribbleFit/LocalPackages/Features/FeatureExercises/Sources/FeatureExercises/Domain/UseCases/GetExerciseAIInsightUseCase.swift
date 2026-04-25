@@ -9,7 +9,7 @@ public final class GetExerciseAIInsightUseCase {
         self.llmService = llmService
     }
     
-    public func execute(history: [ExerciseHistorySession]) async throws -> ExercisePerformanceInsight {
+    public func execute(history: [ExerciseHistorySession]) async throws -> AIInsight {
         guard !history.isEmpty else {
             throw NSError(domain: "ExerciseAIInsight", code: 404, userInfo: [NSLocalizedDescriptionKey: "No history available to generate insights"])
         }

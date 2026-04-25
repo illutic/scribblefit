@@ -8,4 +8,7 @@ sealed interface LedgerIntent {
     data object HideDatePicker : LedgerIntent
     data object Refresh : LedgerIntent
     data class NavigateToScreen(val screen: Screen) : LedgerIntent
+    data class NavigateToExerciseDetails(val exerciseId: Long) : LedgerIntent
+    data class ScribbleTapped(val scribbleId: Long) : LedgerIntent
+    data object DismissScribbleDetails : LedgerIntent
 }

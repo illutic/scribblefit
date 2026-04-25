@@ -2,15 +2,19 @@ package com.scribblefit.feature.ledger.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.scribblefit.core.config.domain.ConfigRepository
 import com.scribblefit.core.model.CurrentDate
 import com.scribblefit.core.navigation.Navigator
-import com.scribblefit.feature.exercises.domain.usecase.GetExercisesInRangeUseCase
+import com.scribblefit.core.navigation.Screen
+import com.scribblefit.feature.scribble.domain.usecase.GetScribblesInRangeUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -19,7 +23,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LedgerViewModel @Inject constructor(
-    private val getExercisesInRangeUseCase: GetExercisesInRangeUseCase,
+    private val getScribblesInRangeUseCase: GetScribblesInRangeUseCase,
+    private val configRepository: ConfigRepository,
     private val navigator: Navigator
 ) : ViewModel() {
 
@@ -31,20 +36,32 @@ class LedgerViewModel @Inject constructor(
         _state.map { it.endDate }.distinctUntilChanged()
     ) { start, end -> CurrentDate(start) to CurrentDate(end) }
 
-    private val exercisesFlow = combine(
+    @OptIn(ExperimentalCoroutinesApi::class)
+    private val scribblesFlow = combine(
         dateRange,
         refreshTrigger
     ) { range, _ ->
         _state.update { it.copy(isLoading = true) }
-
-        getExercisesInRangeUseCase(range.first, range.second).getOrNull() ?: emptyList()
+        range
+    }.flatMapLatest { range ->
+        getScribblesInRangeUseCase(range.first, range.second)
     }
 
-    val state = combine(_state, exercisesFlow, navigator.navState) { state, exercises, navState ->
+    private val preferredWeight = configRepository.config
+        .map { it.localConfig.weightUnit }
+        .distinctUntilChanged()
+
+    val state = combine(
+        _state,
+        scribblesFlow,
+        navigator.navState,
+        preferredWeight
+    ) { state, scribbles, navState, weightUnit ->
         state.copy(
-            exercises = exercises.sortedByDescending { it.createdAt },
+            scribbles = scribbles.sortedByDescending { it.createdAt },
             isLoading = false,
-            bottomBarState = navState.bottomBarState
+            bottomBarState = navState.bottomBarState,
+            weightUnit = weightUnit
         )
     }.stateIn(
         scope = viewModelScope,
@@ -65,22 +82,33 @@ class LedgerViewModel @Inject constructor(
             }
 
             LedgerIntent.ShowDatePicker -> {
-                _state.update {
-                    it.copy(showDatePicker = true)
-                }
+                _state.update { it.copy(showDatePicker = true) }
             }
 
             LedgerIntent.Refresh -> {
-                fetchWorkouts()
+                fetchScribbles()
             }
 
             is LedgerIntent.NavigateToScreen -> {
                 navigator.navigateTo(intent.screen)
             }
+
+            is LedgerIntent.NavigateToExerciseDetails -> {
+                navigator.navigateTo(Screen.ExerciseDetails(intent.exerciseId))
+            }
+
+            is LedgerIntent.ScribbleTapped -> {
+                val scribble = state.value.scribbles.find { it.id == intent.scribbleId }
+                _state.update { it.copy(selectedScribble = scribble) }
+            }
+
+            LedgerIntent.DismissScribbleDetails -> {
+                _state.update { it.copy(selectedScribble = null) }
+            }
         }
     }
 
-    private fun fetchWorkouts() {
+    private fun fetchScribbles() {
         viewModelScope.launch {
             refreshTrigger.emit(Unit)
         }

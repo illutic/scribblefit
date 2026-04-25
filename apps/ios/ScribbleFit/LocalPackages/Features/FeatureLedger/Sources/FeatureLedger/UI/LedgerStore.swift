@@ -29,8 +29,7 @@ public final class LedgerStore {
         case .scribbleTapped(let id):
             state = state.copy(navigationState: .scribbleDetails(id))
         case .exerciseTapped(let name):
-            // Fallback or explicit navigation if added to LedgerState
-            break
+            state = state.copy(navigationState: .exerciseDetails(name))
         case .dismissDetails:
             state = state.copy(navigationState: .some(nil))
         }

@@ -41,4 +41,9 @@ internal class ScribbleRepositoryImpl(
             .map { it.map { scribbleWithExercises -> scribbleWithExercises.toDomain() } }
             .flowOn(coroutineDispatcher)
 
+    override fun getScribblesInRange(startDate: Long, endDate: Long): Flow<List<Scribble>> =
+        scribbleDao.getScribblesWithExercisesInRange(startDate, endDate)
+            .map { it.map { scribbleWithExercises -> scribbleWithExercises.toDomain() } }
+            .flowOn(coroutineDispatcher)
+
 }

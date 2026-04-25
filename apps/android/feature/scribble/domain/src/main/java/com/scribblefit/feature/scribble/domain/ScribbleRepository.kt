@@ -12,4 +12,5 @@ interface ScribbleRepository {
     suspend fun deleteScribble(scribbleId: Long)
     fun getScribble(scribbleId: Long): Flow<Scribble>
     fun getScribblesByDate(date: Long): Flow<List<Scribble>>
+    fun getScribblesInRange(startDate: Long, endDate: Long): Flow<List<Scribble>>
 }

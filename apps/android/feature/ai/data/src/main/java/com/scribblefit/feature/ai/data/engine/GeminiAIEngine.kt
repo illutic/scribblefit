@@ -8,7 +8,7 @@ import com.scribblefit.core.config.domain.ConfigRepository
 import com.scribblefit.core.model.AIInsight
 import com.scribblefit.core.model.Exercise
 import com.scribblefit.feature.ai.data.entity.AIInsightDto
-import com.scribblefit.feature.ai.data.entity.ExerciseDto
+import com.scribblefit.feature.ai.data.entity.WorkoutResponseDto
 import com.scribblefit.feature.ai.data.entity.toDomain
 import com.scribblefit.feature.ai.domain.LLMEngine
 import com.scribblefit.feature.ai.domain.ParsedWorkoutResult
@@ -41,11 +41,11 @@ internal class GeminiAIEngine(
         val responseText = response.text ?: error("No response from Gemini")
         val cleanJson = responseText.replaceFirst("```json", "").replaceFirst("```", "").trim()
 
-        val exercises = json.decodeFromString<List<ExerciseDto>>(cleanJson)
+        val workoutResponse = json.decodeFromString<WorkoutResponseDto>(cleanJson)
 
         ParsedWorkoutResult(
             rawText = rawText,
-            exercises = exercises.map { it.toDomain() }
+            exercises = workoutResponse.exercises.map { it.toDomain() }
         )
     }
 

@@ -50,6 +50,10 @@ public final class ScribbleDetailsStore {
         case .dismiss:
             // Handled by view presentation logic
             break
+        case .exerciseTapped(let name):
+            state = state.copy(selectedExerciseName: name)
+        case .dismissExerciseDetails:
+            state = state.copy(selectedExerciseName: .some(nil))
         }
     }
 

@@ -1,101 +1,34 @@
-# Platform Gaps & Differences (Android vs. iOS)
+# Platform Gaps & Functional Discrepancies
 
-This document tracks architectural, behavioral, and feature differences between the Android and iOS
-implementations of ScribbleFit.
+This document tracks functional and feature gaps between Android and iOS. Native architectural differences (e.g., BottomBar vs TabView) are accepted and not listed as gaps.
 
-## 🏗️ Core Architecture
+## Feature: Canvas & AI
 
-| Feature           | Android Implementation       | iOS Implementation        | Notes                                                         |
-|:------------------|:-----------------------------|:--------------------------|:--------------------------------------------------------------|
-| **Language**      | Kotlin 2.0                   | Swift 6.0                 | Both use strict concurrency/coroutines.                       |
-| **UI Framework**  | Jetpack Compose (Material 3) | SwiftUI                   | Both follow monochromatic design.                             |
-| **DI**            | Hilt (Dagger)                | Manual / Factory Pattern  | Android uses compile-time DI; iOS uses constructor injection. |
-| **ID Types**      | `Long` (Database Auto-inc)   | `UUID`                    | iOS uses unique identifiers for all models.                   |
-| **Date Handling** | `Long` (UTC Epoch Milli)     | `Date` (ISO8601/Internal) | FIXED: Both now use 'Local Day Boundary Rule' (system timezone). |
+| Feature | Android Implementation | iOS Implementation | Gap Type | Status |
+|---------|------------------------|--------------------|----------|--------|
+| **AI Parsing Logic** | Returns structured `WorkoutResponseDto { exercises }` with `estimated1RM` and `intensity`. | Returns structured `WorkoutResponse { exercises }` with `estimated1RM` and `intensity`. | **Resolved** | Aligned |
+| **Scribble Cards** | Shows `intensity` and `improvement` via UI-layer calculation in ViewModel. | Shows `intensity` and `improvement` via on-the-fly calculation in Store. | **Resolved** | Consistent |
 
----
+## Feature: Ledger (History)
 
-## 💾 Data Persistence & Mapping
+| Feature | Android Implementation | iOS Implementation | Gap Type | Status |
+|---------|------------------------|--------------------|----------|--------|
+| **Primary Data Model** | **Session-centric (Scribble)**. Groups scribbles by date, shows raw text + exercise pills. | **Session-centric (Scribble)**. Groups scribbles by date, shows raw text + exercise pills. | **Resolved** | Aligned |
+| **Refresh** | Refresh button in header. | Refresh button in header. | Accepted | Native patterns |
+| **Navigation** | Exercise pills navigate to Exercise Details. | Exercise pills navigate to Exercise Details via sheet. | **Resolved** | Aligned |
 
-| Feature            | Android (Room)                | iOS (SwiftData)                 | Notes |
-|:-------------------|:------------------------------|:--------------------------------| :--- |
-| **Schema**         | SQLite + Room                 | SwiftData (Models as schema)    | |
-| **Relationships**  | Junction Tables + `@Relation` | Direct `@Relationship` (shared entities) | FIXED: Both use 'Object Identity Synchronization' to prevent data loss. |
-| **Atomic Updates** | manual clear-and-reinsert     | Automatic via SwiftData context | |
-| **Status Enums**   | Uppercase String (mapped)     | Native Enum (mapped)            | |
+## Feature: Exercise Details
 
----
+| Feature | Android Implementation | iOS Implementation | Gap Type | Status |
+|---------|------------------------|--------------------|----------|--------|
+| **Trends** | Shows 1RM, Intensity, Weight vs Last, and Last Volume trends. | Shows 1RM, Intensity, Weight vs Last, and Last Volume trends. | **Resolved** | Aligned |
+| **AI Insights** | Returns unified `AIInsight` (insightType + text). | Returns unified `AIInsight` (insightType + text). | **Resolved** | Aligned |
 
-## 🦾 Implementation Logic
+## Summary
 
-| Feature | Android Baseline | iOS Implementation | Notes |
-| :--- | :--- | :--- | :--- |
-| **Scribble Creation** | Local Day Boundary | Local Day Boundary | FIXED: iOS removed forced UTC normalization. |
-| **Confirmation Flow** | Manual re-linking in DB | Deep-copy + workoutId Linkage | FIXED: iOS now uses `workoutId` to link scribbles and workouts. |
-| **Set Reordering** | `ReorderSetsUseCase` | `ReorderSetsUseCase` | PARITY: Both use shared domain use case logic. |
-| **Deletion Integrity** | Orphaned-only exercise cleanup | Orphaned-only exercise cleanup | FIXED: iOS now checks for workout links before deleting exercises. |
+All critical platform gaps have been resolved. Both platforms now share:
 
----
-
-## 📊 Insights & Analytics
-
-| Feature | Android Baseline | iOS Implementation | Notes |
-| :--- | :--- | :--- | :--- |
-| **Data Flow** | Reactive `Flow<T>` from Repository | Reactive `AsyncStream<T>` | PARITY: Both platforms are now fully reactive. |
-| **Calculation Logic** | Performed in Repository layer | Performed in Use Case layer | |
-| **Period Management** | `flatMapLatest` on period change | Observation tasks in `Store` | |
-
----
-
-## 📜 Ledger & History
-
-| Feature | Android Baseline | iOS Implementation | Notes |
-| :--- | :--- | :--- | :--- |
-| **Data Fetching** | Continuous `Flow<List<T>>` | Reactive `AsyncStream<T>` | PARITY: Both use persistent data streams. |
-| **Grouping** | Consolidated Daily Card | Consolidated Daily Card | PARITY: Both group multiple sessions into a single daily card. |
-| **Date Selection** | `ScribbleFitDateRangePickerDialog`| `Sheet` with Start/End pickers | Both allow flexible range selection. |
-| **Persistence** | `updateWorkout` supported | `saveWorkout` supported | PARITY: Both platforms can edit historical workouts. |
-
----
-
-## 🦾 Implementation Logic
-
-| Feature | Android Baseline | iOS Implementation | Notes |
-| :--- | :--- | :--- | :--- |
-| **Local LLM** | Gemini Nano (AICore) | CoreML / Local Llama | |
-| **Fallback** | Manual Proxy in Data Layer | `RoutingLLMService` | |
-| **Parsing Prompt** | Dotprompt (Handlebars) | Dotprompt (Handlebars) | PARITY: Both use identical prompt templates. |
-| **JSON Mapping** | Uses `snake_case` in DTOs. | Native `Codable` (mapped) | |
-| **Default Provider** | Gemini (Cloud) | Gemini (Cloud) | PARITY: Both default to Gemini 2.5 Flash Lite. |
-
----
-
-## 📱 Feature Parity Status
-
-### ✅ Parity
-
-* **Canvas**: Basic scribble entry and parsing.
-* **Settings**: API Key management, unit selection, theme toggling.
-* **Insights**: Volume and Frequency charts (Matched aesthetics).
-* **Multi-Exercise UI**: Both platforms correctly list all parsed exercises in cards.
-* **Confirmation UI**: Both platforms provide detailed editing before saving.
-* **Set Reordering**: Sequential integrity maintained on both platforms.
-* **Historical Edits**: Edits to completed workouts persist correctly.
-* **Date Integrity**: All queries respect local day boundaries.
-
-### ⚠️ Gaps (Android Needs)
-
-* **Export/Import**: iOS implementation differs in JSON structure for UUIDs.
-* **Glassmorphism**: iOS uses native `ultraThinMaterial`; Android uses custom brushes/alpha.
-
-### ⚠️ Gaps (iOS Needs)
-
-*   **N+1 Optimization**: Android has specific Room `@Relation` optimizations that iOS handles differently.
-
----
-
-## 🛠️ UI Implementation Nuances
-
-*   **Status Management**: Android uses a `Status` string in the DB that must be `.uppercase()`ed to match the `ScribbleStatus` enum.
-*   **Edit Handling**: Both platforms now use domain-layer logic for consistent updates, though Android uses targeted use cases while iOS uses a broader `UpdateScribbleWithWorkoutUseCase`.
-
+1. **Unified AI models:** Same parsing structure (`WorkoutResponseDto`/`WorkoutResponse`) and insight model (`AIInsight`).
+2. **Session-centric Ledger:** Both platforms display completed scribbles grouped by date with exercise pills for navigation.
+3. **Full Exercise Trends:** Both platforms show 4 trend metrics (1RM, Intensity, Weight vs Last, Last Volume).
+4. **Ledger → Exercise Details navigation:** Both platforms support tapping individual exercises to view details.

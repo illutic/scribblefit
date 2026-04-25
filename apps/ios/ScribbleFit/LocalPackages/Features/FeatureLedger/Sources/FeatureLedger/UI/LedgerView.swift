@@ -54,15 +54,6 @@ public struct LedgerView: View {
                 Color.scribbleBackground.ignoresSafeArea()
 
                 VStack(spacing: 0) {
-                    LedgerHeader(
-                        dateRange: store.state.dateRangeString,
-                        onDateRangeTapped: {
-                            tempStartDate = store.state.startDate
-                            tempEndDate = store.state.endDate
-                            showingDatePicker = true
-                        }
-                    )
-
                     ScrollView {
                         ledgerContent
                     }
@@ -88,7 +79,20 @@ public struct LedgerView: View {
                         scribbleRepository: scribbleRepository,
                         configRepository: configRepository,
                         confirmScribbleUseCase: confirmScribbleUseCase
-                    )
+                    ),
+                    getExerciseDetailsUseCase: getExerciseDetailsUseCase,
+                    getExerciseAIInsightUseCase: getExerciseAIInsightUseCase,
+                    configRepository: configRepository
+                )
+            case .exerciseDetails(let name):
+                ExerciseDetailsView(
+                    store: ExerciseDetailsStore(
+                        exerciseName: name,
+                        getExerciseDetailsUseCase: getExerciseDetailsUseCase,
+                        getExerciseAIInsightUseCase: getExerciseAIInsightUseCase,
+                        configRepository: configRepository
+                    ),
+                    onDismiss: { store.handleIntent(.dismissDetails) }
                 )
             }
         }
@@ -96,6 +100,22 @@ public struct LedgerView: View {
     
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
+        ToolbarItem(placement: .automatic) {
+            Button(action: {
+                tempStartDate = store.state.startDate
+                tempEndDate = store.state.endDate
+                showingDatePicker = true
+            }) {
+                HStack {
+                    Image(systemName: "calendar")
+                    Text(store.state.dateRangeString)
+                    Spacer()
+                }
+                .padding()
+                .background(in: RoundedRectangle(cornerRadius: 12))
+                .foregroundStyle(Color.scribblePrimary)
+            }
+        }
         ToolbarItem(placement: .topBarTrailing) {
             Button(action: { store.handleIntent(.refresh) }) {
                 Image(systemName: "arrow.clockwise")
@@ -141,7 +161,7 @@ public struct LedgerView: View {
                         store.handleIntent(.scribbleTapped(id: scribbleId))
                     },
                     onExerciseTapped: { name in
-                        // We do not have exercise details nav state here anymore, but could add it.
+                        store.handleIntent(.exerciseTapped(name: name))
                     }
                 )
                 .padding(.horizontal)

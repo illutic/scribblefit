@@ -141,13 +141,11 @@ final class MockLLMService: LLMService {
         return insights
     }
 
-    func generateExerciseInsight(history: String) async throws -> ExercisePerformanceInsight {
+    func generateExerciseInsight(history: String) async throws -> AIInsight {
         if shouldThrow { throw MockError.generic }
-        return ExercisePerformanceInsight(
-            estimated1RM: 100.0,
-            prDetected: false,
-            trendDirection: .improving,
-            breakdownText: "Keep it up"
+        return AIInsight(
+            insightType: .trend,
+            text: "Keep it up"
         )
     }
 

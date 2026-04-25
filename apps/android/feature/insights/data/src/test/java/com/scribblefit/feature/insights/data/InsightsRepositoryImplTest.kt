@@ -173,7 +173,7 @@ class InsightsRepositoryImplTest {
             val ex1 = makeExercise(exerciseId = 1, name = "Bench Press")
             val ex2 = makeExercise(exerciseId = 2, name = "Incline DB Press")
             val ex3 = makeExercise(exerciseId = 3, name = "Squat")
-            
+
             every { exerciseDao.getExercisesWithSetsInRange(any(), any()) } returns flowOf(
                 listOf(ex1, ex2, ex3)
             )

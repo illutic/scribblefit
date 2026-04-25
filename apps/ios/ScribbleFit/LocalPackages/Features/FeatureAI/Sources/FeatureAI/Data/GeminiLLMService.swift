@@ -71,7 +71,7 @@ public final class GeminiLLMService: LLMService {
         return insightsResponse.insights.map { $0.toDomain() }
     }
 
-    public func generateExerciseInsight(history: String) async throws -> ExercisePerformanceInsight {
+    public func generateExerciseInsight(history: String) async throws -> AIInsight {
         let sanitized = history.replacingOccurrences(of: "{", with: " ").replacingOccurrences(of: "}", with: " ")
         let prompt = config.insightPrompt.replacingOccurrences(of: "{{exerciseHistory}}", with: "<exercise_history>\(sanitized)</exercise_history>")
         
@@ -88,7 +88,7 @@ public final class GeminiLLMService: LLMService {
             throw NSError(domain: "GeminiLLMService", code: 400, userInfo: [NSLocalizedDescriptionKey: "Failed to convert response to data"])
         }
         
-        let dto = try JSONDecoder().decode(ExercisePerformanceInsightDto.self, from: data)
+        let dto = try JSONDecoder().decode(AIInsightDto.self, from: data)
         return dto.toDomain()
     }
 }
@@ -166,30 +166,5 @@ private struct AIInsightDto: Codable {
             }
         }()
         return AIInsight(insightType: type, text: text)
-    }
-}
-
-private struct ExercisePerformanceInsightDto: Codable {
-    let estimated1RM: Float
-    let prDetected: Bool
-    let trendDirection: String
-    let breakdownText: String
-
-    func toDomain() -> ExercisePerformanceInsight {
-        let direction: TrendDirection = {
-            switch trendDirection.uppercased() {
-            case "IMPROVING": return .improving
-            case "STABLE": return .stable
-            case "PLATEAUED": return .plateaued
-            case "DECLINING": return .declining
-            default: return .stable
-            }
-        }()
-        return ExercisePerformanceInsight(
-            estimated1RM: estimated1RM,
-            prDetected: prDetected,
-            trendDirection: direction,
-            breakdownText: breakdownText
-        )
     }
 }

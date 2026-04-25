@@ -9,8 +9,10 @@ import kotlinx.serialization.Serializable
 internal enum class InsightTypeDto {
     @SerialName("summary")
     SUMMARY,
+
     @SerialName("trend")
     TREND,
+
     @SerialName("advice")
     ADVICE
 }

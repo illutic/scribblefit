@@ -19,11 +19,14 @@ public struct LedgerState: Equatable, Sendable {
 
     public enum NavigationState: Equatable, Sendable, Identifiable {
         case scribbleDetails(UUID)
+        case exerciseDetails(String)
 
         public var id: String {
             switch self {
             case .scribbleDetails(let uuid):
                 return "scribble-\(uuid.uuidString)"
+            case .exerciseDetails(let name):
+                return "exercise-\(name)"
             }
         }
     }

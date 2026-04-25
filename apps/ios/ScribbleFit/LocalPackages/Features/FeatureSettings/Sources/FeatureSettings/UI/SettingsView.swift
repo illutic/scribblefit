@@ -82,5 +82,6 @@ public struct SettingsView: View {
             }
             #endif
         }
+        .colorScheme(store.state.config.themePreference.getColorScheme())
     }
 }
