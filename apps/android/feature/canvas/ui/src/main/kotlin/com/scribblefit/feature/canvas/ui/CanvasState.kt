@@ -3,7 +3,6 @@ package com.scribblefit.feature.canvas.ui
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.intl.Locale
 import com.scribblefit.core.config.domain.Weight
 import com.scribblefit.core.model.AIInsight
 import com.scribblefit.core.model.Scribble
@@ -11,9 +10,10 @@ import com.scribblefit.core.model.ScribbleStatus
 import com.scribblefit.core.navigation.BottomBarState
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 private val dateFormatter =
-    DateTimeFormatter.ofPattern("EEEE, MMMM d", Locale.current.platformLocale)
+    DateTimeFormatter.ofPattern("EEEE, MMMM d", Locale.getDefault())
 
 data class ExerciseUiModel(
     val id: Long,

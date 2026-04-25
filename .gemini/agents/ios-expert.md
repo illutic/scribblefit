@@ -20,11 +20,13 @@ You are a senior iOS engineer specializing in ScribbleFit's Pure SwiftUI MVI arc
 - **Strictly No UIKit:** Design UI solely using native SwiftUI. Target iOS 26.0+.
 - **No Base Classes:** Every `Store`, `Repository`, and `UseCase` must be autonomous.
 - **Store (ViewModel):** `@Observable` and `@MainActor` classes. Orchestrate UI state via Use Cases. Zero business logic.
+- **Task Serialization:** Stores MUST ensure that asynchronous tasks affecting the same state branch are processed sequentially where order matters (e.g., adding a set then refreshing a summary). Use `Task` groups or serial execution patterns to prevent race conditions during rapid user input.
 - **State:** A simple `struct` representing the entire UI state. Resolves all UI strings (labels, hints, and formatted messages) using `LocalizedStringResource` or pre-resolved `String` values.
 - **Mutable State for Bindings:** Any property in a `State` struct that is bound to a UI control (e.g., `TextField`, `Toggle`, `Picker`) MUST be declared as `var` to support SwiftUI's two-way bindings.
-- **Formatting:** Complex string formatting logic (e.g., grouping sets like "3x10, 1x8 @ 80kg") MUST be encapsulated in Domain Use Cases (e.g., `FormatExerciseSummaryUseCase`) to ensure parity with Android. 
-- **Pure State Enforcement:** `State` structs MUST remain pure data containers. Use Cases MUST NOT be orchestrated within the `State` or `Store` initializers. Stores MUST inject formatting Use Cases and pass pre-mapped UI models to the `State`.
+- **Reactive Formatting:** Complex formatting logic that requires business rules (e.g., grouping sets) or depends on global configuration (e.g., Units, Locale) MUST be implemented as a Domain Use Case. Stores MUST orchestrate the combination of the primary data stream and the configuration stream before calling the Use Case.
+- **Pure State Enforcement:** `State` structs MUST remain pure data containers. Use Cases MUST NOT be orchestrated within the `State` or `Store` initializers. Stores MUST NOT pass raw Domain Models (e.g., `Exercise`) directly to the `State`; they MUST project them into `UiModel` structs with pre-resolved values.
 - **Immutable State Updates:** `State` structs and Domain models MUST implement a `copy()` function to support Kotlin-style immutable updates (e.g., `state = state.copy(isLoading: true)`). Avoid direct property mutation in Stores.
+
 - **Intent:** User actions handled by the Store.
 - **Explicit Numeric Casting:** Avoid relying on implicit conversion for optional numeric types. When assigning an `Int` to a `Float?`, use `Float(value)`. For literals, use the correct suffix or decimal point (e.g., `0.0` for `Float`).
 - **Best-in-Class Defaults (Editorial Minimalism):** Challenge the need for new user-facing settings. Prefer hardcoding optimal defaults (e.g., `gemini-2.0-flash`) in the data layer to reduce domain and state complexity.

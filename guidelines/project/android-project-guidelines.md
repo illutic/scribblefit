@@ -3,7 +3,8 @@
 ## 1. Architectural Pattern: MVI (Model-View-Intent)
 - **ViewModel:** Autonomous classes (no base inheritance).
 - **State:** Immutable `data class`. String resolution MUST happen here via `@Composable @ReadOnlyComposable` getters.
-- **State Flow Uncoupling:** ViewModels MUST use a private `MutableStateFlow` to manage the backing state. This flow is updated by various logic workers (reactive collectors, async launchers, intents) and then exposed as a clean, public `StateFlow` via `asStateFlow()`. This "state-sink" approach prevents UI components from directly modifying state and allows multiple concurrent asynchronous operations (e.g., loading AI insights in parallel with primary metrics) to update the UI state predictably without complex reactive chaining.
+- **State Flow Uncoupling:** ViewModels MUST use a private `MutableStateFlow` to manage the backing state. This flow is updated by various logic workers (reactive collectors, async launchers, intents) and then exposed as a clean, public `StateFlow` via `asStateFlow()`. 
+- **Intent Serialization:** ViewModels MUST ensure that intents affecting the same state branch are processed sequentially to avoid race conditions. Use `Mutex` to protect state transitions or process intents through a `Channel` if ordering is critical for business logic (e.g., adding a set then recalculating a summary).
 - **Intent:** `sealed interface` for user actions.
 - **Business Logic:** Zero logic in ViewModel; all logic resides in Use Cases (SRP).
 - **Best-in-Class Defaults (Editorial Minimalism):** Prefer hardcoding optimal defaults (e.g., AI model names like `gemini-2.5-flash-lite`) over adding complex, database-backed configuration settings. Only expose settings that provide significant user value to minimize state management overhead and schema complexity.
@@ -23,10 +24,10 @@
 - **Mappers:** Pure functions to isolate database entities from domain logic.
     - **Status Enum Consistency:** Enforce uppercase raw values for status enums (e.g., `FAILED`) to match technical specifications and ensure cross-platform consistency.
     - **Resilient Mapping:** When mapping from storage (String) to Domain (Enum), mappers MUST use `.uppercase()` on the status string (e.g., `ScribbleStatus.valueOf(status.uppercase())`) to handle case-insensitive database values safely.
-    - **Formatting Use Cases:** Complex formatting logic that requires business rules (e.g., grouping sets as "3x10, 1x8 @ 80kg") MUST be implemented as a Domain Use Case (e.g., `FormatExerciseSummaryUseCase`). This ensures identical formatting logic across Android and iOS and prevents "formatting leak" into the UI layer.
+    - **Reactive Formatting Use Cases:** Complex formatting logic that requires business rules (e.g., grouping sets) or depends on global configuration (e.g., Units, Locale) MUST be implemented as a Domain Use Case. ViewModels MUST `combine` the data flow with the `ConfigRepository` flow before passing the result to the Use Case to ensure the UI reacts instantly to setting changes.
 - **Pure State Enforcement:** `State` classes MUST remain pure data containers. 
     - **No Logic Orchestration:** Use Cases MUST NOT be instantiated or orchestrated within the `State` class. 
-    - **Pre-Mapped UI Models:** ViewModels MUST inject the necessary formatting Use Cases and pass pre-mapped, ready-to-display UI models to the `State`. 
+    - **UI Model Projection:** ViewModels MUST NOT pass raw Domain Models (e.g., `Exercise`) directly to the `State`. They MUST project them into `UiModel` data classes that contain pre-resolved strings, visibility flags, and formatted values. This prevents business logic leakage into Composable `if/else` blocks.
     - **Resource Resolution Exception:** On Android, `State` classes MAY contain `@get:Composable @get:ReadOnlyComposable` getters for resolving `strings.xml` resources, but these getters MUST NOT contain business logic or formatting orchestration.
 - **End-to-End Nullability:** If a domain property is nullable (e.g., `Double?`), the entire architectural chain (Intent -> Use Case -> Repository -> DAO) MUST explicitly support nullability to allow "clearing" values. Use Cases MUST NOT force non-null defaults unless required by business logic.
 - **Data Export:** Entities and Domain Models intended for JSON export MUST be annotated with `@Serializable` from `kotlinx.serialization`.

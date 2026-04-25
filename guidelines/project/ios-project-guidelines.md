@@ -3,6 +3,7 @@
 ## 1. Architectural Pattern: Pure SwiftUI MVI (Model-View-Intent)
 - **No UIKit:** Specifications MUST design UI solely for native SwiftUI.
 - **Store/ViewModel:** Autonomous `@Observable` @MainActor classes.
+- **Task Serialization:** Stores MUST ensure that asynchronous tasks affecting the same state branch are processed sequentially where order matters (e.g., adding a set then refreshing a summary). Use `Task` groups or serial execution patterns to prevent race conditions during rapid user input.
 - **Static Theming:** Use standard SwiftUI `Color` and `Font` extensions for brand consistency. Leverage semantic system colors (e.g., `.primary`, `.secondary`, `.systemBackground`) where possible.
 - **Best-in-Class Defaults (Editorial Minimalism):** Prefer hardcoding optimal defaults (e.g., AI model names like `gemini-2.5-flash-lite`) over adding complex, database-backed configuration settings. Only expose settings that provide significant user value to minimize state management overhead and schema complexity.
 - **Modern Native Parity:** Balance Android parity with iOS-native aesthetics. For iOS 26+, utilize native components like `Tab(role: .search)` and `.searchToolbarBehavior(.minimize)`.
@@ -40,10 +41,10 @@
 - **Resilient Mapping:** When mapping from storage (String) to Domain (Enum), `toDomain()` mapping MUST use `.uppercased()` on the status string to handle case-insensitive database values safely.
 - **End-to-End Nullability:** Maintain nullability parity across all layers (Store -> Use Case -> Repository -> SwiftData). If a value can be cleared, the underlying schema and repository methods MUST support `Optional` types.
 - **Explicit Numeric Casting:** Avoid relying on implicit conversion for optional numeric types. When assigning an `Int` to a `Float?`, use `Float(value)`. For literals, use the correct suffix or decimal point (e.g., `0.0` for `Float`).
-- **Formatting Use Cases:** Complex formatting logic that requires business rules (e.g., grouping sets as "3x10, 1x8 @ 80kg") MUST be implemented as a Domain Use Case (e.g., `FormatExerciseSummaryUseCase`). This ensures identical formatting logic across Android and iOS and prevents "formatting leak" into the UI layer.
+- **Reactive Formatting Use Cases:** Complex formatting logic that requires business rules (e.g., grouping sets) or depends on global configuration (e.g., Units, Locale) MUST be implemented as a Domain Use Case. Stores MUST orchestrate the combination of the primary data stream and the configuration stream before passing the values to the Use Case to ensure UI reactivity.
 - **Pure State Enforcement:** `State` structs MUST remain pure data containers. 
     - **No Logic Orchestration:** Use Cases MUST NOT be instantiated or orchestrated within the `State` struct or `Store` initializer. 
-    - **Pre-Mapped UI Models:** Stores MUST inject the necessary formatting Use Cases and pass pre-mapped, ready-to-display UI models to the `State`. 
+    - **UI Model Projection:** Stores MUST NOT pass raw Domain Models (e.g., `Exercise`) directly to the `State`. They MUST project them into `UiModel` structs that contain pre-resolved strings, visibility flags, and formatted values. This prevents business logic leakage into SwiftUI `if/else` blocks.
 - **Mutable State for Bindings:** Any property in a `State` struct that is bound to a UI control (e.g., `TextField`, `Toggle`, `Picker`) MUST be declared as `var` to support SwiftUI's two-way bindings.
 
 ## 3. UI & Design System (DRY)

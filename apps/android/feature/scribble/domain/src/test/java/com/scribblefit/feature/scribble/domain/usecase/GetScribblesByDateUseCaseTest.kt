@@ -1,6 +1,7 @@
 package com.scribblefit.feature.scribble.domain.usecase
 
 import app.cash.turbine.test
+import com.scribblefit.core.model.CurrentDate
 import com.scribblefit.core.model.Scribble
 import com.scribblefit.core.model.ScribbleStatus
 import com.scribblefit.feature.scribble.domain.ScribbleRepository
@@ -18,7 +19,7 @@ class GetScribblesByDateUseCaseTest {
 
     private val scribbleRepository = mockk<ScribbleRepository>()
     private val testDispatcher = StandardTestDispatcher()
-    private val useCase = GetScribblesByDateUseCase(scribbleRepository, testDispatcher)
+    private val useCase = GetScribblesForDateUseCase(scribbleRepository, testDispatcher)
 
     @Test
     fun `when called, should convert date to millis and return flow from repository`() =
@@ -30,7 +31,6 @@ class GetScribblesByDateUseCaseTest {
                 Scribble(
                     id = 1L,
                     rawText = "text",
-                    parsedJson = null,
                     status = ScribbleStatus.COMPLETED,
                     createdAt = expectedMillis,
                     exercises = emptyList()
@@ -39,7 +39,7 @@ class GetScribblesByDateUseCaseTest {
             every { scribbleRepository.getScribblesByDate(expectedMillis) } returns flowOf(scribbles)
 
             // When & Then
-            useCase(flowOf(date)).test {
+            useCase(CurrentDate(date)).test {
                 assertEquals(scribbles, awaitItem())
                 awaitComplete()
             }

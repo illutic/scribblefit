@@ -36,8 +36,10 @@ internal object ScribbleDataModule {
 
     @Provides
     fun provideGetScribblesForDateUseCase(
-        repository: ScribbleRepository
-    ): GetScribblesForDateUseCase = GetScribblesForDateUseCase(repository)
+        repository: ScribbleRepository,
+        coroutineDispatcherProvider: CoroutineDispatcherProvider
+    ): GetScribblesForDateUseCase =
+        GetScribblesForDateUseCase(repository, coroutineDispatcherProvider.default())
 
     @Provides
     fun provideAddScribbleUseCase(

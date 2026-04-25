@@ -53,7 +53,7 @@ final class BottomSheetUITests: XCTestCase {
         let loggedCard = app.buttons["loggedScribbleCard"]
         if loggedCard.waitForExistence(timeout: 3) {
             loggedCard.firstMatch.tap()
-            return app.staticTexts["Confirm Exercise"].waitForExistence(timeout: 5)
+            return app.staticTexts["Scribble Details"].waitForExistence(timeout: 5)
         }
 
         return false
@@ -77,24 +77,33 @@ final class BottomSheetUITests: XCTestCase {
         let sheetTitle = app.staticTexts["Confirm Exercise"]
         XCTAssertTrue(sheetTitle.waitForExistence(timeout: 5), "Bottom sheet should appear")
 
-        let confirmButton = app.buttons["confirmWorkoutButton"]
+        let confirmButton = app.buttons["confirmScribbleButton"]
         XCTAssertTrue(confirmButton.waitForExistence(timeout: 3), "Confirm button should be visible for parsed scribble")
     }
 
-    /// Verify that tapping a logged (completed) scribble card opens the sheet WITHOUT a confirm button.
-    func testLoggedScribbleHidesConfirmButton() throws {
+    /// Verify that tapping a logged (completed) scribble card opens the sheet.
+    func testLoggedScribbleShowsDetails() throws {
         let loggedCard = app.buttons["loggedScribbleCard"]
-        guard loggedCard.waitForExistence(timeout: 5) else {
-            throw XCTSkip("No logged scribble available to test")
+        if !loggedCard.waitForExistence(timeout: 5) {
+            // No logged card available — add and confirm one
+            let parsed = addScribbleAndWaitForParsing("Squat 100kg 3x5")
+            guard let parsed = parsed else {
+                throw XCTSkip("No parsed scribble available to test")
+            }
+            parsed.tap()
+            let confirmButton = app.buttons["confirmScribbleButton"]
+            confirmButton.tap()
+            
+            // Wait for it to become logged
+            guard loggedCard.waitForExistence(timeout: 10) else {
+                throw XCTSkip("Confirm action didn't result in a logged card")
+            }
         }
 
         loggedCard.firstMatch.tap()
 
-        let sheetTitle = app.staticTexts["Confirm Exercise"]
-        XCTAssertTrue(sheetTitle.waitForExistence(timeout: 5), "Bottom sheet should appear")
-
-        let confirmButton = app.buttons["confirmWorkoutButton"]
-        XCTAssertFalse(confirmButton.exists, "Confirm button should NOT be visible for completed scribble")
+        let sheetTitle = app.staticTexts["Scribble Details"]
+        XCTAssertTrue(sheetTitle.waitForExistence(timeout: 5), "Scribble Details sheet should appear")
 
         let deleteButton = app.buttons["deleteScribbleButton"]
         XCTAssertTrue(deleteButton.exists, "Delete button should still be visible")
@@ -141,8 +150,7 @@ final class BottomSheetUITests: XCTestCase {
         deleteSetButton.firstMatch.tap()
 
         // Sheet should still be visible
-        let sheetTitle = app.staticTexts["Confirm Exercise"]
-        XCTAssertTrue(sheetTitle.waitForExistence(timeout: 3), "Bottom sheet should remain open after deleting a set")
+        XCTAssertTrue(app.staticTexts["Confirm Exercise"].exists || app.staticTexts["Scribble Details"].exists, "Bottom sheet should remain open after deleting a set")
     }
 
     /// Verify that the delete (scribble) button exists and dismisses the sheet.
@@ -157,8 +165,7 @@ final class BottomSheetUITests: XCTestCase {
         deleteButton.tap()
 
         // Sheet should dismiss
-        let sheetTitle = app.staticTexts["Confirm Exercise"]
-        let dismissed = !sheetTitle.waitForExistence(timeout: 5)
-        XCTAssertTrue(dismissed, "Bottom sheet should dismiss after deleting scribble")
+        let sheetTitleExists = app.staticTexts["Confirm Exercise"].exists || app.staticTexts["Scribble Details"].exists
+        XCTAssertFalse(sheetTitleExists, "Bottom sheet should dismiss after deleting scribble")
     }
 }

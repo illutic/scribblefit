@@ -1,6 +1,7 @@
 package com.scribblefit.feature.scribble.domain.usecase
 
 import app.cash.turbine.test
+import com.scribblefit.core.model.CurrentDate
 import com.scribblefit.core.model.Scribble
 import com.scribblefit.core.model.ScribbleStatus
 import com.scribblefit.feature.scribble.domain.ScribbleRepository
@@ -30,18 +31,17 @@ class GetPendingScribblesByDateUseCaseTest {
                 Scribble(
                     id = 1L,
                     rawText = "text",
-                    parsedJson = null,
                     status = ScribbleStatus.PENDING,
                     createdAt = expectedMillis,
                     exercises = emptyList()
                 )
             )
-            every { scribbleRepository.getPendingScribblesByDate(expectedMillis) } returns flowOf(
+            every { scribbleRepository.getScribblesByDate(expectedMillis) } returns flowOf(
                 scribbles
             )
 
             // When & Then
-            useCase(date).test {
+            useCase(CurrentDate(date)).test {
                 assertEquals(scribbles, awaitItem())
                 awaitComplete()
             }

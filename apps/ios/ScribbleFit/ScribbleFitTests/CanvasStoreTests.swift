@@ -3,10 +3,11 @@ import Combine
 @testable import CoreModel
 @testable import FeatureAI
 @testable import FeatureScribble
-@testable import FeatureWorkouts
 @testable import FeatureConfig
 @testable import FeatureCanvas
 @testable import FeatureInsights
+@testable import FeatureSets
+@testable import FeatureExercises
 
 // MARK: - Mock Repositories
 
@@ -20,7 +21,23 @@ final class MockScribbleRepository: ScribbleRepository {
 
     private var continuations: [AsyncStream<[Scribble]>.Continuation] = []
 
-    func getScribbles(for date: Date) -> AsyncStream<[Scribble]> {
+    func observeScribbles(for date: Date) -> AsyncStream<[Scribble]> {
+        let currentScribbles = scribbles
+        return AsyncStream { continuation in
+            continuation.yield(currentScribbles)
+            self.continuations.append(continuation)
+        }
+    }
+
+    func observeScribbles(startDate: Date, endDate: Date) -> AsyncStream<[Scribble]> {
+        let currentScribbles = scribbles
+        return AsyncStream { continuation in
+            continuation.yield(currentScribbles)
+            self.continuations.append(continuation)
+        }
+    }
+
+    func observeScribblesWithExercise(exerciseName: String) -> AsyncStream<[Scribble]> {
         let currentScribbles = scribbles
         return AsyncStream { continuation in
             continuation.yield(currentScribbles)
@@ -32,6 +49,7 @@ final class MockScribbleRepository: ScribbleRepository {
         if shouldThrow { throw MockError.generic }
         addedScribbles.append(scribble)
         scribbles.append(scribble)
+        emit(scribbles)
     }
 
     func updateScribble(_ scribble: Scribble) async throws {
@@ -40,12 +58,21 @@ final class MockScribbleRepository: ScribbleRepository {
         if let index = scribbles.firstIndex(where: { $0.id == scribble.id }) {
             scribbles[index] = scribble
         }
+        emit(scribbles)
+    }
+
+    func confirmScribble(_ scribble: Scribble) async throws {
+        if shouldThrow { throw MockError.generic }
+        var completed = scribble
+        completed.status = .completed
+        try await updateScribble(completed)
     }
 
     func deleteScribble(id: UUID) async throws {
         if shouldThrow { throw MockError.generic }
         deletedIds.append(id)
         scribbles.removeAll { $0.id == id }
+        emit(scribbles)
     }
 
     func getScribble(id: UUID) async throws -> Scribble? {
@@ -56,6 +83,7 @@ final class MockScribbleRepository: ScribbleRepository {
         if let index = scribbles.firstIndex(where: { $0.id == scribbleId }) {
             scribbles[index].exercises = []
         }
+        emit(scribbles)
     }
 
     func emit(_ snapshot: [Scribble]) {
@@ -66,39 +94,13 @@ final class MockScribbleRepository: ScribbleRepository {
 }
 
 @MainActor
-final class MockWorkoutRepository: WorkoutRepository {
-    var workouts: [Workout] = []
-    var savedWorkouts: [Workout] = []
-    var shouldThrow = false
-
-    func getWorkout(id: UUID) async throws -> Workout? {
-        workouts.first { $0.id == id }
-    }
-
-    func saveWorkout(_ workout: Workout) async throws {
-        if shouldThrow { throw MockError.generic }
-        savedWorkouts.append(workout)
-        workouts.append(workout)
-    }
-
-    func deleteWorkout(id: UUID) async throws {
-        workouts.removeAll { $0.id == id }
-    }
-
-    func getWorkouts(for date: Date) -> AsyncStream<[Workout]> {
-        let current = workouts
-        return AsyncStream { continuation in
-            continuation.yield(current)
-        }
-    }
-
-    func getWorkoutsInRange(startDate: Date, endDate: Date) -> AsyncStream<[Workout]> {
-        let current = workouts
-        return AsyncStream { continuation in
-            continuation.yield(current)
-            continuation.finish()
-        }
-    }
+final class MockExerciseRepository: ExerciseRepository {
+    func getExercises(query: String) async throws -> [Exercise] { [] }
+    func getExercise(id: UUID) async throws -> Exercise? { nil }
+    func saveExercise(_ exercise: Exercise) async throws {}
+    func saveExercise(_ exercise: Exercise, to scribbleId: UUID) async throws {}
+    func updateExercise(_ exercise: Exercise) async throws {}
+    func deleteExercise(id: UUID) async throws {}
 }
 
 @MainActor
@@ -137,6 +139,16 @@ final class MockLLMService: LLMService {
     func generateInsightsSummary(exercises: [Exercise]) async throws -> [AIInsight] {
         if shouldThrow { throw MockError.generic }
         return insights
+    }
+
+    func generateExerciseInsight(history: String) async throws -> ExercisePerformanceInsight {
+        if shouldThrow { throw MockError.generic }
+        return ExercisePerformanceInsight(
+            estimated1RM: 100.0,
+            prDetected: false,
+            trendDirection: .improving,
+            breakdownText: "Keep it up"
+        )
     }
 
     func isSupported() async -> Bool { true }
@@ -198,10 +210,8 @@ enum TestFixtures {
 // MARK: - CanvasStore Tests
 
 final class CanvasStoreTests: XCTestCase {
-    // nonisolated(unsafe) allows these to be set in setUp (which is nonisolated)
-    // and accessed from @MainActor test methods safely.
     nonisolated(unsafe) var scribbleRepo: MockScribbleRepository!
-    nonisolated(unsafe) var workoutRepo: MockWorkoutRepository!
+    nonisolated(unsafe) var exerciseRepo: MockExerciseRepository!
     nonisolated(unsafe) var configRepo: MockConfigRepository!
     nonisolated(unsafe) var llmService: MockLLMService!
     nonisolated(unsafe) var store: CanvasStore!
@@ -209,31 +219,33 @@ final class CanvasStoreTests: XCTestCase {
     @MainActor
     private static func createDependencies() -> (
         MockScribbleRepository,
-        MockWorkoutRepository,
+        MockExerciseRepository,
         MockConfigRepository,
         MockLLMService,
         CanvasStore
     ) {
         let scribbleRepo = MockScribbleRepository()
-        let workoutRepo = MockWorkoutRepository()
+        let exerciseRepo = MockExerciseRepository()
         let configRepo = MockConfigRepository()
         let llmService = MockLLMService()
 
         let getScribblesUC = GetScribblesForDateUseCase(repository: scribbleRepo)
         let addRawScribbleUC = AddRawScribbleUseCase(repository: scribbleRepo)
-        let confirmScribbleUC = ConfirmScribbleUseCase(
-            scribbleRepository: scribbleRepo,
-            workoutRepository: workoutRepo
-        )
-        let deleteScribbleUC = DeleteScribbleUseCase(repository: scribbleRepo)
+        let confirmScribbleUC = ConfirmScribbleUseCase(scribbleRepository: scribbleRepo)
+        let removeScribbleUC = RemoveScribbleUseCase(repository: scribbleRepo)
+        let deleteScribbleUC = DeleteScribbleUseCase(removeScribbleUseCase: removeScribbleUC)
         let parsePendingUC = ParsePendingScribblesUseCase(
             scribbleRepository: scribbleRepo,
             llmProvider: llmService
         )
         let getAIOverviewUC = GetAIOverviewUseCase(
-            workoutRepository: workoutRepo,
+            scribbleRepository: scribbleRepo,
             llmProvider: llmService
         )
+        let manualEditUC = ManualEditScribbleUseCase(scribbleRepository: scribbleRepo)
+        let createManualUC = CreateManualScribbleUseCase(scribbleRepository: scribbleRepo)
+        let reorderSetsUC = ReorderSetsUseCase()
+        let calculateTrendsUC = CalculateTrendsUseCase(exerciseRepository: exerciseRepo)
 
         let store = CanvasStore(
             getScribblesForDateUseCase: getScribblesUC,
@@ -242,33 +254,34 @@ final class CanvasStoreTests: XCTestCase {
             deleteScribbleUseCase: deleteScribbleUC,
             parsePendingScribblesUseCase: parsePendingUC,
             getAIOverviewUseCase: getAIOverviewUC,
+            manualEditScribbleUseCase: manualEditUC,
+            createManualScribbleUseCase: createManualUC,
+            reorderSetsUseCase: reorderSetsUC,
+            calculateTrendsUseCase: calculateTrendsUC,
             configRepository: configRepo
         )
 
-        return (scribbleRepo, workoutRepo, configRepo, llmService, store)
+        return (scribbleRepo, exerciseRepo, configRepo, llmService, store)
     }
 
     override func setUp() async throws {
         let deps = await CanvasStoreTests.createDependencies()
         scribbleRepo = deps.0
-        workoutRepo = deps.1
+        exerciseRepo = deps.1
         configRepo = deps.2
         llmService = deps.3
         store = deps.4
 
-        // Allow init tasks (observeScribbles, refreshAIInsights) to settle.
-        try await Task.sleep(for: .milliseconds(100))
+        try await Task.sleep(for: .milliseconds(50))
     }
 
     override func tearDown() async throws {
         store = nil
         scribbleRepo = nil
-        workoutRepo = nil
+        exerciseRepo = nil
         configRepo = nil
         llmService = nil
     }
-
-    // MARK: - 1. addScribble clears text after success
 
     @MainActor
     func testAddScribbleClearsTextOnSuccess() async throws {
@@ -276,63 +289,58 @@ final class CanvasStoreTests: XCTestCase {
 
         store.onIntent(CanvasIntent.addScribble("Squat 140kg 5x5"))
 
-        // Wait for the async Task inside addScribble to complete.
-        try await Task.sleep(for: .milliseconds(200))
+        try await Task.sleep(for: .milliseconds(100))
 
         XCTAssertEqual(store.state.currentScribbleText, "", "Text should be cleared after a successful add")
         XCTAssertEqual(scribbleRepo.addedScribbles.count, 1, "Repository should have received one scribble")
     }
 
-    // MARK: - 2. clickOnScribble with SUCCESS status sets selectedScribble
-
     @MainActor
     func testClickOnScribbleWithSuccessStatusSetsSelectedScribble() async {
-        let scribble = TestFixtures.makeScribble(status: ScribbleStatus.success)
+        let scribble = TestFixtures.makeScribble(status: .success)
 
         store.onIntent(CanvasIntent.clickOnScribble(scribble))
 
         XCTAssertEqual(store.state.selectedScribble, scribble, "selectedScribble should be set for SUCCESS status")
     }
 
-    // MARK: - 3. clickOnScribble with FAILED status does NOT set selectedScribble
-
     @MainActor
-    func testClickOnScribbleWithFailedStatusDoesNotSetSelectedScribble() async {
-        let scribble = TestFixtures.makeScribble(status: ScribbleStatus.failed)
+    func testClickOnScribbleWithCompletedStatusNavigatesToDetails() async {
+        let scribble = TestFixtures.makeScribble(status: .completed)
 
         store.onIntent(CanvasIntent.clickOnScribble(scribble))
 
-        XCTAssertNil(
-            store.state.selectedScribble,
-            "selectedScribble should NOT be set for FAILED status"
-        )
+        if case .scribbleDetails(let id) = store.state.navigationState {
+            XCTAssertEqual(id, scribble.id)
+        } else {
+            XCTFail("Should have navigated to scribble details")
+        }
     }
-
-    // MARK: - 4. confirmScribble dismisses dialog on success
 
     @MainActor
     func testConfirmScribbleDismissesDialogOnSuccess() async throws {
-        let scribble = TestFixtures.makeScribble(status: ScribbleStatus.success)
+        let scribble = TestFixtures.makeScribble(status: .success)
         store.state.selectedScribble = scribble
+        scribbleRepo.scribbles = [scribble]
 
         store.onIntent(CanvasIntent.confirmScribble(scribble))
 
-        // Wait for the async Task inside confirmScribble to complete.
-        try await Task.sleep(for: .milliseconds(200))
+        try await Task.sleep(for: .milliseconds(100))
 
         XCTAssertNil(store.state.selectedScribble, "selectedScribble should be nil after confirm succeeds")
-        XCTAssertEqual(workoutRepo.savedWorkouts.count, 1, "Workout should have been saved")
+        XCTAssertEqual(scribbleRepo.updatedScribbles.first?.status, .completed, "Scribble status should be completed")
     }
 
-    // MARK: - 5. updateExerciseName updates the selectedScribble exercise name
-
     @MainActor
-    func testUpdateExerciseNameUpdatesSelectedScribble() async {
+    func testUpdateExerciseNameUpdatesSelectedScribble() async throws {
         let exerciseId = TestFixtures.exerciseId
-        let scribble = TestFixtures.makeScribble(status: ScribbleStatus.success)
+        let scribble = TestFixtures.makeScribble(status: .success)
         store.state.selectedScribble = scribble
+        scribbleRepo.scribbles = [scribble]
 
         store.onIntent(CanvasIntent.updateExerciseName(exerciseId, "Incline Bench Press"))
+
+        try await Task.sleep(for: .milliseconds(50))
 
         let updatedExercise = store.state.selectedScribble?.exercises.first { $0.id == exerciseId }
         XCTAssertEqual(
@@ -342,86 +350,15 @@ final class CanvasStoreTests: XCTestCase {
         )
     }
 
-    // MARK: - 6. updateSetWeight updates weight when valid float
-
-    @MainActor
-    func testUpdateSetWeightUpdatesWeightForValidFloat() async {
-        let exerciseId = TestFixtures.exerciseId
-        let setId = TestFixtures.setId
-        let scribble = TestFixtures.makeScribble(status: ScribbleStatus.success)
-        store.state.selectedScribble = scribble
-
-        store.onIntent(CanvasIntent.updateSetWeight(exerciseId, setId, "120.5"))
-
-        let selected1 = store.state.selectedScribble
-        let updatedSet = selected1?
-            .exercises.first { $0.id == exerciseId }?
-            .sets.first { $0.id == setId }
-        XCTAssertEqual(updatedSet?.weight, 120.5, "Weight should be updated to 120.5")
-    }
-
-    @MainActor
-    func testUpdateSetWeightIgnoresInvalidFloat() async {
-        let exerciseId = TestFixtures.exerciseId
-        let setId = TestFixtures.setId
-        let scribble = TestFixtures.makeScribble(status: ScribbleStatus.success)
-        store.state.selectedScribble = scribble
-
-        store.onIntent(CanvasIntent.updateSetWeight(exerciseId, setId, "not-a-number"))
-
-        let selected2 = store.state.selectedScribble
-        let updatedSet = selected2?
-            .exercises.first { $0.id == exerciseId }?
-            .sets.first { $0.id == setId }
-        XCTAssertEqual(updatedSet?.weight, 100.0, "Weight should remain unchanged for invalid input")
-    }
-
-    // MARK: - 7. updateSetReps updates reps when valid int
-
-    @MainActor
-    func testUpdateSetRepsUpdatesRepsForValidInt() async {
-        let exerciseId = TestFixtures.exerciseId
-        let setId = TestFixtures.setId
-        let scribble = TestFixtures.makeScribble(status: ScribbleStatus.success)
-        store.state.selectedScribble = scribble
-
-        store.onIntent(CanvasIntent.updateSetReps(exerciseId, setId, "12"))
-
-        let selected3 = store.state.selectedScribble
-        let updatedSet = selected3?
-            .exercises.first { $0.id == exerciseId }?
-            .sets.first { $0.id == setId }
-        XCTAssertEqual(updatedSet?.reps, 12, "Reps should be updated to 12")
-    }
-
-    @MainActor
-    func testUpdateSetRepsIgnoresInvalidInt() async {
-        let exerciseId = TestFixtures.exerciseId
-        let setId = TestFixtures.setId
-        let scribble = TestFixtures.makeScribble(status: ScribbleStatus.success)
-        store.state.selectedScribble = scribble
-
-        store.onIntent(CanvasIntent.updateSetReps(exerciseId, setId, "abc"))
-
-        let selectedScribble = store.state.selectedScribble
-        let updatedSet = selectedScribble?
-            .exercises.first { $0.id == exerciseId }?
-            .sets.first { $0.id == setId }
-        XCTAssertEqual(updatedSet?.reps, 10, "Reps should remain unchanged for invalid input")
-    }
-
-    // MARK: - 8. deleteScribble clears selectedScribble
-
     @MainActor
     func testDeleteScribbleClearsSelectedScribble() async throws {
-        let scribble = TestFixtures.makeScribble(status: ScribbleStatus.success)
+        let scribble = TestFixtures.makeScribble(status: .success)
         scribbleRepo.scribbles = [scribble]
         store.state.selectedScribble = scribble
 
         store.onIntent(CanvasIntent.deleteScribble(scribble.id))
 
-        // Wait for the async Task inside deleteScribble to complete.
-        try await Task.sleep(for: .milliseconds(200))
+        try await Task.sleep(for: .milliseconds(100))
 
         XCTAssertNil(store.state.selectedScribble, "selectedScribble should be nil after deletion")
         XCTAssertTrue(scribbleRepo.deletedIds.contains(scribble.id), "Repository should have received the delete call")

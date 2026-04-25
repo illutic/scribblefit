@@ -8,6 +8,12 @@ plugins {
 
 android {
     namespace = "com.scribblefit.feature.canvas.ui"
+
+    testOptions {
+        unitTests {
+            isReturnDefaultValues = true
+        }
+    }
 }
 
 dependencies {
