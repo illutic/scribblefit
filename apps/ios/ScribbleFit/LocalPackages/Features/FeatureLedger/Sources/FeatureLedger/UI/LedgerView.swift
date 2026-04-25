@@ -116,12 +116,20 @@ public struct LedgerView: View {
                 .foregroundStyle(Color.scribblePrimary)
             }
         }
+        #if os(iOS)
         ToolbarItem(placement: .topBarTrailing) {
             Button(action: { store.handleIntent(.refresh) }) {
                 Image(systemName: "arrow.clockwise")
                     .foregroundStyle(Color.scribblePrimary)
             }
         }
+        #else
+        ToolbarItem {
+            Button(action: { store.handleIntent(.refresh) }) {
+                Image(systemName: "arrow.clockwise")
+            }
+        }
+        #endif
     }
 
     private var ledgerContent: some View {

@@ -51,8 +51,9 @@ public struct SettingsView: View {
                 }
                 .padding(.horizontal, 24)
             }
+            #if os(iOS)
             .toolbar {
-                ToolbarItem(placement: .title) {
+                ToolbarItem(placement: .principal) {
                     Text(String(localized: "Settings"))
                         .font(.scribbleHeadlineSmall)
                         .foregroundStyle(Color.scribblePrimary)
@@ -65,6 +66,7 @@ public struct SettingsView: View {
                     }
                 }
             }
+            #endif
             .alert(String(localized: "Clear All Data"), isPresented: $store.state.isShowingClearConfirmation) {
                 Button(String(localized: "Cancel"), role: .cancel) { }
                 Button(String(localized: "Clear Everything"), role: .destructive) {

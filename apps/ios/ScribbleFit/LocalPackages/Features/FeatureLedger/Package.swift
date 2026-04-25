@@ -3,7 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "FeatureLedger",
-    platforms: [.iOS(.v17)],
+    platforms: [.iOS(.v17), .macOS(.v14)],
     products: [
         .library(name: "FeatureLedger", targets: ["FeatureLedger"])
     ],

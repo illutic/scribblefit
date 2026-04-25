@@ -113,6 +113,7 @@ public struct CanvasView: View {
     
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
+        #if os(iOS)
         ToolbarItem(placement: .topBarTrailing) {
             Button(action: { store.onIntent(.navigateToSettings) }) {
                 Image(systemName: "gearshape.fill")
@@ -120,6 +121,13 @@ public struct CanvasView: View {
                     .foregroundStyle(Color.scribblePrimary)
             }
         }
+        #else
+        ToolbarItem {
+            Button(action: { store.onIntent(.navigateToSettings) }) {
+                Image(systemName: "gearshape.fill")
+            }
+        }
+        #endif
         
         ToolbarItem(placement: .principal) {
             HStack(spacing: 12) {

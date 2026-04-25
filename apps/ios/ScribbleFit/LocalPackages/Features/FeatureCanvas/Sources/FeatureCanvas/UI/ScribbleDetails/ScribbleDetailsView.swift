@@ -49,6 +49,7 @@ public struct ScribbleDetailsView: View {
             }
             .navigationTitle("Scribble Details")
             .navigationBarTitleDisplayMode(.inline)
+            #if os(iOS)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
                     Button {
@@ -59,6 +60,7 @@ public struct ScribbleDetailsView: View {
                     }
                 }
             }
+            #endif
         }
         .sheet(item: Binding(
             get: { store.state.selectedExerciseName.map { ExerciseNavItem(name: $0) } },

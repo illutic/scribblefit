@@ -29,11 +29,11 @@ struct ScribbleFitApp: App {
         
         // AI Engines
         let geminiAIEngine = GeminiAIEngine(apiKey: "", configRepository: configRepo)
-        let localAIEngine = LocalAIEngine(configRepository: configRepo)
+        let localAIEngine = LocalLLMService(configRepository: configRepo)
         
         let dynamicEngine = DynamicLLMEngine(
-            geminiAIEngine: geminiAIEngine,
-            localAIEngine: localAIEngine,
+            geminiService: geminiAIEngine,
+            localService: localAIEngine,
             configRepository: configRepo
         )
         
