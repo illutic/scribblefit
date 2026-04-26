@@ -1,5 +1,8 @@
 import SwiftUI
 import SwiftData
+import FeatureConfig
+import CoreModel
+import CoreFirebase
 
 @main
 struct ScribbleFitApp: App {

@@ -2,6 +2,7 @@ plugins {
     id("scribblefit.android.application.compose")
     id("scribblefit.android.hilt")
     alias(libs.plugins.google.services)
+    alias(libs.plugins.firebase.crashlytics)
 }
 
 android {
@@ -68,3 +69,4 @@ dependencies {
     implementation(libs.firebase.appcheck.playintegrity)
     implementation(libs.firebase.appcheck.debug)
 }
+
