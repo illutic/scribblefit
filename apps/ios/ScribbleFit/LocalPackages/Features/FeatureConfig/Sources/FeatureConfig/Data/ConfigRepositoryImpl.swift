@@ -25,7 +25,14 @@ public final class ConfigRepositoryImpl: ConfigRepository, @unchecked Sendable {
         
         // Initial fetch from remote
         Task {
-            await fetchRemoteConfig()
+            do {
+                try await fetchRemoteConfig()
+            } catch {
+                // Log and continue with local config if remote fetch fails
+                #if DEBUG
+                print("[ConfigRepositoryImpl] Failed to fetch remote config: \(error)")
+                #endif
+            }
         }
     }
     
@@ -33,7 +40,7 @@ public final class ConfigRepositoryImpl: ConfigRepository, @unchecked Sendable {
         subject.value
     }
     
-    public func syncMetadata() async throws {
+    public func fetchRemoteConfig() async throws {
         let remote = await RemoteConfigService.shared.fetchConfig()
         var current = subject.value
         current.remoteConfig = remote
