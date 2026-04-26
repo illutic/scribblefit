@@ -1,6 +1,7 @@
 import Foundation
 import Combine
 import CoreModel
+import CoreFirebase
 
 @MainActor
 public final class ConfigRepositoryImpl: ConfigRepository, @unchecked Sendable {
@@ -21,10 +22,22 @@ public final class ConfigRepositoryImpl: ConfigRepository, @unchecked Sendable {
         }
         
         self.subject = CurrentValueSubject(config)
+        
+        // Initial fetch from remote
+        Task {
+            await fetchRemoteConfig()
+        }
     }
     
     public func getConfig() -> SystemConfig {
         subject.value
+    }
+    
+    public func syncMetadata() async throws {
+        let remote = await RemoteConfigService.shared.fetchConfig()
+        var current = subject.value
+        current.remoteConfig = remote
+        subject.send(current)
     }
     
     public func updateConfig(_ config: SystemConfig) {
@@ -44,12 +57,8 @@ public final class ConfigRepositoryImpl: ConfigRepository, @unchecked Sendable {
     }
 }
 
-// Codable representation for storage
+// Codable representation for storage (LOCAL CONFIG ONLY)
 private struct SystemConfigData: Codable {
-    let summaryPrompt: String
-    let suggestionPrompt: String
-    let insightPrompt: String
-    let parsePrompt: String
     let preferredLlmProvider: String
     let updatedAt: Date
     let weightUnit: String
@@ -57,10 +66,6 @@ private struct SystemConfigData: Codable {
     let isDynamicTheme: Bool
     
     init(from domain: SystemConfig) {
-        self.summaryPrompt = domain.summaryPrompt
-        self.suggestionPrompt = domain.suggestionPrompt
-        self.insightPrompt = domain.insightPrompt
-        self.parsePrompt = domain.parsePrompt
         self.preferredLlmProvider = domain.preferredLlmProvider.rawValue
         self.updatedAt = domain.updatedAt
         self.weightUnit = domain.weightUnit.rawValue
@@ -70,10 +75,7 @@ private struct SystemConfigData: Codable {
     
     func toDomain() -> SystemConfig {
         SystemConfig(
-            summaryPrompt: summaryPrompt,
-            suggestionPrompt: suggestionPrompt,
-            insightPrompt: insightPrompt,
-            parsePrompt: parsePrompt,
+            remoteConfig: CoreModel.RemoteConfig(), // Initial default, will be updated by fetch
             preferredLlmProvider: LLMProvider(rawValue: preferredLlmProvider) ?? .local,
             updatedAt: updatedAt,
             weightUnit: WeightUnit(rawValue: weightUnit) ?? .kgs,

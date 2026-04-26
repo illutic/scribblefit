@@ -26,10 +26,7 @@ public final class SettingsRepositoryImpl: SettingsRepository {
     }
 
     public func updateSettings(_ settings: AppSettings) async throws {
-        let existing = await database.getConfig()
         let config = SystemConfig(
-            promptVersion: existing?.promptVersion ?? "1.0.0",
-            promptText: existing?.promptText ?? SystemConfig.defaultPrompt,
             preferredLlmProvider: settings.aiProvider.rawValue,
             preferredModel: settings.selectedModel ?? "",
             weightUnit: settings.weightUnit.rawValue,

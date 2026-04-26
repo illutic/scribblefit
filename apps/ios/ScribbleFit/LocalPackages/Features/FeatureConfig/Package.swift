@@ -8,13 +8,15 @@ let package = Package(
         .library(name: "FeatureConfig", targets: ["FeatureConfig"])
     ],
     dependencies: [
-        .package(path: "../../Core/CoreModel")
+        .package(path: "../../Core/CoreModel"),
+        .package(path: "../../Core/CoreFirebase")
     ],
     targets: [
         .target(
             name: "FeatureConfig",
             dependencies: [
-                .product(name: "CoreModel", package: "CoreModel")
+                .product(name: "CoreModel", package: "CoreModel"),
+                .product(name: "CoreFirebase", package: "CoreFirebase")
             ]
         )
     ]
