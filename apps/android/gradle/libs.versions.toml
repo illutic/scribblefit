@@ -22,6 +22,7 @@ slf4j = "1.7.36"
 material3 = "1.5.0-alpha15"
 firebase-bom = "34.12.0"
 google-services = "4.4.2"
+firebase-crashlytics-plugin = "3.0.7"
 javaxInject = "1"
 
 [libraries]
@@ -50,6 +51,7 @@ firebase-ai = { group = "com.google.firebase", name = "firebase-ai" }
 firebase-appcheck-playintegrity = { group = "com.google.firebase", name = "firebase-appcheck-playintegrity" }
 firebase-appcheck-debug = { group = "com.google.firebase", name = "firebase-appcheck-debug" }
 firebase-config = { group = "com.google.firebase", name = "firebase-config" }
+firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics" }
 
 room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
