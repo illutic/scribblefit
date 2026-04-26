@@ -13,4 +13,6 @@ dependencies {
     implementation(project(":core:config:domain"))
     implementation(libs.coroutines.android)
     implementation(libs.slf4j.android)
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.config)
 }
