@@ -27,7 +27,7 @@ public final class GeminiLLMService: LLMService {
 
     public func parseWorkout(rawText: String) async throws -> ParsedWorkoutResult {
         let sanitized = rawText.replacingOccurrences(of: "{", with: " ").replacingOccurrences(of: "}", with: " ")
-        let prompt = config.parsePrompt.replacingOccurrences(of: "{{rawText}}", with: "<workout_scribble>\(sanitized)</workout_scribble>")
+        let prompt = config.remoteConfig.parsePrompt.replacingOccurrences(of: "{{rawText}}", with: "<workout_scribble>\(sanitized)</workout_scribble>")
         
         let response = try await getModel().generateContent(prompt)
         guard let responseText = response.text else {
@@ -73,7 +73,7 @@ public final class GeminiLLMService: LLMService {
 
     public func generateExerciseInsight(history: String) async throws -> AIInsight {
         let sanitized = history.replacingOccurrences(of: "{", with: " ").replacingOccurrences(of: "}", with: " ")
-        let prompt = config.insightPrompt.replacingOccurrences(of: "{{exerciseHistory}}", with: "<exercise_history>\(sanitized)</exercise_history>")
+        let prompt = config.remoteConfig.insightPrompt.replacingOccurrences(of: "{{exerciseHistory}}", with: "<exercise_history>\(sanitized)</exercise_history>")
         
         let response = try await getModel().generateContent(prompt)
         guard let responseText = response.text else {

@@ -62,7 +62,7 @@ private final class NativeLocalLLMService: LLMService {
 
     func parseWorkout(rawText: String) async throws -> ParsedWorkoutResult {
         let config = configRepository.getConfig()
-        let prompt = config.parsePrompt.replacingOccurrences(of: "{{rawText}}", with: rawText)
+        let prompt = config.remoteConfig.parsePrompt.replacingOccurrences(of: "{{rawText}}", with: rawText)
         let session = LanguageModelSession(model: model)
         let response = try await session.respond(
             to: prompt,
@@ -77,7 +77,7 @@ private final class NativeLocalLLMService: LLMService {
     func generateInsightsSummary(exercises: [Exercise]) async throws -> [AIInsight] {
         let config = configRepository.getConfig()
         let context = exercises.map { "\($0)" }.joined(separator: "\n")
-        let prompt = config.summaryPrompt.replacingOccurrences(of: "{{workoutData}}", with: context)
+        let prompt = config.remoteConfig.summaryPrompt.replacingOccurrences(of: "{{workoutData}}", with: context)
         let session = LanguageModelSession(model: model)
         let response = try await session.respond(
             to: prompt,
@@ -88,7 +88,7 @@ private final class NativeLocalLLMService: LLMService {
     
     func generateExerciseInsight(history: String) async throws -> AIInsight {
         let config = configRepository.getConfig()
-        let prompt = config.insightPrompt.replacingOccurrences(of: "{{exerciseHistory}}", with: history)
+        let prompt = config.remoteConfig.insightPrompt.replacingOccurrences(of: "{{exerciseHistory}}", with: history)
         let session = LanguageModelSession(model: model)
         let response = try await session.respond(
             to: prompt,
