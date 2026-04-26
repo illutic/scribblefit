@@ -23,6 +23,7 @@ material3 = "1.5.0-alpha15"
 firebase-bom = "34.12.0"
 google-services = "4.4.2"
 firebase-crashlytics-plugin = "3.0.7"
+firebase-performance-plugin = "2.0.2"
 javaxInject = "1"
 
 [libraries]
@@ -52,6 +53,7 @@ firebase-appcheck-playintegrity = { group = "com.google.firebase", name = "fireb
 firebase-appcheck-debug = { group = "com.google.firebase", name = "firebase-appcheck-debug" }
 firebase-config = { group = "com.google.firebase", name = "firebase-config" }
 firebase-crashlytics = { group = "com.google.firebase", name = "firebase-crashlytics" }
+firebase-perf = { group = "com.google.firebase", name = "firebase-perf" }
 
 room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }
 room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room" }
@@ -91,3 +93,4 @@ compose-compiler = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "
 kotlin-serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 google-services = { id = "com.google.gms.google-services", version.ref = "google-services" }
 firebase-crashlytics = { id = "com.google.firebase.crashlytics", version.ref = "firebase-crashlytics-plugin" }
+firebase-performance = { id = "com.google.firebase.firebase-perf", version.ref = "firebase-performance-plugin" }

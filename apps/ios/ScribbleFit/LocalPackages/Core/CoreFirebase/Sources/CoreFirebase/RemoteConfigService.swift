@@ -2,13 +2,14 @@ import Foundation
 import FirebaseRemoteConfig
 import CoreModel
 
-public final class RemoteConfigService: Sendable {
+@MainActor
+public final class RemoteConfigService {
     public static let shared = RemoteConfigService()
     
-    private let remoteConfig: RemoteConfig
+    private let remoteConfig: FirebaseRemoteConfig.RemoteConfig
     
     private init() {
-        self.remoteConfig = RemoteConfig.remoteConfig()
+        self.remoteConfig = FirebaseRemoteConfig.RemoteConfig.remoteConfig()
         let settings = RemoteConfigSettings()
         settings.minimumFetchInterval = 3600 // 1 hour
         remoteConfig.configSettings = settings

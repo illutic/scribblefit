@@ -19,7 +19,8 @@ let package = Package(
                 .product(name: "FirebaseAuth", package: "firebase-ios-sdk"),
                 .product(name: "FirebaseAI", package: "firebase-ios-sdk"),
                 .product(name: "FirebaseRemoteConfig", package: "firebase-ios-sdk"),
-                .product(name: "FirebaseCrashlytics", package: "firebase-ios-sdk")
+                .product(name: "FirebaseCrashlytics", package: "firebase-ios-sdk"),
+                .product(name: "FirebasePerformance", package: "firebase-ios-sdk")
             ]
         )
     ]
