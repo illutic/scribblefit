@@ -1,10 +1,10 @@
 package com.scribblefit.feature.ledger.ui
 
 import androidx.compose.runtime.Composable
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun LedgerRoute() {
-    val viewModel: LedgerViewModel = hiltViewModel()
+    val viewModel: LedgerViewModel = viewModel()
     LedgerScreen(viewModel = viewModel)
 }

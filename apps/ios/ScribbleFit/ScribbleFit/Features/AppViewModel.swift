@@ -20,7 +20,7 @@ public final class AppViewModel: ObservableObject {
             
             do {
                 // 3. Sync Metadata (prompt config)
-                try await configRepository.syncMetadata()
+                try await configRepository.fetchRemoteConfig()
             } catch {
                 print("Initialization error: \(error)")
             }

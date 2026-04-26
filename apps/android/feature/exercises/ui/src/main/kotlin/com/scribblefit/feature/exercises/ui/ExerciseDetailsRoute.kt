@@ -2,12 +2,12 @@ package com.scribblefit.feature.exercises.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 @Composable
 fun ExerciseDetailsRoute(
     exerciseId: Long,
-    viewModel: ExerciseDetailsViewModel = hiltViewModel()
+    viewModel: ExerciseDetailsViewModel = viewModel()
 ) {
     LaunchedEffect(exerciseId) {
         viewModel.onIntent(ExerciseDetailsIntent.LoadDetails(exerciseId))

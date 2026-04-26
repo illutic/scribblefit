@@ -23,6 +23,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ShowChart
 import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.Lightbulb
 import androidx.compose.material.icons.rounded.ShowChart
@@ -185,7 +186,7 @@ private fun AIInsightCard(insight: AIInsight) {
 
     val (icon, color) = when (insight.insightType) {
         InsightType.SUMMARY -> Icons.Rounded.AutoAwesome to ScribbleFitTheme.colors.primary
-        InsightType.TREND -> Icons.Rounded.ShowChart to ScribbleFitTheme.colors.primary
+        InsightType.TREND -> Icons.AutoMirrored.Rounded.ShowChart to ScribbleFitTheme.colors.primary
         InsightType.ADVICE -> Icons.Rounded.Lightbulb to ScribbleFitTheme.colors.primary
     }
 
