@@ -52,7 +52,7 @@ public final class GeminiLLMService: LLMService {
     public func generateInsightsSummary(exercises: [Exercise]) async throws -> [AIInsight] {
         let context = exercises.map { "\($0)" }.joined(separator: "\n")
         let sanitized = context.replacingOccurrences(of: "{", with: " ").replacingOccurrences(of: "}", with: " ")
-        let prompt = config.summaryPrompt.replacingOccurrences(of: "{{workoutData}}", with: "<workout_history>\(sanitized)</workout_history>")
+        let prompt = config.remoteConfig.summaryPrompt.replacingOccurrences(of: "{{workoutData}}", with: "<workout_history>\(sanitized)</workout_history>")
 
         let response = try await getModel().generateContent(prompt)
         guard let responseText = response.text else {

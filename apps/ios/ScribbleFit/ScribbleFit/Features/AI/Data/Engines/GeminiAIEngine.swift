@@ -32,7 +32,7 @@ public actor GeminiAIEngine: LLMService {
         }
 
         let config = await configRepository.getConfig()
-        let systemPrompt = (config?.promptText.isEmpty == false) ? config!.promptText : SystemConfig.defaultPrompt
+        let systemPrompt = config?.remoteConfig.parsePrompt ?? RemoteConfig.defaultParsePrompt
         
         let content = try await callGemini(apiKey: apiKey, prompt: systemPrompt, userMessage: "\(rawText)\n\nOutput in JSON format.")
         
@@ -71,8 +71,12 @@ public actor GeminiAIEngine: LLMService {
         guard !apiKey.isEmpty else {
             throw NSError(domain: "GeminiAIEngine", code: 0, userInfo: [NSLocalizedDescriptionKey: "API key is missing"])
         }
+        let config = await configRepository.getConfig()
         let workoutData = exercises.map { "\($0)" }.joined(separator: "\n")
-        let content = try await callGemini(apiKey: apiKey, prompt: "Generate summary of these workouts: \(workoutData)", userMessage: "Provide insights in JSON format.")
+        let prompt = (config?.remoteConfig.summaryPrompt ?? RemoteConfig.defaultSummaryPrompt)
+            .replacingOccurrences(of: "{{workoutData}}", with: workoutData)
+            
+        let content = try await callGemini(apiKey: apiKey, prompt: prompt, userMessage: "Provide insights in JSON format.")
         let contentData = content.data(using: .utf8)!
         
         struct AIInsightDto: Codable {
@@ -102,7 +106,11 @@ public actor GeminiAIEngine: LLMService {
         guard !apiKey.isEmpty else {
             throw NSError(domain: "GeminiAIEngine", code: 0, userInfo: [NSLocalizedDescriptionKey: "API key is missing"])
         }
-        let content = try await callGemini(apiKey: apiKey, prompt: "Analyze this exercise history: \(history)", userMessage: "Provide insights in JSON format.")
+        let config = await configRepository.getConfig()
+        let prompt = (config?.remoteConfig.insightPrompt ?? RemoteConfig.defaultInsightPrompt)
+            .replacingOccurrences(of: "{{exerciseHistory}}", with: history)
+            
+        let content = try await callGemini(apiKey: apiKey, prompt: prompt, userMessage: "Provide insights in JSON format.")
         let contentData = content.data(using: .utf8)!
         
         struct AIInsightDto: Codable {

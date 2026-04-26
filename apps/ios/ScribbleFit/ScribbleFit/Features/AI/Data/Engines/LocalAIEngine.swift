@@ -22,7 +22,7 @@ public final class LocalAIEngine: LLMEngine, AnalysisEngine {
             #if canImport(FoundationModels)
             if #available(iOS 26.0, *) {
                 let config = await configRepository.getConfig()
-                let systemPrompt = config?.promptText ?? SystemConfig.defaultPrompt
+                let systemPrompt = config?.remoteConfig.parsePrompt ?? RemoteConfig.defaultParsePrompt
                  
                 let session = LanguageModelSession { systemPrompt }
                 let response = try await session.respond(to: "Parse this gym note: \(rawText)")
@@ -65,7 +65,10 @@ public final class LocalAIEngine: LLMEngine, AnalysisEngine {
     public func generateSuggestion(context: String) async throws -> AnalysisSuggestion {
         #if canImport(FoundationModels)
         if #available(iOS 26.0, *) {
-            let session = LanguageModelSession { AnalysisPrompts.getSuggestionPrompt(context: context) }
+            let config = await configRepository.getConfig()
+            let systemPrompt = (config?.remoteConfig.suggestionPrompt ?? RemoteConfig.defaultSuggestionPrompt)
+                .replacingOccurrences(of: "{{context}}", with: context)
+            let session = LanguageModelSession { systemPrompt }
             let response = try await session.respond(to: "Generate suggestion.")
             if let data = response.content.data(using: .utf8) {
                 struct SuggestionDTO: Codable {
@@ -89,7 +92,10 @@ public final class LocalAIEngine: LLMEngine, AnalysisEngine {
     public func generateSummary(period: SummaryPeriod, workoutData: String) async throws -> AnalysisSummary {
         #if canImport(FoundationModels)
         if #available(iOS 26.0, *) {
-            let session = LanguageModelSession { AnalysisPrompts.getSummaryPrompt(period: period.rawValue, data: workoutData) }
+            let config = await configRepository.getConfig()
+            let systemPrompt = (config?.remoteConfig.summaryPrompt ?? RemoteConfig.defaultSummaryPrompt)
+                .replacingOccurrences(of: "{{workoutData}}", with: workoutData)
+            let session = LanguageModelSession { systemPrompt }
             let response = try await session.respond(to: "Generate summary.")
             if let data = response.content.data(using: .utf8) {
                 struct SummaryDTO: Codable {
@@ -124,7 +130,10 @@ public final class LocalAIEngine: LLMEngine, AnalysisEngine {
     public func generateExerciseInsight(exerciseName: String, historyData: String) async throws -> ExerciseInsight {
         #if canImport(FoundationModels)
         if #available(iOS 26.0, *) {
-            let session = LanguageModelSession { AnalysisPrompts.getExerciseInsightPrompt(name: exerciseName, history: historyData) }
+            let config = await configRepository.getConfig()
+            let systemPrompt = (config?.remoteConfig.insightPrompt ?? RemoteConfig.defaultInsightPrompt)
+                .replacingOccurrences(of: "{{exerciseHistory}}", with: historyData)
+            let session = LanguageModelSession { systemPrompt }
             let response = try await session.respond(to: "Analyze \(exerciseName).")
             if let data = response.content.data(using: .utf8) {
                 struct InsightDTO: Codable {
