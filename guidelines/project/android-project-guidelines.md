@@ -133,3 +133,8 @@
     1.  **The Halo:** Draw a larger circle (radius `R1`) filled with the chart's background color (e.g., `surfaceContainerLow`).
     2.  **The Point:** Draw a smaller circle (radius `R2 < R1`) in the primary data color centered on the same point.
     3.  This pattern effectively "cuts out" the line behind the point, ensuring maximum legibility.
+
+## 11. Remote Configuration Pattern
+- **Reactive Merging:** Use `Flow.combine` (Android) to merge local persistence (e.g., Room) with remote configuration (e.g., Firebase Remote Config) in the `ConfigRepository`. This keeps the domain model updated in real-time without business logic cluttering the data source.
+- **Ephemeral Storage Rule:** Do NOT persist remote configurations (like AI prompts or feature flags) in the local database if they are managed by an external cloud provider. Remote properties should be stored in memory within the Domain Model (e.g., `SystemConfig.remoteConfig`) and updated via the repository's reactive flow.
+- **Architecture Consolidation:** Avoid fragmented configuration logic. If multiple sources (Local DB, Firebase, Defaults) contribute to a single domain entity, consolidate the logic into a single `ConfigRepository` implementation to maintain a strict source of truth for the UI.

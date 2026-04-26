@@ -118,3 +118,8 @@
     1.  **The Halo:** Draw a larger circle (radius `R1`) filled with the chart's background color (e.g., `.scribbleSurfaceContainerLow`).
     2.  **The Point:** Draw a smaller circle (radius `R2 < R1`) in the primary data color centered on the same point.
     3.  This pattern effectively "cuts out" the line behind the point, ensuring maximum legibility.
+
+## 9. Remote Configuration Pattern
+- **Task-Based Merging:** Use `AsyncStream` or `CurrentValueSubject` to merge local persistence (e.g., `UserDefaults`, `SwiftData`) with remote configuration (e.g., Firebase Remote Config) in the `ConfigRepository`. Perform the remote fetch asynchronously and update the subject/stream to notify the UI.
+- **Ephemeral Storage Rule:** Do NOT persist remote configurations (like AI prompts or feature flags) in the local database or `UserDefaults` if they are managed by an external cloud provider. Remote properties should be stored as `@Transient` or simply non-persistent properties in the Domain Model (e.g., `SystemConfig.remoteConfig`).
+- **Architecture Consolidation:** Avoid fragmented configuration logic. If multiple sources (Local, Firebase, Defaults) contribute to a single domain entity, consolidate the logic into a single modular implementation in `FeatureConfig` (or equivalent) to maintain a strict source of truth.

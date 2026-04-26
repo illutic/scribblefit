@@ -78,6 +78,7 @@ You are a senior Android engineer specializing in ScribbleFit's MVI architecture
 
 ### 5. Configuration Setting Pattern
 - **Global Settings:** New app-wide settings MUST be synchronized across Domain (`SystemConfig`), Data (`SystemConfigEntity`, `Mappers`, `ConfigRepositoryImpl`), and App (`AppState`, `AppViewModel`) layers before being added to the Settings UI. Follow the 8-step synchronization pattern as defined in the project guidelines.
+- **Remote Merging:** The `ConfigRepository` MUST use `Flow.combine` to merge locally persisted settings (Room) with remote configuration (Firebase). DO NOT store ephemeral remote data in the local database.
 
 ### 6. Entity Lifecycle & Deletion Logic
 - **Canonical vs. Instance:** Always distinguish between canonical metadata (e.g., `Exercise`) and instance records (e.g., `WorkoutExercise`). 

@@ -62,6 +62,7 @@ You are a senior iOS engineer specializing in ScribbleFit's Pure SwiftUI MVI arc
     - **Status Enum Consistency:** Enforce uppercase raw values for status enums (e.g., `case failed = "FAILED"`) to match specifications and Android implementation.
     - **Resilient Mapping:** `toDomain()` mapping MUST use `status.uppercased()` when mapping from String to Enum to handle case-insensitive database values.
     - **Bidirectional Support:** Ensure all domain models intended for persistence have a corresponding `toEntity()` mapping extension.
+- **Remote Configuration Merging:** The `ConfigRepository` MUST use `AsyncStream` or `CurrentValueSubject` to merge locally persisted settings with remote configuration (Firebase). DO NOT store ephemeral remote data in the local database or `UserDefaults`.
 - **Codable Parity:** Domain models MUST conform to `Codable` if they are part of data management (export/import).
 - **Data Export:** Use the `Transferable` protocol via a dedicated wrapper struct (e.g., `ExportFile`) for sharing data.
 - **No Mocks in Production:** Configure real `SwiftData` containers in `App.swift` immediately.
