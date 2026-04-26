@@ -1,10 +1,7 @@
 import Foundation
 
 public struct SystemConfig: Equatable, Sendable, Codable {
-    public var summaryPrompt: String
-    public var suggestionPrompt: String
-    public var insightPrompt: String
-    public var parsePrompt: String
+    public var remoteConfig: RemoteConfig
     public var preferredLlmProvider: LLMProvider
     public var updatedAt: Date
     public var weightUnit: WeightUnit
@@ -12,25 +9,38 @@ public struct SystemConfig: Equatable, Sendable, Codable {
     public var isDynamicTheme: Bool
 
     public init(
-        summaryPrompt: String = Self.defaultSummaryPrompt,
-        suggestionPrompt: String = Self.defaultSuggestionPrompt,
-        insightPrompt: String = Self.defaultInsightPrompt,
-        parsePrompt: String = Self.defaultParsePrompt,
+        remoteConfig: RemoteConfig = RemoteConfig(),
         preferredLlmProvider: LLMProvider = .local,
         updatedAt: Date = Date(),
         weightUnit: WeightUnit = .kgs,
         themePreference: ThemePreference = .system,
         isDynamicTheme: Bool = false
     ) {
-        self.summaryPrompt = summaryPrompt
-        self.suggestionPrompt = suggestionPrompt
-        self.insightPrompt = insightPrompt
-        self.parsePrompt = parsePrompt
+        self.remoteConfig = remoteConfig
         self.preferredLlmProvider = preferredLlmProvider
         self.updatedAt = updatedAt
         self.weightUnit = weightUnit
         self.themePreference = themePreference
         self.isDynamicTheme = isDynamicTheme
+    }
+}
+
+public struct RemoteConfig: Equatable, Sendable, Codable {
+    public var summaryPrompt: String
+    public var suggestionPrompt: String
+    public var insightPrompt: String
+    public var parsePrompt: String
+
+    public init(
+        summaryPrompt: String = RemoteConfig.defaultSummaryPrompt,
+        suggestionPrompt: String = RemoteConfig.defaultSuggestionPrompt,
+        insightPrompt: String = RemoteConfig.defaultInsightPrompt,
+        parsePrompt: String = RemoteConfig.defaultParsePrompt
+    ) {
+        self.summaryPrompt = summaryPrompt
+        self.suggestionPrompt = suggestionPrompt
+        self.insightPrompt = insightPrompt
+        self.parsePrompt = parsePrompt
     }
 
     public static let defaultSuggestionPrompt = """
