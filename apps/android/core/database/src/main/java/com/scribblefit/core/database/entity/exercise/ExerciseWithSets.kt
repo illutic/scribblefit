@@ -20,6 +20,7 @@ data class ExerciseWithSets(
 
 fun ExerciseWithSets.toDomain(): Exercise = Exercise(
     id = exercise.exerciseId,
+    scribbleId = exercise.scribbleId,
     canonicalName = exercise.name,
     muscleGroup = exercise.muscleGroup,
     sets = sets.map { it.toDomain() },

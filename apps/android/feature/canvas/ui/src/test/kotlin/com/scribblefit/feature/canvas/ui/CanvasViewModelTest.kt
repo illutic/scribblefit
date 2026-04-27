@@ -22,7 +22,6 @@ import com.scribblefit.feature.canvas.domain.ParsePendingScribblesUseCase
 import com.scribblefit.feature.canvas.domain.RemoveExerciseFromScribbleUseCase
 import com.scribblefit.feature.exercises.domain.usecase.CalculateTrendsUseCase
 import com.scribblefit.feature.exercises.domain.usecase.FormatExerciseSummaryUseCase
-import com.scribblefit.feature.exercises.domain.usecase.RemoveExerciseUseCase
 import com.scribblefit.feature.exercises.domain.usecase.UpdateExerciseUseCase
 import com.scribblefit.feature.insights.domain.usecase.GetAIOverviewUseCase
 import com.scribblefit.feature.scribble.domain.usecase.AddScribbleUseCase
@@ -31,6 +30,7 @@ import com.scribblefit.feature.scribble.domain.usecase.CreateManualScribbleUseCa
 import com.scribblefit.feature.scribble.domain.usecase.GetScribblesForDateUseCase
 import com.scribblefit.feature.scribble.domain.usecase.RemoveScribbleUseCase
 import com.scribblefit.feature.sets.domain.usecase.AddSetToExerciseUseCase
+import com.scribblefit.feature.sets.domain.usecase.RemoveSetUseCase
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -67,6 +67,7 @@ class CanvasViewModelTest {
     private val getAIInsightsUseCase = mockk<GetAIOverviewUseCase>()
     private val formatExerciseSummaryUseCase = mockk<FormatExerciseSummaryUseCase>()
     private val calculateTrendsUseCase = mockk<CalculateTrendsUseCase>()
+    private val removeSetUseCase = mockk<RemoveSetUseCase>()
     private val configRepository = mockk<ConfigRepository>()
     private val navigator = mockk<Navigator>()
 
@@ -111,6 +112,7 @@ class CanvasViewModelTest {
             createManualScribbleUseCase = createManualScribbleUseCase,
             getAIInsightsUseCase = getAIInsightsUseCase,
             formatExerciseSummaryUseCase = formatExerciseSummaryUseCase,
+            removeSetUseCase = removeSetUseCase,
             calculateTrendsUseCase = calculateTrendsUseCase,
             configRepository = configRepository,
             navigator = navigator
@@ -184,7 +186,7 @@ class CanvasViewModelTest {
                     id = 10L,
                     canonicalName = "Squat",
                     muscleGroup = "Legs",
-                    sets = emptyList<com.scribblefit.core.model.Set>(),
+                    sets = emptyList(),
                     createdAt = 0L
                 )
             )
@@ -208,7 +210,7 @@ class CanvasViewModelTest {
             id = 10L,
             canonicalName = "Squat",
             muscleGroup = "Legs",
-            sets = emptyList<com.scribblefit.core.model.Set>(),
+            sets = emptyList(),
             createdAt = 0L
         )
         val scribble = Scribble(
@@ -251,60 +253,62 @@ class CanvasViewModelTest {
     }
 
     @Test
-    fun `selectedScribble updates when underlying scribble list changes`() = runTest(testDispatcher) {
-        val scribbleId = 1L
-        val exerciseId = 10L
-        val initialExercise = Exercise(
-            id = exerciseId,
-            canonicalName = "Squat",
-            muscleGroup = "Legs",
-            sets = emptyList(),
-            createdAt = 0L
-        )
-        val initialScribble = Scribble(
-            id = scribbleId,
-            rawText = "Squat",
-            status = ScribbleStatus.SUCCESS,
-            createdAt = 0L,
-            exercises = listOf(initialExercise)
-        )
+    fun `selectedScribble updates when underlying scribble list changes`() =
+        runTest(testDispatcher) {
+            val scribbleId = 1L
+            val exerciseId = 10L
+            val initialExercise = Exercise(
+                id = exerciseId,
+                canonicalName = "Squat",
+                muscleGroup = "Legs",
+                sets = emptyList(),
+                createdAt = 0L
+            )
+            val initialScribble = Scribble(
+                id = scribbleId,
+                rawText = "Squat",
+                status = ScribbleStatus.SUCCESS,
+                createdAt = 0L,
+                exercises = listOf(initialExercise)
+            )
 
-        val scribblesFlow = MutableStateFlow(listOf(initialScribble))
-        coEvery { getScribblesForDateUseCase(any()) } returns scribblesFlow
+            val scribblesFlow = MutableStateFlow(listOf(initialScribble))
+            coEvery { getScribblesForDateUseCase(any()) } returns scribblesFlow
 
-        // Initialize VM again to pick up the flow
-        viewModel = CanvasViewModel(
-            getScribblesForDateUseCase = getScribblesForDateUseCase,
-            addScribbleUseCase = addScribbleUseCase,
-            confirmScribbleUseCase = confirmScribbleUseCase,
-            deleteScribbleUseCase = deleteScribbleUseCase,
-            updateExerciseUseCase = updateExerciseUseCase,
-            removeExerciseFromScribbleUseCase = removeExerciseFromScribbleUseCase,
-            addSetToExerciseUseCase = addSetToExerciseUseCase,
-            parsePendingScribblesUseCase = parsePendingScribblesUseCase,
-            createManualScribbleUseCase = createManualScribbleUseCase,
-            getAIInsightsUseCase = getAIInsightsUseCase,
-            formatExerciseSummaryUseCase = formatExerciseSummaryUseCase,
-            calculateTrendsUseCase = calculateTrendsUseCase,
-            configRepository = configRepository,
-            navigator = navigator
-        )
+            // Initialize VM again to pick up the flow
+            viewModel = CanvasViewModel(
+                getScribblesForDateUseCase = getScribblesForDateUseCase,
+                addScribbleUseCase = addScribbleUseCase,
+                confirmScribbleUseCase = confirmScribbleUseCase,
+                deleteScribbleUseCase = deleteScribbleUseCase,
+                updateExerciseUseCase = updateExerciseUseCase,
+                removeExerciseFromScribbleUseCase = removeExerciseFromScribbleUseCase,
+                addSetToExerciseUseCase = addSetToExerciseUseCase,
+                parsePendingScribblesUseCase = parsePendingScribblesUseCase,
+                createManualScribbleUseCase = createManualScribbleUseCase,
+                getAIInsightsUseCase = getAIInsightsUseCase,
+                formatExerciseSummaryUseCase = formatExerciseSummaryUseCase,
+                calculateTrendsUseCase = calculateTrendsUseCase,
+                removeSetUseCase = removeSetUseCase,
+                configRepository = configRepository,
+                navigator = navigator
+            )
 
-        viewModel.state.test {
-            awaitItem() // Skip initial
+            viewModel.state.test {
+                awaitItem() // Skip initial
 
-            // Select the scribble
-            viewModel.onIntent(CanvasIntent.ClickOnScribble(initialScribble))
-            var state = awaitItem()
-            assertEquals("Squat", state.selectedScribble?.exercises?.get(0)?.canonicalName)
+                // Select the scribble
+                viewModel.onIntent(CanvasIntent.ClickOnScribble(initialScribble))
+                var state = awaitItem()
+                assertEquals("Squat", state.selectedScribble?.exercises?.get(0)?.canonicalName)
 
-            // Simulate update in DB
-            val updatedExercise = initialExercise.copy(canonicalName = "Back Squat")
-            val updatedScribble = initialScribble.copy(exercises = listOf(updatedExercise))
-            scribblesFlow.value = listOf(updatedScribble)
+                // Simulate update in DB
+                val updatedExercise = initialExercise.copy(canonicalName = "Back Squat")
+                val updatedScribble = initialScribble.copy(exercises = listOf(updatedExercise))
+                scribblesFlow.value = listOf(updatedScribble)
 
-            state = awaitItem()
-            assertEquals("Back Squat", state.selectedScribble?.exercises?.get(0)?.canonicalName)
+                state = awaitItem()
+                assertEquals("Back Squat", state.selectedScribble?.exercises?.get(0)?.canonicalName)
+            }
         }
-    }
 }

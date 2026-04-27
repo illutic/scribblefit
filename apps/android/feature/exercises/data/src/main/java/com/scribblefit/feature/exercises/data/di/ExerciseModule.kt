@@ -11,6 +11,8 @@ import com.scribblefit.feature.exercises.domain.usecase.CalculateWeeklyStatsUseC
 import com.scribblefit.feature.exercises.domain.usecase.FormatExerciseSummaryUseCase
 import com.scribblefit.feature.exercises.domain.usecase.GetExerciseAIInsightUseCase
 import com.scribblefit.feature.exercises.domain.usecase.GetExerciseByIdUseCase
+import com.scribblefit.feature.exercises.domain.usecase.GetExerciseHistoryUseCase
+import com.scribblefit.feature.exercises.domain.usecase.GetExerciseTrendDataUseCase
 import com.scribblefit.feature.exercises.domain.usecase.GetExercisesInRangeUseCase
 import com.scribblefit.feature.exercises.domain.usecase.MarkExerciseAsCompleteUseCase
 import com.scribblefit.feature.exercises.domain.usecase.RemoveExerciseUseCase
@@ -122,6 +124,26 @@ internal object ExerciseModule {
         exerciseRepository: ExerciseRepository,
         coroutineDispatcherProvider: CoroutineDispatcherProvider
     ): GetExercisesInRangeUseCase = GetExercisesInRangeUseCase(
+        exerciseRepository = exerciseRepository,
+        coroutineDispatcher = coroutineDispatcherProvider.default()
+    )
+
+    @Provides
+    fun provideGetExerciseHistoryUseCase(
+        exerciseRepository: ExerciseRepository,
+        formatExerciseSummaryUseCase: FormatExerciseSummaryUseCase,
+        coroutineDispatcherProvider: CoroutineDispatcherProvider
+    ): GetExerciseHistoryUseCase = GetExerciseHistoryUseCase(
+        exerciseRepository = exerciseRepository,
+        formatExerciseSummaryUseCase = formatExerciseSummaryUseCase,
+        coroutineDispatcher = coroutineDispatcherProvider.default()
+    )
+
+    @Provides
+    fun provideGetExerciseTrendDataUseCase(
+        exerciseRepository: ExerciseRepository,
+        coroutineDispatcherProvider: CoroutineDispatcherProvider
+    ): GetExerciseTrendDataUseCase = GetExerciseTrendDataUseCase(
         exerciseRepository = exerciseRepository,
         coroutineDispatcher = coroutineDispatcherProvider.default()
     )

@@ -2,6 +2,7 @@ import Foundation
 
 public struct Exercise: Identifiable, Equatable, Sendable, Codable {
     public let id: UUID
+    public let scribbleId: UUID?
     public let canonicalName: String
     public let muscleGroup: String
     public let sets: [ExerciseSet]
@@ -13,6 +14,7 @@ public struct Exercise: Identifiable, Equatable, Sendable, Codable {
 
     public init(
         id: UUID = UUID(),
+        scribbleId: UUID? = nil,
         canonicalName: String,
         muscleGroup: String,
         sets: [ExerciseSet] = [],
@@ -23,6 +25,7 @@ public struct Exercise: Identifiable, Equatable, Sendable, Codable {
         improvement: Float? = nil
     ) {
         self.id = id
+        self.scribbleId = scribbleId
         self.canonicalName = canonicalName
         self.muscleGroup = muscleGroup
         self.sets = sets
@@ -70,6 +73,7 @@ public struct Exercise: Identifiable, Equatable, Sendable, Codable {
     
     public func copy(
         id: UUID? = nil,
+        scribbleId: UUID?? = nil,
         canonicalName: String? = nil,
         muscleGroup: String? = nil,
         sets: [ExerciseSet]? = nil,
@@ -81,6 +85,7 @@ public struct Exercise: Identifiable, Equatable, Sendable, Codable {
     ) -> Exercise {
         return .init(
             id: id ?? self.id,
+            scribbleId: scribbleId ?? self.scribbleId,
             canonicalName: canonicalName ?? self.canonicalName,
             muscleGroup: muscleGroup ?? self.muscleGroup,
             sets: sets ?? self.sets,

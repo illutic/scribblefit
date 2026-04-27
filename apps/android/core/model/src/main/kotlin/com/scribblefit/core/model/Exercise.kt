@@ -5,6 +5,7 @@ import kotlinx.serialization.Serializable
 @Serializable
 data class Exercise(
     val id: Long,
+    val scribbleId: Long = 0,
     val canonicalName: String,
     val muscleGroup: String,
     val sets: List<Set>,
