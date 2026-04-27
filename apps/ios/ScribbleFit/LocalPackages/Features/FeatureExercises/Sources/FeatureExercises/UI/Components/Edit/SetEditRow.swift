@@ -1,4 +1,5 @@
 import SwiftUI
+import Foundation
 import CoreModel
 import CoreDesignSystem
 
@@ -49,7 +50,9 @@ public struct SetEditRow: View {
                 .frame(width: 24, alignment: .leading)
             
             TextField("", text: $weightText)
+                #if os(iOS)
                 .keyboardType(.decimalPad)
+                #endif
                 .textFieldStyle(.plain)
                 .font(.scribbleBodyMedium.bold())
                 .foregroundColor(.scribblePrimary)
@@ -69,7 +72,9 @@ public struct SetEditRow: View {
                 .foregroundColor(.scribbleMidGray)
             
             TextField("", text: $repsText)
+                #if os(iOS)
                 .keyboardType(.numberPad)
+                #endif
                 .textFieldStyle(.plain)
                 .font(.scribbleBodyMedium)
                 .foregroundColor(.scribblePrimary)

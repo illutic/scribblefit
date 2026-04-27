@@ -18,6 +18,11 @@ import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.SolidColor
@@ -25,6 +30,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.scribblefit.core.designsystem.ScribbleFitTheme
 import com.scribblefit.core.model.Exercise
+import kotlinx.coroutines.delay
 
 @Composable
 fun ExerciseEditItem(
@@ -42,6 +48,15 @@ fun ExerciseEditItem(
     onAddSet: (Long) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    var name by remember { mutableStateOf(exercise.canonicalName) }
+
+    LaunchedEffect(name) {
+        if (name != exercise.canonicalName) {
+            delay(500) // Debounce to avoid rapid updates while typing
+            onUpdateExerciseName(exercise.id, name)
+        }
+    }
+
     Column(
         modifier = modifier
             .fillMaxWidth()
@@ -57,8 +72,8 @@ fun ExerciseEditItem(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             BasicTextField(
-                value = exercise.canonicalName,
-                onValueChange = { onUpdateExerciseName(exercise.id, it) },
+                value = name,
+                onValueChange = { name = it },
                 textStyle = ScribbleFitTheme.typography.titleMedium.copy(
                     fontWeight = FontWeight.Bold,
                     color = ScribbleFitTheme.colors.primary

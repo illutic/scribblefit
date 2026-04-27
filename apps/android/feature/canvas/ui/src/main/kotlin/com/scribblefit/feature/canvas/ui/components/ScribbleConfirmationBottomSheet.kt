@@ -34,7 +34,7 @@ internal fun ScribbleConfirmationBottomSheet(
     onConfirm: (Scribble) -> Unit,
     onDelete: (Scribble) -> Unit,
     onDismiss: () -> Unit,
-    onUpdateExerciseName: (Long, String) -> Unit,
+    onUpdateExerciseName: (Long, Long, String) -> Unit,
     onUpdateSetWeight: (Long, Long, String) -> Unit,
     onUpdateSetReps: (Long, Long, String) -> Unit,
     onDeleteSet: (Long, Long) -> Unit,
@@ -81,7 +81,9 @@ internal fun ScribbleConfirmationBottomSheet(
                     items(scribble.exercises) { exercise ->
                         ExerciseEditItem(
                             exercise = exercise,
-                            onUpdateExerciseName = onUpdateExerciseName,
+                            onUpdateExerciseName = { exId, name -> 
+                                onUpdateExerciseName(scribble.id, exId, name) 
+                            },
                             onUpdateSetWeight = onUpdateSetWeight,
                             onUpdateSetReps = onUpdateSetReps,
                             onDeleteSet = onDeleteSet,

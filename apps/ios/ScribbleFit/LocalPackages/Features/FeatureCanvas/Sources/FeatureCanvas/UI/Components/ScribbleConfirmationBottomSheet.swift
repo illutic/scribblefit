@@ -14,6 +14,8 @@ struct ScribbleConfirmationBottomSheet: View {
     let onUpdateSetWeight: (UUID, UUID, String) -> Void
     let onUpdateSetReps: (UUID, UUID, String) -> Void
     let onDeleteSet: (UUID, UUID) -> Void
+    let onDeleteExercise: (UUID) -> Void
+    let onAddSet: (UUID) -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 28) {
@@ -76,11 +78,11 @@ struct ScribbleConfirmationBottomSheet: View {
                     repsLabel: "reps",
                     addSetLabel: "Add Set",
                     onUpdateName: { id, name in onUpdateExerciseName(id, name) },
-                    onDeleteExercise: { id in /* TODO */ },
+                    onDeleteExercise: { id in onDeleteExercise(id) },
                     onUpdateSetWeight: { exId, setId, value in onUpdateSetWeight(exId, setId, value) },
                     onUpdateSetReps: { exId, setId, value in onUpdateSetReps(exId, setId, value) },
                     onDeleteSet: { exId, setId in onDeleteSet(exId, setId) },
-                    onAddSet: { id in /* TODO */ }
+                    onAddSet: { id in onAddSet(id) }
                 )
             }
         }

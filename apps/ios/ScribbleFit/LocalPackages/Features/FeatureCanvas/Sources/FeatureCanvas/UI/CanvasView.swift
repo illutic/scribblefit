@@ -67,7 +67,9 @@ public struct CanvasView: View {
                 footerView
                     .padding(.bottom, 8)
             }
+            #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar { toolbarContent }
             .sheet(item: $store.state.selectedScribble) { scribble in
                 scribbleConfirmationSheet(for: scribble)
@@ -210,6 +212,12 @@ public struct CanvasView: View {
             },
             onDeleteSet: { exId, setId in
                 store.onIntent(.deleteSet(exId, setId))
+            },
+            onDeleteExercise: { exId in
+                store.onIntent(.deleteExercise(exId))
+            },
+            onAddSet: { exId in
+                store.onIntent(.addSet(exId))
             }
         )
     }

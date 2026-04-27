@@ -48,7 +48,9 @@ public struct ScribbleDetailsView: View {
                 }
             }
             .navigationTitle("Scribble Details")
+            #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
+            #endif
             #if os(iOS)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {

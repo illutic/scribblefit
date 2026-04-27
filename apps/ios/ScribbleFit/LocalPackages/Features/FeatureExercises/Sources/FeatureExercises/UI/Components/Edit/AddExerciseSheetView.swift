@@ -70,11 +70,10 @@ public struct AddExerciseSheetView: View {
                                     .frame(width: 20)
                                 
                                 HStack {
-                                    TextField("0", value: Binding(
-                                        get: { sets[index].weight ?? 0.0 },
-                                        set: { sets[index].weight = $0 }
-                                    ), formatter: NumberFormatter.decimal)
+                                    TextField("0", value: weightBinding(for: index), formatter: NumberFormatter.decimal)
+                                        #if os(iOS)
                                         .keyboardType(.decimalPad)
+                                        #endif
                                         .multilineTextAlignment(.trailing)
                                     Text(weightUnitLabel)
                                 }
@@ -86,11 +85,10 @@ public struct AddExerciseSheetView: View {
                                     .foregroundColor(.scribbleMidGray)
                                 
                                 HStack {
-                                    TextField("0", value: Binding(
-                                        get: { sets[index].reps },
-                                        set: { sets[index].reps = $0 }
-                                    ), formatter: NumberFormatter.integer)
+                                    TextField("0", value: repsBinding(for: index), formatter: NumberFormatter.integer)
+                                        #if os(iOS)
                                         .keyboardType(.numberPad)
+                                        #endif
                                         .multilineTextAlignment(.trailing)
                                     Text("r")
                                 }
@@ -140,8 +138,11 @@ public struct AddExerciseSheetView: View {
                 .padding(24)
             }
             .navigationTitle("New Entry")
+            #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
+                #if os(iOS)
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Close") { onDismiss() }
                         .foregroundColor(.scribblePrimary)
@@ -151,8 +152,31 @@ public struct AddExerciseSheetView: View {
                         .foregroundColor(isSaveEnabled ? .scribblePrimary : .scribbleMidGray)
                         .disabled(!isSaveEnabled)
                 }
+                #else
+                ToolbarItem {
+                    Button("Close") { onDismiss() }
+                }
+                ToolbarItem {
+                    Button("SAVE") { onSave(exerciseName, muscleGroup, sets, notes) }
+                        .disabled(!isSaveEnabled)
+                }
+                #endif
             }
         }
+    }
+
+    private func weightBinding(for index: Int) -> Binding<Float> {
+        Binding(
+            get: { sets[index].weight ?? 0.0 },
+            set: { sets[index].weight = $0 }
+        )
+    }
+
+    private func repsBinding(for index: Int) -> Binding<Int> {
+        Binding(
+            get: { sets[index].reps },
+            set: { sets[index].reps = $0 }
+        )
     }
 }
 

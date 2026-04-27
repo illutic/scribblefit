@@ -10,9 +10,9 @@ import com.scribblefit.core.model.Set
 import com.scribblefit.core.navigation.Navigator
 import com.scribblefit.core.navigation.Screen
 import com.scribblefit.feature.canvas.domain.ParsePendingScribblesUseCase
+import com.scribblefit.feature.canvas.domain.RemoveExerciseFromScribbleUseCase
 import com.scribblefit.feature.exercises.domain.usecase.CalculateTrendsUseCase
 import com.scribblefit.feature.exercises.domain.usecase.FormatExerciseSummaryUseCase
-import com.scribblefit.feature.exercises.domain.usecase.RemoveExerciseUseCase
 import com.scribblefit.feature.exercises.domain.usecase.UpdateExerciseUseCase
 import com.scribblefit.feature.insights.domain.usecase.GetAIOverviewUseCase
 import com.scribblefit.feature.scribble.domain.usecase.AddScribbleUseCase
@@ -21,6 +21,7 @@ import com.scribblefit.feature.scribble.domain.usecase.CreateManualScribbleUseCa
 import com.scribblefit.feature.scribble.domain.usecase.GetScribblesForDateUseCase
 import com.scribblefit.feature.scribble.domain.usecase.RemoveScribbleUseCase
 import com.scribblefit.feature.sets.domain.usecase.AddSetToExerciseUseCase
+import com.scribblefit.feature.sets.domain.usecase.RemoveSetUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -43,7 +44,8 @@ class CanvasViewModel @Inject constructor(
     private val confirmScribbleUseCase: ConfirmScribbleUseCase,
     private val deleteScribbleUseCase: RemoveScribbleUseCase,
     private val updateExerciseUseCase: UpdateExerciseUseCase,
-    private val removeExerciseUseCase: RemoveExerciseUseCase,
+    private val removeExerciseFromScribbleUseCase: RemoveExerciseFromScribbleUseCase,
+    private val removeSetUseCase: RemoveSetUseCase,
     private val addSetToExerciseUseCase: AddSetToExerciseUseCase,
     private val parsePendingScribblesUseCase: ParsePendingScribblesUseCase,
     private val createManualScribbleUseCase: CreateManualScribbleUseCase,
@@ -72,9 +74,14 @@ class CanvasViewModel @Inject constructor(
         scribblesForDate,
         navigator.navState
     ) { currentState, weightUnit, scribbles, navState ->
+        val updatedSelectedScribble = currentState.selectedScribble?.let { selected ->
+            scribbles.find { it.id == selected.id }
+        }
+
         currentState.copy(
             weightUnit = weightUnit,
             scribbles = scribbles,
+            selectedScribble = updatedSelectedScribble,
             scribbleUiModels = scribbles.map { scribble ->
                 ScribbleUiModel(
                     id = scribble.id,
@@ -236,7 +243,7 @@ class CanvasViewModel @Inject constructor(
     private fun handleEditIntent(intent: CanvasIntent) {
         when (intent) {
             is CanvasIntent.UpdateExerciseName -> {
-                updateExerciseName(intent.exerciseId, intent.newName)
+                updateExerciseName(intent.scribbleId, intent.exerciseId, intent.newName)
             }
 
             is CanvasIntent.UpdateSetWeight -> {
@@ -346,9 +353,9 @@ class CanvasViewModel @Inject constructor(
         _state.update { it.copy(selectedScribble = null) }
     }
 
-    private fun updateExerciseName(exerciseId: Long, newName: String) {
+    private fun updateExerciseName(scribbleId: Long, exerciseId: Long, newName: String) {
         viewModelScope.launch {
-            val scribble = _state.value.selectedScribble ?: return@launch
+            val scribble = _state.value.scribbles.find { it.id == scribbleId } ?: return@launch
             val exercise = scribble.exercises.find { it.id == exerciseId } ?: return@launch
             updateExerciseUseCase(exercise.copy(canonicalName = newName))
         }
@@ -392,13 +399,15 @@ class CanvasViewModel @Inject constructor(
                 sets = exercise.sets.filterNot { it.id == setId }
             )
 
+            removeSetUseCase(setId)
             updateExerciseUseCase(newExercise)
         }
     }
 
     private fun deleteExercise(exerciseId: Long) {
         viewModelScope.launch {
-            removeExerciseUseCase(exerciseId)
+            val scribble = _state.value.selectedScribble ?: return@launch
+            removeExerciseFromScribbleUseCase(exerciseId, scribble.id)
         }
     }
 

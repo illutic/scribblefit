@@ -68,7 +68,12 @@ public struct ManualEditScribbleUseCase: Sendable {
     public func deleteExercise(scribbleId: UUID, exerciseId: UUID) async throws {
         guard let scribble = try await scribbleRepository.getScribble(id: scribbleId) else { return }
         let filteredExercises = scribble.exercises.filter { $0.id != exerciseId }
-        try await scribbleRepository.updateScribble(scribble.copy(exercises: filteredExercises))
+        
+        if filteredExercises.isEmpty {
+            try await scribbleRepository.deleteScribble(id: scribbleId)
+        } else {
+            try await scribbleRepository.updateScribble(scribble.copy(exercises: filteredExercises))
+        }
     }
 
     @MainActor

@@ -55,7 +55,9 @@ public struct ExerciseDetailsView: View {
                 }
             }
             .navigationTitle(store.state.exerciseName)
+            #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
+            #endif
             #if os(iOS)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {

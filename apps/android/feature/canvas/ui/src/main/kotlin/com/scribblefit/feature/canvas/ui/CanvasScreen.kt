@@ -78,10 +78,11 @@ internal fun CanvasScreen(
             onConfirm = { onIntent(CanvasIntent.ConfirmScribble(it)) },
             onDelete = { onIntent(CanvasIntent.ShowDeleteConfirmation(it.id)) },
             onDismiss = { onIntent(CanvasIntent.DismissScribbleDialog) },
-            onUpdateExerciseName = { id, name ->
+            onUpdateExerciseName = { scId, exId, name ->
                 onIntent(
                     CanvasIntent.UpdateExerciseName(
-                        id,
+                        scId,
+                        exId,
                         name
                     )
                 )

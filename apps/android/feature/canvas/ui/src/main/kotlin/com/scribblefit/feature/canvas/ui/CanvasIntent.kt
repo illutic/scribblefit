@@ -46,7 +46,7 @@ sealed interface CanvasIntent {
     data object DismissScribbleDialog : CanvasIntent
 
     // Manual Editing
-    data class UpdateExerciseName(val exerciseId: Long, val newName: String) : CanvasIntent
+    data class UpdateExerciseName(val scribbleId: Long, val exerciseId: Long, val newName: String) : CanvasIntent
     data class UpdateSetWeight(val exerciseId: Long, val setId: Long, val newWeight: String) :
         CanvasIntent
 

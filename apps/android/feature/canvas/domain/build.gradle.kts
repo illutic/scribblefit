@@ -4,6 +4,10 @@ plugins {
 
 android {
     namespace = "com.scribblefit.feature.canvas.domain"
+
+    testOptions {
+        unitTests.isReturnDefaultValues = true
+    }
 }
 
 dependencies {
@@ -14,4 +18,8 @@ dependencies {
     implementation(project(":feature:exercises:domain"))
     implementation(project(":feature:ai:domain"))
     implementation(libs.slf4j.android)
+
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.mockk)
+    testImplementation(libs.junit)
 }

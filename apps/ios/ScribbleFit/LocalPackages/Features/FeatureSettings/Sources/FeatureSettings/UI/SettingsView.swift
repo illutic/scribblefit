@@ -67,6 +67,9 @@ public struct SettingsView: View {
                 }
             }
             #endif
+            #if os(iOS)
+            .navigationBarTitleDisplayMode(.inline)
+            #endif
             .alert(String(localized: "Clear All Data"), isPresented: $store.state.isShowingClearConfirmation) {
                 Button(String(localized: "Cancel"), role: .cancel) { }
                 Button(String(localized: "Clear Everything"), role: .destructive) {

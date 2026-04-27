@@ -61,7 +61,9 @@ public struct LedgerView: View {
                 }
             }
             .navigationTitle(String(localized: "History"))
+            #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar { toolbarContent }
         }
         .sheet(isPresented: $showingDatePicker) {
@@ -184,7 +186,9 @@ public struct LedgerView: View {
                 DatePicker(String(localized: "End Date"), selection: $tempEndDate, in: tempStartDate..., displayedComponents: .date)
             }
             .navigationTitle(String(localized: "Select Date Range"))
+            #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
+            #endif
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(String(localized: "Cancel")) { showingDatePicker = false }

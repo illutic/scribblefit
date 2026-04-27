@@ -63,8 +63,8 @@ The body must handle four distinct states as defined in the design:
 - [x] **Scribble Confirmation Sheet (`Canvas Screen - Confirm/Edit/Delete parsed exercise`):**
     - [x] Triggered by tapping a parsed scribble.
     - [x] **Confirm Button:** Primary action, styled with the project's primary color. Marks the scribble as `COMPLETED`.
-    - [x] **Edit Button:** Secondary action, opens manual adjustment form.
-    - [x] **Delete Button:** Destructive action, styled in red.
+    - [x] **Edit Button:** Secondary action, allows manual adjustment of exercise names and sets. Name editing fixed (2026-04-27).
+    - [x] **Delete Button:** Destructive action, styled in red. Deletes exercise or entire scribble. Automatic scribble deletion if last exercise removed implemented (2026-04-27).
 
 #### **Footer**
 - [ ] **Scribble Input**
