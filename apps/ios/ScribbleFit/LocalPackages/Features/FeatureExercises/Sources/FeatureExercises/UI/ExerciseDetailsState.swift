@@ -9,6 +9,7 @@ public struct ExerciseDetailsState: Sendable {
     public var aiInsight: AIInsight? = nil
     public var error: String? = nil
     public var weightUnit: WeightUnit = .lbs
+    public var showTrends: Bool = false
     
     public init(exerciseName: String) {
         self.exerciseName = exerciseName

@@ -6,9 +6,20 @@ public struct ExerciseDetailsView: View {
     @Bindable var store: ExerciseDetailsStore
     let onDismiss: () -> Void
     
-    public init(store: ExerciseDetailsStore, onDismiss: @escaping () -> Void) {
+    // Dependencies for sub-screens
+    let getExerciseTrendDataUseCase: GetExerciseTrendDataUseCase
+    let configRepository: ConfigRepository
+    
+    public init(
+        store: ExerciseDetailsStore,
+        onDismiss: @escaping () -> Void,
+        getExerciseTrendDataUseCase: GetExerciseTrendDataUseCase,
+        configRepository: ConfigRepository
+    ) {
         self.store = store
         self.onDismiss = onDismiss
+        self.getExerciseTrendDataUseCase = getExerciseTrendDataUseCase
+        self.configRepository = configRepository
     }
     
     public var body: some View {
@@ -37,7 +48,7 @@ public struct ExerciseDetailsView: View {
                                 TrendsSection(
                                     trends: details.trends,
                                     weightUnit: store.state.weightUnit == .kgs ? "kg" : "lbs",
-                                    onViewAllClick: { /* TODO */ }
+                                    onViewAllClick: { store.onIntent(.viewAllTrendsTapped) }
                                 )
                                 
                                 HistorySection(
@@ -55,6 +66,15 @@ public struct ExerciseDetailsView: View {
                 }
             }
             .navigationTitle(store.state.exerciseName)
+            .navigationDestination(isPresented: $store.state.showTrends) {
+                ExerciseTrendsView(
+                    store: ExerciseTrendsStore(
+                        exerciseName: store.state.exerciseName,
+                        getExerciseTrendDataUseCase: getExerciseTrendDataUseCase,
+                        configRepository: configRepository
+                    )
+                )
+            }
             #if os(iOS)
             .navigationBarTitleDisplayMode(.inline)
             #endif

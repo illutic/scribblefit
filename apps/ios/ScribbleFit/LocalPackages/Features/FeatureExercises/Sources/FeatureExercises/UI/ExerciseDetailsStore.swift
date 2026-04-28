@@ -34,6 +34,10 @@ public final class ExerciseDetailsStore {
         switch intent {
         case .refreshAIInsight:
             refreshAIInsight()
+        case .viewAllTrendsTapped:
+            state.showTrends = true
+        case .dismissTrends:
+            state.showTrends = false
         }
     }
     
@@ -80,4 +84,6 @@ public final class ExerciseDetailsStore {
 
 public enum ExerciseDetailsIntent {
     case refreshAIInsight
+    case viewAllTrendsTapped
+    case dismissTrends
 }

@@ -88,7 +88,7 @@ private fun ExerciseDetailsContent(
                     intensityLabel = state.intensityLabel,
                     weightVsLastLabel = state.weightVsLastLabel,
                     lastVolumeLabel = state.lastVolumeLabel,
-                    onViewAllClick = { /* TODO */ },
+                    onViewAllClick = { onIntent(ExerciseDetailsIntent.NavigateToTrends) },
                     getTrendDirectionText = { state.getTrendDirectionText(it) }
                 )
 

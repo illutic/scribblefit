@@ -97,6 +97,7 @@ data class ExerciseDetailsState(
         when (direction) {
             com.scribblefit.core.model.TrendDirection.IMPROVING -> stringResource(R.string.trend_improving)
             com.scribblefit.core.model.TrendDirection.STABLE -> stringResource(R.string.trend_stable)
+            com.scribblefit.core.model.TrendDirection.PLATEAUED -> stringResource(R.string.trend_plateaued)
             com.scribblefit.core.model.TrendDirection.DECLINING -> stringResource(R.string.trend_declining)
         }
 }

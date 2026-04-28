@@ -148,6 +148,7 @@ private fun TrendBadge(direction: TrendDirection, text: String) {
     val color = when (direction) {
         TrendDirection.IMPROVING -> ScribbleFitTheme.colors.successGreen
         TrendDirection.STABLE -> ScribbleFitTheme.colors.midGray
+        TrendDirection.PLATEAUED -> ScribbleFitTheme.colors.warningOrange
         TrendDirection.DECLINING -> ScribbleFitTheme.colors.dangerRed
     }
 

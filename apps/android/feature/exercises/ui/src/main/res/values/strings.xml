@@ -4,12 +4,12 @@
     <string name="workout_exercises_exercises_label">EXERCISES</string>
     <string name="workout_exercises_sets_label">SETS</string>
     <string name="workout_exercises_volume_label">VOLUME</string>
-    <string name="workout_exercises_estimated_1rm_format">EST. 1RM: %1$d%2$s</string>
-    <string name="workout_exercises_intensity_format">INTENSITY: %1$d%%</string>
-    <string name="workout_exercises_improvement_format">VS LAST: %1$s%2$s</string>
+    <string name="workout_exercises_estimated_1rm_format">EST. 1RM: %1%2</string>
+    <string name="workout_exercises_intensity_format">INTENSITY: %1%%</string>
+    <string name="workout_exercises_improvement_format">VS LAST: %1%2</string>
     <string name="workout_exercises_weight_unit_kg">kg</string>
     <string name="workout_exercises_weight_unit_lb">lb</string>
-    <string name="workout_exercises_volume_format">%1$s %2$s</string>
+    <string name="workout_exercises_volume_format">%1 %2</string>
     <string name="workout_exercises_back">Back</string>
     <string name="workout_exercises_finish_button">FINISH &amp; LOG</string>
     <string name="workout_exercises_add_exercise_button">ADD EXERCISE</string>
@@ -58,4 +58,16 @@
     <string name="trend_stable">STABLE</string>
     <string name="trend_plateaued">PLATEAUED</string>
     <string name="trend_declining">DECLINING</string>
+
+    <!-- Exercise Trends -->
+    <string name="exercise_trends_estimated_1rm">Estimated 1RM</string>
+    <string name="exercise_trends_total_volume">Total Volume</string>
+    <string name="exercise_trends_no_data">Not enough data for trends yet</string>
+    <string name="exercise_trends_period_label">Period</string>
+    <string name="exercise_trends_pb_label">PB</string>
+    <string name="exercise_trends_period_1m">1M</string>
+    <string name="exercise_trends_period_3m">3M</string>
+    <string name="exercise_trends_period_6m">6M</string>
+    <string name="exercise_trends_period_1y">1Y</string>
+    <string name="exercise_trends_period_all">All</string>
 </resources>
