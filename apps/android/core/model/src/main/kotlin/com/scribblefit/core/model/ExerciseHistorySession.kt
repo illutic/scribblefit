@@ -1,6 +1,6 @@
-package com.scribblefit.feature.exercises.domain.model
+package com.scribblefit.core.model
 
-import com.scribblefit.core.model.Exercise
+import java.util.UUID
 
 /**
  * Domain model representing a single historical session for an exercise.
@@ -12,4 +12,6 @@ data class ExerciseHistorySession(
     val summary: String,
     val isPersonalBest: Boolean,
     val scribbleId: Long
-)
+) {
+    val date: Long get() = exercise.createdAt
+}

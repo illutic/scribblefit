@@ -4,5 +4,5 @@ import kotlinx.serialization.Serializable
 
 @Serializable
 enum class TrendDirection {
-    IMPROVING, STABLE, DECLINING;
+    IMPROVING, STABLE, PLATEAUED, DECLINING;
 }

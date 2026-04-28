@@ -28,4 +28,9 @@ sealed interface Screen {
         override val route: String = "exercise_details/$exerciseId"
         override val isTop: Boolean = false
     }
+
+    data class ExerciseTrends(val exerciseName: String) : Screen {
+        override val route: String = "exercise_trends/$exerciseName"
+        override val isTop: Boolean = false
+    }
 }
