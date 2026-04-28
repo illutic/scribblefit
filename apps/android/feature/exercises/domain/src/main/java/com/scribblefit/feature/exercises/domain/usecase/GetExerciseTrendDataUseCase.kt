@@ -129,7 +129,6 @@ class GetExerciseTrendDataUseCase(
             TrendPeriod.THREE_MONTHS -> calendar.add(Calendar.MONTH, -3)
             TrendPeriod.SIX_MONTHS -> calendar.add(Calendar.MONTH, -6)
             TrendPeriod.ONE_YEAR -> calendar.add(Calendar.YEAR, -1)
-            else -> {}
         }
         val startTime = calendar.timeInMillis
         return history.filter { it.createdAt >= startTime }

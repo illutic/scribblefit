@@ -13,6 +13,7 @@ public struct LedgerView: View {
     // Dependencies for sub-screens
     let getExerciseDetailsUseCase: GetExerciseDetailsUseCase
     let getExerciseAIInsightUseCase: GetExerciseAIInsightUseCase
+    let getExerciseTrendsUseCase: GetExerciseTrendDataUseCase
     let configRepository: ConfigRepository
     let exerciseRepository: ExerciseRepository
     let addManualExerciseUseCase: AddManualExerciseUseCase
@@ -29,6 +30,7 @@ public struct LedgerView: View {
         onNavigateToCanvas: @escaping () -> Void,
         getExerciseDetailsUseCase: GetExerciseDetailsUseCase,
         getExerciseAIInsightUseCase: GetExerciseAIInsightUseCase,
+        getExerciseTrendsUseCase: GetExerciseTrendDataUseCase,
         configRepository: ConfigRepository,
         exerciseRepository: ExerciseRepository,
         addManualExerciseUseCase: AddManualExerciseUseCase,
@@ -40,6 +42,7 @@ public struct LedgerView: View {
         self.onNavigateToCanvas = onNavigateToCanvas
         self.getExerciseDetailsUseCase = getExerciseDetailsUseCase
         self.getExerciseAIInsightUseCase = getExerciseAIInsightUseCase
+        self.getExerciseTrendsUseCase = getExerciseTrendsUseCase
         self.configRepository = configRepository
         self.exerciseRepository = exerciseRepository
         self.addManualExerciseUseCase = addManualExerciseUseCase
@@ -84,6 +87,7 @@ public struct LedgerView: View {
                     ),
                     getExerciseDetailsUseCase: getExerciseDetailsUseCase,
                     getExerciseAIInsightUseCase: getExerciseAIInsightUseCase,
+                    getExerciseTrendsUseCase: getExerciseTrendsUseCase,
                     configRepository: configRepository
                 )
             case .exerciseDetails(let name):
@@ -94,7 +98,9 @@ public struct LedgerView: View {
                         getExerciseAIInsightUseCase: getExerciseAIInsightUseCase,
                         configRepository: configRepository
                     ),
-                    onDismiss: { store.handleIntent(.dismissDetails) }
+                    onDismiss: { store.handleIntent(.dismissDetails) },
+                    getExerciseTrendDataUseCase: getExerciseTrendsUseCase,
+                    configRepository: configRepository
                 )
             }
         }

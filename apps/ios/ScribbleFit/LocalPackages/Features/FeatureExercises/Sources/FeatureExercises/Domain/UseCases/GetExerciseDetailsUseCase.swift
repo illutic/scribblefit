@@ -16,13 +16,41 @@ public final class GetExerciseDetailsUseCase {
         return AsyncStream { continuation in
             Task {
                 for await scribbles in stream {
-                    let history = scribbles.sorted(by: { $0.createdAt > $1.createdAt }).flatMap { scribble in
-                        scribble.exercises.filter { $0.canonicalName.lowercased() == exerciseName.lowercased() }.map { exercise in
-                            ExerciseHistorySession(
-                                workoutId: scribble.id,
-                                date: scribble.createdAt,
-                                exercise: exercise
-                            )
+                    let sortedScribbles = scribbles.sorted(by: { $0.createdAt > $1.createdAt })
+                    
+                    var history: [ExerciseHistorySession] = []
+                    
+                    // First pass to calculate all-time bests for isPersonalBest flag
+                    var allTimeMaxWeight: Float = 0
+                    var allTimeMaxVolume: Float = 0
+                    
+                    for scribble in sortedScribbles {
+                        for exercise in scribble.exercises where exercise.canonicalName.lowercased() == exerciseName.lowercased() {
+                            let volume = exercise.sets.reduce(Float(0.0)) { $0 + Calculations.calculateVolume(weight: $1.weight, reps: $1.reps) }
+                            let maxWeight = exercise.sets.compactMap { $0.weight }.max() ?? 0.0
+                            
+                            allTimeMaxWeight = max(allTimeMaxWeight, maxWeight)
+                            allTimeMaxVolume = max(allTimeMaxVolume, volume)
+                        }
+                    }
+                    
+                    // Second pass to build history with flags
+                    for scribble in sortedScribbles {
+                        let matchingExercises = scribble.exercises.filter { $0.canonicalName.lowercased() == exerciseName.lowercased() }
+                        for exercise in matchingExercises {
+                            let volume = exercise.sets.reduce(Float(0.0)) { $0 + Calculations.calculateVolume(weight: $1.weight, reps: $1.reps) }
+                            let maxWeight = exercise.sets.compactMap { $0.weight }.max() ?? 0.0
+                            
+                            let isPB = (maxWeight >= allTimeMaxWeight && allTimeMaxWeight > 0) || (volume >= allTimeMaxVolume && allTimeMaxVolume > 0)
+                            
+                            history.append(ExerciseHistorySession(
+                                exercise: exercise,
+                                totalVolume: volume,
+                                maxWeight: maxWeight,
+                                summary: exercise.summary(weightUnit: .kgs),
+                                isPersonalBest: isPB,
+                                scribbleId: scribble.id
+                            ))
                         }
                     }
                     
@@ -35,13 +63,8 @@ public final class GetExerciseDetailsUseCase {
                     
                     let thisWeekSessions = history.filter { $0.date >= startOfWeek }
                     let sessionsThisWeek = thisWeekSessions.count
-                    let totalVolumeThisWeek = thisWeekSessions.reduce(Float(0.0)) { total, session in
-                        total + session.exercise.sets.reduce(Float(0.0)) { setTotal, set in
-                            setTotal + (set.weight ?? Float(0.0)) * Float(set.reps)
-                        }
-                    }
-                    let maxWeightThisWeek = thisWeekSessions.flatMap { $0.exercise.sets }
-                        .compactMap { $0.weight }.max() ?? Float(0.0)
+                    let totalVolumeThisWeek = thisWeekSessions.reduce(Float(0.0)) { $0 + $1.totalVolume }
+                    let maxWeightThisWeek = thisWeekSessions.map { $0.maxWeight }.max() ?? Float(0.0)
                     
                     let weeklyStats = WeeklyStats(
                         sessionsThisWeek: sessionsThisWeek,
@@ -71,8 +94,8 @@ public final class GetExerciseDetailsUseCase {
                     
                     let intensity = maxWeightThisWeek > 0 ? current1RM / maxWeightThisWeek : Float(0.0)
                     
-                    let lastVolume = history.first?.exercise.sets.reduce(Float(0.0)) { $0 + ($1.weight ?? Float(0.0)) * Float($1.reps) } ?? Float(0.0)
-                    let previousVolume = (history.count > 1) ? history[1].exercise.sets.reduce(Float(0.0)) { $0 + ($1.weight ?? Float(0.0)) * Float($1.reps) } ?? Float(0.0) : Float(0.0)
+                    let lastVolume = history.first?.totalVolume ?? Float(0.0)
+                    let previousVolume = (history.count > 1) ? history[1].totalVolume : Float(0.0)
                     
                     let lastVolumeTrend: TrendDirection = {
                         if lastVolume > previousVolume { return .improving }

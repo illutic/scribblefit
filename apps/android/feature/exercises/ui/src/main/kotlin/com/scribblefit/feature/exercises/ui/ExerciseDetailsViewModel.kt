@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.scribblefit.core.config.domain.ConfigRepository
 import com.scribblefit.core.navigation.Navigator
+import com.scribblefit.core.navigation.Screen
 import com.scribblefit.feature.exercises.domain.usecase.CalculateTrendsUseCase
 import com.scribblefit.feature.exercises.domain.usecase.CalculateWeeklyStatsUseCase
 import com.scribblefit.feature.exercises.domain.usecase.GetExerciseAIInsightUseCase
@@ -42,6 +43,9 @@ class ExerciseDetailsViewModel @Inject constructor(
             is ExerciseDetailsIntent.LoadDetails -> loadExercise(intent.exerciseId)
             ExerciseDetailsIntent.RefreshAIInsight -> refreshAIInsight()
             ExerciseDetailsIntent.NavigateBack -> navigator.goBack()
+            ExerciseDetailsIntent.NavigateToTrends -> {
+                navigator.navigateTo(Screen.ExerciseTrends(state.value.exerciseName))
+            }
         }
     }
 

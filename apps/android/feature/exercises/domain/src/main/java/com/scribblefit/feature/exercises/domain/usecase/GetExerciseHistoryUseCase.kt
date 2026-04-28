@@ -3,7 +3,7 @@ package com.scribblefit.feature.exercises.domain.usecase
 import com.scribblefit.core.common.Calculations
 import com.scribblefit.core.config.domain.Weight
 import com.scribblefit.feature.exercises.domain.ExerciseRepository
-import com.scribblefit.feature.exercises.domain.model.ExerciseHistorySession
+import com.scribblefit.core.model.ExerciseHistorySession
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 

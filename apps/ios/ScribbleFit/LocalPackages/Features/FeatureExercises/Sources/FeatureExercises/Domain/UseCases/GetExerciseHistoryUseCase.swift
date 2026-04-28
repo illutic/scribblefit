@@ -3,37 +3,6 @@ import CoreModel
 import CoreCommon
 
 /**
- * Domain model representing a single historical session for an exercise.
- */
-public struct ExerciseHistorySession: Identifiable, Sendable {
-    public let id: UUID
-    public let exercise: Exercise
-    public let totalVolume: Float
-    public let maxWeight: Float
-    public let summary: String
-    public let isPersonalBest: Boolean
-    public let scribbleId: UUID
-    
-    public init(
-        id: UUID = UUID(),
-        exercise: Exercise,
-        totalVolume: Float,
-        maxWeight: Float,
-        summary: String,
-        isPersonalBest: Boolean,
-        scribbleId: UUID
-    ) {
-        self.id = id
-        self.exercise = exercise
-        self.totalVolume = totalVolume
-        self.maxWeight = maxWeight
-        self.summary = summary
-        self.isPersonalBest = isPersonalBest
-        self.scribbleId = scribbleId
-    }
-}
-
-/**
  * Use case to fetch the complete history of a specific exercise.
  */
 @MainActor
@@ -78,7 +47,7 @@ public final class GetExerciseHistoryUseCase {
                 maxWeight: sessionMaxWeight,
                 summary: formatExerciseSummaryUseCase.execute(exercise: exercise, weightUnit: weightUnit),
                 isPersonalBest: isPB,
-                scribbleId: exercise.scribbleId ?? UUID() // Assuming scribbleId is in model
+                scribbleId: exercise.scribbleId ?? UUID()
             )
         }
     }

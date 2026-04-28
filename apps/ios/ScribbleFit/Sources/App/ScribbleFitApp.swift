@@ -60,6 +60,7 @@ struct ScribbleFitApp: App {
     private let reorderSetsUseCase: ReorderSetsUseCase
     private let getExerciseDetailsUseCase: GetExerciseDetailsUseCase
     private let getExerciseAIInsightUseCase: GetExerciseAIInsightUseCase
+    private let getExerciseTrendsUseCase: GetExerciseTrendDataUseCase
     private let addManualExerciseUseCase: AddManualExerciseUseCase
     private let addSetToExerciseUseCase: AddSetToExerciseUseCase
     private let calculateTrendsUseCase: CalculateTrendsUseCase
@@ -162,6 +163,9 @@ struct ScribbleFitApp: App {
             
             let getExerciseAIInsightUC = GetExerciseAIInsightUseCase(llmService: routingLLM)
             self.getExerciseAIInsightUseCase = getExerciseAIInsightUC
+            
+            let getExerciseTrendsUC = GetExerciseTrendDataUseCase(exerciseRepository: exerciseRepo)
+            self.getExerciseTrendsUseCase = getExerciseTrendsUC
 
             self.addManualExerciseUseCase = AddManualExerciseUseCase(exerciseRepository: exerciseRepo)
             self.addSetToExerciseUseCase = AddSetToExerciseUseCase(exerciseRepository: exerciseRepo)
@@ -219,6 +223,7 @@ struct ScribbleFitApp: App {
                 ledgerStore: ledgerStore,
                 getExerciseDetailsUseCase: getExerciseDetailsUseCase,
                 getExerciseAIInsightUseCase: getExerciseAIInsightUseCase,
+                getExerciseTrendsUseCase: getExerciseTrendsUseCase,
                 configRepository: configRepository,
                 exerciseRepository: exerciseRepository,
                 manualEditScribbleUseCase: manualEditScribbleUseCase,
@@ -241,6 +246,7 @@ struct ContentView: View {
     
     let getExerciseDetailsUseCase: GetExerciseDetailsUseCase
     let getExerciseAIInsightUseCase: GetExerciseAIInsightUseCase
+    let getExerciseTrendsUseCase: GetExerciseTrendDataUseCase
     let configRepository: ConfigRepository
     let exerciseRepository: ExerciseRepository
     let manualEditScribbleUseCase: ManualEditScribbleUseCase
@@ -259,6 +265,7 @@ struct ContentView: View {
                 settingsStore: settingsStore,
                 getExerciseDetailsUseCase: getExerciseDetailsUseCase,
                 getExerciseAIInsightUseCase: getExerciseAIInsightUseCase,
+                getExerciseTrendsUseCase: getExerciseTrendsUseCase,
                 configRepository: configRepository,
                 exerciseRepository: exerciseRepository,
                 manualEditScribbleUseCase: manualEditScribbleUseCase,
@@ -284,6 +291,7 @@ struct ContentView: View {
                 onNavigateToCanvas: { selectedTab = 0 },
                 getExerciseDetailsUseCase: getExerciseDetailsUseCase,
                 getExerciseAIInsightUseCase: getExerciseAIInsightUseCase,
+                getExerciseTrendsUseCase: getExerciseTrendsUseCase,
                 configRepository: configRepository,
                 exerciseRepository: exerciseRepository,
                 addManualExerciseUseCase: addManualExerciseUseCase,

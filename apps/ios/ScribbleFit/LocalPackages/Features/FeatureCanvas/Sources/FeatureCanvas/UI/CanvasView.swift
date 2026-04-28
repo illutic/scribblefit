@@ -13,6 +13,7 @@ public struct CanvasView: View {
     // Dependencies for sub-screens
     let getExerciseDetailsUseCase: GetExerciseDetailsUseCase
     let getExerciseAIInsightUseCase: GetExerciseAIInsightUseCase
+    let getExerciseTrendsUseCase: GetExerciseTrendDataUseCase
     let configRepository: ConfigRepository
     let exerciseRepository: ExerciseRepository
     let manualEditScribbleUseCase: FeatureScribble.ManualEditScribbleUseCase
@@ -31,6 +32,7 @@ public struct CanvasView: View {
         settingsStore: SettingsStore,
         getExerciseDetailsUseCase: GetExerciseDetailsUseCase,
         getExerciseAIInsightUseCase: GetExerciseAIInsightUseCase,
+        getExerciseTrendsUseCase: GetExerciseTrendDataUseCase,
         configRepository: ConfigRepository,
         exerciseRepository: ExerciseRepository,
         manualEditScribbleUseCase: FeatureScribble.ManualEditScribbleUseCase,
@@ -44,6 +46,7 @@ public struct CanvasView: View {
         self.settingsStore = settingsStore
         self.getExerciseDetailsUseCase = getExerciseDetailsUseCase
         self.getExerciseAIInsightUseCase = getExerciseAIInsightUseCase
+        self.getExerciseTrendsUseCase = getExerciseTrendsUseCase
         self.configRepository = configRepository
         self.exerciseRepository = exerciseRepository
         self.manualEditScribbleUseCase = manualEditScribbleUseCase
@@ -252,7 +255,9 @@ public struct CanvasView: View {
                 getExerciseAIInsightUseCase: getExerciseAIInsightUseCase,
                 configRepository: configRepository
             ),
-            onDismiss: onDismiss
+            onDismiss: onDismiss,
+            getExerciseTrendDataUseCase: getExerciseTrendsUseCase,
+            configRepository: configRepository
         )
     }
     
@@ -267,6 +272,7 @@ public struct CanvasView: View {
             ),
             getExerciseDetailsUseCase: getExerciseDetailsUseCase,
             getExerciseAIInsightUseCase: getExerciseAIInsightUseCase,
+            getExerciseTrendsUseCase: getExerciseTrendsUseCase,
             configRepository: configRepository
         )
     }

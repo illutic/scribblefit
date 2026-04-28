@@ -9,17 +9,20 @@ public struct ScribbleDetailsView: View {
 
     private let getExerciseDetailsUseCase: GetExerciseDetailsUseCase
     private let getExerciseAIInsightUseCase: GetExerciseAIInsightUseCase
+    private let getExerciseTrendsUseCase: GetExerciseTrendDataUseCase
     private let configRepository: ConfigRepository
 
     public init(
         store: ScribbleDetailsStore,
         getExerciseDetailsUseCase: GetExerciseDetailsUseCase,
         getExerciseAIInsightUseCase: GetExerciseAIInsightUseCase,
+        getExerciseTrendsUseCase: GetExerciseTrendDataUseCase,
         configRepository: ConfigRepository
     ) {
         _store = State(initialValue: store)
         self.getExerciseDetailsUseCase = getExerciseDetailsUseCase
         self.getExerciseAIInsightUseCase = getExerciseAIInsightUseCase
+        self.getExerciseTrendsUseCase = getExerciseTrendsUseCase
         self.configRepository = configRepository
     }
 
@@ -75,7 +78,9 @@ public struct ScribbleDetailsView: View {
                     getExerciseAIInsightUseCase: getExerciseAIInsightUseCase,
                     configRepository: configRepository
                 ),
-                onDismiss: { store.onIntent(.dismissExerciseDetails) }
+                onDismiss: { store.onIntent(.dismissExerciseDetails) },
+                getExerciseTrendDataUseCase: getExerciseTrendsUseCase,
+                configRepository: configRepository
             )
         }
     }
