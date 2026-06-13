@@ -18,7 +18,14 @@ class MarkExerciseAsCompleteUseCaseTest {
     @Test
     fun `should call updateExerciseUseCase with isDraft false`() = runTest(testDispatcher) {
         // Given
-        val exercise = Exercise(1L, "Bench Press", "Chest", emptyList(), 0L, isDraft = true)
+        val exercise = Exercise(
+            id = 1L,
+            canonicalName = "Bench Press",
+            muscleGroup = "Chest",
+            sets = emptyList(),
+            createdAt = 0L,
+            isDraft = true
+        )
         coEvery { updateExerciseUseCase(exercise.copy(isDraft = false)) } returns Result.success(
             Unit
         )

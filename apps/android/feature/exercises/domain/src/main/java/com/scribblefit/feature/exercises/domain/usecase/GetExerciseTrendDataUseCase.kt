@@ -1,19 +1,15 @@
 package com.scribblefit.feature.exercises.domain.usecase
 
 import com.scribblefit.core.common.Calculations
+import com.scribblefit.core.common.runCatchingWithCancellation
+import com.scribblefit.core.model.Exercise
+import com.scribblefit.core.model.TrendDirection
 import com.scribblefit.feature.exercises.domain.ExerciseRepository
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.withContext
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
+import kotlinx.coroutines.flow.map
 import java.util.Calendar
-
-/**
- * Metric types for trend visualization.
- */
-enum class TrendMetric {
-    ONE_RM,
-    VOLUME,
-    MAX_WEIGHT
-}
 
 /**
  * Time periods for filtering trend data.
@@ -40,15 +36,23 @@ data class TrendDataPoint(
 data class TrendInsights(
     val personalBest: Float,
     val percentageChange: Float,
-    val trendDirection: com.scribblefit.core.model.TrendDirection
+    val trendDirection: TrendDirection
+)
+
+/**
+ * Trend data for a specific metric.
+ */
+data class MetricTrendData(
+    val dataPoints: List<TrendDataPoint>,
+    val insights: TrendInsights
 )
 
 /**
  * Result model containing all data for the trends screen.
  */
 data class ExerciseTrendResult(
-    val dataPoints: List<TrendDataPoint>,
-    val insights: TrendInsights
+    val oneRM: MetricTrendData,
+    val volume: MetricTrendData
 )
 
 /**
@@ -58,69 +62,80 @@ class GetExerciseTrendDataUseCase(
     private val exerciseRepository: ExerciseRepository,
     private val coroutineDispatcher: CoroutineDispatcher
 ) {
-    suspend operator fun invoke(
+    operator fun invoke(
         exerciseName: String,
-        metric: TrendMetric,
         period: TrendPeriod
-    ): Result<ExerciseTrendResult> = withContext(coroutineDispatcher) {
-        runCatching {
-            val allHistory = exerciseRepository.getExercisesByName(exerciseName)
-                .sortedBy { it.createdAt }
+    ): Flow<Result<ExerciseTrendResult>> = exerciseRepository.getExercisesByNameFlow(exerciseName)
+        .map { allHistory ->
+            runCatchingWithCancellation {
+                val sortedHistory = allHistory.sortedBy { it.createdAt }
 
-            if (allHistory.isEmpty()) {
-                return@runCatching ExerciseTrendResult(
-                    emptyList(),
-                    TrendInsights(0f, 0f, com.scribblefit.core.model.TrendDirection.STABLE)
+                if (sortedHistory.isEmpty()) {
+                    val emptyData = MetricTrendData(
+                        emptyList(),
+                        TrendInsights(0f, 0f, TrendDirection.STABLE)
+                    )
+                    return@runCatchingWithCancellation ExerciseTrendResult(
+                        oneRM = emptyData,
+                        volume = emptyData
+                    )
+                }
+
+                val filteredHistory = filterByPeriod(sortedHistory, period)
+
+                val oneRMData = calculateMetricData(filteredHistory) { exercise ->
+                    exercise.sets.maxOfOrNull {
+                        Calculations.calculate1RM(it.weight ?: 0f, it.reps)
+                    } ?: 0f
+                }
+
+                val volumeData = calculateMetricData(filteredHistory) { exercise ->
+                    exercise.sets.sumOf {
+                        Calculations.calculateVolume(it.weight, it.reps).toDouble()
+                    }.toFloat()
+                }
+
+                ExerciseTrendResult(
+                    oneRM = oneRMData,
+                    volume = volumeData
                 )
             }
-
-            val filteredHistory = filterByPeriod(allHistory, period)
-            
-            val dataPoints = filteredHistory.map { exercise ->
-                val value = when (metric) {
-                    TrendMetric.ONE_RM -> {
-                        exercise.sets.maxOfOrNull { 
-                            Calculations.calculate1RM(it.weight ?: 0f, it.reps) 
-                        } ?: 0f
-                    }
-                    TrendMetric.VOLUME -> {
-                        exercise.sets.sumOf { 
-                            Calculations.calculateVolume(it.weight, it.reps).toDouble() 
-                        }.toFloat()
-                    }
-                    TrendMetric.MAX_WEIGHT -> {
-                        exercise.sets.maxOfOrNull { it.weight ?: 0f } ?: 0f
-                    }
-                }
-                TrendDataPoint(exercise.createdAt, value)
-            }
-
-            val personalBest = dataPoints.maxOfOrNull { it.value } ?: 0f
-            
-            // Calculate percentage change between start and end of period
-            val percentageChange = if (dataPoints.size >= 2) {
-                val first = dataPoints.first().value
-                val last = dataPoints.last().value
-                if (first > 0) ((last - first) / first) * 100f else 0f
-            } else 0f
-
-            val direction = when {
-                percentageChange > 5f -> com.scribblefit.core.model.TrendDirection.IMPROVING
-                percentageChange < -5f -> com.scribblefit.core.model.TrendDirection.DECLINING
-                else -> com.scribblefit.core.model.TrendDirection.STABLE
-            }
-
-            ExerciseTrendResult(
-                dataPoints = dataPoints,
-                insights = TrendInsights(personalBest, percentageChange, direction)
-            )
         }
+        .flowOn(coroutineDispatcher)
+
+    private fun calculateMetricData(
+        history: List<Exercise>,
+        valueExtractor: (Exercise) -> Float
+    ): MetricTrendData {
+        val dataPoints = history.map { exercise ->
+            TrendDataPoint(exercise.createdAt, valueExtractor(exercise))
+        }
+
+        val personalBest = dataPoints.maxOfOrNull { it.value } ?: 0f
+
+        // Calculate percentage change between start and end of period
+        val percentageChange = if (dataPoints.size >= 2) {
+            val first = dataPoints.first().value
+            val last = dataPoints.last().value
+            if (first > 0) ((last - first) / first) * 100f else 0f
+        } else 0f
+
+        val direction = when {
+            percentageChange > 5f -> TrendDirection.IMPROVING
+            percentageChange < -5f -> TrendDirection.DECLINING
+            else -> TrendDirection.STABLE
+        }
+
+        return MetricTrendData(
+            dataPoints = dataPoints,
+            insights = TrendInsights(personalBest, percentageChange, direction)
+        )
     }
 
     private fun filterByPeriod(
-        history: List<com.scribblefit.core.model.Exercise>, 
+        history: List<Exercise>,
         period: TrendPeriod
-    ): List<com.scribblefit.core.model.Exercise> {
+    ): List<Exercise> {
         if (period == TrendPeriod.ALL) return history
 
         val calendar = Calendar.getInstance()

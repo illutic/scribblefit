@@ -1,5 +1,6 @@
 package com.scribblefit.feature.exercises.domain.usecase
 
+import com.scribblefit.core.common.runCatchingWithCancellation
 import com.scribblefit.core.model.Exercise
 import com.scribblefit.core.model.ExerciseTrends
 import com.scribblefit.core.model.TrendDirection
@@ -14,7 +15,7 @@ class CalculateTrendsUseCase(
 ) {
     suspend operator fun invoke(exerciseId: Long): Result<ExerciseTrends> =
         withContext(coroutineDispatcher) {
-            runCatching {
+            runCatchingWithCancellation {
                 val exercise = exerciseRepository.getExerciseById(exerciseId)
                     ?: error("Exercise with ID $exerciseId not found")
 

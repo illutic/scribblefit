@@ -25,7 +25,13 @@ class CalculateTrendsUseCaseTest {
         name: String = "Bench Press",
         sets: List<Set> = emptyList(),
         createdAt: Long = id * 1000
-    ) = Exercise(id, name, "Chest", sets, createdAt)
+    ) = Exercise(
+        id = id,
+        canonicalName = name,
+        muscleGroup = "Chest",
+        sets = sets,
+        createdAt = createdAt
+    )
 
     private fun set(weight: Float, reps: Int) = Set(
         id = 0L,

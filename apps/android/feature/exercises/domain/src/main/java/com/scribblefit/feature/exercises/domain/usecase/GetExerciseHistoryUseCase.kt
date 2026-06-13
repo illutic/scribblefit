@@ -1,6 +1,7 @@
 package com.scribblefit.feature.exercises.domain.usecase
 
 import com.scribblefit.core.common.Calculations
+import com.scribblefit.core.common.runCatchingWithCancellation
 import com.scribblefit.core.config.domain.Weight
 import com.scribblefit.feature.exercises.domain.ExerciseRepository
 import com.scribblefit.core.model.ExerciseHistorySession
@@ -19,11 +20,11 @@ class GetExerciseHistoryUseCase(
         exerciseName: String,
         weightUnit: Weight
     ): Result<List<ExerciseHistorySession>> = withContext(coroutineDispatcher) {
-        runCatching {
+        runCatchingWithCancellation {
             val history = exerciseRepository.getExercisesByName(exerciseName)
                 .sortedByDescending { it.createdAt }
 
-            if (history.isEmpty()) return@runCatching emptyList()
+            if (history.isEmpty()) return@runCatchingWithCancellation emptyList()
 
             // Calculate max weight and volume across all time to identify PBs
             val allTimeMaxWeight = history.flatMap { it.sets }.maxOfOrNull { it.weight ?: 0f } ?: 0f

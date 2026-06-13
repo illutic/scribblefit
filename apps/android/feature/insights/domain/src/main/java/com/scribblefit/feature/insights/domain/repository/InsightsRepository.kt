@@ -14,5 +14,5 @@ interface InsightsRepository {
         endDate: Long
     ): Flow<List<MuscleGroupDistribution>>
 
-    suspend fun getAIOverview(startDate: Long, endDate: Long): List<AIInsight>
+    fun getAIOverview(startDate: Long, endDate: Long): Flow<List<AIInsight>>
 }
