@@ -65,7 +65,8 @@ public final class ExerciseRepositoryImpl: ExerciseRepository {
         descriptor.fetchLimit = 1
         
         if let scribble = try modelContext.fetch(descriptor).first {
-            let exerciseEntities = try modelContext.syncExercises(for: [exercise])
+            let exerciseWithDate = exercise.copy(createdAt: scribble.createdAt)
+            let exerciseEntities = try modelContext.syncExercises(for: [exerciseWithDate])
             if let newExercise = exerciseEntities.first {
                 scribble.exercises.append(newExercise)
             }

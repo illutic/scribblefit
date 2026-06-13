@@ -24,7 +24,8 @@ public struct CreateManualScribbleUseCase: Sendable {
             id: UUID(),
             canonicalName: exerciseName,
             muscleGroup: muscleGroup,
-            sets: sets
+            sets: sets,
+            createdAt: date
         )
         
         let scribble = Scribble(

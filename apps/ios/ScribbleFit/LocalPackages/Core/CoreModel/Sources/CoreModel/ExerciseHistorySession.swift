@@ -1,6 +1,6 @@
 import Foundation
 
-public struct ExerciseHistorySession: Identifiable, Codable, Sendable {
+public struct ExerciseHistorySession: Identifiable, Codable, Sendable, Equatable {
     public let id: UUID
     public let exercise: Exercise
     public let totalVolume: Float

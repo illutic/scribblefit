@@ -130,7 +130,8 @@ public final class ScribbleRepositoryImpl: ScribbleRepository {
             parsedJson: scribble.parsedJson
         )
         modelContext.insert(entity)
-        entity.exercises = try modelContext.syncExercises(for: scribble.exercises)
+        let exercisesWithDate = scribble.exercises.map { $0.copy(createdAt: scribble.createdAt) }
+        entity.exercises = try modelContext.syncExercises(for: exercisesWithDate)
         try modelContext.save()
         changeSubject.send()
     }
@@ -148,7 +149,8 @@ public final class ScribbleRepositoryImpl: ScribbleRepository {
             entity.parsedJson = scribble.parsedJson
             
             // Sync exercises
-            entity.exercises = try modelContext.syncExercises(for: scribble.exercises)
+            let exercisesWithDate = scribble.exercises.map { $0.copy(createdAt: scribble.createdAt) }
+            entity.exercises = try modelContext.syncExercises(for: exercisesWithDate)
             
             try modelContext.save()
             changeSubject.send()
@@ -198,7 +200,8 @@ public final class ScribbleRepositoryImpl: ScribbleRepository {
         scribbleEntity.status = ScribbleStatus.completed.rawValue
         
         // Sync and Link Exercises
-        scribbleEntity.exercises = try modelContext.syncExercises(for: scribble.exercises)
+        let exercisesWithDate = scribble.exercises.map { $0.copy(createdAt: scribble.createdAt) }
+        scribbleEntity.exercises = try modelContext.syncExercises(for: exercisesWithDate)
         
         try modelContext.save()
         changeSubject.send()
