@@ -105,7 +105,7 @@ private fun BottomBarPreview() {
     ScribbleFitTheme {
         BottomBar(
             items = emptyList(),
-            selectedTab = Screen.Canvas,
+            selectedTab = Screen.Canvas(),
             isVisible = true,
             onClick = {},
         )

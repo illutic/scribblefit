@@ -16,6 +16,7 @@ import com.scribblefit.core.navigation.Screen
 import com.scribblefit.feature.canvas.ui.CanvasRoute
 import com.scribblefit.feature.exercises.ui.ExerciseDetailsRoute
 import com.scribblefit.feature.exercises.ui.ExerciseTrendsRoute
+import com.scribblefit.feature.exercises.ui.history.ExerciseHistoryRoute
 import com.scribblefit.feature.insights.ui.InsightsRoute
 import com.scribblefit.feature.ledger.ui.LedgerRoute
 import com.scribblefit.feature.settings.ui.SettingsRoute
@@ -38,8 +39,8 @@ fun MainNavigation(
         }
     ) { screen ->
         when (screen) {
-            Screen.Canvas -> {
-                NavEntry(screen) { CanvasRoute() }
+            is Screen.Canvas -> {
+                NavEntry(screen) { CanvasRoute(dateEpochDays = screen.dateEpochDays) }
             }
 
             Screen.Insights -> {
@@ -67,6 +68,13 @@ fun MainNavigation(
                     ExerciseTrendsRoute()
                 }
             }
+
+            is Screen.ExerciseHistory -> {
+                NavEntry(screen) {
+                    ExerciseHistoryRoute(exerciseName = screen.exerciseName)
+                }
+            }
+
         }
     }
 }

@@ -4,9 +4,11 @@ sealed interface Screen {
     val route: String
     val isTop: Boolean
 
-    data object Canvas : Screen {
-        override val route: String = "canvas"
+    data class Canvas(
+        val dateEpochDays: Long? = null,
         override val isTop: Boolean = true
+    ) : Screen {
+        override val route: String = "canvas${dateEpochDays?.let { "?date=$it" } ?: ""}"
     }
 
     data object Insights : Screen {
@@ -33,4 +35,10 @@ sealed interface Screen {
         override val route: String = "exercise_trends/$exerciseName"
         override val isTop: Boolean = false
     }
+
+    data class ExerciseHistory(val exerciseName: String) : Screen {
+        override val route: String = "exercise_history/$exerciseName"
+        override val isTop: Boolean = false
+    }
+
 }
