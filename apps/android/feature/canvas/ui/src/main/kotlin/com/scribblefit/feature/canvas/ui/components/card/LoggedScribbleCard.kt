@@ -18,11 +18,9 @@ import com.scribblefit.feature.canvas.ui.ScribbleUiModel
 internal fun LoggedScribbleCard(
     state: CanvasState,
     scribble: ScribbleUiModel,
-    onClick: () -> Unit,
     onExerciseClick: (Long) -> Unit
 ) {
     ScribbleCardContainer(
-        onClick = onClick,
         alpha = 0.8f
     ) {
         Column(

@@ -27,7 +27,6 @@ internal fun ScribbleCard(
         ScribbleStatus.COMPLETED -> LoggedScribbleCard(
             state = state,
             scribble = scribble,
-            onClick = { onIntent(CanvasIntent.ClickOnScribble(scribble.scribble)) },
             onExerciseClick = { exerciseId ->
                 onIntent(CanvasIntent.NavigateToExerciseDetails(exerciseId))
             }
