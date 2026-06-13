@@ -6,7 +6,8 @@ import com.scribblefit.core.model.WeeklyStats
 import com.scribblefit.feature.exercises.domain.ExerciseRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
-import java.time.LocalDate
+import java.time.Instant
+import java.time.ZoneId
 
 data class CalculateWeeklyStatsUseCase(
     private val exerciseRepository: ExerciseRepository,
@@ -18,12 +19,15 @@ data class CalculateWeeklyStatsUseCase(
                 val exercise = exerciseRepository.getExerciseById(exerciseId)
                     ?: throw IllegalArgumentException("Exercise with ID $exerciseId not found")
 
-                val currentDate = CurrentDate(LocalDate.now())
-                val startDate = CurrentDate(LocalDate.now().minusDays(7))
+                val exerciseDate = Instant.ofEpochMilli(exercise.createdAt)
+                    .atZone(ZoneId.systemDefault())
+                    .toLocalDate()
+                val startDate = CurrentDate(exerciseDate.minusDays(7))
+                val endDateInMillis = CurrentDate(exerciseDate.plusDays(1)).startOfDayInMillis - 1
 
                 val exercises = exerciseRepository.getExercisesInRange(
                     startDate = startDate.startOfDayInMillis,
-                    endDate = currentDate.startOfDayInMillis
+                    endDate = endDateInMillis
                 ).filter { it.canonicalName == exercise.canonicalName }
 
                 if (exercises.isEmpty()) {

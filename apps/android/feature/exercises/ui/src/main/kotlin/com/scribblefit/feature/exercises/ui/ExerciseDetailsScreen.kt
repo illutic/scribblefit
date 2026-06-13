@@ -62,13 +62,11 @@ private fun ExerciseDetailsContent(
                     .widthIn(max = 600.dp),
                 verticalArrangement = Arrangement.spacedBy(ScribbleFitTheme.spacing.extraLarge)
             ) {
-                if (state.isGeneratingAI || state.aiInsight != null) {
-                    ExerciseInsightCard(
-                        insight = state.aiInsight,
-                        isGenerating = state.isGeneratingAI,
-                        recommendationLabel = state.recommendationLabel
-                    )
-                }
+                ExerciseInsightCard(
+                    insight = state.aiInsight,
+                    isGenerating = state.isGeneratingAI,
+                    recommendationLabel = state.recommendationLabel
+                )
 
                 state.weeklyStats?.let { stats ->
                     WeeklyStatsCard(
