@@ -11,6 +11,7 @@ public struct ExerciseDetailsState: Sendable {
     public var weightUnit: WeightUnit = .lbs
     public var showTrends: Bool = false
     public var showHistory: Bool = false
+    public var shouldDismiss: Bool = false
     
     public init(exerciseName: String) {
         self.exerciseName = exerciseName

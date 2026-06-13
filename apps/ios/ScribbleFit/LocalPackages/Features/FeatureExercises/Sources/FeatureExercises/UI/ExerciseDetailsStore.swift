@@ -10,6 +10,7 @@ public final class ExerciseDetailsStore {
     
     private let getExerciseDetailsUseCase: GetExerciseDetailsUseCase
     private let getExerciseAIInsightUseCase: GetExerciseAIInsightUseCase
+    private let removeExerciseUseCase: RemoveExerciseUseCase
     private let configRepository: ConfigRepository
     
     private var cancellables = Set<AnyCancellable>()
@@ -19,11 +20,13 @@ public final class ExerciseDetailsStore {
         exerciseName: String,
         getExerciseDetailsUseCase: GetExerciseDetailsUseCase,
         getExerciseAIInsightUseCase: GetExerciseAIInsightUseCase,
+        removeExerciseUseCase: RemoveExerciseUseCase,
         configRepository: ConfigRepository
     ) {
         self.state = ExerciseDetailsState(exerciseName: exerciseName)
         self.getExerciseDetailsUseCase = getExerciseDetailsUseCase
         self.getExerciseAIInsightUseCase = getExerciseAIInsightUseCase
+        self.removeExerciseUseCase = removeExerciseUseCase
         self.configRepository = configRepository
         
         setupWeightUnitObservation()
@@ -42,6 +45,19 @@ public final class ExerciseDetailsStore {
             state.showHistory = true
         case .dismissHistory:
             state.showHistory = false
+        case .removeExercise:
+            removeMostRecentExercise()
+        }
+    }
+    
+    private func removeMostRecentExercise() {
+        guard let id = state.details?.history.first?.exercise.id else { return }
+        Task {
+            do {
+                try await removeExerciseUseCase.execute(id: id)
+            } catch {
+                state.error = error.localizedDescription
+            }
         }
     }
     
@@ -52,6 +68,11 @@ public final class ExerciseDetailsStore {
             for await details in stream {
                 if Task.isCancelled { break }
                 self.state.details = details
+                
+                if details.history.isEmpty {
+                    self.state.shouldDismiss = true
+                    break
+                }
                 
                 // Auto-trigger AI if not present
                 if !details.history.isEmpty && state.aiInsight == nil {
@@ -92,4 +113,5 @@ public enum ExerciseDetailsIntent {
     case dismissTrends
     case viewAllHistoryTapped
     case dismissHistory
+    case removeExercise
 }

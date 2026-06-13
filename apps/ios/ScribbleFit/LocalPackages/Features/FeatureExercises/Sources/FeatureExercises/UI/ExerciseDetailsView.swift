@@ -97,6 +97,13 @@ public struct ExerciseDetailsView: View {
             #endif
             #if os(iOS)
             .toolbar {
+                ToolbarItem(placement: .topBarLeading) {
+                    Button(action: { store.onIntent(.removeExercise) }) {
+                        Image(systemName: "trash")
+                            .font(.system(size: 16))
+                            .foregroundStyle(Color.red)
+                    }
+                }
                 ToolbarItem(placement: .topBarTrailing) {
                     Button(action: onDismiss) {
                         Image(systemName: "xmark")
@@ -106,6 +113,11 @@ public struct ExerciseDetailsView: View {
                 }
             }
             #endif
+        }
+        .onChange(of: store.state.shouldDismiss) { _, shouldDismiss in
+            if shouldDismiss {
+                onDismiss()
+            }
         }
     }
 }

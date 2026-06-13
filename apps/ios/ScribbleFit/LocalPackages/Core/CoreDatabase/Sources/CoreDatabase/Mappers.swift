@@ -6,6 +6,7 @@ public extension ExerciseEntity {
     func toDomain() -> Exercise {
         Exercise(
             id: id,
+            scribbleId: scribble?.id,
             canonicalName: name,
             muscleGroup: muscleGroup,
             sets: sets.map { $0.toDomain() }.sorted(by: { $0.setNumber < $1.setNumber }),

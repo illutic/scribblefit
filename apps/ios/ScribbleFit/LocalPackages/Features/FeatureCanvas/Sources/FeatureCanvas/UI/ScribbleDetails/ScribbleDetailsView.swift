@@ -12,6 +12,8 @@ public struct ScribbleDetailsView: View {
     private let getExerciseTrendsUseCase: GetExerciseTrendDataUseCase
     private let getExerciseHistoryUseCase: GetExerciseHistoryUseCase
     private let configRepository: ConfigRepository
+    private let exerciseRepository: ExerciseRepository
+    private let scribbleRepository: ScribbleRepository
 
     public init(
         store: ScribbleDetailsStore,
@@ -19,7 +21,9 @@ public struct ScribbleDetailsView: View {
         getExerciseAIInsightUseCase: GetExerciseAIInsightUseCase,
         getExerciseTrendsUseCase: GetExerciseTrendDataUseCase,
         getExerciseHistoryUseCase: GetExerciseHistoryUseCase,
-        configRepository: ConfigRepository
+        configRepository: ConfigRepository,
+        exerciseRepository: ExerciseRepository,
+        scribbleRepository: ScribbleRepository
     ) {
         _store = State(initialValue: store)
         self.getExerciseDetailsUseCase = getExerciseDetailsUseCase
@@ -27,6 +31,8 @@ public struct ScribbleDetailsView: View {
         self.getExerciseTrendsUseCase = getExerciseTrendsUseCase
         self.getExerciseHistoryUseCase = getExerciseHistoryUseCase
         self.configRepository = configRepository
+        self.exerciseRepository = exerciseRepository
+        self.scribbleRepository = scribbleRepository
     }
 
     public var body: some View {
@@ -79,6 +85,7 @@ public struct ScribbleDetailsView: View {
                     exerciseName: item.name,
                     getExerciseDetailsUseCase: getExerciseDetailsUseCase,
                     getExerciseAIInsightUseCase: getExerciseAIInsightUseCase,
+                    removeExerciseUseCase: RemoveExerciseUseCase(exerciseRepository: exerciseRepository, scribbleRepository: scribbleRepository),
                     configRepository: configRepository
                 ),
                 onDismiss: { store.onIntent(.dismissExerciseDetails) },
@@ -86,6 +93,11 @@ public struct ScribbleDetailsView: View {
                 getExerciseHistoryUseCase: getExerciseHistoryUseCase,
                 configRepository: configRepository
             )
+        }
+        .onChange(of: store.state.scribble) { _, scribble in
+            if scribble == nil && !store.state.isLoading {
+                dismiss()
+            }
         }
     }
 

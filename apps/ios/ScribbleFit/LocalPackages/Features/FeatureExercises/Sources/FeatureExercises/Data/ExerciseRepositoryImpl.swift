@@ -9,10 +9,18 @@ public final class ExerciseRepositoryImpl: ExerciseRepository {
     private let modelContainer: ModelContainer
     private let modelContext: ModelContext
     private let changeSubject = PassthroughSubject<Void, Never>()
+    private var observers: Set<AnyCancellable> = []
 
     public init(modelContainer: ModelContainer) {
         self.modelContainer = modelContainer
         self.modelContext = modelContainer.mainContext
+        
+        NotificationCenter.default.publisher(for: ModelContext.didSave)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                self?.changeSubject.send()
+            }
+            .store(in: &observers)
     }
 
     public func getExercises(query: String) async throws -> [Exercise] {
@@ -96,8 +104,12 @@ public final class ExerciseRepositoryImpl: ExerciseRepository {
 
     public func deleteExercise(id: UUID) async throws {
         let predicate = #Predicate<ExerciseEntity> { $0.id == id }
-        try modelContext.delete(model: ExerciseEntity.self, where: predicate)
-        try modelContext.save()
-        changeSubject.send()
+        var descriptor = FetchDescriptor<ExerciseEntity>(predicate: predicate)
+        descriptor.fetchLimit = 1
+        if let entity = try modelContext.fetch(descriptor).first {
+            modelContext.delete(entity)
+            try modelContext.save()
+            changeSubject.send()
+        }
     }
 }

@@ -256,6 +256,7 @@ public struct CanvasView: View {
                 exerciseName: name,
                 getExerciseDetailsUseCase: getExerciseDetailsUseCase,
                 getExerciseAIInsightUseCase: getExerciseAIInsightUseCase,
+                removeExerciseUseCase: RemoveExerciseUseCase(exerciseRepository: exerciseRepository, scribbleRepository: scribbleRepository),
                 configRepository: configRepository
             ),
             onDismiss: onDismiss,
@@ -278,7 +279,9 @@ public struct CanvasView: View {
             getExerciseAIInsightUseCase: getExerciseAIInsightUseCase,
             getExerciseTrendsUseCase: getExerciseTrendsUseCase,
             getExerciseHistoryUseCase: getExerciseHistoryUseCase,
-            configRepository: configRepository
+            configRepository: configRepository,
+            exerciseRepository: exerciseRepository,
+            scribbleRepository: scribbleRepository
         )
     }
 }

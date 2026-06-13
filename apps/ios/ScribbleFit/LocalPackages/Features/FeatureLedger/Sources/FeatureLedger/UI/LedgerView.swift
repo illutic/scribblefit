@@ -92,7 +92,9 @@ public struct LedgerView: View {
                     getExerciseAIInsightUseCase: getExerciseAIInsightUseCase,
                     getExerciseTrendsUseCase: getExerciseTrendsUseCase,
                     getExerciseHistoryUseCase: getExerciseHistoryUseCase,
-                    configRepository: configRepository
+                    configRepository: configRepository,
+                    exerciseRepository: exerciseRepository,
+                    scribbleRepository: scribbleRepository
                 )
             case .exerciseDetails(let name):
                 ExerciseDetailsView(
@@ -100,6 +102,7 @@ public struct LedgerView: View {
                         exerciseName: name,
                         getExerciseDetailsUseCase: getExerciseDetailsUseCase,
                         getExerciseAIInsightUseCase: getExerciseAIInsightUseCase,
+                        removeExerciseUseCase: RemoveExerciseUseCase(exerciseRepository: exerciseRepository, scribbleRepository: scribbleRepository),
                         configRepository: configRepository
                     ),
                     onDismiss: { store.handleIntent(.dismissDetails) },

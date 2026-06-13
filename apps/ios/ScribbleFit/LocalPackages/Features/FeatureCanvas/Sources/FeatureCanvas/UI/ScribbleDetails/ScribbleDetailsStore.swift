@@ -54,6 +54,11 @@ public final class ScribbleDetailsStore {
             state = state.copy(selectedExerciseName: name)
         case .dismissExerciseDetails:
             state = state.copy(selectedExerciseName: .some(nil))
+            if let id = scribbleId ?? state.scribble?.id {
+                Task {
+                    await loadScribble(id)
+                }
+            }
         }
     }
 
@@ -63,7 +68,7 @@ public final class ScribbleDetailsStore {
             if let scribble = try await scribbleRepository.getScribble(id: id) {
                 state = state.copy(scribble: scribble, isLoading: false)
             } else {
-                state = state.copy(isLoading: false, error: "Scribble not found")
+                state = state.copy(scribble: .some(nil), isLoading: false)
             }
         } catch {
             state = state.copy(isLoading: false, error: error.localizedDescription)
