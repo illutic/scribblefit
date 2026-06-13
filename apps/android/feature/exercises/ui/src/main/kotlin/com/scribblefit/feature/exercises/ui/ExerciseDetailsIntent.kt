@@ -6,4 +6,5 @@ sealed class ExerciseDetailsIntent {
     object NavigateBack : ExerciseDetailsIntent()
     object NavigateToTrends : ExerciseDetailsIntent()
     object NavigateToHistory : ExerciseDetailsIntent()
+    object RemoveExercise : ExerciseDetailsIntent()
 }

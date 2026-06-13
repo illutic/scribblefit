@@ -37,7 +37,7 @@ fun BottomBar(
 ) {
     val colors =
         FloatingToolbarDefaults.vibrantFloatingToolbarColors(
-            toolbarContainerColor = ScribbleFitTheme.colors.surfaceContainerLow,
+            toolbarContainerColor = ScribbleFitTheme.colors.surfaceContainerLow.copy(alpha = 0.9f),
             toolbarContentColor = ScribbleFitTheme.colors.primary,
         )
 

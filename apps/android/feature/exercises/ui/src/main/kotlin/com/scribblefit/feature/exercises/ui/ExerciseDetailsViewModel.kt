@@ -9,6 +9,7 @@ import com.scribblefit.feature.exercises.domain.usecase.CalculateTrendsUseCase
 import com.scribblefit.feature.exercises.domain.usecase.CalculateWeeklyStatsUseCase
 import com.scribblefit.feature.exercises.domain.usecase.GetExerciseAIInsightUseCase
 import com.scribblefit.feature.exercises.domain.usecase.GetExerciseByIdUseCase
+import com.scribblefit.feature.exercises.domain.usecase.RemoveExerciseUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -23,6 +24,7 @@ class ExerciseDetailsViewModel @Inject constructor(
     private val calculateTrendsUseCase: CalculateTrendsUseCase,
     private val getExerciseAIInsightUseCase: GetExerciseAIInsightUseCase,
     private val getExerciseByIdUseCase: GetExerciseByIdUseCase,
+    private val removeExerciseUseCase: RemoveExerciseUseCase,
     private val configRepository: ConfigRepository,
     private val navigator: Navigator,
 ) : ViewModel() {
@@ -49,10 +51,14 @@ class ExerciseDetailsViewModel @Inject constructor(
             ExerciseDetailsIntent.NavigateToHistory -> {
                 navigator.navigateTo(Screen.ExerciseHistory(state.value.exerciseName))
             }
+            ExerciseDetailsIntent.RemoveExercise -> removeExercise()
         }
     }
 
+    private var currentExerciseId: Long? = null
+
     private fun loadExercise(id: Long) {
+        currentExerciseId = id
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
             getExerciseByIdUseCase(id)
@@ -93,6 +99,15 @@ class ExerciseDetailsViewModel @Inject constructor(
                     }
                 }
             )
+        }
+    }
+
+    private fun removeExercise() {
+        val exerciseId = currentExerciseId ?: return
+        viewModelScope.launch {
+            removeExerciseUseCase(exerciseId).onSuccess {
+                navigator.goBack()
+            }
         }
     }
 }

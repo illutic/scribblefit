@@ -45,7 +45,8 @@ private fun ExerciseDetailsContent(
         topBar = {
             ExerciseDetailsHeader(
                 exerciseName = state.exerciseName,
-                onBackClick = { onIntent(ExerciseDetailsIntent.NavigateBack) }
+                onBackClick = { onIntent(ExerciseDetailsIntent.NavigateBack) },
+                onDeleteClick = { onIntent(ExerciseDetailsIntent.RemoveExercise) }
             )
         },
         containerColor = ScribbleFitTheme.colors.surface

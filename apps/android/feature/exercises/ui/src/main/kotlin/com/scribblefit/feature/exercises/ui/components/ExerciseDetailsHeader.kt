@@ -4,6 +4,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.Close
+import androidx.compose.material.icons.rounded.Delete
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
@@ -18,6 +19,7 @@ import com.scribblefit.core.designsystem.TopBar
 fun ExerciseDetailsHeader(
     exerciseName: String,
     onBackClick: () -> Unit,
+    onDeleteClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     TopBar(
@@ -35,6 +37,16 @@ fun ExerciseDetailsHeader(
                     imageVector = Icons.Rounded.Close,
                     contentDescription = null,
                     tint = ScribbleFitTheme.colors.primary,
+                    modifier = Modifier.size(24.dp)
+                )
+            }
+        },
+        actions = {
+            IconButton(onClick = onDeleteClick) {
+                Icon(
+                    imageVector = Icons.Rounded.Delete,
+                    contentDescription = "Delete exercise",
+                    tint = ScribbleFitTheme.colors.dangerRed,
                     modifier = Modifier.size(24.dp)
                 )
             }
