@@ -57,9 +57,7 @@ internal class ExerciseRepositoryImpl(
 
     override suspend fun getExercisesForScribble(scribbleId: Long): List<Exercise> =
         withContext(coroutineDispatcher) {
-            val exerciseEntities =
-                exerciseDao.getExercisesByScribbleId(scribbleId).firstOrNull()
-                    ?: return@withContext emptyList()
+            val exerciseEntities = exerciseDao.getExercisesByScribbleIdSync(scribbleId)
             return@withContext exerciseEntities.map { it.toDomain() }
         }
 

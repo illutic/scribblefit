@@ -17,6 +17,7 @@ import com.scribblefit.feature.exercises.domain.usecase.GetExercisesInRangeUseCa
 import com.scribblefit.feature.exercises.domain.usecase.MarkExerciseAsCompleteUseCase
 import com.scribblefit.feature.exercises.domain.usecase.RemoveExerciseUseCase
 import com.scribblefit.feature.exercises.domain.usecase.UpdateExerciseUseCase
+import com.scribblefit.feature.scribble.domain.ScribbleRepository
 import com.scribblefit.feature.sets.domain.SetRepository
 import dagger.Module
 import dagger.Provides
@@ -41,9 +42,11 @@ internal object ExerciseModule {
     @Provides
     fun provideRemoveExerciseUseCase(
         repository: ExerciseRepository,
+        scribbleRepository: ScribbleRepository,
         coroutineDispatcherProvider: CoroutineDispatcherProvider
     ): RemoveExerciseUseCase = RemoveExerciseUseCase(
         repository = repository,
+        scribbleRepository = scribbleRepository,
         coroutineDispatcher = coroutineDispatcherProvider.default()
     )
 
