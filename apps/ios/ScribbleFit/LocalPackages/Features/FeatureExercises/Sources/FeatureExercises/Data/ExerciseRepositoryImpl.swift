@@ -24,6 +24,28 @@ public final class ExerciseRepositoryImpl: ExerciseRepository {
         return entities.map { $0.toDomain() }
     }
 
+    public func observeExercises(query: String) -> AsyncStream<[Exercise]> {
+        AsyncStream { continuation in
+            let cancellable = changeSubject
+                .prepend(())
+                .sink { [weak self] _ in
+                    guard let self = self else { return }
+                    Task { @MainActor in
+                        do {
+                            let exercises = try await self.getExercises(query: query)
+                            continuation.yield(exercises)
+                        } catch {
+                            continuation.yield([])
+                        }
+                    }
+                }
+            
+            continuation.onTermination = { _ in
+                cancellable.cancel()
+            }
+        }
+    }
+
     public func getExercise(id: UUID) async throws -> Exercise? {
         let predicate = #Predicate<ExerciseEntity> { $0.id == id }
         var descriptor = FetchDescriptor<ExerciseEntity>(predicate: predicate)
