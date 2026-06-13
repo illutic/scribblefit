@@ -125,3 +125,12 @@
 - **Task-Based Merging:** Use `AsyncStream` or `CurrentValueSubject` to merge local persistence (e.g., `UserDefaults`, `SwiftData`) with remote configuration (e.g., Firebase Remote Config) in the `ConfigRepository`. Perform the remote fetch asynchronously and update the subject/stream to notify the UI.
 - **Ephemeral Storage Rule:** Do NOT persist remote configurations (like AI prompts or feature flags) in the local database or `UserDefaults` if they are managed by an external cloud provider. Remote properties should be stored as `@Transient` or simply non-persistent properties in the Domain Model (e.g., `SystemConfig.remoteConfig`).
 - **Architecture Consolidation:** Avoid fragmented configuration logic. If multiple sources (Local, Firebase, Defaults) contribute to a single domain entity, consolidate the logic into a single modular implementation in `FeatureConfig` (or equivalent) to maintain a strict source of truth.
+
+### Entity Lifecycle & Deletion Logic
+- **Safe Deletion Pattern:** When deleting entities that possess `@Relationship(inverse:)` properties, MUST NOT use the batch predicate `modelContext.delete(model:where:)` as it bypasses lifecycle hooks and causes SQLite constraint violations. Instead, explicitly fetch the target entity and delete it via `modelContext.delete(entity)` to ensure proper cascading cleanup.
+
+### Cross-Repository Reactivity
+- **Cross-Repository Reactivity:** Repositories MUST NOT use manual refresh triggers (e.g., `triggerRefresh()`) or shared `PassthroughSubject` instances to sync state across domains. Instead, repositories SHOULD subscribe to `NotificationCenter.default.publisher(for: ModelContext.didSave)` to naturally react to database changes across the app, keeping `AsyncStream` data flows pure and decoupled.
+
+### Pure State Enforcement
+- **Data-Driven Routing (No Command Anti-Patterns):** `State` structs/classes MUST NOT contain transient UI routing commands (e.g., `shouldDismiss: Boolean`). Navigation and dismissal MUST be derived from the natural absence or presence of data (e.g., dismissing a detail view automatically when the observed `scribble == nil`), keeping the state purely representative of the domain.

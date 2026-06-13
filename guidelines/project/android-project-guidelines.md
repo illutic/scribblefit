@@ -142,3 +142,6 @@
 - **Reactive Merging:** Use `Flow.combine` (Android) to merge local persistence (e.g., Room) with remote configuration (e.g., Firebase Remote Config) in the `ConfigRepository`. This keeps the domain model updated in real-time without business logic cluttering the data source.
 - **Ephemeral Storage Rule:** Do NOT persist remote configurations (like AI prompts or feature flags) in the local database if they are managed by an external cloud provider. Remote properties should be stored in memory within the Domain Model (e.g., `SystemConfig.remoteConfig`) and updated via the repository's reactive flow.
 - **Architecture Consolidation:** Avoid fragmented configuration logic. If multiple sources (Local DB, Firebase, Defaults) contribute to a single domain entity, consolidate the logic into a single `ConfigRepository` implementation to maintain a strict source of truth for the UI.
+
+### Pure State Enforcement
+- **Data-Driven Routing (No Command Anti-Patterns):** `State` structs/classes MUST NOT contain transient UI routing commands (e.g., `shouldDismiss: Boolean`). Navigation and dismissal MUST be derived from the natural absence or presence of data (e.g., dismissing a detail view automatically when the observed `scribble == null`), keeping the state purely representative of the domain.
