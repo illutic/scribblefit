@@ -57,8 +57,8 @@ fun AddExerciseBottomSheet(
     var sets by remember {
         mutableStateOf(
             listOf(
-                Set(id = 1, setNumber = 1, weight = 0f, reps = 0),
-                Set(id = 2, setNumber = 2, weight = 0f, reps = 0)
+                Set(id = 0, setNumber = 1, weight = 0f, reps = 0),
+                Set(id = 0, setNumber = 2, weight = 0f, reps = 0)
             )
         )
     }
@@ -206,7 +206,7 @@ fun AddExerciseBottomSheet(
                             modifier = Modifier
                                 .clickable {
                                     sets = sets + Set(
-                                        id = (sets.maxOfOrNull { it.id } ?: 0L) + 1,
+                                        id = 0,
                                         setNumber = sets.size + 1,
                                         weight = 0f,
                                         reps = 0

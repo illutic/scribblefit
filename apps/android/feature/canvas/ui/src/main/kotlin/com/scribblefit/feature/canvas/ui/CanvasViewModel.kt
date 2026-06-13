@@ -11,6 +11,7 @@ import com.scribblefit.core.navigation.Navigator
 import com.scribblefit.core.navigation.Screen
 import com.scribblefit.feature.canvas.domain.ParsePendingScribblesUseCase
 import com.scribblefit.feature.canvas.domain.RemoveExerciseFromScribbleUseCase
+import com.scribblefit.feature.exercises.domain.usecase.AddExerciseUseCase
 import com.scribblefit.feature.exercises.domain.usecase.CalculateTrendsUseCase
 import com.scribblefit.feature.exercises.domain.usecase.FormatExerciseSummaryUseCase
 import com.scribblefit.feature.exercises.domain.usecase.UpdateExerciseUseCase
@@ -46,6 +47,7 @@ class CanvasViewModel @Inject constructor(
     private val addScribbleUseCase: AddScribbleUseCase,
     private val confirmScribbleUseCase: ConfirmScribbleUseCase,
     private val deleteScribbleUseCase: RemoveScribbleUseCase,
+    private val addExerciseUseCase: AddExerciseUseCase,
     private val updateExerciseUseCase: UpdateExerciseUseCase,
     private val removeExerciseFromScribbleUseCase: RemoveExerciseFromScribbleUseCase,
     private val removeSetUseCase: RemoveSetUseCase,
@@ -433,7 +435,8 @@ class CanvasViewModel @Inject constructor(
     ) {
         viewModelScope.launch {
             val date = CurrentDate(_state.value.currentDate)
-            createManualScribbleUseCase(name, muscleGroup, sets, date).onSuccess {
+            createManualScribbleUseCase(name, muscleGroup, sets, date).onSuccess { scribbleId ->
+                addExerciseUseCase(date, scribbleId, name, muscleGroup, sets)
                 _state.update { it.copy(isAddExerciseSheetVisible = false) }
             }
         }
