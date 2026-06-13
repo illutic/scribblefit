@@ -149,3 +149,8 @@ Entity -> Mapper -> Repository -> AppState -> AppViewModel -> MainActivity -> Se
 - `critical-reviewer` -- Harsh senior architect who assumes everything is wrong and hunts for flaws
 - `retrospection-agent` -- Architect focused on formalizing patterns and refining guidelines after implementation
 - `qa-agent` -- Meticulous QA engineer who verifies implementations against acceptance criteria in specs
+
+<!-- SPECKIT START -->
+For additional context about technologies to be used, project structure,
+shell commands, and other important information, read the current plan
+<!-- SPECKIT END -->

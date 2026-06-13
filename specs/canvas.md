@@ -1,108 +1,113 @@
 # Feature Specification: Canvas
 
-## 1. Overview
-The Canvas is the home screen of ScribbleFit, designed for rapid, low-friction entry of training data. It allows users to "scribble" their sessions in plain text (e.g., "Bench press 100kg 3x10"). These scribbles are then processed by an LLM to extract structured exercise data.
+**Feature Branch**: `canvas-feature`
 
-The feature follows an offline-first approach, where scribbles are saved locally before being processed. It integrates with the `:feature:ai` module for session parsing and insights generation.
+**Created**: 2026-06-13
 
-## 2. User Stories
-- **As a fitness enthusiast**, I want to quickly type my training data in plain text **so that** I don't spend time navigating complex menus during my session.
-- **As a user**, I want to see the parsing status of my scribbles **so that** I know when they have been successfully processed.
-- **As a user**, I want to navigate to previous days **so that** I can review my past training logs.
-- **As a user**, I want to receive AI-generated insights about my training patterns directly on the Canvas **so that** I can stay motivated and informed.
+**Status**: Draft
 
-## 3. Acceptance Criteria
+**Input**: User description: "Convert legacy canvas specification into the new spec-kit format."
 
-### 3.1 Core Functionality
-- [ ] **Offline-First Scribbles:** Users can submit raw text scribbles even when offline. Scribbles are stored in the local database immediately.
-- [x] **Scribble Lifecycle:** Scribbles must transition through the following statuses: `PENDING` (stored locally), `PARSING` (sent to LLM), `SUCCESS` (parsed), `FAILED` (parsing error), and `COMPLETED` (confirmed by user and officially logged).
-- [x] **Date Persistence:** Scribbles are associated with a specific date. The UI must only show scribbles for the currently selected date.
-- [x] **Real-time Updates:** The list of scribbles must update reactively as statuses change.
+## User Scenarios & Testing *(mandatory)*
 
-### 3.2 UI Components (Contextual Splitting)
-The UI must strictly adhere to the "The Input Canvas (Home)" design project.
+### User Story 1 - Rapid Plain Text Data Entry (Priority: P1)
 
-**Design Tokens (Project Global):**
-- **Font:** Inter
-- **Roundness:** 12dp (Round Twelve)
-- **Primary Color:** #2b8cee
-- **Saturation:** 3
+As a fitness enthusiast, I want to quickly type my training data in plain text so that I don't spend time navigating complex menus during my session.
 
-#### **Header**
-- [ ] Displays the app title "ScribbleFit".
-- [ ] **Date Navigation:**
-    - [ ] Displays the selected date (Format: "Monday, March 16").
-    - [ ] Previous/Next chevron buttons to navigate between days.
-    - [ ] Prevent navigation to future dates.
-    - [ ] Limit backward navigation to 30 days.
-    - [ ] Tapping the date opens a native Date Picker for quick selection.
-- [ ] **Settings Button:** A trailing icon button that navigates to the Settings screen.
-- [ ] **Profile Button:** An icon button next to Settings.
+**Why this priority**: The fundamental value proposition of ScribbleFit is low-friction entry of workout data without menu-diving.
 
-#### **Body**
-The body must handle four distinct states as defined in the design:
+**Independent Test**: Can be fully tested by opening the app without network access, typing a text scribble, and verifying it is saved and shown in the UI immediately as pending.
 
-1.  **Default Empty (`Canvas Screen - Default Empty`):**
-    - [ ] Displays "What did you lift today?" message.
-    - [ ] Centered graphic or illustration.
-2.  **Pending (`Canvas Screen - Pending`):**
-    - [x] Shows raw text scribbles with a "PENDING" badge.
-    - [x] Status indicator: Simple text label or subtle pulse effect.
-3.  **Parsed (`Canvas Screen - Parsed/Completed`):**
-    - [x] Shows structured exercise data (Exercise Name, Sets x Reps @ Weight). Verified fallback for empty exercises in `ScribbleCard.swift`.
-    - [x] Border color matches status (e.g., light gray for parsed).
-4.  **Completed (`Canvas Screen - Parsed/Completed`):**
-    - [x] Shows "COMPLETED" badge in success green.
-    - [x] Non-interactive once confirmed. Verified fallback for empty exercises in `ScribbleCard.swift`.
-    - [x] **Exercise-Level Navigation (2026-04-21):** Individual exercises within logged scribble cards are tappable and navigate to the Exercise Details screen. Tapping the card itself (non-exercise area) navigates to the **Scribble Details** screen.
+**Acceptance Scenarios**:
 
-- [ ] **AI Insights Section:**
-    - [ ] Displays motivational summaries or patterns at the top of the body.
-    - [ ] Integrated with `GetAIOverviewUseCase`.
+1. **Given** the Canvas screen is open, **When** the user enters a plain text scribble, **Then** the scribble is stored locally as PENDING immediately, even if offline.
+2. **Given** a parsed scribble, **When** the user taps the confirm button, **Then** the scribble status transitions to COMPLETED.
 
-- [x] **Scribble Confirmation Sheet (`Canvas Screen - Confirm/Edit/Delete parsed exercise`):**
-    - [x] Triggered by tapping a parsed scribble.
-    - [x] **Confirm Button:** Primary action, styled with the project's primary color. Marks the scribble as `COMPLETED`.
-    - [x] **Edit Button:** Secondary action, allows manual adjustment of exercise names and sets. Name editing fixed (2026-04-27).
-    - [x] **Delete Button:** Destructive action, styled in red. Deletes exercise or entire scribble. Automatic scribble deletion if last exercise removed implemented (2026-04-27).
+---
 
-#### **Footer**
-- [ ] **Scribble Input**
-- [ ] **Floating Navigation Bar**
-- 
-### 3.3 Unit & Preference Support
-- [ ] **Weight Unit:** Displays weight in `kg` or `lbs` based on the user's preference stored in `ConfigRepository`.
+### User Story 2 - Scribble Status Tracking (Priority: P2)
 
-## 4. Development Guidelines (Android)
-- **Architecture:** MVI (State, Intent, ViewModel).
-- **Package Structure:** `:feature:canvas` with sub-modules `:data`, `:domain`, `:ui`.
-- **State Management:**
-    - Use a single `CanvasState` data class for the entire screen.
-    - Handle string resolution in the `State` layer using `@Composable @ReadOnlyComposable` extensions if needed.
-- **Use Cases:**
-    - `GetScribblesForDateUseCase`: Returns a `Flow<List<Scribble>>`.
-    - `AddScribbleUseCase`: Persists a new raw text scribble.
-    - `ConfirmScribbleUseCase`: Updates the scribble status to `COMPLETED`.
-    - `GetAIOverviewUseCase`: Fetches insights from `:feature:ai:domain`.
-- **AI Integration:** Use `LLMEngine.parseScribble(rawText)` from `:feature:ai:data` for processing.
-- **Database:** Room entities for `Scribble` with a `status` field.
+As a user, I want to see the parsing status of my scribbles so that I know when they have been successfully processed.
 
-## 4. Development Guidelines (iOS)
-- **Architecture:** MVI (State, Intent, @Observable Store).
-- **Package Structure:** SPM target `CanvasFeature` with `Data`, `Domain`, `UI`.
-- **UI:** 100% SwiftUI. Use `.glassEffect()` for the footer input and bottom navigation bar.
-- **Database:** `SwiftData` for `Scribble` entity persistence.
-- **Theming:** Use `ScribbleFitTheme` Color extensions. Ensure parity with Android (Light/Dark mode).
-- **Concurrency:** Use `AsyncSequence` for reactive database updates.
+**Why this priority**: Users need visual feedback on whether the system's AI successfully understood and structured their raw input.
 
-## 5. Validation
-- **Unit Tests:**
-    - `CanvasViewModel` (Android) / `CanvasStore` (iOS) state transitions.
-    - `AddScribbleUseCase` business logic (e.g., preventing future dates).
-- **Integration Tests:**
-    - Database insertion and retrieval of `Scribble` entities.
-    - Mapping between `Scribble` (Data) and `Scribble` (Domain Model).
-- **UI Tests:**
-    - Verify "Send" button enablement logic.
-    - Verify date navigation updates the scribble list.
-    - Verify the bottom sheet appears when tapping a successful scribble.
+**Independent Test**: Can be tested by observing the status badges on a newly entered scribble transitioning from PENDING -> PARSING -> SUCCESS/FAILED.
+
+**Acceptance Scenarios**:
+
+1. **Given** a PENDING scribble, **When** the AI parser processes it successfully, **Then** it updates reactively to show structured exercise data and a Parsed state.
+2. **Given** a parsed scribble, **When** the user taps it, **Then** a confirmation sheet opens allowing editing or deletion.
+
+---
+
+### User Story 3 - Date Navigation & Review (Priority: P2)
+
+As a user, I want to navigate to previous days so that I can review my past training logs.
+
+**Why this priority**: Reviewing past workouts is essential for fitness tracking and progression.
+
+**Independent Test**: Can be tested by using the date navigation controls and verifying the scribbles list updates to show only that specific date's entries.
+
+**Acceptance Scenarios**:
+
+1. **Given** the Canvas screen, **When** the user taps the previous day chevron, **Then** the screen displays scribbles for the previous day.
+2. **Given** the Canvas screen, **When** the user tries to navigate to a future date, **Then** navigation is prevented.
+3. **Given** the Canvas screen, **When** the user taps the date text, **Then** a native Date Picker opens for quick selection.
+
+---
+
+### User Story 4 - AI Training Insights (Priority: P3)
+
+As a user, I want to receive AI-generated insights about my training patterns directly on the Canvas so that I can stay motivated and informed.
+
+**Why this priority**: Enhances the user experience with smart insights but is secondary to the core logging functionality.
+
+**Independent Test**: Can be tested by verifying motivational summaries appear correctly when the `GetAIOverviewUseCase` yields data.
+
+**Acceptance Scenarios**:
+
+1. **Given** a history of logged sessions, **When** the Canvas loads, **Then** motivational summaries or patterns are displayed at the top of the body.
+
+---
+
+### Edge Cases
+
+- What happens when the LLM parsing fails due to completely unrecognized text or empty strings?
+- How does the system handle rapid sequential additions of scribbles while the device is offline?
+- What happens when a user attempts backward date navigation exceeding the 30-day limit?
+- How does the UI gracefully handle very long plain text scribbles?
+
+## Requirements *(mandatory)*
+
+### Functional Requirements
+
+- **FR-001**: System MUST support offline-first raw text scribble entry and immediately persist it to the local database.
+- **FR-002**: System MUST transition scribbles through specific lifecycle statuses: `PENDING`, `PARSING`, `SUCCESS`, `FAILED`, and `COMPLETED`.
+- **FR-003**: System MUST associate scribbles with a specific date and restrict the view to a single date at a time.
+- **FR-004**: System MUST allow date navigation up to 30 days backward and prevent future date navigation.
+- **FR-005**: System MUST provide reactive, real-time updates to the UI as scribble statuses change.
+- **FR-006**: System MUST parse natural language scribbles into structured exercise data via AI integration.
+- **FR-007**: System MUST provide a confirmation sheet to Confirm, Edit, or Delete parsed exercises.
+- **FR-008**: System MUST display weight units in `kg` or `lbs` based on user preferences.
+- **FR-009**: System MUST strictly adhere to the defined "The Input Canvas (Home)" design tokens (Inter font, 12dp roundness, #2b8cee primary color).
+
+### Key Entities
+
+- **Scribble**: Represents a user's training session entry. Key attributes include raw text, parsed structure (exercises/sets), date, and lifecycle status.
+- **Exercise**: Structured sub-entity linked to a scribble. Can be individually navigated to or edited within the UI.
+- **Set**: Granular records of reps and weights, linked directly to an Exercise.
+
+## Success Criteria *(mandatory)*
+
+### Measurable Outcomes
+
+- **SC-001**: Users can successfully log a plain text workout offline in under 10 seconds.
+- **SC-002**: AI parsing succeeds (`SUCCESS` status) for >90% of reasonable fitness scribbles.
+- **SC-003**: 100% of scribbles correctly persist locally regardless of network connectivity.
+
+## Assumptions
+
+- **Architecture**: MVI architecture strictly enforced on both iOS and Android. Zero business logic resides in ViewModels/Stores.
+- **Persistence**: Relational local database (Room for Android, SwiftData for iOS) handles all offline-first capabilities.
+- **LLM Capabilities**: The integrated AI engine (`RoutingLLMService` / `LLMEngine`) is capable of extracting exercises, sets, reps, and weights accurately from raw text.
+- **Theme Parity**: Light/Dark mode parity will be strictly maintained across both platforms.

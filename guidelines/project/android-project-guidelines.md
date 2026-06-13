@@ -18,9 +18,12 @@
 - **Use Cases:**
     - **Single Responsibility:** The *only* place for business logic.
     - **Reactive Mastery:** Use Cases that depend on a `Flow` of parameters (e.g., a date flow from the UI) MUST use `flatMapLatest` to ensure only the most recent parameter's stream is active.
+    - **Reactive Persistence Mandate:** Use Cases SHOULD return `Flow` when the underlying data is expected to change (e.g., new workouts added). This ensures the UI remains "live" and follows the Offline-First mandate naturally.
+    - **Composite Use Cases (Consolidation):** When a screen requires multiple metrics derived from the same source (e.g., OneRM and Volume for Trends), consolidate them into a single Use Case that emits a unified result object. This prevents redundant repository subscriptions, reduces ViewModel complexity, and eliminates race conditions between related data points.
     - **Reactive Enrichment:** When deep child relations (e.g., Exercise -> Sets) are not included in the base list query, Use Cases MUST orchestrate enrichment using `flatMapLatest` and `combine` to ensure a single, consistent state emission.
     - **Non-blocking Flow Observation:** In ViewModels, parallelize the observation of independent data sources (e.g., using `combine` or separate `launch` blocks). Do NOT wait for all flows to emit if the UI can render partially. Set `isLoading = false` as soon as the primary data trigger (e.g., the main summary or frequency) emits its first value.
     - **Dependency Injection:** Use Cases in `:domain` MUST NOT use `@Inject` if the module does not include the Hilt plugin; they must be explicitly provided via a Hilt `@Module` in the `:data` layer.
+
 - **Mappers:** Pure functions to isolate database entities from domain logic.
     - **Status Enum Consistency:** Enforce uppercase raw values for status enums (e.g., `FAILED`) to match technical specifications and ensure cross-platform consistency.
     - **Resilient Mapping:** When mapping from storage (String) to Domain (Enum), mappers MUST use `.uppercase()` on the status string (e.g., `ScribbleStatus.valueOf(status.uppercase())`) to handle case-insensitive database values safely.
@@ -63,6 +66,7 @@
 - **Core Modules:** Shared functionality (`:core:database`, `:core:network`).
 - **Core Isolation:** Changes to `core:` modules (e.g., Room entities, DAOs, common utilities) MUST be implemented, validated, and committed separately before being used in feature-layer implementations.
 - **Error Handling:** Use Cases MUST return domain-specific error objects (e.g., `ScribbleError.NotFound`) via sealed interfaces/classes instead of throwing custom exceptions. This ensures predictable error propagation through the MVI state.
+    - **Cancellation Safety:** When using `runCatching` inside a `Flow` or `suspend` function, use the custom `runCatchingWithCancellation` helper from `:core:common` to ensure `CancellationException` is rethrown and not swallowed. This is critical for correct coroutine job cancellation.
 - **Debounced Persistence:** For Canvas-style editing or live-updating drafts, the ViewModel MUST implement debounced persistence. Use a `Job` with a short delay (e.g., 500ms) that is cancelled and restarted on every user input to prevent excessive database I/O while ensuring data is saved automatically.
 - **AI Integration:** For AI-driven features (parsing, summaries), use the `com.google.firebase:firebase-ai` SDK and integrate via `:feature:ai:domain`'s `LLMEngine`. Use dedicated Use Cases for AI operations (e.g., `GetAIOverviewUseCase`).
     - **Dynamic Initialization:** LLM model instances MUST be initialized dynamically (e.g., via a getter or helper function) rather than stored as long-lived properties. This ensures they always pick up the latest reactive configuration (e.g., model name changes in `SystemConfig`) for each request.

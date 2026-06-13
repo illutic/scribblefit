@@ -339,6 +339,32 @@ between days, so I can quickly browse my recent workout history.
 
 ---
 
+## P3 — Low (Polish / Performance) (Continued)
+
+### 25. Evaluate JetBrains Koog for Unified AI Agent Architecture
+
+**Affected:** `feature/ai` module (Android), `FeatureAI` local package (iOS)
+
+**Objective:** Explore replacing separate platform-native LLM wrappers with **JetBrains Koog** (`ai.koog:koog-agents`) to unify prompt workflows and agentic capabilities via Kotlin Multiplatform (KMP).
+
+**Potential Benefits:**
+- **Shared Agent Workflows:** Workout parsing, validation, and insight generation prompts/workflows can be authored once in a shared KMP module.
+- **Agentic Capabilities:** Allows introducing multi-turn interactions or history compression if ScribbleFit shifts from single-turn request/response to interactive chat coaching.
+
+**Architectural Challenges & Risks to Address:**
+- > [!WARNING]
+  > **Build Toolchain Overhead:** ScribbleFit currently maintains completely independent Android and iOS codebases. Setting up KMP and exporting Koog as an XCFramework requires introducing a hybrid Gradle build loop for iOS development, complicating CI/CD.
+- > [!IMPORTANT]
+  > **Core Model Interoperability:** Android uses Room database entities with auto-incrementing `Long` IDs, whereas iOS uses SwiftData with `UUID`s. The shared agent would need to return DTOs rather than shared domain models, necessitating separate mapper layers.
+- > [!IMPORTANT]
+  > **Local LLM Integration:** Android leverages Google's ML Kit / AICore (Gemini Nano) and iOS leverages Apple's FoundationModels. Since Koog lacks built-in integrations for these on-device models, they would have to be bridged via custom platform delegates.
+- > [!CAUTION]
+  > **Swift 6 Strict Concurrency:** The iOS codebase uses strict concurrency. Interfacing Swift 6 actors/stores with Kotlin/Native async boundaries is prone to `Sendable` violations and compiler warnings.
+- > [!NOTE]
+  > **YAGNI (Over-engineering):** Current AI needs are simple single-turn text completions. Using a stateful agentic framework like Koog may introduce unnecessary dependency bloat.
+
+---
+
 ## Execution Order
 
 | Phase | Items | Focus |
@@ -352,3 +378,4 @@ between days, so I can quickly browse my recent workout history.
 | 7 | #19–#23 | Polish — queries, batching, thresholds, cache keys |
 | 8 | #24a, #24b, #24c | iOS polish — DateFormatter perf, weight unit bug, naming |
 | 9 | #24 (P2.5) | UX — swipe-to-change-date on Canvas |
+| 10 | #25 (P3) | Future Architecture — JetBrains Koog KMP Agent evaluation |

@@ -1,116 +1,94 @@
 # Feature Specification: Manual Mode (Direct Exercise Entry)
 
-## 1. Overview
-Manual Mode provides an alternative training data entry method that bypasses the AI scribble parser entirely.
-When enabled, the Canvas screen replaces the freeform text input with an **"Add Exercise"** button
-that opens a structured form (bottom sheet) for entering exercises, sets, weights, and reps directly.
+**Feature Branch**: `[###-manual-mode]`
 
-This serves users who prefer explicit control over their data, have no API key configured, or are in
-environments where AI parsing is unreliable. Manual Mode and AI Mode are mutually exclusive — the
-user toggles between them via a setting. The toggle is a global preference stored in `SystemConfig`.
+**Created**: 2026-06-13
 
-## 2. User Stories
-- **As a User**, I want to toggle Manual Mode in Settings **so that** I can choose between AI-parsed
-  scribbles and direct exercise entry.
-- **As a User**, I want to add exercises via a structured form **so that** I don't rely on AI parsing
-  accuracy.
-- **As a User**, I want to specify exercise name, muscle group, and multiple sets (weight × reps)
-  **so that** my training data is precise.
-- **As a User**, I want to add and remove individual sets within the form **so that** I can log
-  variable set counts.
-- **As a User**, I want to add optional notes to an exercise **so that** I can track RPE, tempo, or
-  other observations.
-- **As a User**, I want manually-added exercises to appear in the Canvas alongside any existing
-  scribbles **so that** I have a unified view of my session.
-- **As a User**, I want manually-added exercises to flow through the same confirm → log pipeline
-  **so that** they appear in Insights and the Ledger identically to AI-parsed entries.
+**Status**: Draft
 
-## 3. Acceptance Criteria
+**Input**: User description: "Manual Mode provides an alternative training data entry method that bypasses the AI scribble parser entirely."
 
-### 3.1 Settings Toggle
-- [ ] A **Manual Mode** toggle appears in the **General** section of Settings, positioned as the
-  first item (above Appearance).
-- [ ] Label: "Manual Mode". No description text needed — the toggle is self-explanatory.
-- [ ] Default value: **OFF** (AI Mode).
-- [ ] The toggle persists across app restarts via `SystemConfig`.
-- [ ] When toggled ON, the Canvas screen immediately reflects the change (reactive via config flow).
+## User Scenarios & Testing *(mandatory)*
 
-### 3.2 Canvas Screen Changes
-- [ ] **When Manual Mode is OFF (AI Mode):** No changes. The existing freeform text input bar and AI
-  parsing flow remain.
-- [ ] **When Manual Mode is ON:**
-    - [ ] The freeform text input bar is **hidden**.
-    - [ ] An **"Add Exercise"** button appears at the bottom of the Canvas (same position as the
-      input bar, floating above the bottom nav).
-    - [ ] The button uses the design system's pill shape with primary styling.
-    - [ ] Tapping the button opens the **Add Exercise Bottom Sheet** (shared component).
-    - [ ] Existing scribble cards remain visible and interactive.
-    - [ ] AI insight cards remain visible (they operate on training data, not raw scribbles).
+### User Story 1 - Toggle Manual Mode (Priority: P1)
 
-### 3.3 Add Exercise Bottom Sheet
-Defined in `specs/add-exercise-bottom-sheet.md`. This shared component handles the input form for exercise details, sets, and notes.
+As a User, I want to toggle Manual Mode in Settings so that I can choose between AI-parsed scribbles and direct exercise entry.
 
-### 3.4 Data Pipeline Integration
-- [ ] When invoked from the Canvas in Manual Mode, saving the bottom sheet produces a `Scribble` object with status `SUCCESS`.
-- [ ] The `rawText` field on these scribbles should contain a human-readable summary (e.g., "Bench Press 100kg 3×10").
-- [ ] The confirmation flow, persistence, Insights aggregation, and Ledger display treat manual entries identically to AI-parsed entries.
+**Why this priority**: It is the core mechanism that allows the user to access the feature and switch out of AI mode.
 
-### 3.5 Contextual UI
-- [ ] **Header:** Same as Canvas — date navigation, settings icon.
-- [ ] **Body:** Scribble list (same as AI mode) + "Add Exercise" button replacing the input bar.
-- [ ] **Footer:** Bottom navigation bar (shared across the app).
+**Independent Test**: Can be fully tested by navigating to Settings, toggling the switch, and verifying that the Canvas screen updates its UI immediately without requiring an app restart.
 
-## 4. Development Guidelines (Android)
-- **Architecture:** MVI. No new modules needed — changes live in `:feature:canvas:ui`,
-  `:feature:canvas:domain`, `:core:config:domain`.
-- **Config Change:** Add `isManualMode: Boolean = false` to `SystemConfig`. Follow the 8-step
-  synchronization pattern (see `android-project-guidelines.md` Section 6).
-- **Canvas UI:**
-    - `CanvasState` gains `isManualMode: Boolean` derived from `ConfigRepository.config`.
-    - `CanvasIntent` gains `AddExerciseManually` (opens sheet) and `SaveManualExercise(...)`.
-    - `CanvasScreen` conditionally renders the input bar or the "Add Exercise" button.
-    - `ManualExerciseBottomSheet` is a new composable in `:feature:canvas:ui`.
-- **Domain:** Add `AddManualExerciseUseCase` in `:feature:canvas:domain` that creates a `Scribble`
-  with status `SUCCESS` and the structured exercise data, then persists it via `ScribbleRepository`.
-- **DI:** Provide the new use case via the existing `:feature:canvas:data` Hilt module.
-- **Settings UI:** Add the toggle in `SettingsSections.kt` under a new "General" section at the top.
+**Acceptance Scenarios**:
 
-## 4. Development Guidelines (iOS)
-- **Architecture:** MVI. Changes live in `FeatureCanvas` and `FeatureSettings` targets.
-- **Config Change:** Add `isManualMode: Bool = false` to `SystemConfig`. Update
-  `ConfigRepositoryImpl` to persist via `UserDefaults`.
-- **Canvas UI:**
-    - `CanvasState` gains `isManualMode: Bool` from config observation.
-    - `CanvasIntent` gains `.addExerciseManually` and `.saveManualExercise(...)`.
-    - `CanvasView` conditionally renders `ScribbleInputBar` or an "Add Exercise" button.
-    - `ManualExerciseSheet` is a new SwiftUI view presented as `.sheet()`.
-- **Domain:** Add `AddManualExerciseUseCase` in `FeatureCanvas/Domain/UseCases/` that creates a
-  `Scribble` with status `.success` and the structured exercise data.
-- **Settings UI:** Add the toggle in `SettingsView.swift` under a new "General" section using a
-  native SwiftUI `Toggle`.
+1. **Given** the app is in the default state (AI Mode), **When** the user navigates to Settings > General and toggles Manual Mode to ON, **Then** the preference is saved and the Canvas screen hides the freeform text input.
+2. **Given** Manual Mode is ON, **When** the user views the Canvas screen, **Then** an "Add Exercise" button is displayed in place of the freeform input bar.
 
-## 5. Stitch Design References
+---
 
-| Screen | Description |
-|--------|-------------|
-| Settings with Manual Mode Toggle | Manual Mode toggle as first item in GENERAL section |
-| ScribbleFit Canvas (Manual Entry) | Canvas with "Add Exercise Manually" button at bottom, coexisting with AI-parsed scribble cards |
-| Manual Add Exercise Bottom Sheet | Form: exercise name, muscle group, sets (weight × reps), add/remove set, notes, save/cancel |
-| Confirm Exercise (No Nav) | Existing confirmation bottom sheet — unchanged, manual entries use it |
+### User Story 2 - Add Exercise via Structured Form (Priority: P1)
 
-## 6. Out of Scope
-- Exercise name autocomplete/suggestions (future enhancement).
-- Muscle group picker with predefined options (text input for now; picker is a future enhancement).
-- Hybrid mode (AI + manual simultaneously) — the modes are mutually exclusive via toggle.
-- Bulk entry (adding multiple exercises at once) — one exercise per sheet invocation.
+As a User, I want to add exercises via a structured form so that I can specify exercise name, muscle group, multiple sets (weight × reps), and optional notes precisely.
 
-## 7. Validation
-- **Unit Tests:**
-    - `AddManualExerciseUseCase`: Verify it creates a `Scribble` with `SUCCESS` status, correct
-      exercises/sets, and a generated `rawText`.
-    - `CanvasViewModel`/`CanvasStore`: Verify `isManualMode` reacts to config changes.
-    - Config persistence: Verify `isManualMode` round-trips through `SystemConfig`.
-- **UI Tests:**
-    - Verify the input bar is hidden and "Add Exercise" button is visible when Manual Mode is ON.
-    - Verify the bottom sheet opens, accepts input, and produces a scribble card on save.
-    - Verify the confirmation flow works identically for manual entries.
+**Why this priority**: This is the primary functional value of the feature, allowing data entry without relying on AI parsing.
+
+**Independent Test**: Can be fully tested by tapping "Add Exercise" and filling out the form to ensure a structured entry is created successfully.
+
+**Acceptance Scenarios**:
+
+1. **Given** the Canvas screen in Manual Mode, **When** the user taps the "Add Exercise" button, **Then** the Add Exercise Bottom Sheet opens.
+2. **Given** the Add Exercise Bottom Sheet is open, **When** the user inputs exercise details, adds multiple sets, and taps Save, **Then** a `Scribble` object is created with status `SUCCESS`.
+
+---
+
+### User Story 3 - Unified Data Pipeline (Priority: P2)
+
+As a User, I want manually-added exercises to appear in the Canvas alongside existing scribbles and flow through the same logging pipeline.
+
+**Why this priority**: Ensures that manual entries are treated as first-class citizens in the app ecosystem (Ledger, Insights).
+
+**Independent Test**: Can be fully tested by creating a manual exercise and verifying its appearance in the Ledger and Insights sections.
+
+**Acceptance Scenarios**:
+
+1. **Given** a manually added exercise was just saved, **When** the user views the Canvas, **Then** the exercise appears as a scribble card alongside any AI-parsed scribbles.
+2. **Given** a manually added exercise in the Canvas, **When** the user confirms the session, **Then** it appears in the Insights and Ledger identically to AI-parsed entries.
+
+### Edge Cases
+
+- What happens when there is no API key configured? (Manual Mode should still function normally as it bypasses AI).
+- How does the system handle an empty exercise form submission?
+- What happens if the user toggles Manual Mode while an AI scribble is actively being parsed?
+
+## Requirements *(mandatory)*
+
+### Functional Requirements
+
+- **FR-001**: System MUST provide a Manual Mode toggle in the General section of Settings (positioned as the first item, above Appearance).
+- **FR-002**: System MUST persist the Manual Mode toggle state across app restarts via `SystemConfig`.
+- **FR-003**: System MUST hide the freeform text input bar and display an "Add Exercise" primary pill button on the Canvas when Manual Mode is ON.
+- **FR-004**: System MUST open the shared "Add Exercise Bottom Sheet" component when the "Add Exercise" button is tapped.
+- **FR-005**: System MUST produce a `Scribble` object with status `SUCCESS` upon saving a manual exercise.
+- **FR-006**: System MUST generate a human-readable summary in the `rawText` field of the manual `Scribble` (e.g., "Bench Press 100kg 3×10").
+- **FR-007**: System MUST process manual entries through the same confirmation, persistence, Insights aggregation, and Ledger display pipelines as AI-parsed entries.
+- **FR-008**: System MUST ensure AI insight cards and existing scribble cards remain visible and interactive on the Canvas in Manual Mode.
+
+### Key Entities *(include if feature involves data)*
+
+- **SystemConfig**: Stores the `isManualMode` boolean preference to persist the toggle state.
+- **Scribble**: The core training data entity. For manual entries, its status is explicitly set to `SUCCESS` and its `rawText` serves as a human-readable summary.
+
+## Success Criteria *(mandatory)*
+
+### Measurable Outcomes
+
+- **SC-001**: Users can successfully toggle between AI and Manual modes seamlessly, with the Canvas updating reactively without an app restart.
+- **SC-002**: Users can manually add a multi-set exercise with notes and see it logged correctly in the Ledger.
+- **SC-003**: 100% of manual entries successfully bypass the AI parsing pipeline and flow directly into the structured data format.
+
+## Assumptions
+
+- The `Add Exercise Bottom Sheet` is an existing or parallel shared component defined in `specs/add-exercise-bottom-sheet.md`.
+- The existing confirmation, logging, Insights, and Ledger pipelines can handle pre-parsed (status `SUCCESS`) `Scribble` objects without modification.
+- Exercise name autocomplete and predefined muscle group pickers are out of scope for this version (text input will be used).
+- Hybrid mode (AI + manual simultaneously) is out of scope; the modes are mutually exclusive via the toggle.
+- Bulk entry (adding multiple exercises at once) is out of scope; one exercise is added per sheet invocation.

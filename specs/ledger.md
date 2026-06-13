@@ -1,85 +1,108 @@
 # Feature Specification: Ledger (Training History)
 
-## 1. Overview
-The Ledger is a comprehensive, chronological log of all physical activity recorded by the user via Scribbles. It allows users to browse their training history, filter by date ranges, and drill down into specific session details. It serves as the primary source of truth for past performance.
+**Feature Branch**: `[feature/ledger]`
 
-## 2. User Stories
-- **As a User**, I want to see a chronological list of my past training sessions **so that** I can track my consistency.
-- **As a User**, I want to filter my history by date range **so that** I can focus on a specific period (e.g., this month).
-- **As a User**, I want to see a summary of each session (date, exercises, and total volume) **so that** I can quickly identify sessions.
-- **As a User**, I want to tap a session entry **so that** I can view the full details.
-- **As a User**, I want to see a clear empty state **so that** I know I haven't recorded anything yet.
-- **As a User**, I want to see a loading state (skeleton loaders) **so that** I know my history is being fetched.
+**Created**: 2026-06-13
 
-## 3. Acceptance Criteria
+**Status**: Draft
 
-### 3.1 Header
-- [x] **Title:** "Ledger" (Large, bold). (Verified on Android and iOS).
-- [x] **Date Range Selector:**
-    - [x] Displays the current filter range (e.g., "Mar 1, 2026 – Mar 31, 2026"). (Verified on Android and iOS).
-    - [x] Includes a calendar icon (`calendar_today`). (Verified on Android and iOS).
-    - [x] Tapping the selector opens a native Date Range Picker. (Verified on Android and iOS).
-    - [x] Default range: Last 30 Days. (Verified on Android and iOS).
+**Input**: User description: "Ledger for browsing training history, filtering by date ranges, and viewing specific session details."
 
-### 3.2 Session List (Chronological History)
-- [x] **Grouping:** Sessions are grouped by date, displayed in descending order (newest first). (Verified on Android and iOS: Aggregates data from all scribbles on same day).
-- [x] **Session Card/Item:**
-    - [x] **Header:** Displays the day and date (e.g., "Monday, March 16"). (Verified on Android and iOS).
-    - [x] **Interactivity Indicator:** A trailing chevron-right (`chevron_right`) suggesting navigation to details. (Verified on Android and iOS).
-    - [x] **Exercise Summary:** A list of exercises performed in that session. (Verified on Android and iOS).
-    - [x] **Metrics:** Displays the total volume or specific stats for each exercise (e.g., "Bench Press 2,450 lbs"). (Verified on Android and iOS).
-- [x] **Navigation:** Tapping any part of a session entry navigates to the **Scribble Details** screen for that session. (Android: `Screen.ScribbleDetails(scribbleId)` via Navigator; iOS: `onNavigateToScribbleDetails(UUID)` callback to sheet presentation. Note: iOS ledger groups by day and navigates to the first session of that day.) Implemented 2026-04-21.
+## User Scenarios & Testing *(mandatory)*
 
-### 3.3 States
-- [x] **Loading State:**
-    - [x] Display skeleton loaders that match the layout of the session cards. (Verified on Android and iOS).
-    - [ ] Reference: `Ledger (Loading State)` design.
-- [x] **Empty State:**
-    - [x] Displayed when no records are found in the selected range or at all. (Verified on Android and iOS).
-    - [x] Includes a clear message (e.g., "Your history is empty") and a call-to-action (e.g., "Start your first session on the Canvas"). (Verified on Android and iOS).
-    - [ ] Reference: `Ledger (Minimal Empty State)` design.
+### User Story 1 - Browse Chronological History (Priority: P1)
 
-### 3.4 UI Design Tokens
-- **Background:** Minimalist, following `DESIGN.md`.
-- **Card Styling:** Zero borders, glassmorphism or subtle elevation as per platform guidelines.
-- **Typography:** Inter (Android) / San Francisco (iOS).
+As a User, I want to see a chronological list of my past training sessions, complete with summaries (date, exercises, total volume), so that I can track my consistency and quickly identify sessions.
 
-## 4. Development Guidelines (Android)
-- **Architecture:** MVI (State, Intent, ViewModel).
-- **Package Structure:** `:feature:ledger` with `:data`, `:domain`, `:ui`.
-- **UI:** 100% Jetpack Compose.
-    - Use `LazyColumn` for the scrollable list.
-    - Implement `LedgerHeader`, `SessionItem`, and `EmptyLedgerContent` as separate contextual Composables.
-    - Use skeleton loading library or custom shimmer effects.
-- **Database:** Room with `Flow<List<ScribbleWithExercises>>` for reactive updates.
-- **Navigation:** Use `scribbleId` to navigate to the Scribble Details screen.
+**Why this priority**: Core functionality of the Ledger; without a history list, the ledger provides no value.
 
-## 4. Development Guidelines (iOS)
-- **Architecture:** MVI (State, Intent, @Observable Store).
-- **Package Structure:** SPM target `LedgerFeature` with `Data`, `Domain`, `UI`.
-- **UI:** 100% SwiftUI.
-    - Use `List` or `ScrollView` with `LazyVStack`.
-    - Apply `.glassEffect()` or consistent spacing for cards.
-    - Implement skeleton loaders using overlaid shapes with opacity animation.
-- **Database:** SwiftData with `@Query` or `AsyncStream` repositories.
-- **Concurrency:** Swift 6 strict concurrency for repository fetching.
+**Independent Test**: Can be fully tested by generating mock sessions, navigating to the Ledger screen, and verifying the sessions are sorted in descending order of date.
 
-## 5. Stitch Design References
+**Acceptance Scenarios**:
 
-| Screen | Description |
-|--------|-------------|
-| Ledger with Interactivity Indicators | Main chronological history with date range and chevrons |
-| Ledger (Minimal Empty State) | Empty state view when no sessions exist |
-| Ledger (Loading State) | Skeleton/Shimmer view during data fetch |
+1. **Given** the user has recorded sessions, **When** they navigate to the Ledger, **Then** they see a list of sessions grouped by date (newest first).
+2. **Given** a session in the list, **When** viewed, **Then** it displays the day, date, an interactivity indicator (chevron), exercise summary, and metrics (e.g., total volume).
 
-## 6. Validation
-- **Unit Tests:**
-    - `LedgerViewModel`/`LedgerStore`: Verify state transitions (Loading -> Data -> Empty).
-    - `FilterScribblesUseCase`: Verify filtering logic for different date ranges.
-- **Integration Tests:** 
-    - Verifying Room/SwiftData queries return records correctly filtered and sorted.
-- **UI Tests:** 
-    - Verify the date range picker updates the displayed list.
-    - Verify navigation to Scribble Details on item tap.
-    - Verify the empty state is visible when no data is provided.
+---
 
+### User Story 2 - View Session Details (Priority: P1)
+
+As a User, I want to tap a session entry so that I can view the full details of that training session.
+
+**Why this priority**: Essential for drilling down into the specific exercises and sets performed during a past workout.
+
+**Independent Test**: Can be fully tested by tapping on any session in the history list and confirming the app navigates to the detailed view.
+
+**Acceptance Scenarios**:
+
+1. **Given** the user is viewing the session list, **When** they tap a session entry, **Then** the app navigates to the Scribble Details screen for that specific session.
+
+---
+
+### User Story 3 - Filter by Date Range (Priority: P2)
+
+As a User, I want to filter my history by date range so that I can focus on a specific period (e.g., this month).
+
+**Why this priority**: Important for users with long histories, but not strictly necessary for an MVP with few records.
+
+**Independent Test**: Can be fully tested by tapping the date filter, selecting a new range, and verifying the list updates correctly.
+
+**Acceptance Scenarios**:
+
+1. **Given** the Ledger screen is open, **When** the user taps the Date Range Selector, **Then** a native Date Range Picker opens.
+2. **Given** a selected date range, **When** applied, **Then** the list only shows sessions within that range.
+3. **Given** the default state, **When** the Ledger is opened, **Then** the filter defaults to the Last 30 Days.
+
+---
+
+### User Story 4 - View Empty and Loading States (Priority: P3)
+
+As a User, I want to see a clear empty state if I haven't recorded anything, and a loading state when my history is being fetched.
+
+**Why this priority**: Crucial for good UX, preventing user confusion when data is absent or slow to load.
+
+**Independent Test**: Can be fully tested by artificially delaying the data fetch (to see skeleton loaders) or returning an empty list (to see the empty state message).
+
+**Acceptance Scenarios**:
+
+1. **Given** the history is being fetched, **When** the screen is drawn, **Then** skeleton loaders matching the layout of session cards are displayed.
+2. **Given** no records are found in the selected range or overall, **When** fetching completes, **Then** an empty state is displayed with a clear message ("Your history is empty") and a call-to-action ("Start your first session on the Canvas").
+
+### Edge Cases
+
+- What happens when a user selects a date range in the future? (Should show empty state or prevent selection).
+- How does system handle a very large number of sessions on a single day? (Should scroll smoothly within the grouped day).
+- What happens if the database query fails? (Should show an error state instead of infinite loading or empty state).
+
+## Requirements *(mandatory)*
+
+### Functional Requirements
+
+- **FR-001**: System MUST display training sessions chronologically grouped by date (descending).
+- **FR-002**: System MUST allow filtering of sessions via a native Date Range Picker, defaulting to the last 30 days.
+- **FR-003**: System MUST provide a summary for each session including date, exercises, and metrics (e.g., volume).
+- **FR-004**: System MUST navigate to the detailed `Scribble Details` screen upon tapping a session entry (via `scribbleId` on Android, `UUID` on iOS).
+- **FR-005**: System MUST display skeleton loaders during data fetching.
+- **FR-006**: System MUST display an empty state message with a CTA when no sessions match the criteria.
+- **FR-007**: System MUST use Jetpack Compose (Android) and SwiftUI (iOS) following MVI architecture.
+- **FR-008**: System MUST adhere to minimal design tokens (zero borders, glassmorphism, specified typography).
+
+### Key Entities *(include if feature involves data)*
+
+- **ScribbleWithExercises**: Represents a single logged session, including date, a list of associated exercises, and computed metrics.
+- **DateRangeFilter**: Represents the selected start and end dates for filtering the ledger queries.
+
+## Success Criteria *(mandatory)*
+
+### Measurable Outcomes
+
+- **SC-001**: Users can successfully filter their past workouts, with UI responding without noticeable lag.
+- **SC-002**: Empty and Loading states transition smoothly and convey the correct system status.
+- **SC-003**: Navigation to session details is fluid and passes the correct `scribbleId` or `UUID`.
+- **SC-004**: Automated tests (Unit, Integration, UI) for Room/SwiftData queries, filtering logic, and state transitions pass consistently.
+
+## Assumptions
+
+- Assumes the existence of `Scribble` data and a functional `Scribble Details` screen to navigate to.
+- Assumes the underlying database (Room on Android, SwiftData on iOS) is configured to handle reactive queries (`Flow` or `AsyncStream`).
+- Assumes skeleton loader libraries or shimmer effect utilities are available in both platforms' core design systems.
