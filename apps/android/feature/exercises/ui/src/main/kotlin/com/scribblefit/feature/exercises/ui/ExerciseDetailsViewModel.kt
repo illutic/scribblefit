@@ -60,6 +60,7 @@ class ExerciseDetailsViewModel @Inject constructor(
                     _state.update { state ->
                         state.copy(
                             exerciseName = it.canonicalName,
+                            sets = it.sets,
                             weeklyStats = calculateWeeklyStatsUseCase(it.id).getOrNull(),
                             trends = calculateTrendsUseCase(it.id).getOrNull(),
                             isLoading = false,

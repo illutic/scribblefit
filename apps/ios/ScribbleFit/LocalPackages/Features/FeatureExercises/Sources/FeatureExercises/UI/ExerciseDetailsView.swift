@@ -43,6 +43,11 @@ public struct ExerciseDetailsView: View {
                                     isGenerating: store.state.isGeneratingAI
                                 )
                                 
+                                SetsSection(
+                                    sets: details.mostRecentSets,
+                                    weightUnit: store.state.weightUnit == .kgs ? "kg" : "lbs"
+                                )
+                                
                                 WeeklyStatsCard(
                                     stats: details.weeklyStats,
                                     weightUnit: store.state.weightUnit == .kgs ? "kg" : "lbs"

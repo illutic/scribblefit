@@ -20,6 +20,7 @@ import com.scribblefit.core.designsystem.ScribbleFitTheme
 import com.scribblefit.feature.exercises.ui.components.ExerciseDetailsHeader
 import com.scribblefit.feature.exercises.ui.components.ExerciseInsightCard
 import com.scribblefit.feature.exercises.ui.components.HistorySection
+import com.scribblefit.feature.exercises.ui.components.SetsSection
 import com.scribblefit.feature.exercises.ui.components.TrendsSection
 import com.scribblefit.feature.exercises.ui.components.WeeklyStatsCard
 
@@ -66,6 +67,11 @@ private fun ExerciseDetailsContent(
                     insight = state.aiInsight,
                     isGenerating = state.isGeneratingAI,
                     recommendationLabel = state.recommendationLabel
+                )
+
+                SetsSection(
+                    sets = state.sets,
+                    weightUnit = state.weightUnitLabel
                 )
 
                 state.weeklyStats?.let { stats ->

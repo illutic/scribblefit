@@ -6,11 +6,13 @@ import androidx.compose.ui.res.stringResource
 import com.scribblefit.core.config.domain.Weight
 import com.scribblefit.core.model.AIInsight
 import com.scribblefit.core.model.ExerciseTrends
+import com.scribblefit.core.model.Set
 import com.scribblefit.core.model.WeeklyStats
 
 data class ExerciseDetailsState(
     val exerciseName: String = "",
     val isLoading: Boolean = false,
+    val sets: List<Set> = emptyList(),
     val trends: ExerciseTrends? = null,
     val weeklyStats: WeeklyStats? = null,
     val aiInsight: AIInsight? = null,
