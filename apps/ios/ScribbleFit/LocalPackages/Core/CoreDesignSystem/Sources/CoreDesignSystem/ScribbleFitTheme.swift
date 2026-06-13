@@ -44,7 +44,9 @@ extension Font {
     public static let scribbleDisplayLarge = Font.system(size: 56, weight: .bold)
     public static let scribbleHeadlineSmall = Font.system(size: 24, weight: .semibold)
     public static let scribbleTitleMedium = Font.system(size: 18, weight: .medium)
+    public static let scribbleBodyLarge = Font.system(size: 16, weight: .regular)
     public static let scribbleBodyMedium = Font.system(size: 14, weight: .regular)
+    public static let scribbleBodySmall = Font.system(size: 12, weight: .regular)
     public static let scribbleLabelMedium = Font.system(size: 12, weight: .semibold)
     public static let scribbleLabelSmall = Font.system(size: 10, weight: .bold)
 }
@@ -54,7 +56,9 @@ public struct ScribbleFitTheme: Sendable {
         public let displayLarge = Font.scribbleDisplayLarge
         public let headlineSmall = Font.scribbleHeadlineSmall
         public let titleMedium = Font.scribbleTitleMedium
+        public let bodyLarge = Font.scribbleBodyLarge
         public let bodyMedium = Font.scribbleBodyMedium
+        public let bodySmall = Font.scribbleBodySmall
         public let labelMedium = Font.scribbleLabelMedium
         public let labelSmall = Font.system(size: 10, weight: .bold)
         
