@@ -30,6 +30,10 @@ interface ExerciseDao {
     fun getExercisesByScribbleId(scribbleId: Long): Flow<List<ExerciseWithSets>>
 
     @Transaction
+    @Query("SELECT * FROM exercises WHERE scribbleId = :scribbleId")
+    suspend fun getExercisesByScribbleIdSync(scribbleId: Long): List<ExerciseWithSets>
+
+    @Transaction
     @Query("SELECT * FROM exercises WHERE exerciseId = :exerciseId")
     fun getExerciseWithSets(exerciseId: Long): Flow<ExerciseWithSets?>
 
