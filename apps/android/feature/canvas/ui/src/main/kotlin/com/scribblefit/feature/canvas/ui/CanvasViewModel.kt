@@ -24,8 +24,10 @@ import com.scribblefit.feature.sets.domain.usecase.AddSetToExerciseUseCase
 import com.scribblefit.feature.sets.domain.usecase.RemoveSetUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
@@ -37,6 +39,7 @@ import kotlinx.coroutines.launch
 import java.time.LocalDate
 import javax.inject.Inject
 
+@OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
 @HiltViewModel
 class CanvasViewModel @Inject constructor(
     private val getScribblesForDateUseCase: GetScribblesForDateUseCase,
@@ -60,10 +63,13 @@ class CanvasViewModel @Inject constructor(
     private val currentDateValue get() = _state.value.currentDate
     private val currentDate = _state.map { CurrentDate(it.currentDate) }.distinctUntilChanged()
 
-    @OptIn(ExperimentalCoroutinesApi::class)
     private val scribblesForDate = currentDate.flatMapLatest { date ->
         getScribblesForDateUseCase(date)
     }
+
+    private val aiInsights = currentDate.flatMapLatest { date -> getAIInsightsUseCase(date) }
+        .map { Result.success(it) }
+        .catch { emit(Result.failure(it)) }
 
     private val preferredWeight =
         configRepository.config.map { it.localConfig.weightUnit }.distinctUntilChanged()
@@ -72,8 +78,9 @@ class CanvasViewModel @Inject constructor(
         _state,
         preferredWeight,
         scribblesForDate,
+        aiInsights,
         navigator.navState
-    ) { currentState, weightUnit, scribbles, navState ->
+    ) { currentState, weightUnit, scribbles, aiInsights, navState ->
         val updatedSelectedScribble = currentState.selectedScribble?.let { selected ->
             scribbles.find { it.id == selected.id }
         }
@@ -82,6 +89,7 @@ class CanvasViewModel @Inject constructor(
             weightUnit = weightUnit,
             scribbles = scribbles,
             selectedScribble = updatedSelectedScribble,
+            aiInsights = aiInsights.getOrDefault(emptyList()),
             scribbleUiModels = scribbles.map { scribble ->
                 ScribbleUiModel(
                     id = scribble.id,
@@ -118,9 +126,8 @@ class CanvasViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             currentDate.collectLatest { date ->
-                _state.update { it.copy(isLoading = true) }
+                _state.update { it.copy(isLoading = true, isGeneratingInsights = true) }
                 launch { parsePendingScribblesUseCase(date) }
-                loadAIInsights(date)
             }
         }
     }
@@ -428,19 +435,6 @@ class CanvasViewModel @Inject constructor(
             val date = CurrentDate(_state.value.currentDate)
             createManualScribbleUseCase(name, muscleGroup, sets, date).onSuccess {
                 _state.update { it.copy(isAddExerciseSheetVisible = false) }
-            }
-        }
-    }
-
-    private fun loadAIInsights(date: CurrentDate) {
-        viewModelScope.launch {
-            _state.update { it.copy(isGeneratingInsights = true) }
-            val insights = getAIInsightsUseCase(date)
-            _state.update {
-                it.copy(
-                    isGeneratingInsights = false,
-                    aiInsights = insights.getOrDefault(emptyList())
-                )
             }
         }
     }

@@ -14,8 +14,10 @@ import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
@@ -33,25 +35,55 @@ class InsightsViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(InsightsState())
-    private val refreshTrigger = MutableStateFlow(0L)
+
+    private val stateWithBottomBarState = combine(
+        _state,
+        navigator.navState
+    ) { state, navState ->
+        state.copy(bottomBarState = navState.bottomBarState)
+    }
 
     private val dateRangeFlow = combine(
         _state.map { CurrentDate(it.startDate) }.distinctUntilChanged(),
         _state.map { CurrentDate(it.endDate) }.distinctUntilChanged()
     ) { start, end -> start to end }
 
+    private val frequencyInsights = dateRangeFlow.flatMapLatest { (start, end) ->
+        getFrequencyInsightsUseCase(start, end)
+            .map { Result.success(it) }
+            .catch { emit(Result.failure(it)) }
+    }
+
+    private val volumeInsights = dateRangeFlow.flatMapLatest { (start, end) ->
+        getVolumeInsightsUseCase(start, end)
+            .map { Result.success(it) }
+            .catch { emit(Result.failure(it)) }
+    }
+
+    private val muscleDistributionInsights = dateRangeFlow.flatMapLatest { (start, end) ->
+        getMuscleDistributionInsightsUseCase(start, end)
+            .map { Result.success(it) }
+            .catch { emit(Result.failure(it)) }
+    }
+
+    private val aiOverviewInsights = dateRangeFlow.flatMapLatest { (start, end) ->
+        getAIOverviewUseCase(start, end)
+            .map { Result.success(it) }
+            .catch { emit(Result.failure(it)) }
+    }
+
     val state: StateFlow<InsightsState> = combine(
-        _state,
-        dateRangeFlow,
-        navigator.navState.map { it.bottomBarState }.distinctUntilChanged(),
-        refreshTrigger
-    ) { state, (start, end), bottomBarState, _ ->
+        stateWithBottomBarState,
+        frequencyInsights,
+        volumeInsights,
+        muscleDistributionInsights,
+        aiOverviewInsights
+    ) { state, frequencyResult, volumeResult, muscleDistributionResult, insights ->
         state.copy(
-            frequency = getFrequencyInsightsUseCase(start, end).getOrNull(),
-            volumePoints = getVolumeInsightsUseCase(start, end).getOrNull().orEmpty(),
-            distribution = getMuscleDistributionInsightsUseCase(start, end).getOrNull().orEmpty(),
-            insights = getAIOverviewUseCase(start, end).getOrNull(),
-            bottomBarState = bottomBarState,
+            insights = insights.getOrNull(),
+            frequency = frequencyResult.getOrNull(),
+            volumePoints = volumeResult.getOrDefault(emptyList()),
+            distribution = muscleDistributionResult.getOrDefault(emptyList()),
             isLoading = false
         )
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), InsightsState())
@@ -59,7 +91,7 @@ class InsightsViewModel @Inject constructor(
     fun onIntent(intent: InsightsIntent) {
         when (intent) {
             InsightsIntent.Refresh -> {
-                refreshTrigger.update { System.currentTimeMillis() }
+                _state.update { it.copy(isLoading = true) }
             }
 
             is InsightsIntent.NavigateToScreen -> navigator.navigateTo(intent.screen)
@@ -78,7 +110,8 @@ class InsightsViewModel @Inject constructor(
             it.copy(
                 selectedPeriod = period,
                 startDate = startDate,
-                endDate = now
+                endDate = now,
+                isLoading = true
             )
         }
     }
