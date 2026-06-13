@@ -10,10 +10,8 @@ import com.scribblefit.feature.insights.domain.model.VolumeDataPoint
 import com.scribblefit.feature.insights.domain.repository.InsightsRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.firstOrNull
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.withContext
 import java.time.Duration
 import java.time.Instant
 
@@ -88,15 +86,20 @@ class InsightsRepositoryImpl(
                 }.sortedByDescending { it.percentage }
             }
 
-    override suspend fun getAIOverview(
+    override fun getAIOverview(
         startDate: Long,
         endDate: Long
-    ): List<AIInsight> = withContext(coroutineDispatcher) {
+    ): Flow<List<AIInsight>> {
         val exercisesWithSets = exerciseDao.getExercisesWithSetsInRange(startDate, endDate)
-            .firstOrNull() ?: return@withContext emptyList()
-        val exercises = exercisesWithSets.map { it.toDomain() }
+        val exercises = exercisesWithSets.map { exercisesWithSets ->
+            exercisesWithSets.map { it.toDomain() }
+        }
 
-        if (exercises.isEmpty()) return@withContext emptyList()
-        llmEngine.generateInsightsSummary(exercises).getOrThrow()
+        return exercises
+            .flowOn(coroutineDispatcher)
+            .map { exercisesList ->
+                val insights = llmEngine.generateInsightsSummary(exercisesList)
+                insights.getOrThrow()
+            }
     }
 }

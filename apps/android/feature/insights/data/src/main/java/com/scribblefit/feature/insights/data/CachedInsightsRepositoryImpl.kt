@@ -82,19 +82,22 @@ class CachedInsightsRepositoryImpl @Inject constructor(
         }
     }
 
-    override suspend fun getAIOverview(
+    override fun getAIOverview(
         startDate: Long,
         endDate: Long
-    ): List<AIInsight> =
-        withContext(coroutineDispatcher) {
-            val cacheKey = "$startDate-$endDate"
-            val cachedData = cachedOverview[cacheKey]
-            if (cachedData != null) {
-                cachedData
-            } else {
-                val result = insightsRepository.getAIOverview(startDate, endDate)
-                cachedOverview[cacheKey] = result
-                result
-            }
+    ): Flow<List<AIInsight>> {
+        val cacheKey = "$startDate-$endDate"
+        val cachedData = cachedOverview[cacheKey]
+        return if (cachedData != null) {
+            flowOf(cachedData)
+        } else {
+            insightsRepository
+                .getAIOverview(startDate, endDate)
+                .flowOn(coroutineDispatcher)
+                .map { data ->
+                    cachedOverview[cacheKey] = data
+                    data
+                }
         }
+    }
 }

@@ -6,7 +6,9 @@ import com.scribblefit.core.database.entity.exercise.toEntity
 import com.scribblefit.core.model.Exercise
 import com.scribblefit.feature.exercises.domain.ExerciseRepository
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.firstOrNull
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 
 internal class ExerciseRepositoryImpl(
@@ -67,5 +69,10 @@ internal class ExerciseRepositoryImpl(
                 exerciseDao.getExercisesWithSetsForName(exerciseName).firstOrNull()
                     ?: return@withContext emptyList()
             return@withContext exerciseEntities.map { it.toDomain() }
+        }
+
+    override fun getExercisesByNameFlow(exerciseName: String): Flow<List<Exercise>> =
+        exerciseDao.getExercisesWithSetsForName(exerciseName).map { entities ->
+            entities.map { it.toDomain() }
         }
 }
