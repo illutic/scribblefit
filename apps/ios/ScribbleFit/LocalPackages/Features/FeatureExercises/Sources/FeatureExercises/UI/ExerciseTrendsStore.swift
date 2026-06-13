@@ -12,6 +12,7 @@ public final class ExerciseTrendsStore {
     private let configRepository: ConfigRepository
     
     private var cancellables = Set<AnyCancellable>()
+    private var observationTask: Task<Void, Never>?
     
     public init(
         exerciseName: String,
@@ -28,42 +29,29 @@ public final class ExerciseTrendsStore {
     public func onIntent(_ intent: ExerciseTrendsIntent) {
         switch intent {
         case .loadData:
-            loadData()
+            startObserving()
         case .updatePeriod(let period):
             state.selectedPeriod = period
-            loadData()
+            startObserving()
         }
     }
     
-    private func loadData() {
+    private func startObserving() {
         state.isLoading = true
-        Task {
-            do {
-                async let oneRMResult = getExerciseTrendDataUseCase.execute(
-                    exerciseName: state.exerciseName,
-                    metric: .oneRM,
-                    period: state.selectedPeriod
-                )
-                
-                async let volumeResult = getExerciseTrendDataUseCase.execute(
-                    exerciseName: state.exerciseName,
-                    metric: .volume,
-                    period: state.selectedPeriod
-                )
-                
-                let (oneRM, volume) = try await (oneRMResult, volumeResult)
-                
-                self.state.oneRMDataPoints = oneRM.dataPoints
-                self.state.oneRMInsights = oneRM.insights
-                
-                self.state.volumeDataPoints = volume.dataPoints
-                self.state.volumeInsights = volume.insights
-                
-                self.state.error = nil
-            } catch {
-                self.state.error = error.localizedDescription
+        
+        observationTask?.cancel()
+        observationTask = Task {
+            let stream = getExerciseTrendDataUseCase.execute(
+                exerciseName: state.exerciseName,
+                period: state.selectedPeriod
+            )
+            for await result in stream {
+                self.state.oneRMDataPoints = result.oneRM.dataPoints
+                self.state.oneRMInsights = result.oneRM.insights
+                self.state.volumeDataPoints = result.volume.dataPoints
+                self.state.volumeInsights = result.volume.insights
+                self.state.isLoading = false
             }
-            self.state.isLoading = false
         }
     }
     
