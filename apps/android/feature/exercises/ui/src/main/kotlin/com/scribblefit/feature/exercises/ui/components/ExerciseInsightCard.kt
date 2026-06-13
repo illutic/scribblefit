@@ -25,9 +25,10 @@ fun ExerciseInsightCard(
     insight: AIInsight?,
     isGenerating: Boolean,
     recommendationLabel: String,
-    noInsightsText: String,
     modifier: Modifier = Modifier
 ) {
+    if (!isGenerating && insight == null) return
+
     Surface(
         modifier = modifier
             .fillMaxWidth()
@@ -73,12 +74,6 @@ fun ExerciseInsightCard(
                         modifier = Modifier.padding(top = ScribbleFitTheme.spacing.smallLarger)
                     )
                 }
-            } else {
-                Text(
-                    text = noInsightsText,
-                    style = ScribbleFitTheme.typography.bodyMedium,
-                    color = ScribbleFitTheme.colors.midGray
-                )
             }
         }
     }

@@ -30,9 +30,7 @@ data class ExerciseDetailsState(
         @Composable @ReadOnlyComposable
         get() = stringResource(R.string.exercise_details_recommendation)
 
-    val noInsightsText: String
-        @Composable @ReadOnlyComposable
-        get() = stringResource(R.string.exercise_details_no_insights)
+
 
     val trendsLabel: String
         @Composable @ReadOnlyComposable

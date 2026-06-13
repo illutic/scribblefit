@@ -62,43 +62,50 @@ private fun ExerciseDetailsContent(
                     .widthIn(max = 600.dp),
                 verticalArrangement = Arrangement.spacedBy(ScribbleFitTheme.spacing.extraLarge)
             ) {
-                ExerciseInsightCard(
-                    insight = state.aiInsight,
-                    isGenerating = state.isGeneratingAI,
-                    recommendationLabel = state.recommendationLabel,
-                    noInsightsText = state.noInsightsText
-                )
+                if (state.isGeneratingAI || state.aiInsight != null) {
+                    ExerciseInsightCard(
+                        insight = state.aiInsight,
+                        isGenerating = state.isGeneratingAI,
+                        recommendationLabel = state.recommendationLabel
+                    )
+                }
 
-                WeeklyStatsCard(
-                    stats = state.weeklyStats ?: return@Column,
-                    weightUnit = state.weightUnitLabel,
-                    titleLabel = state.weeklyPerformanceLabel,
-                    activityLabel = state.activityLabel,
-                    sessionsUnitLabel = state.sessionsUnitLabel,
-                    volumeLabel = state.volumeLabel,
-                    maxWeightLabel = state.maxWeightLabel
-                )
+                state.weeklyStats?.let { stats ->
+                    WeeklyStatsCard(
+                        stats = stats,
+                        weightUnit = state.weightUnitLabel,
+                        titleLabel = state.weeklyPerformanceLabel,
+                        activityLabel = state.activityLabel,
+                        sessionsUnitLabel = state.sessionsUnitLabel,
+                        volumeLabel = state.volumeLabel,
+                        maxWeightLabel = state.maxWeightLabel
+                    )
+                }
 
-                TrendsSection(
-                    trends = state.trends ?: return@Column,
-                    weightUnit = state.weightUnitLabel,
-                    titleLabel = state.trendsLabel,
-                    viewAllLabel = state.viewAllLabel,
-                    current1rmLabel = state.current1rmLabel,
-                    intensityLabel = state.intensityLabel,
-                    weightVsLastLabel = state.weightVsLastLabel,
-                    lastVolumeLabel = state.lastVolumeLabel,
-                    onViewAllClick = { onIntent(ExerciseDetailsIntent.NavigateToTrends) },
-                    getTrendDirectionText = { state.getTrendDirectionText(it) }
-                )
+                state.trends?.let { trends ->
+                    TrendsSection(
+                        trends = trends,
+                        weightUnit = state.weightUnitLabel,
+                        titleLabel = state.trendsLabel,
+                        viewAllLabel = state.viewAllLabel,
+                        current1rmLabel = state.current1rmLabel,
+                        intensityLabel = state.intensityLabel,
+                        weightVsLastLabel = state.weightVsLastLabel,
+                        lastVolumeLabel = state.lastVolumeLabel,
+                        onViewAllClick = { onIntent(ExerciseDetailsIntent.NavigateToTrends) },
+                        getTrendDirectionText = { state.getTrendDirectionText(it) }
+                    )
+                }
 
-                HistorySection(
-                    historyCount = state.weeklyStats.sessions,
-                    titleLabel = state.historyLabel,
-                    viewAllSessionsText = state.viewAllSessionsText,
-                    totalSessionsText = state.getTotalSessionsText(state.weeklyStats.sessions),
-                    onViewHistoryClick = { /* TODO */ }
-                )
+                state.weeklyStats?.let { stats ->
+                    HistorySection(
+                        historyCount = stats.sessions,
+                        titleLabel = state.historyLabel,
+                        viewAllSessionsText = state.viewAllSessionsText,
+                        totalSessionsText = state.getTotalSessionsText(stats.sessions),
+                        onViewHistoryClick = { /* TODO */ }
+                    )
+                }
 
                 Spacer(modifier = Modifier.height(ScribbleFitTheme.spacing.large))
             }
