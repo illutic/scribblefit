@@ -115,7 +115,8 @@ public final class GetExerciseDetailsUseCase {
                             intensity: intensity,
                             improvement: improvement
                         ),
-                        history: history
+                        history: history,
+                        mostRecentSets: history.first?.exercise.sets ?? []
                     )
                     
                     continuation.yield(details)

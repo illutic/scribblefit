@@ -6,13 +6,15 @@ public struct ExerciseDetails: Codable, Sendable {
     public let weeklyStats: WeeklyStats
     public let trends: ExerciseTrends
     public let history: [ExerciseHistorySession]
+    public let mostRecentSets: [ExerciseSet]
     
-    public init(exerciseName: String, muscleGroup: String, weeklyStats: WeeklyStats, trends: ExerciseTrends, history: [ExerciseHistorySession]) {
+    public init(exerciseName: String, muscleGroup: String, weeklyStats: WeeklyStats, trends: ExerciseTrends, history: [ExerciseHistorySession], mostRecentSets: [ExerciseSet] = []) {
         self.exerciseName = exerciseName
         self.muscleGroup = muscleGroup
         self.weeklyStats = weeklyStats
         self.trends = trends
         self.history = history
+        self.mostRecentSets = mostRecentSets
     }
 }
 
