@@ -38,6 +38,10 @@ public final class ExerciseDetailsStore {
             state.showTrends = true
         case .dismissTrends:
             state.showTrends = false
+        case .viewAllHistoryTapped:
+            state.showHistory = true
+        case .dismissHistory:
+            state.showHistory = false
         }
     }
     
@@ -86,4 +90,6 @@ public enum ExerciseDetailsIntent {
     case refreshAIInsight
     case viewAllTrendsTapped
     case dismissTrends
+    case viewAllHistoryTapped
+    case dismissHistory
 }

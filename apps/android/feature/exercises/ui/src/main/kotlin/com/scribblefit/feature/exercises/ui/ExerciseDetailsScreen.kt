@@ -101,7 +101,7 @@ private fun ExerciseDetailsContent(
                         titleLabel = state.historyLabel,
                         viewAllSessionsText = state.viewAllSessionsText,
                         totalSessionsText = state.getTotalSessionsText(stats.sessions),
-                        onViewHistoryClick = { /* TODO */ }
+                        onViewHistoryClick = { onIntent(ExerciseDetailsIntent.NavigateToHistory) }
                     )
                 }
 

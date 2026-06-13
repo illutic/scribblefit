@@ -14,6 +14,7 @@ public struct CanvasView: View {
     let getExerciseDetailsUseCase: GetExerciseDetailsUseCase
     let getExerciseAIInsightUseCase: GetExerciseAIInsightUseCase
     let getExerciseTrendsUseCase: GetExerciseTrendDataUseCase
+    let getExerciseHistoryUseCase: GetExerciseHistoryUseCase
     let configRepository: ConfigRepository
     let exerciseRepository: ExerciseRepository
     let manualEditScribbleUseCase: FeatureScribble.ManualEditScribbleUseCase
@@ -33,6 +34,7 @@ public struct CanvasView: View {
         getExerciseDetailsUseCase: GetExerciseDetailsUseCase,
         getExerciseAIInsightUseCase: GetExerciseAIInsightUseCase,
         getExerciseTrendsUseCase: GetExerciseTrendDataUseCase,
+        getExerciseHistoryUseCase: GetExerciseHistoryUseCase,
         configRepository: ConfigRepository,
         exerciseRepository: ExerciseRepository,
         manualEditScribbleUseCase: FeatureScribble.ManualEditScribbleUseCase,
@@ -47,6 +49,7 @@ public struct CanvasView: View {
         self.getExerciseDetailsUseCase = getExerciseDetailsUseCase
         self.getExerciseAIInsightUseCase = getExerciseAIInsightUseCase
         self.getExerciseTrendsUseCase = getExerciseTrendsUseCase
+        self.getExerciseHistoryUseCase = getExerciseHistoryUseCase
         self.configRepository = configRepository
         self.exerciseRepository = exerciseRepository
         self.manualEditScribbleUseCase = manualEditScribbleUseCase
@@ -257,6 +260,7 @@ public struct CanvasView: View {
             ),
             onDismiss: onDismiss,
             getExerciseTrendDataUseCase: getExerciseTrendsUseCase,
+            getExerciseHistoryUseCase: getExerciseHistoryUseCase,
             configRepository: configRepository
         )
     }
@@ -273,6 +277,7 @@ public struct CanvasView: View {
             getExerciseDetailsUseCase: getExerciseDetailsUseCase,
             getExerciseAIInsightUseCase: getExerciseAIInsightUseCase,
             getExerciseTrendsUseCase: getExerciseTrendsUseCase,
+            getExerciseHistoryUseCase: getExerciseHistoryUseCase,
             configRepository: configRepository
         )
     }

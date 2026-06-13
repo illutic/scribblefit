@@ -116,14 +116,14 @@ internal fun InsightsScreen(
 
                     val bottomBarItems = state.bottomBarState.items.map { item ->
                         val icon = when (item.screen) {
-                            Screen.Canvas -> Icons.Rounded.Home
+                            is Screen.Canvas -> Icons.Rounded.Home
                             Screen.Insights -> Icons.Rounded.AutoGraph
                             Screen.Ledger -> Icons.Rounded.CalendarMonth
                             Screen.Settings -> Icons.Rounded.Settings
                             else -> return@Scaffold
                         }
                         val label = when (item.screen) {
-                            Screen.Canvas -> stringResource(R.string.nav_canvas)
+                            is Screen.Canvas -> stringResource(R.string.nav_canvas)
                             Screen.Insights -> stringResource(R.string.nav_insights)
                             Screen.Ledger -> stringResource(R.string.nav_ledger)
                             Screen.Settings -> stringResource(R.string.nav_settings)

@@ -10,6 +10,7 @@ public struct ScribbleDetailsView: View {
     private let getExerciseDetailsUseCase: GetExerciseDetailsUseCase
     private let getExerciseAIInsightUseCase: GetExerciseAIInsightUseCase
     private let getExerciseTrendsUseCase: GetExerciseTrendDataUseCase
+    private let getExerciseHistoryUseCase: GetExerciseHistoryUseCase
     private let configRepository: ConfigRepository
 
     public init(
@@ -17,12 +18,14 @@ public struct ScribbleDetailsView: View {
         getExerciseDetailsUseCase: GetExerciseDetailsUseCase,
         getExerciseAIInsightUseCase: GetExerciseAIInsightUseCase,
         getExerciseTrendsUseCase: GetExerciseTrendDataUseCase,
+        getExerciseHistoryUseCase: GetExerciseHistoryUseCase,
         configRepository: ConfigRepository
     ) {
         _store = State(initialValue: store)
         self.getExerciseDetailsUseCase = getExerciseDetailsUseCase
         self.getExerciseAIInsightUseCase = getExerciseAIInsightUseCase
         self.getExerciseTrendsUseCase = getExerciseTrendsUseCase
+        self.getExerciseHistoryUseCase = getExerciseHistoryUseCase
         self.configRepository = configRepository
     }
 
@@ -80,6 +83,7 @@ public struct ScribbleDetailsView: View {
                 ),
                 onDismiss: { store.onIntent(.dismissExerciseDetails) },
                 getExerciseTrendDataUseCase: getExerciseTrendsUseCase,
+                getExerciseHistoryUseCase: getExerciseHistoryUseCase,
                 configRepository: configRepository
             )
         }

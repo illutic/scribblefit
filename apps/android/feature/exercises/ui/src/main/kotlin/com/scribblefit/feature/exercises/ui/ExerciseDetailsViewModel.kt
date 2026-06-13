@@ -46,6 +46,9 @@ class ExerciseDetailsViewModel @Inject constructor(
             ExerciseDetailsIntent.NavigateToTrends -> {
                 navigator.navigateTo(Screen.ExerciseTrends(state.value.exerciseName))
             }
+            ExerciseDetailsIntent.NavigateToHistory -> {
+                navigator.navigateTo(Screen.ExerciseHistory(state.value.exerciseName))
+            }
         }
     }
 

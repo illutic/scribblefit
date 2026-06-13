@@ -8,17 +8,20 @@ public struct ExerciseDetailsView: View {
     
     // Dependencies for sub-screens
     let getExerciseTrendDataUseCase: GetExerciseTrendDataUseCase
+    let getExerciseHistoryUseCase: GetExerciseHistoryUseCase
     let configRepository: ConfigRepository
     
     public init(
         store: ExerciseDetailsStore,
         onDismiss: @escaping () -> Void,
         getExerciseTrendDataUseCase: GetExerciseTrendDataUseCase,
+        getExerciseHistoryUseCase: GetExerciseHistoryUseCase,
         configRepository: ConfigRepository
     ) {
         self.store = store
         self.onDismiss = onDismiss
         self.getExerciseTrendDataUseCase = getExerciseTrendDataUseCase
+        self.getExerciseHistoryUseCase = getExerciseHistoryUseCase
         self.configRepository = configRepository
     }
     
@@ -53,7 +56,7 @@ public struct ExerciseDetailsView: View {
                                 
                                 HistorySection(
                                     historyCount: details.history.count,
-                                    onViewHistoryClick: { /* TODO */ }
+                                    onViewHistoryClick: { store.onIntent(.viewAllHistoryTapped) }
                                 )
                             }
                             .padding(.horizontal, 24)
@@ -71,6 +74,15 @@ public struct ExerciseDetailsView: View {
                     store: ExerciseTrendsStore(
                         exerciseName: store.state.exerciseName,
                         getExerciseTrendDataUseCase: getExerciseTrendDataUseCase,
+                        configRepository: configRepository
+                    )
+                )
+            }
+            .navigationDestination(isPresented: $store.state.showHistory) {
+                ExerciseHistoryView(
+                    store: ExerciseHistoryStore(
+                        exerciseName: store.state.exerciseName,
+                        getExerciseHistoryUseCase: getExerciseHistoryUseCase,
                         configRepository: configRepository
                     )
                 )

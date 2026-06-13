@@ -14,6 +14,7 @@ public struct LedgerView: View {
     let getExerciseDetailsUseCase: GetExerciseDetailsUseCase
     let getExerciseAIInsightUseCase: GetExerciseAIInsightUseCase
     let getExerciseTrendsUseCase: GetExerciseTrendDataUseCase
+    let getExerciseHistoryUseCase: GetExerciseHistoryUseCase
     let configRepository: ConfigRepository
     let exerciseRepository: ExerciseRepository
     let addManualExerciseUseCase: AddManualExerciseUseCase
@@ -31,6 +32,7 @@ public struct LedgerView: View {
         getExerciseDetailsUseCase: GetExerciseDetailsUseCase,
         getExerciseAIInsightUseCase: GetExerciseAIInsightUseCase,
         getExerciseTrendsUseCase: GetExerciseTrendDataUseCase,
+        getExerciseHistoryUseCase: GetExerciseHistoryUseCase,
         configRepository: ConfigRepository,
         exerciseRepository: ExerciseRepository,
         addManualExerciseUseCase: AddManualExerciseUseCase,
@@ -43,6 +45,7 @@ public struct LedgerView: View {
         self.getExerciseDetailsUseCase = getExerciseDetailsUseCase
         self.getExerciseAIInsightUseCase = getExerciseAIInsightUseCase
         self.getExerciseTrendsUseCase = getExerciseTrendsUseCase
+        self.getExerciseHistoryUseCase = getExerciseHistoryUseCase
         self.configRepository = configRepository
         self.exerciseRepository = exerciseRepository
         self.addManualExerciseUseCase = addManualExerciseUseCase
@@ -88,6 +91,7 @@ public struct LedgerView: View {
                     getExerciseDetailsUseCase: getExerciseDetailsUseCase,
                     getExerciseAIInsightUseCase: getExerciseAIInsightUseCase,
                     getExerciseTrendsUseCase: getExerciseTrendsUseCase,
+                    getExerciseHistoryUseCase: getExerciseHistoryUseCase,
                     configRepository: configRepository
                 )
             case .exerciseDetails(let name):
@@ -100,6 +104,7 @@ public struct LedgerView: View {
                     ),
                     onDismiss: { store.handleIntent(.dismissDetails) },
                     getExerciseTrendDataUseCase: getExerciseTrendsUseCase,
+                    getExerciseHistoryUseCase: getExerciseHistoryUseCase,
                     configRepository: configRepository
                 )
             }

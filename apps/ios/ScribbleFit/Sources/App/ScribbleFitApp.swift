@@ -61,6 +61,7 @@ struct ScribbleFitApp: App {
     private let getExerciseDetailsUseCase: GetExerciseDetailsUseCase
     private let getExerciseAIInsightUseCase: GetExerciseAIInsightUseCase
     private let getExerciseTrendsUseCase: GetExerciseTrendDataUseCase
+    private let getExerciseHistoryUseCase: GetExerciseHistoryUseCase
     private let addManualExerciseUseCase: AddManualExerciseUseCase
     private let addSetToExerciseUseCase: AddSetToExerciseUseCase
     private let calculateTrendsUseCase: CalculateTrendsUseCase
@@ -167,6 +168,13 @@ struct ScribbleFitApp: App {
             let getExerciseTrendsUC = GetExerciseTrendDataUseCase(exerciseRepository: exerciseRepo)
             self.getExerciseTrendsUseCase = getExerciseTrendsUC
 
+            let formatExerciseSummaryUC = FormatExerciseSummaryUseCase()
+            let getExerciseHistoryUC = GetExerciseHistoryUseCase(
+                exerciseRepository: exerciseRepo,
+                formatExerciseSummaryUseCase: formatExerciseSummaryUC
+            )
+            self.getExerciseHistoryUseCase = getExerciseHistoryUC
+
             self.addManualExerciseUseCase = AddManualExerciseUseCase(exerciseRepository: exerciseRepo)
             self.addSetToExerciseUseCase = AddSetToExerciseUseCase(exerciseRepository: exerciseRepo)
             
@@ -224,6 +232,7 @@ struct ScribbleFitApp: App {
                 getExerciseDetailsUseCase: getExerciseDetailsUseCase,
                 getExerciseAIInsightUseCase: getExerciseAIInsightUseCase,
                 getExerciseTrendsUseCase: getExerciseTrendsUseCase,
+                getExerciseHistoryUseCase: getExerciseHistoryUseCase,
                 configRepository: configRepository,
                 exerciseRepository: exerciseRepository,
                 manualEditScribbleUseCase: manualEditScribbleUseCase,
@@ -247,6 +256,7 @@ struct ContentView: View {
     let getExerciseDetailsUseCase: GetExerciseDetailsUseCase
     let getExerciseAIInsightUseCase: GetExerciseAIInsightUseCase
     let getExerciseTrendsUseCase: GetExerciseTrendDataUseCase
+    let getExerciseHistoryUseCase: GetExerciseHistoryUseCase
     let configRepository: ConfigRepository
     let exerciseRepository: ExerciseRepository
     let manualEditScribbleUseCase: ManualEditScribbleUseCase
@@ -266,6 +276,7 @@ struct ContentView: View {
                 getExerciseDetailsUseCase: getExerciseDetailsUseCase,
                 getExerciseAIInsightUseCase: getExerciseAIInsightUseCase,
                 getExerciseTrendsUseCase: getExerciseTrendsUseCase,
+                getExerciseHistoryUseCase: getExerciseHistoryUseCase,
                 configRepository: configRepository,
                 exerciseRepository: exerciseRepository,
                 manualEditScribbleUseCase: manualEditScribbleUseCase,
@@ -292,6 +303,7 @@ struct ContentView: View {
                 getExerciseDetailsUseCase: getExerciseDetailsUseCase,
                 getExerciseAIInsightUseCase: getExerciseAIInsightUseCase,
                 getExerciseTrendsUseCase: getExerciseTrendsUseCase,
+                getExerciseHistoryUseCase: getExerciseHistoryUseCase,
                 configRepository: configRepository,
                 exerciseRepository: exerciseRepository,
                 addManualExerciseUseCase: addManualExerciseUseCase,
@@ -306,5 +318,13 @@ struct ContentView: View {
         }
         .tint(Color.scribblePrimary)
         .preferredColorScheme(settingsStore.state.config.themePreference.getColorScheme())
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToCanvasDate"))) { notification in
+            if let date = notification.object as? Date {
+                selectedTab = 0
+                canvasStore.onIntent(.dismissDetails)
+                ledgerStore.handleIntent(.dismissDetails)
+                canvasStore.onIntent(.onDateSelected(date))
+            }
+        }
     }
 }

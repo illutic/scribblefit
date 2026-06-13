@@ -76,9 +76,9 @@ class LedgerViewModelTest {
         every { getScribblesInRangeUseCase(any(), any()) } returns flowOf(emptyList())
         val viewModel = LedgerViewModel(getScribblesInRangeUseCase, configRepository, navigator)
 
-        viewModel.onIntent(LedgerIntent.NavigateToScreen(Screen.Canvas))
+        viewModel.onIntent(LedgerIntent.NavigateToScreen(Screen.Canvas()))
 
-        verify { navigator.navigateTo(Screen.Canvas) }
+        verify { navigator.navigateTo(Screen.Canvas()) }
     }
 
     @Test

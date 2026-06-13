@@ -5,4 +5,5 @@ sealed class ExerciseDetailsIntent {
     object RefreshAIInsight : ExerciseDetailsIntent()
     object NavigateBack : ExerciseDetailsIntent()
     object NavigateToTrends : ExerciseDetailsIntent()
+    object NavigateToHistory : ExerciseDetailsIntent()
 }
