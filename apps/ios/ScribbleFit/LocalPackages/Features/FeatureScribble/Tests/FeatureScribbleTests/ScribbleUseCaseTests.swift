@@ -134,7 +134,7 @@ final class RemoveScribbleUseCaseTests: XCTestCase {
     private var sut: RemoveScribbleUseCase!
 
     override func setUp() async throws {
-        try await super.setUp()
+        // try await super.setUp() removed for Swift 6 XCTestCase data-race issue
         mockRepo = MockScribbleRepository()
         sut = RemoveScribbleUseCase(repository: mockRepo)
     }
@@ -169,7 +169,7 @@ final class GetScribblesForDateUseCaseTests: XCTestCase {
     private var sut: GetScribblesForDateUseCase!
 
     override func setUp() async throws {
-        try await super.setUp()
+        // try await super.setUp() removed for Swift 6 XCTestCase data-race issue
         mockRepo = MockScribbleRepository()
         sut = GetScribblesForDateUseCase(repository: mockRepo)
     }
@@ -210,7 +210,7 @@ final class CreateManualScribbleUseCaseTests: XCTestCase {
     private var sut: CreateManualScribbleUseCase!
 
     override func setUp() async throws {
-        try await super.setUp()
+        // try await super.setUp() removed for Swift 6 XCTestCase data-race issue
         mockRepo = MockScribbleRepository()
         sut = CreateManualScribbleUseCase(scribbleRepository: mockRepo)
     }
@@ -293,7 +293,7 @@ final class EditScribbleUseCaseTests: XCTestCase {
     private var sut: EditScribbleUseCase!
 
     override func setUp() async throws {
-        try await super.setUp()
+        // try await super.setUp() removed for Swift 6 XCTestCase data-race issue
         mockRepo = MockScribbleRepository()
         sut = EditScribbleUseCase(repository: mockRepo)
     }
@@ -357,7 +357,7 @@ final class ParsePendingScribblesUseCaseTests: XCTestCase {
     private var sut: ParsePendingScribblesUseCase!
 
     override func setUp() async throws {
-        try await super.setUp()
+        // try await super.setUp() removed for Swift 6 XCTestCase data-race issue
         mockRepo = MockScribbleRepository()
         mockLLM = MockLLMService()
         sut = ParsePendingScribblesUseCase(scribbleRepository: mockRepo, llmProvider: mockLLM)
@@ -429,7 +429,7 @@ final class ManualEditScribbleUseCaseTests: XCTestCase {
     private let setId = UUID()
 
     override func setUp() async throws {
-        try await super.setUp()
+        // try await super.setUp() removed for Swift 6 XCTestCase data-race issue
         mockRepo = MockScribbleRepository()
         sut = ManualEditScribbleUseCase(scribbleRepository: mockRepo)
     }

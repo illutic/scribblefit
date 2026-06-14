@@ -31,7 +31,7 @@ final class GetExerciseDetailsUseCaseTests: XCTestCase {
     private var sut: GetExerciseDetailsUseCase!
 
     override func setUp() async throws {
-        try await super.setUp()
+        // try await super.setUp() removed for Swift 6 XCTestCase data-race issue
         mockRepo = MockScribbleRepositoryDetails()
         sut = GetExerciseDetailsUseCase(scribbleRepository: mockRepo)
     }

@@ -69,7 +69,7 @@ final class AddRawScribbleUseCaseTests: XCTestCase {
     private var sut: AddRawScribbleUseCase!
 
     override func setUp() async throws {
-        try await super.setUp()
+        // try await super.setUp() removed for Swift 6 XCTestCase data-race issue
         mockRepo = MockScribbleRepo()
         sut = AddRawScribbleUseCase(repository: mockRepo)
     }
@@ -120,7 +120,7 @@ final class ConfirmScribbleUseCaseTests: XCTestCase {
     private var sut: ConfirmScribbleUseCase!
 
     override func setUp() async throws {
-        try await super.setUp()
+        // try await super.setUp() removed for Swift 6 XCTestCase data-race issue
         mockRepo = MockScribbleRepo()
         sut = ConfirmScribbleUseCase(scribbleRepository: mockRepo)
     }
@@ -169,7 +169,7 @@ final class DeleteScribbleUseCaseTests: XCTestCase {
     private var sut: DeleteScribbleUseCase!
 
     override func setUp() async throws {
-        try await super.setUp()
+        // try await super.setUp() removed for Swift 6 XCTestCase data-race issue
         mockRepo = MockScribbleRepo()
         removeUseCase = RemoveScribbleUseCase(repository: mockRepo)
         sut = DeleteScribbleUseCase(removeScribbleUseCase: removeUseCase)

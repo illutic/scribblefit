@@ -45,7 +45,7 @@ final class ClearAllDataUseCaseTests: XCTestCase {
     private var sut: ClearAllDataUseCase!
 
     override func setUp() async throws {
-        try await super.setUp()
+        // try await super.setUp() removed for Swift 6 XCTestCase data-race issue
         mockRepo = MockSettingsRepository()
         sut = ClearAllDataUseCase(repository: mockRepo)
     }
@@ -81,7 +81,7 @@ final class ExportUserDataUseCaseTests: XCTestCase {
     private var sut: ExportUserDataUseCase!
 
     override func setUp() async throws {
-        try await super.setUp()
+        // try await super.setUp() removed for Swift 6 XCTestCase data-race issue
         mockRepo = MockSettingsRepository()
         sut = ExportUserDataUseCase(repository: mockRepo)
     }

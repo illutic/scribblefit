@@ -77,7 +77,7 @@ final class GetFrequencyInsightsUseCaseTests: XCTestCase {
     private var sut: GetFrequencyInsightsUseCase!
 
     override func setUp() async throws {
-        try await super.setUp()
+        // try await super.setUp() removed for Swift 6 XCTestCase data-race issue
         mockRepo = MockScribbleRepository()
         sut = GetFrequencyInsightsUseCase(scribbleRepository: mockRepo)
     }
@@ -145,7 +145,7 @@ final class GetMuscleDistributionInsightsUseCaseTests: XCTestCase {
     private var sut: GetMuscleDistributionInsightsUseCase!
 
     override func setUp() async throws {
-        try await super.setUp()
+        // try await super.setUp() removed for Swift 6 XCTestCase data-race issue
         mockRepo = MockScribbleRepository()
         sut = GetMuscleDistributionInsightsUseCase(scribbleRepository: mockRepo)
     }
@@ -224,7 +224,7 @@ final class GetVolumeInsightsUseCaseTests: XCTestCase {
     private var sut: GetVolumeInsightsUseCase!
 
     override func setUp() async throws {
-        try await super.setUp()
+        // try await super.setUp() removed for Swift 6 XCTestCase data-race issue
         mockRepo = MockScribbleRepository()
         sut = GetVolumeInsightsUseCase(scribbleRepository: mockRepo)
     }
@@ -285,7 +285,7 @@ final class GetAIOverviewUseCaseTests: XCTestCase {
     private var sut: GetAIOverviewUseCase!
 
     override func setUp() async throws {
-        try await super.setUp()
+        // try await super.setUp() removed for Swift 6 XCTestCase data-race issue
         mockRepo = MockScribbleRepository()
         mockLLM = MockLLMService()
         sut = GetAIOverviewUseCase(scribbleRepository: mockRepo, llmProvider: mockLLM)

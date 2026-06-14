@@ -43,7 +43,7 @@ final class GetWorkoutsInRangeUseCaseTests: XCTestCase {
     private var sut: GetWorkoutsInRangeUseCase!
 
     override func setUp() async throws {
-        try await super.setUp()
+        // try await super.setUp() removed for Swift 6 XCTestCase data-race issue
         mockRepo = MockScribbleRepository()
         sut = GetWorkoutsInRangeUseCase(repository: mockRepo)
     }

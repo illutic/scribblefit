@@ -49,7 +49,7 @@ final class GetExerciseTrendDataUseCaseTests: XCTestCase {
     private var sut: GetExerciseTrendDataUseCase!
 
     override func setUp() async throws {
-        try await super.setUp()
+        // try await super.setUp() removed for Swift 6 XCTestCase data-race issue
         mockRepo = MockTrendExerciseRepository()
         sut = GetExerciseTrendDataUseCase(exerciseRepository: mockRepo)
     }

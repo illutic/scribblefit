@@ -130,7 +130,7 @@ final class AddManualExerciseUseCaseTests: XCTestCase {
     private var sut: AddManualExerciseUseCase!
 
     override func setUp() async throws {
-        try await super.setUp()
+        // try await super.setUp() removed for Swift 6 XCTestCase data-race issue
         mockRepo = MockExerciseRepository()
         sut = AddManualExerciseUseCase(exerciseRepository: mockRepo)
     }
@@ -182,7 +182,7 @@ final class AddSetToExerciseUseCaseTests: XCTestCase {
     private var sut: AddSetToExerciseUseCase!
 
     override func setUp() async throws {
-        try await super.setUp()
+        // try await super.setUp() removed for Swift 6 XCTestCase data-race issue
         mockRepo = MockExerciseRepository()
         sut = AddSetToExerciseUseCase(exerciseRepository: mockRepo)
     }
@@ -238,7 +238,7 @@ final class RemoveExerciseUseCaseTests: XCTestCase {
     private var sut: RemoveExerciseUseCase!
 
     override func setUp() async throws {
-        try await super.setUp()
+        // try await super.setUp() removed for Swift 6 XCTestCase data-race issue
         mockExerciseRepo = MockExerciseRepository()
         mockScribbleRepo = MockScribbleRepo2()
         sut = RemoveExerciseUseCase(exerciseRepository: mockExerciseRepo, scribbleRepository: mockScribbleRepo)
@@ -297,7 +297,7 @@ final class GetExerciseHistoryUseCaseTests: XCTestCase {
     private var sut: GetExerciseHistoryUseCase!
 
     override func setUp() async throws {
-        try await super.setUp()
+        // try await super.setUp() removed for Swift 6 XCTestCase data-race issue
         mockRepo = MockExerciseRepository()
         formatUseCase = FormatExerciseSummaryUseCase()
         sut = GetExerciseHistoryUseCase(exerciseRepository: mockRepo, formatExerciseSummaryUseCase: formatUseCase)
@@ -431,7 +431,7 @@ final class GetExerciseAIInsightUseCaseTests: XCTestCase {
     private var sut: GetExerciseAIInsightUseCase!
 
     override func setUp() async throws {
-        try await super.setUp()
+        // try await super.setUp() removed for Swift 6 XCTestCase data-race issue
         mockLLM = MockExerciseLLMService()
         sut = GetExerciseAIInsightUseCase(llmService: mockLLM)
     }
@@ -483,7 +483,7 @@ final class CalculateTrendsUseCaseTests: XCTestCase {
     private var sut: CalculateTrendsUseCase!
 
     override func setUp() async throws {
-        try await super.setUp()
+        // try await super.setUp() removed for Swift 6 XCTestCase data-race issue
         mockRepo = MockExerciseRepository()
         sut = CalculateTrendsUseCase(exerciseRepository: mockRepo)
     }
