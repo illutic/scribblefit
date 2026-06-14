@@ -28,11 +28,15 @@ public struct ScribbleGlassModifier: ViewModifier {
 private extension View {
     @ViewBuilder
     func glassEffectShim(in shape: some Shape) -> some View {
+#if compiler(>=10.0)
         if #available(iOS 26.0, macOS 26.0, *) {
             self.glassEffect(in: shape)
         } else {
             self.background(.ultraThinMaterial, in: shape)
         }
+#else
+        self.background(.ultraThinMaterial, in: shape)
+#endif
     }
 }
 
