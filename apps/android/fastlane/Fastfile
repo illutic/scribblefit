@@ -6,7 +6,7 @@ platform :android do
     upload_to_play_store(
       track: 'alpha',
       release_status: 'completed',
-      aab: '../app/build/outputs/bundle/release/app-release.aab',
+      aab: '../app/release/app-release.aab',
       package_name: 'com.scribblefit.app',
       json_key: '../play-store-key.json'
     )
