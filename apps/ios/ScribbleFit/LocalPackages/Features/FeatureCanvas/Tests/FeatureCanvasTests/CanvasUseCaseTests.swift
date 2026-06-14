@@ -58,17 +58,7 @@ private func makeScribble(
     Scribble(id: id, rawText: rawText, status: status, exercises: exercises)
 }
 
-@MainActor
-private func XCTAssertThrowsErrorAsync(
-    _ expression: @MainActor () async throws -> Void,
-    file: StaticString = #filePath,
-    line: UInt = #line
-) async {
-    do {
-        try await expression()
-        XCTFail("Expected error to be thrown", file: file, line: line)
-    } catch {}
-}
+
 
 // MARK: - AddRawScribbleUseCase Tests
 
@@ -117,7 +107,7 @@ final class AddRawScribbleUseCaseTests: XCTestCase {
 
     func test_execute_repositoryError_propagates() async {
         mockRepo.shouldThrowOnAdd = NSError(domain: "DB", code: 1)
-        await XCTAssertThrowsErrorAsync { try await self.sut.execute(text: "valid", date: Date()) }
+        do { try await self.sut.execute(text: "valid", date: Date()); XCTFail("Expected error") } catch {}
     }
 }
 
@@ -149,23 +139,23 @@ final class ConfirmScribbleUseCaseTests: XCTestCase {
 
     func test_execute_pendingStatus_throwsInvalidStatus() async {
         let scribble = makeScribble(status: .pending)
-        await XCTAssertThrowsErrorAsync { try await self.sut.execute(scribble: scribble) }
+        do { try await self.sut.execute(scribble: scribble); XCTFail("Expected error") } catch {}
     }
 
     func test_execute_failedStatus_throwsInvalidStatus() async {
         let scribble = makeScribble(status: .failed)
-        await XCTAssertThrowsErrorAsync { try await self.sut.execute(scribble: scribble) }
+        do { try await self.sut.execute(scribble: scribble); XCTFail("Expected error") } catch {}
     }
 
     func test_execute_alreadyCompleted_throwsInvalidStatus() async {
         let scribble = makeScribble(status: .completed)
-        await XCTAssertThrowsErrorAsync { try await self.sut.execute(scribble: scribble) }
+        do { try await self.sut.execute(scribble: scribble); XCTFail("Expected error") } catch {}
     }
 
     func test_execute_repositoryError_propagates() async {
         let scribble = makeScribble(status: .success)
         mockRepo.shouldThrowOnUpdate = NSError(domain: "DB", code: 2)
-        await XCTAssertThrowsErrorAsync { try await self.sut.execute(scribble: scribble) }
+        do { try await self.sut.execute(scribble: scribble); XCTFail("Expected error") } catch {}
     }
 }
 
@@ -193,7 +183,7 @@ final class DeleteScribbleUseCaseTests: XCTestCase {
 
     func test_execute_propagatesError() async {
         mockRepo.shouldThrowOnDelete = NSError(domain: "Test", code: 5)
-        await XCTAssertThrowsErrorAsync { try await self.sut.execute(id: UUID()) }
+        do { try await self.sut.execute(id: UUID()); XCTFail("Expected error") } catch {}
     }
 
     func test_execute_calledMultipleTimes_passesAllIds() async throws {

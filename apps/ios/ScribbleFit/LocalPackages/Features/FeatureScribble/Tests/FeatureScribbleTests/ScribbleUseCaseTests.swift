@@ -148,7 +148,7 @@ final class RemoveScribbleUseCaseTests: XCTestCase {
     func test_execute_propagatesError() async {
         let id = UUID()
         mockRepo.shouldThrowOnDelete = NSError(domain: "Test", code: 1)
-        await XCTAssertThrowsErrorAsync { try await self.sut.execute(id: id) }
+        do { try await self.sut.execute(id: id); XCTFail("Expected error") } catch {}
     }
 
     func test_execute_calledTwice_deletesTwice() async throws {
@@ -329,21 +329,21 @@ final class EditScribbleUseCaseTests: XCTestCase {
         let id = UUID()
         mockRepo.scribbleToReturn = makeScribble(id: id)
 
-        await XCTAssertThrowsErrorAsync { try await self.sut.execute(id: id, newText: "   ") }
+        do { try await self.sut.execute(id: id, newText: "   "); XCTFail("Expected error") } catch {}
     }
 
     func test_execute_blankText_throwsError() async {
         let id = UUID()
         mockRepo.scribbleToReturn = makeScribble(id: id)
 
-        await XCTAssertThrowsErrorAsync { try await self.sut.execute(id: id, newText: "") }
+        do { try await self.sut.execute(id: id, newText: ""); XCTFail("Expected error") } catch {}
     }
 
     func test_execute_notFound_throwsNotFoundError() async {
         let id = UUID()
         mockRepo.scribbleToReturn = nil
 
-        await XCTAssertThrowsErrorAsync { try await self.sut.execute(id: id, newText: "valid text") }
+        do { try await self.sut.execute(id: id, newText: "valid text"); XCTFail("Expected error") } catch {}
     }
 }
 
@@ -395,7 +395,7 @@ final class ParsePendingScribblesUseCaseTests: XCTestCase {
         mockRepo.scribbleToReturn = makeScribble(id: id, status: .pending)
         mockLLM.shouldThrowOnParse = NSError(domain: "LLM", code: 500)
 
-        await XCTAssertThrowsErrorAsync { try await self.sut.parseSingleScribble(id: id) }
+        do { try await self.sut.parseSingleScribble(id: id); XCTFail("Expected error") } catch {}
 
         let failedUpdate = mockRepo.updatedScribbles.last
         XCTAssertEqual(failedUpdate?.status, .failed)
@@ -547,21 +547,5 @@ final class ManualEditScribbleUseCaseTests: XCTestCase {
         mockRepo.scribbleToReturn = nil
         try await sut.addSet(scribbleId: scribbleId, exerciseId: exerciseId)
         XCTAssertTrue(mockRepo.updatedScribbles.isEmpty)
-    }
-}
-
-// MARK: - Async Test Helpers
-
-@MainActor
-func XCTAssertThrowsErrorAsync(
-    _ expression: @MainActor () async throws -> Void,
-    file: StaticString = #filePath,
-    line: UInt = #line
-) async {
-    do {
-        try await expression()
-        XCTFail("Expected error to be thrown", file: file, line: line)
-    } catch {
-        // success
     }
 }

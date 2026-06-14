@@ -119,17 +119,7 @@ private func makeScribble(id: UUID = UUID(), exercises: [Exercise] = []) -> Scri
     Scribble(id: id, rawText: "test", status: .completed, exercises: exercises)
 }
 
-@MainActor
-private func XCTAssertThrowsErrorAsync(
-    _ expression: @MainActor () async throws -> Void,
-    file: StaticString = #filePath,
-    line: UInt = #line
-) async {
-    do {
-        try await expression()
-        XCTFail("Expected error to be thrown", file: file, line: line)
-    } catch {}
-}
+
 
 // MARK: - AddManualExerciseUseCase Tests
 
@@ -447,7 +437,7 @@ final class GetExerciseAIInsightUseCaseTests: XCTestCase {
     }
 
     func test_execute_emptyHistory_throwsError() async {
-        await XCTAssertThrowsErrorAsync { _ = try await self.sut.execute(history: []) }
+        do { _ = try await self.sut.execute(history: []); XCTFail("Expected error") } catch {}
     }
 
     func test_execute_withHistory_returnsInsight() async throws {
@@ -468,7 +458,7 @@ final class GetExerciseAIInsightUseCaseTests: XCTestCase {
         let session = ExerciseHistorySession(exercise: ex, totalVolume: 100, maxWeight: 100, summary: "", isPersonalBest: false, scribbleId: UUID())
         mockLLM.shouldThrow = NSError(domain: "LLM", code: 500)
 
-        await XCTAssertThrowsErrorAsync { _ = try await self.sut.execute(history: [session]) }
+        do { _ = try await self.sut.execute(history: [session]); XCTFail("Expected error") } catch {}
     }
 
     func test_execute_takesAtMostFiveSessions() async throws {
