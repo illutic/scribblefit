@@ -1,5 +1,6 @@
 package com.scribblefit.feature.settings.ui
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -11,8 +12,14 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -21,6 +28,7 @@ import com.scribblefit.feature.settings.ui.components.AIConfigurationSection
 import com.scribblefit.feature.settings.ui.components.AppearanceSection
 import com.scribblefit.feature.settings.ui.components.DataManagementSection
 import com.scribblefit.feature.settings.ui.components.UnitsSection
+import kotlinx.coroutines.launch
 
 @Composable
 internal fun SettingsScreen(
@@ -28,10 +36,23 @@ internal fun SettingsScreen(
     onIntent: (SettingsIntent) -> Unit,
     onBackClick: () -> Unit,
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(state.errorMessage) {
+        state.errorMessage?.let { msg ->
+            onIntent(SettingsIntent.DismissError)
+            scope.launch {
+                snackbarHostState.showSnackbar(msg)
+            }
+        }
+    }
+
     Scaffold(
         topBar = {
             SettingsTopBar(onBackClick = onBackClick)
         },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         containerColor = ScribbleFitTheme.colors.surfaceContainerLowest
     ) { paddingValues ->
         Box(
@@ -79,11 +100,24 @@ internal fun SettingsScreen(
                 }
 
                 item {
-                    SettingsFooter(state = state, version = "2.4.0 (821)")
+                    SettingsFooter(state = state)
                 }
 
                 item {
                     Spacer(modifier = Modifier.height(ScribbleFitTheme.spacing.large))
+                }
+            }
+
+            if (state.isLoading) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .background(ScribbleFitTheme.colors.surface.copy(alpha = 0.5f)),
+                    contentAlignment = Alignment.Center
+                ) {
+                    CircularProgressIndicator(
+                        color = ScribbleFitTheme.colors.primary
+                    )
                 }
             }
         }

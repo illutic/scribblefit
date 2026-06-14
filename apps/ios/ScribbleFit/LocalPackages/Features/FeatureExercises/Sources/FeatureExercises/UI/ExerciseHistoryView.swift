@@ -100,10 +100,14 @@ private struct SessionRowView: View {
         .buttonStyle(PlainButtonStyle())
     }
     
-    private func formatDate(_ date: Date) -> String {
+    private static let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEE, MMM d"
-        return formatter.string(from: date)
+        return formatter
+    }()
+    
+    private func formatDate(_ date: Date) -> String {
+        return Self.dateFormatter.string(from: date)
     }
 }
 

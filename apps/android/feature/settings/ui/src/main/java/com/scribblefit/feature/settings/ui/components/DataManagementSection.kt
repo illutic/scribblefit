@@ -15,9 +15,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.scribblefit.core.designsystem.ScribbleFitTheme
+import com.scribblefit.feature.settings.ui.R
 import com.scribblefit.feature.settings.ui.SettingsDivider
 import com.scribblefit.feature.settings.ui.SettingsSection
 import com.scribblefit.feature.settings.ui.SettingsState
@@ -52,7 +54,7 @@ internal fun DataManagementSection(
             }
             Icon(
                 imageVector = Icons.Rounded.Download,
-                contentDescription = null,
+                contentDescription = stringResource(com.scribblefit.feature.settings.ui.R.string.settings_export_data_icon),
                 tint = ScribbleFitTheme.colors.midGray,
                 modifier = Modifier.size(20.dp)
             )
@@ -76,7 +78,7 @@ internal fun DataManagementSection(
             )
             Icon(
                 imageVector = Icons.Rounded.DeleteForever,
-                contentDescription = null,
+                contentDescription = stringResource(R.string.settings_clear_data_icon),
                 tint = ScribbleFitTheme.colors.dangerRed,
                 modifier = Modifier.size(20.dp)
             )

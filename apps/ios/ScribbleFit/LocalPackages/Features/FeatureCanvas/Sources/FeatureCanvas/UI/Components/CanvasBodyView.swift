@@ -53,6 +53,22 @@ struct CanvasBodyView: View {
             .padding(.top, 24)
         }
         .scrollDismissesKeyboard(.interactively)
+        .gesture(
+            DragGesture()
+                .onEnded { value in
+                    let horizontalSwipe = value.translation.width
+                    let verticalSwipe = value.translation.height
+                    
+                    // Ensure it's primarily a horizontal swipe
+                    if abs(horizontalSwipe) > abs(verticalSwipe) {
+                        if horizontalSwipe > 50 {
+                            onIntent(.onPreviousDayClick)
+                        } else if horizontalSwipe < -50 {
+                            onIntent(.onNextDayClick)
+                        }
+                    }
+                }
+        )
     }
 }
 

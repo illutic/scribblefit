@@ -35,6 +35,11 @@ public final class SettingsStore {
     private func loadInitialData() {
         state = state.copy(config: configRepository.getConfig())
         
+        if let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
+           let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String {
+            state = state.copy(version: "\(version) (\(build))")
+        }
+        
         Task {
             let isSupported = await checkLocalSupportUseCase.execute()
             state = state.copy(isLocalLlmSupported: isSupported)

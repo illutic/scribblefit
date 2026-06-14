@@ -26,7 +26,7 @@ public enum CanvasIntent: Sendable {
     // Manual Entry
     case showAddExerciseSheet
     case hideAddExerciseSheet
-    case saveManualExercise(name: String, muscleGroup: String, sets: [ExerciseSet], notes: String)
+    case saveManualExercise(name: String, muscleGroup: String, sets: [ExerciseSet])
 
     // Scribble Dialog
     case confirmScribble(Scribble)

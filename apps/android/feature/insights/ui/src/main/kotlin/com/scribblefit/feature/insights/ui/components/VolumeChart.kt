@@ -177,7 +177,7 @@ internal fun VolumeChart(
                 for (i in xLabelIndices) {
                     val date = Instant.ofEpochMilli(points[i].date)
                         .atZone(ZoneId.systemDefault())
-                        .toLocalDate()
+                        .toLocalDateTime()
                     val text = dateFormatter.format(date)
                     val measured = textMeasurer.measure(text, labelStyle)
                     val p = pointOffset(i)

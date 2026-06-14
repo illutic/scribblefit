@@ -71,10 +71,14 @@ public struct CanvasState: Equatable, Sendable {
         Calendar.current.isDateInToday(currentDate)
     }
 
-    public var dateString: String {
+    private static let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEEE, MMMM d"
-        return formatter.string(from: currentDate)
+        return formatter
+    }()
+
+    public var dateString: String {
+        return Self.dateFormatter.string(from: currentDate)
     }
 
     // Pre-resolved strings matching Android resources

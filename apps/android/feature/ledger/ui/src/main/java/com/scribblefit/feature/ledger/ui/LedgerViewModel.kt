@@ -20,6 +20,8 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
+import java.time.Instant
+import java.time.ZoneOffset
 
 @HiltViewModel
 class LedgerViewModel @Inject constructor(
@@ -72,8 +74,14 @@ class LedgerViewModel @Inject constructor(
     fun onIntent(intent: LedgerIntent) {
         when (intent) {
             is LedgerIntent.DateRangeChanged -> {
-                val startDate = intent.startDate?.toLocalDate() ?: _state.value.startDate
-                val endDate = intent.endDate?.toLocalDate() ?: _state.value.endDate
+                val startDate = intent.startDate?.let {
+                    Instant.ofEpochMilli(it).atZone(ZoneOffset.UTC)
+                        .toLocalDate().atStartOfDay()
+                } ?: _state.value.startDate
+                val endDate = intent.endDate?.let {
+                    Instant.ofEpochMilli(it).atZone(ZoneOffset.UTC)
+                        .toLocalDate().atTime(23, 59, 59, 999999999)
+                } ?: _state.value.endDate
                 _state.update { it.copy(startDate = startDate, endDate = endDate) }
             }
 

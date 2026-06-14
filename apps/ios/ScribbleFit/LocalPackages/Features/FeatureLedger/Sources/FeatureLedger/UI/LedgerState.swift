@@ -10,11 +10,15 @@ public struct LedgerState: Equatable, Sendable {
     public var navigationState: NavigationState?
     public var weightUnit: WeightUnit
 
-    public var dateRangeString: String {
+    private static let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         formatter.timeStyle = .none
-        return "\(formatter.string(from: startDate)) - \(formatter.string(from: endDate))"
+        return formatter
+    }()
+
+    public var dateRangeString: String {
+        return "\(Self.dateFormatter.string(from: startDate)) - \(Self.dateFormatter.string(from: endDate))"
     }
 
     public enum NavigationState: Equatable, Sendable, Identifiable {

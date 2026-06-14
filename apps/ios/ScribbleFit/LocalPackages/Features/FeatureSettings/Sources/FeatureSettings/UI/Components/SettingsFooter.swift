@@ -2,9 +2,11 @@ import SwiftUI
 import CoreDesignSystem
 
 struct SettingsFooter: View {
+    let version: String
+    
     var body: some View {
         VStack(spacing: 16) {
-            Text(String(localized: "SCRIBBLEFIT VERSION 1.0 (2640)"))
+            Text(String(localized: "SCRIBBLEFIT VERSION \(version)"))
                 .font(.scribbleLabelMedium)
                 .foregroundStyle(Color.scribbleMidGray)
             

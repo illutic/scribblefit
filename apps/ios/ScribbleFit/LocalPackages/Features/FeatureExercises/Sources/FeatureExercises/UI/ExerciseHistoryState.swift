@@ -7,10 +7,15 @@ public struct ExerciseHistoryState: Equatable {
     public var history: [ExerciseHistorySession] = []
     public var error: String? = nil
     
-    // Grouping by Month Year
-    public var groupedHistory: [(String, [ExerciseHistorySession])] {
+    private static let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMMM yyyy"
+        return formatter
+    }()
+    
+    // Grouping by Month Year
+    public var groupedHistory: [(String, [ExerciseHistorySession])] {
+        let formatter = Self.dateFormatter
         
         let grouped = Dictionary(grouping: history) { session in
             let date = session.date

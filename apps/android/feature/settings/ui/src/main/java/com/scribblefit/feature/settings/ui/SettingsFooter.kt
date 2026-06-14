@@ -20,7 +20,7 @@ import androidx.compose.ui.unit.sp
 import com.scribblefit.core.designsystem.ScribbleFitTheme
 
 @Composable
-internal fun SettingsFooter(state: SettingsState, version: String) {
+internal fun SettingsFooter(state: SettingsState) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -43,7 +43,7 @@ internal fun SettingsFooter(state: SettingsState, version: String) {
             }
         }
         Text(
-            text = state.getVersionLabel(version),
+            text = state.getVersionLabel(state.version),
             style = ScribbleFitTheme.typography.labelMedium,
             color = ScribbleFitTheme.colors.midGray,
             letterSpacing = 1.sp

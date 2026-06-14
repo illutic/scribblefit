@@ -322,7 +322,7 @@ struct ContentView: View {
             if let date = notification.object as? Date {
                 selectedTab = 0
                 canvasStore.onIntent(.dismissDetails)
-                ledgerStore.handleIntent(.dismissDetails)
+                ledgerStore.onIntent(.dismissDetails)
                 canvasStore.onIntent(.onDateSelected(date))
             }
         }

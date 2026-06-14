@@ -16,6 +16,7 @@ import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.UnconfinedTestDispatcher
 import kotlinx.coroutines.test.resetMain
 import kotlinx.coroutines.test.runTest
@@ -43,14 +44,14 @@ class InsightsViewModelTest {
     fun setup() {
         Dispatchers.setMain(testDispatcher)
 
-        coEvery { getVolumeInsightsUseCase(any(), any()) } returns Result.success(emptyList())
+        coEvery { getVolumeInsightsUseCase(any(), any()) } returns flowOf(emptyList())
         coEvery {
             getFrequencyInsightsUseCase(
                 any(),
                 any()
             )
-        } returns Result.success(FrequencyData(0))
-        coEvery { getMuscleDistributionInsightsUseCase(any(), any()) } returns Result.success(
+        } returns flowOf(FrequencyData(0))
+        coEvery { getMuscleDistributionInsightsUseCase(any(), any()) } returns flowOf(
             emptyList()
         )
         coEvery {
@@ -58,7 +59,7 @@ class InsightsViewModelTest {
                 any<CurrentDate>(),
                 any<CurrentDate>()
             )
-        } returns Result.success(
+        } returns flowOf(
             emptyList()
         )
         every { navigator.navState } returns MutableStateFlow(NavState())
@@ -94,7 +95,6 @@ class InsightsViewModelTest {
 
             viewModel.onIntent(InsightsIntent.Refresh)
 
-            // Just verify side effect, might not emit if timestamp is same or combine deduplicates
             coVerify(atLeast = 1) { getVolumeInsightsUseCase(any(), any()) }
             cancelAndIgnoreRemainingEvents()
         }
@@ -122,7 +122,6 @@ class InsightsViewModelTest {
 
             viewModel.onIntent(InsightsIntent.SelectPeriod(InsightsPeriod.DAILY))
 
-            // Verify call happens
             coVerify(atLeast = 1) { getAIOverviewUseCase(any<CurrentDate>(), any<CurrentDate>()) }
             cancelAndIgnoreRemainingEvents()
         }

@@ -9,7 +9,7 @@ import com.scribblefit.core.navigation.Screen
 import com.scribblefit.feature.insights.domain.model.FrequencyData
 import com.scribblefit.feature.insights.domain.model.MuscleGroupDistribution
 import com.scribblefit.feature.insights.domain.model.VolumeDataPoint
-import java.time.LocalDate
+import java.time.LocalDateTime
 
 enum class InsightsPeriod {
     DAILY, WEEKLY, MONTHLY
@@ -24,12 +24,12 @@ data class InsightsState(
     val insights: List<AIInsight>? = null,
     val errorMessage: String? = null,
     val selectedPeriod: InsightsPeriod = InsightsPeriod.WEEKLY,
-    val startDate: LocalDate = LocalDate.now().minusWeeks(1),
-    val endDate: LocalDate = LocalDate.now(),
+    val startDate: LocalDateTime = LocalDateTime.now().minusWeeks(1).toLocalDate().atStartOfDay(),
+    val endDate: LocalDateTime = LocalDateTime.now().toLocalDate().atTime(23, 59, 59, 999999999),
     val bottomBarState: BottomBarState = BottomBarState(selectedTab = Screen.Insights),
 ) {
     val isEmpty: Boolean
-        get() = !isLoading && (frequency == null || frequency.totalExercises < 2)
+        get() = !isLoading && (frequency == null || frequency.totalExercises < 5)
 
     val titleRes: Int = R.string.insights_title
     val emptyTitleRes: Int = R.string.insights_empty_title

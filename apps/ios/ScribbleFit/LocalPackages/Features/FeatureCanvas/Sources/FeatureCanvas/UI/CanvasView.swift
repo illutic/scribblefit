@@ -109,8 +109,8 @@ public struct CanvasView: View {
                 AddExerciseSheetView(
                     weightUnitLabel: store.state.weightUnitLabel,
                     onDismiss: { store.onIntent(.hideAddExerciseSheet) },
-                    onSave: { name, muscle, sets, notes in
-                        store.onIntent(.saveManualExercise(name: name, muscleGroup: muscle, sets: sets, notes: notes))
+                    onSave: { name, muscle, sets in
+                        store.onIntent(.saveManualExercise(name: name, muscleGroup: muscle, sets: sets))
                     }
                 )
             }

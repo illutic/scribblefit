@@ -6,6 +6,7 @@ import androidx.compose.ui.res.stringResource
 import com.scribblefit.core.config.domain.LLMProvider
 import com.scribblefit.core.config.domain.ThemePreference
 import com.scribblefit.core.config.domain.Weight
+import java.time.LocalDate
 
 data class SettingsState(
     val theme: ThemePreference = ThemePreference.SYSTEM,
@@ -16,7 +17,8 @@ data class SettingsState(
     val exportData: String? = null,
     val showClearDataDialog: Boolean = false,
     val isLoading: Boolean = false,
-    val errorMessage: String? = null
+    val errorMessage: String? = null,
+    val version: String = ""
 ) {
     val themeLabel: String
         @Composable @ReadOnlyComposable get() = when (theme) {
@@ -51,7 +53,7 @@ data class SettingsState(
     val exportWorkoutLedgerLabel: String @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_export_workout_ledger)
     val jsonFormatLabel: String @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_json_format)
     val clearAllDataLabel: String @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_clear_data)
-    val copyrightLabel: String @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_copyright)
+    val copyrightLabel: String @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_copyright, LocalDate.now().year)
     val aiLocalUnsupportedError: String @Composable @ReadOnlyComposable get() = stringResource(R.string.settings_ai_local_unsupported)
 
     @Composable

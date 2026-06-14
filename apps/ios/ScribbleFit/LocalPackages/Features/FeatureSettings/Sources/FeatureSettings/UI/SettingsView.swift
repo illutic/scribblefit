@@ -46,7 +46,7 @@ public struct SettingsView: View {
                             onIntent: store.onIntent
                         )
                         
-                        SettingsFooter()
+                        SettingsFooter(version: store.state.version)
                     }
                 }
                 .padding(.horizontal, 24)
@@ -88,5 +88,7 @@ public struct SettingsView: View {
             #endif
         }
         .colorScheme(store.state.config.themePreference.getColorScheme())
+        .presentationDetents([.medium, .large])
+        .presentationDragIndicator(.visible)
     }
 }

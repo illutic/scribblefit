@@ -19,7 +19,7 @@ public final class LedgerStore {
         observeScribbles()
     }
 
-    public func handleIntent(_ intent: LedgerIntent) {
+    public func onIntent(_ intent: LedgerIntent) {
         switch intent {
         case .refresh:
             observeScribbles()

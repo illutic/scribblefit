@@ -1,6 +1,10 @@
 package com.scribblefit.feature.exercises.ui.history
 
 import com.scribblefit.core.model.ExerciseHistorySession
+import java.time.Instant
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 data class ExerciseHistoryState(
     val exerciseName: String = "",
@@ -10,10 +14,13 @@ data class ExerciseHistoryState(
 ) {
     val groupedHistory: Map<String, List<ExerciseHistorySession>>
         get() {
-            val formatter = java.time.format.DateTimeFormatter.ofPattern("MMMM yyyy", java.util.Locale.getDefault())
+            val formatter = DateTimeFormatter.ofPattern(
+                "MMMM yyyy",
+                Locale.getDefault()
+            )
             return history.groupBy { session ->
-                val instant = java.time.Instant.ofEpochMilli(session.date)
-                val localDate = instant.atZone(java.time.ZoneId.systemDefault()).toLocalDate()
+                val instant = Instant.ofEpochMilli(session.date)
+                val localDate = instant.atZone(ZoneId.systemDefault()).toLocalDateTime()
                 localDate.format(formatter).uppercase()
             }
         }

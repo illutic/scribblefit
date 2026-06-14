@@ -2,6 +2,7 @@ package com.scribblefit.feature.canvas.ui
 
 import com.scribblefit.core.model.Scribble
 import com.scribblefit.core.navigation.Screen
+import java.time.LocalDateTime
 
 sealed interface CanvasIntent {
     // Canvas
@@ -29,7 +30,7 @@ sealed interface CanvasIntent {
 
     data object DismissDatePicker : CanvasIntent
 
-    data class OnDateSelected(val date: java.time.LocalDate) : CanvasIntent
+    data class OnDateSelected(val date: LocalDateTime) : CanvasIntent
 
     // Scribble Dialog
     data class ConfirmScribble(
@@ -44,9 +45,12 @@ sealed interface CanvasIntent {
     data object HideDeleteConfirmation : CanvasIntent
 
     data object DismissScribbleDialog : CanvasIntent
+    data object DismissError : CanvasIntent
 
     // Manual Editing
-    data class UpdateExerciseName(val scribbleId: Long, val exerciseId: Long, val newName: String) : CanvasIntent
+    data class UpdateExerciseName(val scribbleId: Long, val exerciseId: Long, val newName: String) :
+        CanvasIntent
+
     data class UpdateSetWeight(val exerciseId: Long, val setId: Long, val newWeight: String) :
         CanvasIntent
 
@@ -63,8 +67,7 @@ sealed interface CanvasIntent {
     data class SaveManualExercise(
         val name: String,
         val muscleGroup: String,
-        val sets: List<com.scribblefit.core.model.Set>,
-        val notes: String
+        val sets: List<com.scribblefit.core.model.Set>
     ) : CanvasIntent
 
     // Navigation

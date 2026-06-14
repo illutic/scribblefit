@@ -6,6 +6,12 @@ struct VolumeChart: View {
     let points: [VolumeDataPoint]
     let weightUnitLabel: String
 
+    private static let dateFormatter: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "MMM d"
+        return formatter
+    }()
+
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             GeometryReader { geometry in
@@ -111,8 +117,7 @@ struct VolumeChart: View {
                         ? Array(0..<points.count)
                         : [0, points.count / 2, points.count - 1]
                     
-                    let dateFormatter = DateFormatter()
-                    dateFormatter.dateFormat = "MMM d"
+                    let dateFormatter = VolumeChart.dateFormatter
 
                     for i in xLabelIndices {
                         let p = pointOffset(i)

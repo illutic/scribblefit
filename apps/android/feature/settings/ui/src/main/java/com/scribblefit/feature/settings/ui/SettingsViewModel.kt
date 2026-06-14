@@ -1,5 +1,7 @@
 package com.scribblefit.feature.settings.ui
 
+import android.content.Context
+import androidx.core.content.pm.PackageInfoCompat
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.scribblefit.core.config.domain.ConfigRepository
@@ -9,6 +11,7 @@ import com.scribblefit.feature.settings.domain.ClearUserDataUseCase
 import com.scribblefit.feature.settings.domain.ExportUserDataUseCase
 import com.scribblefit.feature.settings.domain.UpdateSystemConfigUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -18,6 +21,7 @@ import javax.inject.Inject
 
 @HiltViewModel
 class SettingsViewModel @Inject constructor(
+    @param:ApplicationContext private val context: Context,
     private val configRepository: ConfigRepository,
     private val clearUserDataUseCase: ClearUserDataUseCase,
     private val exportUserDataUseCase: ExportUserDataUseCase,
@@ -38,6 +42,7 @@ class SettingsViewModel @Inject constructor(
                         isDynamicTheme = config.localConfig.isDynamicTheme,
                         weightUnit = config.localConfig.weightUnit,
                         llmProvider = config.localConfig.preferredLlmProvider,
+                        version = getVersionInfo() ?: ""
                     )
                 }
             }
@@ -80,8 +85,14 @@ class SettingsViewModel @Inject constructor(
     private fun exportData() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true) }
-            exportUserDataUseCase().collect { data ->
-                _state.update { it.copy(exportData = data, isLoading = false) }
+            try {
+                exportUserDataUseCase().collect { data ->
+                    _state.update { it.copy(exportData = data) }
+                }
+            } catch (e: Exception) {
+                _state.update { it.copy(errorMessage = e.message ?: "Failed to export data") }
+            } finally {
+                _state.update { it.copy(isLoading = false) }
             }
         }
     }
@@ -89,8 +100,23 @@ class SettingsViewModel @Inject constructor(
     private fun clearAllData() {
         viewModelScope.launch {
             _state.update { it.copy(isLoading = true, showClearDataDialog = false) }
-            clearUserDataUseCase()
-            _state.update { it.copy(isLoading = false) }
+            try {
+                clearUserDataUseCase()
+            } catch (e: Exception) {
+                _state.update { it.copy(errorMessage = e.message ?: "Failed to clear data") }
+            } finally {
+                _state.update { it.copy(isLoading = false) }
+            }
         }
     }
+
+    private fun getVersionInfo(): String? =
+        try {
+            val packageInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+            val versionName = packageInfo.versionName ?: "Unknown"
+            val versionCode = PackageInfoCompat.getLongVersionCode(packageInfo)
+            "$versionName ($versionCode)"
+        } catch (_: Exception) {
+            null
+        }
 }

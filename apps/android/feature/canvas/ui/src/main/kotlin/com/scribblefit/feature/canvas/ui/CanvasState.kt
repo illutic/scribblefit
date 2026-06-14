@@ -8,7 +8,7 @@ import com.scribblefit.core.model.AIInsight
 import com.scribblefit.core.model.Scribble
 import com.scribblefit.core.model.ScribbleStatus
 import com.scribblefit.core.navigation.BottomBarState
-import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 
@@ -38,7 +38,7 @@ data class ScribbleUiModel(
 
 data class CanvasState(
     val isLoading: Boolean = false,
-    val currentDate: LocalDate = LocalDate.now(),
+    val currentDate: LocalDateTime = LocalDateTime.now(),
     val error: Throwable? = null,
     val currentScribbleText: String = "",
     val scribbles: List<Scribble> = emptyList(),

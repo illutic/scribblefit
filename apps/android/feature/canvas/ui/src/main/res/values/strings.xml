@@ -58,6 +58,7 @@
     <string name="canvas_set_reps_separator"> x </string>
     <string name="canvas_delete_set_content_description">Remove set</string>
     <string name="canvas_add_set">Add Set</string>
+    <string name="canvas_insight_icon">Insight Icon</string>
 
     <!-- Navigation Labels -->
     <string name="nav_canvas">Canvas</string>

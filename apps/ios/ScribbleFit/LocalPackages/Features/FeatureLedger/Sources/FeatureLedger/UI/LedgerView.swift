@@ -77,7 +77,7 @@ public struct LedgerView: View {
         }
         .sheet(item: Binding(
             get: { store.state.navigationState },
-            set: { if $0 == nil { store.handleIntent(.dismissDetails) } }
+            set: { if $0 == nil { store.onIntent(.dismissDetails) } }
         )) { navState in
             switch navState {
             case .scribbleDetails(let id):
@@ -105,7 +105,7 @@ public struct LedgerView: View {
                         removeExerciseUseCase: RemoveExerciseUseCase(exerciseRepository: exerciseRepository, scribbleRepository: scribbleRepository),
                         configRepository: configRepository
                     ),
-                    onDismiss: { store.handleIntent(.dismissDetails) },
+                    onDismiss: { store.onIntent(.dismissDetails) },
                     getExerciseTrendDataUseCase: getExerciseTrendsUseCase,
                     getExerciseHistoryUseCase: getExerciseHistoryUseCase,
                     configRepository: configRepository
@@ -134,14 +134,14 @@ public struct LedgerView: View {
         }
         #if os(iOS)
         ToolbarItem(placement: .topBarTrailing) {
-            Button(action: { store.handleIntent(.refresh) }) {
+            Button(action: { store.onIntent(.refresh) }) {
                 Image(systemName: "arrow.clockwise")
                     .foregroundStyle(Color.scribblePrimary)
             }
         }
         #else
         ToolbarItem {
-            Button(action: { store.handleIntent(.refresh) }) {
+            Button(action: { store.onIntent(.refresh) }) {
                 Image(systemName: "arrow.clockwise")
             }
         }
@@ -182,10 +182,10 @@ public struct LedgerView: View {
                     scribbles: group.scribbles,
                     weightUnit: store.state.weightUnit,
                     onScribbleTapped: { scribbleId in
-                        store.handleIntent(.scribbleTapped(id: scribbleId))
+                        store.onIntent(.scribbleTapped(id: scribbleId))
                     },
                     onExerciseTapped: { name in
-                        store.handleIntent(.exerciseTapped(name: name))
+                        store.onIntent(.exerciseTapped(name: name))
                     }
                 )
                 .padding(.horizontal)
@@ -209,7 +209,7 @@ public struct LedgerView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button(String(localized: "Done")) {
-                        store.handleIntent(.updateDateRange(startDate: tempStartDate, endDate: tempEndDate))
+                        store.onIntent(.updateDateRange(startDate: tempStartDate, endDate: tempEndDate))
                         showingDatePicker = false
                     }
                 }
@@ -220,10 +220,14 @@ public struct LedgerView: View {
 }
 
 extension LedgerState.GroupedScribbles {
-    var dateString: String {
+    private static let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         formatter.timeStyle = .none
-        return formatter.string(from: date)
+        return formatter
+    }()
+
+    var dateString: String {
+        return Self.dateFormatter.string(from: date)
     }
 }

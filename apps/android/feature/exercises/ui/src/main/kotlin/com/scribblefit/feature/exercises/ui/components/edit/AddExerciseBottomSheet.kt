@@ -49,19 +49,11 @@ fun AddExerciseBottomSheet(
     sheetState: SheetState,
     weightUnitLabel: String,
     onDismiss: () -> Unit,
-    onSave: (exerciseName: String, muscleGroup: String, sets: List<Set>, notes: String) -> Unit,
+    onSave: (exerciseName: String, muscleGroup: String, sets: List<Set>) -> Unit,
 ) {
     var exerciseName by remember { mutableStateOf("") }
     var muscleGroup by remember { mutableStateOf("") }
-    var notes by remember { mutableStateOf("") }
-    var sets by remember {
-        mutableStateOf(
-            listOf(
-                Set(id = 0, setNumber = 1, weight = 0f, reps = 0),
-                Set(id = 0, setNumber = 2, weight = 0f, reps = 0)
-            )
-        )
-    }
+    var sets by remember { mutableStateOf(listOf<Set>()) }
 
     val isSaveEnabled = exerciseName.isNotBlank() &&
             muscleGroup.isNotBlank() &&
@@ -110,7 +102,7 @@ fun AddExerciseBottomSheet(
                     color = ScribbleFitTheme.colors.primary
                 )
                 TextButton(
-                    onClick = { onSave(exerciseName, muscleGroup, sets, notes) },
+                    onClick = { onSave(exerciseName, muscleGroup, sets) },
                     enabled = isSaveEnabled
                 ) {
                     Text(
@@ -229,25 +221,6 @@ fun AddExerciseBottomSheet(
                                 fontWeight = FontWeight.Bold
                             )
                         }
-                    }
-                }
-
-                item {
-                    Column {
-                        Text(
-                            text = stringResource(R.string.add_exercise_label_notes),
-                            style = ScribbleFitTheme.typography.labelSmall,
-                            color = ScribbleFitTheme.colors.midGray,
-                            fontWeight = FontWeight.Bold
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        AddExerciseInput(
-                            value = notes,
-                            onValueChange = { notes = it },
-                            placeholder = stringResource(R.string.add_exercise_placeholder_notes),
-                            singleLine = false,
-                            minLines = 3
-                        )
                     }
                 }
             }

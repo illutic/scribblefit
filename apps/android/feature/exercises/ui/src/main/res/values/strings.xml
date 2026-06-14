@@ -31,7 +31,7 @@
     <string name="add_exercise_label_sets">SETS</string>
     <string name="add_exercise_placeholder_reps">reps</string>
     <string name="add_exercise_label_reps_short">r</string>
-    <string name="add_exercise_button_add_set">+ ADD SET</string>
+    <string name="add_exercise_button_add_set">ADD SET</string>
     <string name="add_exercise_label_notes">NOTES</string>
     <string name="add_exercise_placeholder_notes">Add session notes...</string>
 

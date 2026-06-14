@@ -149,8 +149,8 @@ public final class CanvasStore {
             state = state.copy(isAddExerciseSheetVisible: true)
         case .hideAddExerciseSheet:
             state = state.copy(isAddExerciseSheetVisible: false)
-        case .saveManualExercise(let name, let muscle, let sets, let notes):
-            saveManualExercise(name: name, muscleGroup: muscle, sets: sets, notes: notes)
+        case .saveManualExercise(let name, let muscle, let sets):
+            saveManualExercise(name: name, muscleGroup: muscle, sets: sets)
         default:
             break
         }
@@ -299,14 +299,13 @@ public final class CanvasStore {
         }
     }
 
-    private func saveManualExercise(name: String, muscleGroup: String, sets: [ExerciseSet], notes: String) {
+    private func saveManualExercise(name: String, muscleGroup: String, sets: [ExerciseSet]) {
         Task {
             do {
                 try await createManualScribbleUseCase.execute(
                     exerciseName: name,
                     muscleGroup: muscleGroup,
                     sets: sets,
-                    notes: notes,
                     date: state.currentDate
                 )
                 state = state.copy(isAddExerciseSheetVisible: false)

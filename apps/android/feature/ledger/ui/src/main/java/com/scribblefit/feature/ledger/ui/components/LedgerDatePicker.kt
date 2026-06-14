@@ -30,10 +30,10 @@ internal fun DatePickerDialog(
 ) {
     if (state.showDatePicker) {
         val datePickerState = rememberDateRangePickerState(
-            initialSelectedStartDateMillis = state.startDate.atStartOfDay(ZoneOffset.UTC)
-                .toInstant().toEpochMilli(),
-            initialSelectedEndDateMillis = state.endDate.atStartOfDay(ZoneOffset.UTC).toInstant()
-                .toEpochMilli()
+            initialSelectedStartDateMillis = state.startDate.toLocalDate().atStartOfDay()
+                .toInstant(ZoneOffset.UTC).toEpochMilli(),
+            initialSelectedEndDateMillis = state.endDate.toLocalDate().atStartOfDay()
+                .toInstant(ZoneOffset.UTC).toEpochMilli()
         )
         ScribbleFitDateRangePickerDialog(
             state = datePickerState,

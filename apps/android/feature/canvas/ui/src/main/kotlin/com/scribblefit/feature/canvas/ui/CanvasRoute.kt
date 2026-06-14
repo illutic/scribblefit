@@ -1,11 +1,10 @@
 package com.scribblefit.feature.canvas.ui
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
-
-import androidx.compose.runtime.LaunchedEffect
 import java.time.LocalDate
 
 @Composable
@@ -17,7 +16,7 @@ fun CanvasRoute(
 
     LaunchedEffect(dateEpochDays) {
         if (dateEpochDays != null) {
-            val localDate = LocalDate.ofEpochDay(dateEpochDays)
+            val localDate = LocalDate.ofEpochDay(dateEpochDays).atStartOfDay()
             viewModel.onIntent(CanvasIntent.OnDateSelected(localDate))
         }
     }

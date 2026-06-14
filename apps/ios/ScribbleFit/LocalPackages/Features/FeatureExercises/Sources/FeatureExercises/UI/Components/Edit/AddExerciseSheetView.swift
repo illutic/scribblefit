@@ -5,12 +5,12 @@ import CoreDesignSystem
 public struct AddExerciseSheetView: View {
     public let weightUnitLabel: String
     public let onDismiss: () -> Void
-    public let onSave: (String, String, [ExerciseSet], String) -> Void
+    public let onSave: (String, String, [ExerciseSet]) -> Void
     
     public init(
         weightUnitLabel: String,
         onDismiss: @escaping () -> Void,
-        onSave: @escaping (String, String, [ExerciseSet], String) -> Void
+        onSave: @escaping (String, String, [ExerciseSet]) -> Void
     ) {
         self.weightUnitLabel = weightUnitLabel
         self.onDismiss = onDismiss
@@ -19,11 +19,7 @@ public struct AddExerciseSheetView: View {
     
     @State private var exerciseName = ""
     @State private var muscleGroup = ""
-    @State private var notes = ""
-    @State private var sets: [ExerciseSet] = [
-        ExerciseSet(id: UUID(), setNumber: 1, weight: 0.0, reps: 0),
-        ExerciseSet(id: UUID(), setNumber: 2, weight: 0.0, reps: 0)
-    ]
+    @State private var sets: [ExerciseSet] = []
     
     var isSaveEnabled: Bool {
         !exerciseName.trimmingCharacters(in: .whitespaces).isEmpty &&
@@ -122,18 +118,6 @@ public struct AddExerciseSheetView: View {
                             .padding(.vertical, 8)
                         }
                     }
-                    
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text("NOTES")
-                            .font(.scribbleLabelSmall.bold())
-                            .foregroundColor(.scribbleMidGray)
-                        
-                        TextEditor(text: $notes)
-                            .frame(minHeight: 80)
-                            .padding(8)
-                            .background(Color.scribbleSurfaceContainerLow)
-                            .cornerRadius(12)
-                    }
                 }
                 .padding(24)
             }
@@ -148,7 +132,7 @@ public struct AddExerciseSheetView: View {
                         .foregroundColor(.scribblePrimary)
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("SAVE") { onSave(exerciseName, muscleGroup, sets, notes) }
+                    Button("SAVE") { onSave(exerciseName, muscleGroup, sets) }
                         .foregroundColor(isSaveEnabled ? .scribblePrimary : .scribbleMidGray)
                         .disabled(!isSaveEnabled)
                 }
@@ -157,12 +141,14 @@ public struct AddExerciseSheetView: View {
                     Button("Close") { onDismiss() }
                 }
                 ToolbarItem {
-                    Button("SAVE") { onSave(exerciseName, muscleGroup, sets, notes) }
+                    Button("SAVE") { onSave(exerciseName, muscleGroup, sets) }
                         .disabled(!isSaveEnabled)
                 }
                 #endif
             }
         }
+            .presentationDetents([.medium, .large])
+            .presentationDragIndicator(.visible)
     }
 
     private func weightBinding(for index: Int) -> Binding<Float> {

@@ -249,7 +249,7 @@ private struct FailedScribbleCard: View {
                     Text(String(localized: "Retry"))
                         .font(.scribbleLabelMedium)
                         .fontWeight(.bold)
-                        .foregroundStyle(Color.white)
+                        .foregroundStyle(Color.scribbleOnPrimary)
                         .padding(.horizontal, 16)
                         .padding(.vertical, 8)
                         .background(Color.scribblePrimary)

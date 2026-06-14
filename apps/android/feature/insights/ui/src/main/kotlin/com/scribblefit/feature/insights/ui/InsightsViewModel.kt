@@ -21,7 +21,7 @@ import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
-import java.time.LocalDate
+import java.time.LocalDateTime
 import javax.inject.Inject
 
 @OptIn(ExperimentalCoroutinesApi::class, FlowPreview::class)
@@ -100,17 +100,17 @@ class InsightsViewModel @Inject constructor(
     }
 
     private fun selectPeriod(period: InsightsPeriod) {
-        val now = LocalDate.now()
+        val now = LocalDateTime.now()
         val startDate = when (period) {
             InsightsPeriod.DAILY -> now.minusDays(1)
             InsightsPeriod.WEEKLY -> now.minusWeeks(1)
             InsightsPeriod.MONTHLY -> now.minusMonths(1)
-        }
+        }.toLocalDate().atStartOfDay()
         _state.update {
             it.copy(
                 selectedPeriod = period,
                 startDate = startDate,
-                endDate = now,
+                endDate = now.toLocalDate().atTime(23, 59, 59, 999999999),
                 isLoading = true
             )
         }

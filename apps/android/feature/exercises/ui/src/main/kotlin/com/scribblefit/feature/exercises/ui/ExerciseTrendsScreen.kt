@@ -1,7 +1,16 @@
 package com.scribblefit.feature.exercises.ui
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -9,12 +18,23 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.ShowChart
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Path
+import androidx.compose.ui.graphics.StrokeCap
+import androidx.compose.ui.graphics.StrokeJoin
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.TextStyle
@@ -114,7 +134,7 @@ private fun ExerciseTrendsContent(
                     verticalArrangement = Arrangement.spacedBy(32.dp)
                 ) {
                     Spacer(modifier = Modifier.height(0.dp))
-                    
+
                     val periodOptions = remember {
                         listOf(
                             TrendPeriod.ONE_MONTH to "1M",
@@ -124,7 +144,7 @@ private fun ExerciseTrendsContent(
                             TrendPeriod.ALL to "All"
                         )
                     }
-                    
+
                     SegmentedSelector(
                         options = periodOptions,
                         selectedOption = state.selectedPeriod,
@@ -177,7 +197,7 @@ private fun TrendChartSection(
                 color = ScribbleFitTheme.colors.midGray,
                 letterSpacing = 1.sp
             )
-            
+
             if (insights != null) {
                 TrendBadge(
                     direction = insights.trendDirection,
@@ -197,7 +217,10 @@ private fun TrendChartSection(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.Bottom
                     ) {
-                        Row(verticalAlignment = Alignment.Bottom, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Row(
+                            verticalAlignment = Alignment.Bottom,
+                            horizontalArrangement = Arrangement.spacedBy(4.dp)
+                        ) {
                             Text(
                                 text = data.last().value.toInt().toString(),
                                 style = ScribbleFitTheme.typography.headlineSmall,
@@ -211,12 +234,15 @@ private fun TrendChartSection(
                                 modifier = Modifier.padding(bottom = 4.dp)
                             )
                         }
-                        
+
                         if (insights != null) {
                             Column(horizontalAlignment = Alignment.End) {
                                 Text(
                                     text = pbLabel,
-                                    style = TextStyle(fontSize = 8.sp, fontWeight = FontWeight.Bold),
+                                    style = TextStyle(
+                                        fontSize = 8.sp,
+                                        fontWeight = FontWeight.Bold
+                                    ),
                                     color = ScribbleFitTheme.colors.midGray
                                 )
                                 Text(
@@ -228,7 +254,7 @@ private fun TrendChartSection(
                         }
                     }
                 }
-                
+
                 TrendChart(
                     data = data,
                     modifier = Modifier
@@ -247,7 +273,7 @@ private fun TrendBadge(
     text: String
 ) {
     val isPositive = direction == TrendDirection.IMPROVING || direction == TrendDirection.STABLE
-    
+
     Surface(
         color = ScribbleFitTheme.colors.midGray.copy(alpha = 0.1f),
         shape = CircleShape
@@ -323,7 +349,8 @@ private fun TrendChart(
             } else {
                 chartLeft + chartWidth / 2f
             }
-            val normalizedY = if (maxValue > minValue) (data[index].value - minValue) / range else 0.5f
+            val normalizedY =
+                if (maxValue > minValue) (data[index].value - minValue) / range else 0.5f
             val y = chartBottom - normalizedY * chartHeight
             return Offset(x, y)
         }
@@ -379,11 +406,15 @@ private fun TrendChart(
         // X-axis date labels (start/end)
         val xIndices = if (data.size >= 2) listOf(0, data.size - 1) else listOf(0)
         for (i in xIndices) {
-            val date = Instant.ofEpochMilli(data[i].date).atZone(ZoneId.systemDefault()).toLocalDate()
+            val date =
+                Instant.ofEpochMilli(data[i].date).atZone(ZoneId.systemDefault()).toLocalDateTime()
             val text = dateFormatter.format(date)
             val measured = textMeasurer.measure(text, labelStyle)
             val p = pointOffset(i)
-            val labelX = (p.x - measured.size.width / 2f).coerceIn(chartLeft, size.width - measured.size.width)
+            val labelX = (p.x - measured.size.width / 2f).coerceIn(
+                chartLeft,
+                size.width - measured.size.width
+            )
             drawText(
                 textLayoutResult = measured,
                 topLeft = Offset(labelX, chartBottom + 6.dp.toPx())

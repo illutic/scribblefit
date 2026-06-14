@@ -10,11 +10,17 @@ import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import com.scribblefit.core.designsystem.ScribbleFitTheme
@@ -25,14 +31,27 @@ import com.scribblefit.feature.canvas.ui.components.CanvasFooter
 import com.scribblefit.feature.canvas.ui.components.CanvasTopBar
 import com.scribblefit.feature.canvas.ui.components.ScribbleConfirmationBottomSheet
 import com.scribblefit.feature.exercises.ui.components.edit.AddExerciseBottomSheet
+import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalLayoutApi::class, androidx.compose.material3.ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalLayoutApi::class, ExperimentalMaterial3Api::class)
 @Composable
 internal fun CanvasScreen(
     state: CanvasState,
     onIntent: (CanvasIntent) -> Unit,
 ) {
     val sheetState = rememberModalBottomSheetState()
+    val snackbarHostState = remember { SnackbarHostState() }
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(state.error) {
+        state.error?.let { error ->
+            onIntent(CanvasIntent.DismissError)
+            scope.launch {
+                snackbarHostState.showSnackbar(error.message ?: "An error occurred")
+            }
+        }
+    }
+
     Scaffold(
         topBar = {
             CanvasTopBar(
@@ -43,6 +62,7 @@ internal fun CanvasScreen(
                 onSettingsClick = { onIntent(CanvasIntent.NavigateToScreen(Screen.Settings)) }
             )
         },
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         containerColor = ScribbleFitTheme.colors.surface
     ) { paddingValues ->
         Column(
@@ -147,8 +167,8 @@ internal fun CanvasScreen(
             sheetState = sheetState,
             weightUnitLabel = state.weightUnitLabel,
             onDismiss = { onIntent(CanvasIntent.HideAddExerciseSheet) },
-            onSave = { name, muscle, sets, notes ->
-                onIntent(CanvasIntent.SaveManualExercise(name, muscle, sets, notes))
+            onSave = { name, muscle, sets ->
+                onIntent(CanvasIntent.SaveManualExercise(name, muscle, sets))
             }
         )
     }

@@ -7,6 +7,7 @@ import androidx.compose.animation.core.infiniteRepeatable
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,7 +27,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ShowChart
 import androidx.compose.material.icons.rounded.AutoAwesome
 import androidx.compose.material.icons.rounded.Lightbulb
-import androidx.compose.material.icons.rounded.ShowChart
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -38,6 +38,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
@@ -61,8 +64,27 @@ internal fun CanvasBody(
     val scribbles = state.scribbleUiModels
     val emptyText = state.emptyScribbleText
 
+    val density = LocalDensity.current
+    val swipeThresholdPx = with(density) { 40.dp.toPx() }
+
     LazyColumn(
-        modifier = modifier,
+        modifier = modifier.pointerInput(Unit) {
+            var accumulatedDrag = 0f
+            detectHorizontalDragGestures(
+                onDragEnd = {
+                    if (accumulatedDrag < -swipeThresholdPx) {
+                        onIntent(CanvasIntent.OnNextDayClick)
+                    } else if (accumulatedDrag > swipeThresholdPx) {
+                        onIntent(CanvasIntent.OnPreviousDayClick)
+                    }
+                    accumulatedDrag = 0f
+                },
+                onDragCancel = { accumulatedDrag = 0f },
+                onHorizontalDrag = { change, dragAmount ->
+                    accumulatedDrag += dragAmount
+                }
+            )
+        },
         contentPadding = PaddingValues(
             start = ScribbleFitTheme.spacing.large,
             end = ScribbleFitTheme.spacing.large,
@@ -211,7 +233,7 @@ private fun AIInsightCard(insight: AIInsight) {
                 Box(contentAlignment = Alignment.Center) {
                     Icon(
                         imageVector = icon,
-                        contentDescription = null,
+                        contentDescription = stringResource(com.scribblefit.feature.canvas.ui.R.string.canvas_insight_icon),
                         tint = color,
                         modifier = Modifier.size(18.dp)
                     )

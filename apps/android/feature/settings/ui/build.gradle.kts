@@ -6,6 +6,9 @@ plugins {
 
 android {
     namespace = "com.scribblefit.feature.settings.ui"
+    buildFeatures {
+        buildConfig = true
+    }
 }
 
 dependencies {
@@ -22,5 +25,4 @@ dependencies {
     implementation(libs.hilt.navigation.compose)
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
-
 }

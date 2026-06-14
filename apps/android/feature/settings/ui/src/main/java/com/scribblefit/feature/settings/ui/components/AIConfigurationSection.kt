@@ -19,6 +19,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.scribblefit.core.config.domain.LLMProvider
 import com.scribblefit.core.designsystem.ScribbleFitTheme
@@ -43,7 +45,7 @@ internal fun AIConfigurationSection(
                 Text(
                     text = state.providerLabel,
                     style = ScribbleFitTheme.typography.bodyMedium,
-                    fontWeight = androidx.compose.ui.text.font.FontWeight.Medium
+                    fontWeight = FontWeight.Medium
                 )
                 Text(
                     text = if (state.llmProvider == LLMProvider.GEMINI)
@@ -79,7 +81,7 @@ internal fun AIConfigurationSection(
                 ) {
                     Icon(
                         imageVector = Icons.Rounded.Error,
-                        contentDescription = null,
+                        contentDescription = stringResource(com.scribblefit.feature.settings.ui.R.string.settings_ai_error_icon),
                         tint = ScribbleFitTheme.colors.dangerRed,
                         modifier = Modifier.size(20.dp)
                     )

@@ -30,12 +30,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.scribblefit.core.designsystem.ScribbleFitTheme
 import com.scribblefit.core.model.ExerciseHistorySession
 import com.scribblefit.feature.exercises.ui.R
+import java.time.Instant
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import kotlin.math.roundToInt
@@ -49,12 +49,12 @@ fun ExerciseHistoryScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { 
+                title = {
                     Text(
-                        text = state.exerciseName, 
+                        text = state.exerciseName,
                         style = ScribbleFitTheme.typography.titleLarge,
                         fontWeight = FontWeight.Bold
-                    ) 
+                    )
                 },
                 navigationIcon = {
                     IconButton(onClick = { onIntent(ExerciseHistoryIntent.NavigateBack) }) {
@@ -80,8 +80,8 @@ fun ExerciseHistoryScreen(
         } else if (state.history.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text(
-                    text = "No history available.", 
-                    style = ScribbleFitTheme.typography.bodyLarge, 
+                    text = "No history available.",
+                    style = ScribbleFitTheme.typography.bodyLarge,
                     color = ScribbleFitTheme.colors.midGray
                 )
             }
@@ -107,11 +107,18 @@ fun ExerciseHistoryScreen(
                                 .padding(vertical = ScribbleFitTheme.spacing.small)
                         )
                     }
-                    
+
                     items(sessions, key = { it.exercise.id }) { session ->
                         SessionRow(
                             session = session,
-                            onClick = { onIntent(ExerciseHistoryIntent.NavigateToScribble(it.scribbleId, session.date)) }
+                            onClick = {
+                                onIntent(
+                                    ExerciseHistoryIntent.NavigateToScribble(
+                                        it.scribbleId,
+                                        session.date
+                                    )
+                                )
+                            }
                         )
                     }
                 }
@@ -142,8 +149,8 @@ private fun SessionRow(
             ) {
                 // To get Day and Date we need to format the session.date. 
                 // For simplicity, let's just do a basic text.
-                val instant = java.time.Instant.ofEpochMilli(session.date)
-                val localDate = instant.atZone(ZoneId.systemDefault()).toLocalDate()
+                val instant = Instant.ofEpochMilli(session.date)
+                val localDate = instant.atZone(ZoneId.systemDefault()).toLocalDateTime()
                 val dateStr = localDate.format(DateTimeFormatter.ofPattern("EEE, MMM d"))
 
                 Text(
@@ -160,7 +167,10 @@ private fun SessionRow(
                         fontWeight = FontWeight.Bold,
                         color = Color(0xFFFFD700),
                         modifier = Modifier
-                            .background(Color(0xFFFFD700).copy(alpha = 0.2f), RoundedCornerShape(4.dp))
+                            .background(
+                                Color(0xFFFFD700).copy(alpha = 0.2f),
+                                RoundedCornerShape(4.dp)
+                            )
                             .padding(horizontal = 6.dp, vertical = 2.dp)
                     )
                 }

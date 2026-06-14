@@ -9,7 +9,7 @@ import com.scribblefit.core.model.Scribble
 import com.scribblefit.core.navigation.BottomBarState
 import com.scribblefit.core.navigation.Screen
 import java.time.Instant
-import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -20,7 +20,7 @@ private val workoutHeaderFormatter =
 private val timeFormatter = DateTimeFormatter.ofPattern("h:mm a", Locale.getDefault())
 
 data class DailyScribbles(
-    val date: LocalDate,
+    val date: LocalDateTime,
     val scribbles: List<Scribble>
 )
 
@@ -29,8 +29,8 @@ data class LedgerState(
     val showDatePicker: Boolean = false,
     val scribbles: List<Scribble> = emptyList(),
     val selectedScribble: Scribble? = null,
-    val startDate: LocalDate = LocalDate.now().minusDays(30),
-    val endDate: LocalDate = LocalDate.now(),
+    val startDate: LocalDateTime = LocalDateTime.now().minusDays(30).toLocalDate().atStartOfDay(),
+    val endDate: LocalDateTime = LocalDateTime.now().toLocalDate().atTime(23, 59, 59, 999999999),
     val weightUnit: Weight = Weight.KGS,
     val bottomBarState: BottomBarState = BottomBarState(selectedTab = Screen.Ledger),
     val error: Throwable? = null,
@@ -40,7 +40,7 @@ data class LedgerState(
 
     val groupedScribbles: List<DailyScribbles>
         get() = scribbles
-            .groupBy { it.createdAt.toLocalDate() }
+            .groupBy { it.createdAt.toLocalDateTime().toLocalDate().atStartOfDay() }
             .map { (date, scribbles) ->
                 DailyScribbles(
                     date = date,
@@ -49,7 +49,7 @@ data class LedgerState(
             }
             .sortedByDescending { it.date }
 
-    fun getDateHeader(date: LocalDate): String = date.format(workoutHeaderFormatter)
+    fun getDateHeader(date: LocalDateTime): String = date.format(workoutHeaderFormatter)
 
     val weightUnitLabel: String
         @Composable @ReadOnlyComposable
@@ -97,10 +97,10 @@ data class LedgerState(
     }
 }
 
-internal fun Long.toLocalDate(): LocalDate =
+internal fun Long.toLocalDateTime(): LocalDateTime =
     Instant.ofEpochMilli(this)
         .atZone(ZoneId.systemDefault())
-        .toLocalDate()
+        .toLocalDateTime()
 
 internal fun Long.toTimeString(): String =
     Instant.ofEpochMilli(this)

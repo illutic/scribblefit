@@ -36,10 +36,10 @@ class ExerciseHistoryViewModel @Inject constructor(
             is ExerciseHistoryIntent.NavigateToScribble -> {
                 val localDate =
                     Instant.ofEpochMilli(intent.sessionDate).atZone(ZoneId.systemDefault())
-                        .toLocalDate()
+                        .toLocalDateTime()
                 navigator.navigateTo(
                     Screen.Canvas(
-                        dateEpochDays = localDate.toEpochDay(),
+                        dateEpochDays = localDate.toLocalDate().toEpochDay(),
                         isTop = false
                     )
                 )

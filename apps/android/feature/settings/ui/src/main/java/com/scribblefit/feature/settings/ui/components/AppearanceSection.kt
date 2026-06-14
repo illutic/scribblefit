@@ -69,7 +69,7 @@ internal fun AppearanceSection(
                     )
                     Icon(
                         imageVector = if (expanded) Icons.Rounded.KeyboardArrowUp else Icons.Rounded.KeyboardArrowDown,
-                        contentDescription = null,
+                        contentDescription = stringResource(R.string.settings_theme_dropdown_icon),
                         tint = ScribbleFitTheme.colors.midGray,
                         modifier = Modifier.size(20.dp)
                     )

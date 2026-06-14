@@ -31,9 +31,13 @@
     <string name="settings_cancel">Cancel</string>
     <string name="settings_about">About</string>
     <string name="settings_version">VERSION %s</string>
-    <string name="settings_copyright">© 2026 ScribbleFit AI</string>
+    <string name="settings_copyright">© %d ScribbleFit AI</string>
     <string name="settings_privacy_policy">Privacy Policy</string>
     <string name="settings_terms_of_service">Terms of Service</string>
+    <string name="settings_ai_error_icon">Error</string>
+    <string name="settings_theme_dropdown_icon">Theme Dropdown</string>
+    <string name="settings_export_data_icon">Export Data</string>
+    <string name="settings_clear_data_icon">Clear Data</string>
 
     <!-- Navigation Labels -->
     <string name="nav_canvas">Canvas</string>
