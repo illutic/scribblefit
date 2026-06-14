@@ -7,7 +7,6 @@ Welcome to ScribbleFit! Your privacy is critically important to us. This Privacy
 ## 1. Information We Collect
 
 ### A. Information You Provide
-- **Account Data:** If you choose to create an account, we collect your email address and authentication credentials.
 - **Workout Data:** You provide text inputs ("Scribbles") describing your workouts, which are parsed into structured fitness data (exercises, sets, repetitions, weight).
 
 ### B. Automatically Collected Information
@@ -22,9 +21,6 @@ ScribbleFit is designed to be offline-first. By default, your workout history an
 To magically convert your text "Scribbles" into structured workout data, the App utilizes Artificial Intelligence.
 - **On-Device AI:** If you select the on-device AI model in the settings, your workout text is processed entirely locally on your device and never sent to any server.
 - **Cloud AI:** If you opt into using the Cloud AI model for faster or more accurate parsing, your text input is temporarily sent securely to our cloud AI provider to process the request. It is not used to train global models.
-
-### C. Cloud Sync
-If you enable cloud synchronization, your structured workout data is securely transmitted and stored on our servers so you can access it across multiple devices.
 
 ## 3. Third-Party Services
 We utilize trusted third-party services to operate the App, including:
