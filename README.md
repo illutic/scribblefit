@@ -2,6 +2,19 @@
 
 A cross-platform fitness tracking app that turns freeform text scribbles into structured training data using AI. Built natively for Android and iOS with an offline-first, editorial minimalist design.
 
+## Screenshots
+
+<p align="center">
+  <img src="docs/screenshots/canvas.png" width="22%" />
+  <img src="docs/screenshots/ledger.png" width="22%" />
+  <img src="docs/screenshots/exercise.png" width="22%" />
+  <img src="docs/screenshots/trends.png" width="22%" />
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/tablet_canvas.png" width="45%" />
+  <img src="docs/screenshots/tablet_trends.png" width="45%" />
+</p>
 ## Core Concept
 ScribbleFit lets users jot down sessions in natural language (e.g., "bench press 3x10 80kg"). An LLM parses the text into structured exercises, sets, and reps -- no forms, no dropdowns. The interface is designed to feel like a premium physical journal.
 
