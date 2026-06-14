@@ -76,13 +76,9 @@ jobs:
         KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
         KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
 
-    - name: Upload to Firebase App Distribution
+    - name: Upload to Play Store via Fastlane
       env:
-        FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
-        FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID }}
+        SERVICE_ACCOUNT_JSON: ${{ secrets.SERVICE_ACCOUNT_JSON }}
       run: |
-        npm install -g firebase-tools
-        firebase appdistribution:distribute apps/android/app/build/outputs/bundle/release/app-release.aab \
-          --app $FIREBASE_APP_ID \
-          --groups "testers" \
-          --token $FIREBASE_TOKEN
+        gem install fastlane -NV
+        fastlane deploy

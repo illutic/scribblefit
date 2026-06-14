@@ -1,0 +1,14 @@
+default_platform(:android)
+
+platform :android do
+  desc "Upload a new draft release to the Google Play Store"
+  lane :deploy do
+    upload_to_play_store(
+      track: 'production',
+      release_status: 'draft',
+      aab: 'app/build/outputs/bundle/release/app-release.aab',
+      package_name: 'com.scribblefit.app',
+      json_key_data: ENV['SERVICE_ACCOUNT_JSON']
+    )
+  end
+end
