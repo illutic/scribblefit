@@ -1,0 +1,40 @@
+Google Play Store limits the "What's New" section to 500 characters, and the Full Description to 4,000 characters. Markdown (like `#` and `**`) doesn't render perfectly, so this is formatted in plain text with emojis for maximum compatibility.
+
+--------------------------------------------------------------------------------
+
+[WHAT'S NEW - Max 500 Characters]
+Welcome to ScribbleFit 1.0! 🚀
+
+Ditch the complex menus and forms. With ScribbleFit, you just scribble your workout naturally (e.g., "3 sets of bench press 135x10, 145x8") and our AI instantly parses it into structured exercise data. 
+
+Features in this initial release:
+✨ AI-powered freeform workout logging
+📊 Rich charts and historical trends for your exercises
+📅 A complete Ledger of your training history
+⚙️ Choose between on-device and cloud AI models
+
+--------------------------------------------------------------------------------
+
+[FULL DESCRIPTION - Max 4,000 Characters]
+ScribbleFit redefines how you track your workouts by combining the simplicity of journaling with the power of artificial intelligence. No more rigid forms, confusing menus, or wasted time. Just scribble your workout, and we handle the rest.
+
+📝 The Canvas: AI-Powered Workout Logging
+• Freeform Scribbles: Just type naturally! For example: "Did 3 sets of bench press 135x10, 145x8, 155x5 and ran 2 miles."
+• Intelligent Parsing: Our advanced LLM capabilities instantly parse your unstructured text into structured data, identifying movements, sets, reps, and weights automatically.
+• Minimalist Interface: A distraction-free "Digital Atelier" design that keeps your focus entirely on your training.
+
+📊 Exercise Trends & History
+• Deep Dive Insights: Track your progress over time with dedicated Exercise Details screens.
+• Performance Charts: Visualize your lifting trends, volume, and max weight with beautiful, interactive charts.
+• Session History: Easily review your past performances for any specific movement to know exactly what you need to lift today.
+
+📅 The Ledger
+• Your Training Diary: A comprehensive timeline of all your logged scribbles and sessions.
+• Lightning Fast: Add or delete an exercise, and watch your ledger update instantly across the app. 
+
+⚙️ Smart & Private
+• AI Model Selection: Seamlessly toggle between local and cloud-based AI models based on your privacy preferences and network availability.
+• Offline-First: Your data is saved instantly to your device so you can log workouts even when your gym has no internet connection.
+• Privacy First: Your workout data stays on your device unless you explicitly opt into cloud sync.
+
+Thank you for joining us on day one. Get ready to ditch the spreadsheets and just scribble your fit!
