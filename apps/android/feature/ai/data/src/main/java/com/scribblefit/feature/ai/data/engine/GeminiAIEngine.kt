@@ -27,6 +27,14 @@ internal class GeminiAIEngine(
         }
     )
 
+    private fun checkTokenLimit(prompt: String, maxTokens: Int = 4000) {
+        // Use a rough estimation (1 token ~= 4 chars) to avoid a network roundtrip via countTokens()
+        val count = prompt.length / 4
+        if (count > maxTokens) {
+            error("Prompt exceeds token limit ($count > $maxTokens)")
+        }
+    }
+
     override suspend fun isSupported(): Boolean = true
 
     override suspend fun parseWorkout(rawText: String): Result<ParsedWorkoutResult> = runCatching {
@@ -37,6 +45,7 @@ internal class GeminiAIEngine(
             "<workout_scribble>$sanitizedInput</workout_scribble>"
         )
 
+        checkTokenLimit(prompt)
         val response = getModel().generateContent(prompt)
         val responseText = response.text ?: error("No response from Gemini")
         val cleanJson = responseText.replaceFirst("```json", "").replaceFirst("```", "").trim()
@@ -62,6 +71,7 @@ internal class GeminiAIEngine(
                 "<workout_history>$sanitizedContext</workout_history>"
             )
 
+            checkTokenLimit(prompt)
             val response = getModel().generateContent(prompt)
             val responseText = response.text ?: error("No response from Gemini")
             val cleanJson = responseText.replaceFirst("```json", "").replaceFirst("```", "").trim()
@@ -78,6 +88,7 @@ internal class GeminiAIEngine(
                 "<exercise_history>$sanitizedHistory</exercise_history>"
             )
 
+            checkTokenLimit(prompt)
             val response = getModel().generateContent(prompt)
             val responseText = response.text ?: error("No response from Gemini")
             val cleanJson = responseText.replaceFirst("```json", "").replaceFirst("```", "").trim()

@@ -4,7 +4,7 @@ import com.scribblefit.core.model.CurrentDate
 import com.scribblefit.core.model.Exercise
 import com.scribblefit.core.model.Set
 import kotlinx.serialization.Serializable
-import java.time.LocalDate
+import java.time.LocalDateTime
 
 @Serializable
 data class WorkoutResponseDto(
@@ -34,7 +34,7 @@ fun ExerciseDto.toDomain(): Exercise = Exercise(
     canonicalName = canonicalName,
     muscleGroup = muscleGroup,
     sets = sets.map { it.toDomain() },
-    createdAt = CurrentDate(LocalDate.now()).startOfDayInMillis,
+    createdAt = CurrentDate(LocalDateTime.now()).millis,
     isDraft = true
 )
 

@@ -25,11 +25,13 @@ internal object InsightsModule {
         llmEngine: LLMEngine,
         database: ScribbleFitDatabase,
         dispatcherProvider: CoroutineDispatcherProvider
-    ): InsightsRepository = InsightsRepositoryImpl(
-        llmEngine = llmEngine,
-        exerciseDao = database.exerciseDao(),
-        coroutineDispatcher = dispatcherProvider.io()
-    )
+    ): InsightsRepository {
+        return InsightsRepositoryImpl(
+            exerciseDao = database.exerciseDao(),
+            llmEngine = llmEngine,
+            coroutineDispatcher = dispatcherProvider.io()
+        )
+    }
 
     @Provides
     @Singleton

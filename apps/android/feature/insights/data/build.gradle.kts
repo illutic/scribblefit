@@ -2,6 +2,7 @@ plugins {
     id("scribblefit.android.library")
     id("scribblefit.android.hilt")
     id("scribblefit.android.unit.test")
+    alias(libs.plugins.kotlin.serialization)
 }
 
 android {
@@ -19,5 +20,5 @@ dependencies {
 
     implementation(libs.hilt.android)
     ksp(libs.hilt.compiler)
-
+    implementation(libs.kotlinx.serialization.json)
 }

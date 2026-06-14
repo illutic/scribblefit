@@ -18,6 +18,13 @@ internal class SetRepositoryImpl(
         setDao.insertSet(set.toEntity(exerciseId))
     }
 
+    override suspend fun addSets(
+        exerciseId: Long,
+        sets: List<Set>
+    ): List<Long> = withContext(coroutineDispatcher) {
+        setDao.insertWorkoutSets(sets.map { it.toEntity(exerciseId) })
+    }
+
     override suspend fun updateSetReps(setId: Long, reps: Int) = withContext(coroutineDispatcher) {
         val setEntity = setDao.getSetById(setId) ?: error("Set with id $setId not found")
         setDao.updateSet(

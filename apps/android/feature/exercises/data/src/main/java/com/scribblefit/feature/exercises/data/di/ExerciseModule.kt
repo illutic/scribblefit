@@ -6,6 +6,7 @@ import com.scribblefit.feature.ai.domain.LLMEngine
 import com.scribblefit.feature.exercises.data.ExerciseRepositoryImpl
 import com.scribblefit.feature.exercises.domain.ExerciseRepository
 import com.scribblefit.feature.exercises.domain.usecase.AddExerciseUseCase
+import com.scribblefit.feature.exercises.domain.usecase.AddExercisesUseCase
 import com.scribblefit.feature.exercises.domain.usecase.CalculateTrendsUseCase
 import com.scribblefit.feature.exercises.domain.usecase.CalculateWeeklyStatsUseCase
 import com.scribblefit.feature.exercises.domain.usecase.FormatExerciseSummaryUseCase
@@ -18,7 +19,6 @@ import com.scribblefit.feature.exercises.domain.usecase.MarkExerciseAsCompleteUs
 import com.scribblefit.feature.exercises.domain.usecase.RemoveExerciseUseCase
 import com.scribblefit.feature.exercises.domain.usecase.UpdateExerciseUseCase
 import com.scribblefit.feature.scribble.domain.ScribbleRepository
-import com.scribblefit.feature.sets.domain.SetRepository
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -35,7 +35,7 @@ internal object ExerciseModule {
         database: ScribbleFitDatabase,
         coroutineDispatcherProvider: CoroutineDispatcherProvider
     ): ExerciseRepository = ExerciseRepositoryImpl(
-        exerciseDao = database.exerciseDao(),
+        database = database,
         coroutineDispatcher = coroutineDispatcherProvider.io()
     )
 
@@ -84,12 +84,20 @@ internal object ExerciseModule {
     @Provides
     fun provideAddManualExerciseUseCase(
         exerciseRepository: ExerciseRepository,
-        setRepository: SetRepository,
         coroutineDispatcherProvider: CoroutineDispatcherProvider
     ): AddExerciseUseCase =
         AddExerciseUseCase(
             exerciseRepository = exerciseRepository,
-            setRepository = setRepository,
+            coroutineDispatcher = coroutineDispatcherProvider.default()
+        )
+
+    @Provides
+    fun provideAddExercisesUseCase(
+        exerciseRepository: ExerciseRepository,
+        coroutineDispatcherProvider: CoroutineDispatcherProvider
+    ): AddExercisesUseCase =
+        AddExercisesUseCase(
+            exerciseRepository = exerciseRepository,
             coroutineDispatcher = coroutineDispatcherProvider.default()
         )
 

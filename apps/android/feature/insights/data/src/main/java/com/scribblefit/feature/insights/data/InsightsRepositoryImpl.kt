@@ -25,7 +25,6 @@ class InsightsRepositoryImpl(
         endDate: Long
     ): Flow<List<VolumeDataPoint>> =
         exerciseDao.getExercisesWithSetsInRange(startDate, endDate)
-            .flowOn(coroutineDispatcher)
             .map { exercisesWithSets ->
                 val exercises = exercisesWithSets.map { it.toDomain() }
                 val volumeByDay = exercises
@@ -42,13 +41,13 @@ class InsightsRepositoryImpl(
                     .map { (timestamp, volume) -> VolumeDataPoint(timestamp, volume.toFloat()) }
                     .sortedBy { it.date }
             }
+            .flowOn(coroutineDispatcher)
 
     override fun getFrequencyInsights(
         startDate: Long,
         endDate: Long
     ): Flow<FrequencyData> =
         exerciseDao.getExercisesWithSetsInRange(startDate, endDate)
-            .flowOn(coroutineDispatcher)
             .map { exercisesWithSets ->
                 val exercises = exercisesWithSets.map { it.toDomain() }
                 val totalExercises = exercises.size
@@ -63,13 +62,13 @@ class InsightsRepositoryImpl(
                     totalExercises = totalExercises
                 )
             }
+            .flowOn(coroutineDispatcher)
 
     override fun getMuscleDistributionInsights(
         startDate: Long,
         endDate: Long
     ): Flow<List<MuscleGroupDistribution>> =
         exerciseDao.getExercisesWithSetsInRange(startDate, endDate)
-            .flowOn(coroutineDispatcher)
             .map { exercisesWithSets ->
                 val exercises = exercisesWithSets.map { it.toDomain() }
                 val muscleGroupCounts = exercises
@@ -85,21 +84,42 @@ class InsightsRepositoryImpl(
                     )
                 }.sortedByDescending { it.percentage }
             }
+            .flowOn(coroutineDispatcher)
+
+    private val aiInsightsCache = android.util.LruCache<String, List<AIInsight>>(10)
 
     override fun getAIOverview(
         startDate: Long,
         endDate: Long
     ): Flow<List<AIInsight>> {
         val exercisesWithSets = exerciseDao.getExercisesWithSetsInRange(startDate, endDate)
-        val exercises = exercisesWithSets.map { exercisesWithSets ->
-            exercisesWithSets.map { it.toDomain() }
+        val exercises = exercisesWithSets.map { list ->
+            list.map { it.toDomain() }
         }
 
         return exercises
-            .flowOn(coroutineDispatcher)
             .map { exercisesList ->
-                val insights = llmEngine.generateInsightsSummary(exercisesList)
-                insights.getOrThrow()
+                if (exercisesList.isEmpty()) {
+                    return@map emptyList()
+                }
+
+                // Cache key based on sorted exercise IDs (Issue 22) and their modified timestamps if any
+                // If the user logs a new workout or modifies an existing one, the exercise IDs or the exercises list changes
+                // Actually, just sorting exercise IDs is enough if exercises are immutable or if we include updated info
+                // To be safe against weight/reps changes, we hash the entire exercises list content:
+                val cacheKey = exercisesList.sortedBy { it.id }
+                    .joinToString(",") { "${it.id}-${it.sets.hashCode()}" }
+
+                val cached = aiInsightsCache.get(cacheKey)
+                if (cached != null) {
+                    cached
+                } else {
+                    val insights =
+                        llmEngine.generateInsightsSummary(exercisesList).getOrDefault(emptyList())
+                    aiInsightsCache.put(cacheKey, insights)
+                    insights
+                }
             }
+            .flowOn(coroutineDispatcher)
     }
 }
