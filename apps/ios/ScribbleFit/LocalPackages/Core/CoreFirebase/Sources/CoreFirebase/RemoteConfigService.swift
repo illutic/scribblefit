@@ -6,7 +6,7 @@ import CoreModel
 public final class RemoteConfigService {
     public static let shared = RemoteConfigService()
 
-    private let remoteConfig: FirebaseRemoteConfig.RemoteConfig
+    nonisolated(unsafe) private let remoteConfig: FirebaseRemoteConfig.RemoteConfig
 
     private init() {
         self.remoteConfig = FirebaseRemoteConfig.RemoteConfig.remoteConfig()
