@@ -20,6 +20,14 @@ let package = Package(
                 .product(name: "CoreDatabase", package: "CoreDatabase"),
                 .product(name: "FeatureAI", package: "FeatureAI")
             ]
+        ),
+        .testTarget(
+            name: "FeatureScribbleTests",
+            dependencies: [
+                "FeatureScribble",
+                .product(name: "CoreModel", package: "CoreModel")
+            ],
+            path: "Tests/FeatureScribbleTests"
         )
     ]
 )

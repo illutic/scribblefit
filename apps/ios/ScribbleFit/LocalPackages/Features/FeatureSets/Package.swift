@@ -16,6 +16,14 @@ let package = Package(
             dependencies: [
                 .product(name: "CoreModel", package: "CoreModel")
             ]
+        ),
+        .testTarget(
+            name: "FeatureSetsTests",
+            dependencies: [
+                "FeatureSets",
+                .product(name: "CoreModel", package: "CoreModel")
+            ],
+            path: "Tests/FeatureSetsTests"
         )
     ]
 )

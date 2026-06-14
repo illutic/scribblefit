@@ -26,6 +26,14 @@ let package = Package(
                 .product(name: "FeatureCanvas", package: "FeatureCanvas"),
                 .product(name: "FeatureScribble", package: "FeatureScribble")
             ]
+        ),
+        .testTarget(
+            name: "FeatureLedgerTests",
+            dependencies: [
+                "FeatureLedger",
+                .product(name: "CoreModel", package: "CoreModel")
+            ],
+            path: "Tests/FeatureLedgerTests"
         )
     ]
 )

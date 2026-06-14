@@ -38,6 +38,15 @@ let package = Package(
                 .product(name: "FeatureSets", package: "FeatureSets"),
                 .product(name: "FeatureExercises", package: "FeatureExercises")
             ]
+        ),
+        .testTarget(
+            name: "FeatureCanvasTests",
+            dependencies: [
+                "FeatureCanvas",
+                .product(name: "CoreModel", package: "CoreModel"),
+                .product(name: "FeatureScribble", package: "FeatureScribble")
+            ],
+            path: "Tests/FeatureCanvasTests"
         )
     ]
 )
