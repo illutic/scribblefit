@@ -5,7 +5,6 @@ import com.scribblefit.core.model.CurrentDate
 import com.scribblefit.core.model.Exercise
 import com.scribblefit.core.model.Set
 import com.scribblefit.feature.exercises.domain.ExerciseRepository
-import com.scribblefit.feature.sets.domain.SetRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
 
@@ -14,7 +13,6 @@ import kotlinx.coroutines.withContext
  */
 class AddExerciseUseCase(
     private val exerciseRepository: ExerciseRepository,
-    private val setRepository: SetRepository,
     private val coroutineDispatcher: CoroutineDispatcher,
 ) {
     suspend operator fun invoke(
@@ -30,11 +28,9 @@ class AddExerciseUseCase(
                 canonicalName = exerciseName,
                 muscleGroup = muscleGroup,
                 sets = sets,
-                createdAt = date.startOfDayInMillis
+                createdAt = date.millis
             )
-            val addedExerciseId = exerciseRepository.addExercise(scribbleId, exercise)
-
-            sets.forEach { setRepository.addSet(addedExerciseId, it) }
+            exerciseRepository.addExercisesWithSets(scribbleId, listOf(exercise))
         }
     }
 }

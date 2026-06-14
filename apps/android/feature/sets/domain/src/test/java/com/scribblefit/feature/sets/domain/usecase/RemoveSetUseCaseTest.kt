@@ -4,29 +4,45 @@ import com.scribblefit.feature.sets.domain.SetRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.test.runTest
 import org.junit.Before
 import org.junit.Test
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class RemoveSetUseCaseTest {
 
-    private val setRepository = mockk<SetRepository>()
-    private lateinit var removeSetUseCase: RemoveSetUseCase
+    private val repository: SetRepository = mockk(relaxed = true)
+    private lateinit var useCase: RemoveSetUseCase
 
     @Before
     fun setup() {
-        removeSetUseCase = RemoveSetUseCase(setRepository)
+        useCase = RemoveSetUseCase(setRepository = repository)
     }
 
     @Test
-    fun `invoke calls deleteSet on repository`() = runTest {
-        val setId = 1L
-        coEvery { setRepository.deleteSet(setId) } returns Unit
+    fun `invoke calls deleteSet on repository with correct id`() = runTest {
+        useCase(42L)
 
-        removeSetUseCase(setId)
+        coVerify(exactly = 1) { repository.deleteSet(42L) }
+    }
 
-        coVerify { setRepository.deleteSet(setId) }
+    @Test
+    fun `invoke calls deleteSet with id zero`() = runTest {
+        useCase(0L)
+
+        coVerify(exactly = 1) { repository.deleteSet(0L) }
+    }
+
+    @Test
+    fun `invoke calls deleteSet with large id`() = runTest {
+        useCase(Long.MAX_VALUE)
+
+        coVerify(exactly = 1) { repository.deleteSet(Long.MAX_VALUE) }
+    }
+
+    @Test(expected = RuntimeException::class)
+    fun `invoke propagates repository exception`() = runTest {
+        coEvery { repository.deleteSet(any()) } throws RuntimeException("DB error")
+
+        useCase(1L)
     }
 }

@@ -16,7 +16,7 @@ class GetVolumeInsightsUseCase(
         endDate: CurrentDate
     ): Flow<List<VolumeDataPoint>> =
         repository.getVolumeInsights(
-            startDate = startDate.startOfDayInMillis,
-            endDate = endDate.startOfDayInMillis
+            startDate = startDate.millis,
+            endDate = endDate.millis
         ).flowOn(coroutineDispatcher)
 }

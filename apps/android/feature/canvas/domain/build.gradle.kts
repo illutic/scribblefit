@@ -16,6 +16,7 @@ dependencies {
     implementation(project(":core:common"))
     implementation(project(":feature:scribble:domain"))
     implementation(project(":feature:exercises:domain"))
+    implementation(project(":feature:sets:domain"))
     implementation(project(":feature:ai:domain"))
     implementation(libs.slf4j.android)
 

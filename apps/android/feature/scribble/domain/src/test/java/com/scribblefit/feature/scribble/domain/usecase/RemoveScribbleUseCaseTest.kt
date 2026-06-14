@@ -1,50 +1,71 @@
 package com.scribblefit.feature.scribble.domain.usecase
 
 import com.scribblefit.feature.scribble.domain.ScribbleRepository
-import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
 
 class RemoveScribbleUseCaseTest {
 
-    private val scribbleRepository = mockk<ScribbleRepository>()
+    private val repository: ScribbleRepository = mockk(relaxed = true)
     private val testDispatcher = StandardTestDispatcher()
-    private val useCase = RemoveScribbleUseCase(
-        scribbleRepository,
-        testDispatcher
-    )
+    private lateinit var useCase: RemoveScribbleUseCase
+
+    @Before
+    fun setup() {
+        useCase = RemoveScribbleUseCase(
+            scribbleRepository = repository,
+            coroutineDispatcher = testDispatcher
+        )
+    }
 
     @Test
-    fun `when invoked, should delete the scribble`() =
-        runTest(testDispatcher) {
-            // Given
-            val scribbleId = 1L
-            coEvery { scribbleRepository.deleteScribble(scribbleId) } returns Unit
+    fun `invoke returns success when repository deletes successfully`() = runTest(testDispatcher) {
+        val result = useCase(1L)
 
-            // When
-            val result = useCase(scribbleId)
-
-            // Then
-            assertTrue(result.isSuccess)
-            coVerify(exactly = 1) {
-                scribbleRepository.deleteScribble(scribbleId)
-            }
-        }
+        assertTrue(result.isSuccess)
+    }
 
     @Test
-    fun `when repository fails, should return failure`() = runTest(testDispatcher) {
-        // Given
-        val scribbleId = 1L
-        coEvery { scribbleRepository.deleteScribble(scribbleId) } throws RuntimeException("DB Error")
+    fun `invoke calls repository deleteScribble with correct id`() = runTest(testDispatcher) {
+        useCase(42L)
 
-        // When
-        val result = useCase(scribbleId)
+        coVerify(exactly = 1) { repository.deleteScribble(42L) }
+    }
 
-        // Then
-        assertTrue(result.isFailure)
+    @Test
+    fun `invoke returns failure when repository throws exception`() = runTest(testDispatcher) {
+        val repo = mockk<ScribbleRepository>()
+        io.mockk.coEvery { repo.deleteScribble(any()) } throws RuntimeException("DB error")
+        val useCase = RemoveScribbleUseCase(
+            scribbleRepository = repo,
+            coroutineDispatcher = testDispatcher
+        )
+
+        val result = useCase(1L)
+
+        assertFalse(result.isSuccess)
+        assertTrue(result.exceptionOrNull() is RuntimeException)
+    }
+
+    @Test
+    fun `invoke works with id zero`() = runTest(testDispatcher) {
+        val result = useCase(0L)
+
+        assertTrue(result.isSuccess)
+        coVerify(exactly = 1) { repository.deleteScribble(0L) }
+    }
+
+    @Test
+    fun `invoke works with large ids`() = runTest(testDispatcher) {
+        val result = useCase(Long.MAX_VALUE)
+
+        assertTrue(result.isSuccess)
+        coVerify(exactly = 1) { repository.deleteScribble(Long.MAX_VALUE) }
     }
 }

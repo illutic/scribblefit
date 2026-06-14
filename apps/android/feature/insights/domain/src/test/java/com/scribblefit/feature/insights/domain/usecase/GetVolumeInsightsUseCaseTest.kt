@@ -5,13 +5,15 @@ import com.scribblefit.feature.insights.domain.model.VolumeDataPoint
 import com.scribblefit.feature.insights.domain.repository.InsightsRepository
 import io.mockk.coEvery
 import io.mockk.mockk
+import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
-import java.time.LocalDate
+import java.time.LocalDateTime
 
 class GetVolumeInsightsUseCaseTest {
 
@@ -22,38 +24,42 @@ class GetVolumeInsightsUseCaseTest {
     @Test
     fun `invoke returns success when repository returns data`() = runTest(testDispatcher) {
         // Given
-        val startDate = CurrentDate(LocalDate.now().minusDays(7))
-        val endDate = CurrentDate(LocalDate.now())
+        val startDate = CurrentDate(LocalDateTime.now().minusDays(7))
+        val endDate = CurrentDate(LocalDateTime.now())
         val expectedData = listOf(VolumeDataPoint(1000L, 100f))
 
         coEvery {
-            repository.getVolumeInsights(startDate.startOfDayInMillis, endDate.startOfDayInMillis)
+            repository.getVolumeInsights(startDate.millis, endDate.millis)
         } returns flowOf(expectedData)
 
         // When
-        val result = useCase(startDate, endDate)
+        val result = useCase(startDate, endDate).first()
 
         // Then
-        assertTrue(result.isSuccess)
-        assertEquals(expectedData, result.getOrNull())
+        assertEquals(expectedData, result)
     }
 
     @Test
     fun `invoke returns failure when repository throws`() = runTest(testDispatcher) {
         // Given
-        val startDate = CurrentDate(LocalDate.now().minusDays(7))
-        val endDate = CurrentDate(LocalDate.now())
+        val startDate = CurrentDate(LocalDateTime.now().minusDays(7))
+        val endDate = CurrentDate(LocalDateTime.now())
         val exception = RuntimeException("DB Error")
 
         coEvery {
-            repository.getVolumeInsights(startDate.startOfDayInMillis, endDate.startOfDayInMillis)
-        } throws exception
+            repository.getVolumeInsights(startDate.millis, endDate.millis)
+        } returns flow { throw exception }
 
         // When
-        val result = useCase(startDate, endDate)
+        var threw = false
+        try {
+            useCase(startDate, endDate).first()
+        } catch (e: Exception) {
+            threw = true
+            assertEquals(exception, e)
+        }
 
         // Then
-        assertTrue(result.isFailure)
-        assertEquals(exception, result.exceptionOrNull())
+        assertTrue(threw)
     }
 }

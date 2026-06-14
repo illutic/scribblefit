@@ -9,7 +9,7 @@ import com.scribblefit.core.model.Set
 import com.scribblefit.feature.scribble.domain.ScribbleRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.withContext
-import java.time.LocalDate
+import java.time.LocalDateTime
 
 /**
  * Creates a new scribble from manual exercise input.
@@ -23,7 +23,7 @@ class CreateManualScribbleUseCase(
         exerciseName: String,
         muscleGroup: String,
         sets: List<Set>,
-        date: CurrentDate = CurrentDate(LocalDate.now())
+        date: CurrentDate = CurrentDate(LocalDateTime.now())
     ): Result<Long> = withContext(coroutineDispatcher) {
         runCatchingWithCancellation {
             val exercise = Exercise(
@@ -31,14 +31,14 @@ class CreateManualScribbleUseCase(
                 canonicalName = exerciseName,
                 muscleGroup = muscleGroup,
                 sets = sets,
-                createdAt = date.startOfDayInMillis
+                createdAt = date.millis
             )
 
             val scribble = Scribble(
                 id = 0,
                 rawText = "Manual Entry: $exerciseName",
                 status = ScribbleStatus.SUCCESS,
-                createdAt = date.startOfDayInMillis,
+                createdAt = date.millis,
                 exercises = listOf(exercise)
             )
 

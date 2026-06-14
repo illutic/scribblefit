@@ -8,6 +8,10 @@ android {
 }
 
 dependencies {
+    testImplementation(libs.junit)
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotlinx.coroutines.test)
+
     implementation(project(":core:model"))
     implementation(project(":core:common"))
     implementation(project(":feature:sets:domain"))

@@ -15,7 +15,7 @@ class GetFrequencyInsightsUseCase(
         startDate: CurrentDate,
         endDate: CurrentDate
     ): Flow<FrequencyData> = repository.getFrequencyInsights(
-        startDate = startDate.startOfDayInMillis,
-        endDate = endDate.startOfDayInMillis
+        startDate = startDate.millis,
+        endDate = endDate.millis
     ).flowOn(coroutineDispatcher)
 }

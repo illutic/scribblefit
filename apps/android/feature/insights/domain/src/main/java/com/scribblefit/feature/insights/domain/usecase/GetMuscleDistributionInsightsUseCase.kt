@@ -16,7 +16,7 @@ class GetMuscleDistributionInsightsUseCase(
         end: CurrentDate
     ): Flow<List<MuscleGroupDistribution>> =
         repository.getMuscleDistributionInsights(
-            startDate = start.startOfDayInMillis,
-            endDate = end.startOfDayInMillis
+            startDate = start.millis,
+            endDate = end.millis
         ).flowOn(coroutineDispatcher)
 }

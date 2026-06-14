@@ -12,6 +12,6 @@ class GetScribblesForDateUseCase(
     private val coroutineDispatcher: CoroutineDispatcher
 ) {
     operator fun invoke(date: CurrentDate): Flow<List<Scribble>> {
-        return repository.getScribblesByDate(date.startOfDayInMillis).flowOn(coroutineDispatcher)
+        return repository.getScribblesByDate(date.millis).flowOn(coroutineDispatcher)
     }
 }

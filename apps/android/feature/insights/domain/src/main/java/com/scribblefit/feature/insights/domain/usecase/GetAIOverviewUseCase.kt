@@ -6,14 +6,14 @@ import com.scribblefit.feature.insights.domain.repository.InsightsRepository
 import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flowOn
-import java.time.LocalDate
+import java.time.LocalDateTime
 
 class GetAIOverviewUseCase(
     private val repository: InsightsRepository,
     private val coroutineDispatcher: CoroutineDispatcher
 ) {
     operator fun invoke(
-        currentDate: CurrentDate = CurrentDate(LocalDate.now()),
+        currentDate: CurrentDate = CurrentDate(LocalDateTime.now()),
         lookUpDays: Long = 7
     ) = invoke(
         startDate = CurrentDate(currentDate.date.minusDays(lookUpDays)),
@@ -25,7 +25,7 @@ class GetAIOverviewUseCase(
         endDate: CurrentDate
     ): Flow<List<AIInsight>> =
         repository.getAIOverview(
-            startDate = startDate.startOfDayInMillis,
-            endDate = endDate.startOfDayInMillis
+            startDate = startDate.millis,
+            endDate = endDate.millis
         ).flowOn(coroutineDispatcher)
 }

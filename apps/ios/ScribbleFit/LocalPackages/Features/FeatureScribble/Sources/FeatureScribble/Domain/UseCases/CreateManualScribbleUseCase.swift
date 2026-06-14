@@ -17,7 +17,6 @@ public struct CreateManualScribbleUseCase: Sendable {
         exerciseName: String,
         muscleGroup: String,
         sets: [ExerciseSet],
-        notes: String,
         date: Date
     ) async throws {
         let exercise = Exercise(
@@ -30,7 +29,7 @@ public struct CreateManualScribbleUseCase: Sendable {
         
         let scribble = Scribble(
             id: UUID(),
-            rawText: notes.isEmpty ? "Manual Entry: \(exerciseName)" : "Manual Entry: \(exerciseName)\nNotes: \(notes)",
+            rawText: "Manual Entry: \(exerciseName)",
             status: .success,
             createdAt: date,
             exercises: [exercise]

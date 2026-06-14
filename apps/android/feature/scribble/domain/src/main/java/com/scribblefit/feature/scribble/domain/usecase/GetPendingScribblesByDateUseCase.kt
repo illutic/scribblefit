@@ -15,7 +15,7 @@ class GetPendingScribblesByDateUseCase(
 ) {
     operator fun invoke(date: CurrentDate): Flow<List<Scribble>> {
         return scribbleRepository
-            .getScribblesByDate(date.startOfDayInMillis)
+            .getScribblesByDate(date.millis)
             .map { scribbles -> scribbles.filter { it.status == ScribbleStatus.PENDING } }
             .flowOn(coroutineDispatcher)
     }

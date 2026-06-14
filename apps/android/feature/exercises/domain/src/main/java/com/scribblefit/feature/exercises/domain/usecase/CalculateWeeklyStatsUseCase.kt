@@ -21,12 +21,12 @@ data class CalculateWeeklyStatsUseCase(
 
                 val exerciseDate = Instant.ofEpochMilli(exercise.createdAt)
                     .atZone(ZoneId.systemDefault())
-                    .toLocalDate()
+                    .toLocalDateTime()
                 val startDate = CurrentDate(exerciseDate.minusDays(7))
-                val endDateInMillis = CurrentDate(exerciseDate.plusDays(1)).startOfDayInMillis - 1
+                val endDateInMillis = CurrentDate(exerciseDate.plusDays(1)).millis - 1
 
                 val exercises = exerciseRepository.getExercisesInRange(
-                    startDate = startDate.startOfDayInMillis,
+                    startDate = startDate.millis,
                     endDate = endDateInMillis
                 ).filter { it.canonicalName == exercise.canonicalName }
 

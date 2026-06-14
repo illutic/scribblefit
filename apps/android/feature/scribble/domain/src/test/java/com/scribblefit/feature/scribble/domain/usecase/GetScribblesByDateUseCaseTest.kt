@@ -12,7 +12,7 @@ import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
 import org.junit.Assert.assertEquals
 import org.junit.Test
-import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.ZoneOffset
 
 class GetScribblesByDateUseCaseTest {
@@ -25,8 +25,8 @@ class GetScribblesByDateUseCaseTest {
     fun `when called, should convert date to millis and return flow from repository`() =
         runTest(testDispatcher) {
             // Given
-            val date = LocalDate.of(2026, 3, 14)
-            val expectedMillis = date.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli()
+            val date = LocalDateTime.of(2026, 3, 14, 0, 0)
+            val expectedMillis = date.toInstant(ZoneOffset.UTC).toEpochMilli()
             val scribbles = listOf(
                 Scribble(
                     id = 1L,

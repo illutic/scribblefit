@@ -4,11 +4,10 @@ import com.scribblefit.core.model.CurrentDate
 import com.scribblefit.core.model.Scribble
 import com.scribblefit.core.model.ScribbleStatus
 import com.scribblefit.feature.ai.domain.LLMEngine
-import com.scribblefit.feature.exercises.domain.usecase.AddExerciseUseCase
+import com.scribblefit.feature.exercises.domain.usecase.AddExercisesUseCase
 import com.scribblefit.feature.scribble.domain.usecase.GetPendingScribblesByDateUseCase
 import com.scribblefit.feature.scribble.domain.usecase.UpdateScribbleUseCase
 import kotlinx.coroutines.CoroutineDispatcher
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.slf4j.LoggerFactory
@@ -17,33 +16,28 @@ import kotlin.time.Instant
 import kotlin.time.toJavaInstant
 
 class ParsePendingScribblesUseCase(
-    private val addExerciseUseCase: AddExerciseUseCase,
+    private val addExercisesUseCase: AddExercisesUseCase,
     private val getPendingScribblesByDateUseCase: GetPendingScribblesByDateUseCase,
     private val updateScribbleUseCase: UpdateScribbleUseCase,
     private val llmEngine: LLMEngine,
     private val coroutineDispatcher: CoroutineDispatcher
 ) {
     private val logger = LoggerFactory.getLogger("ParsePendingScribblesUseCase")
-    private var collectorJob: Job? = null
     private val parsingScribbleIds = hashSetOf<Long>()
 
     suspend operator fun invoke(date: CurrentDate) = withContext(coroutineDispatcher) {
-        collectorJob?.cancel()
-
-        collectorJob = launch {
-            getPendingScribblesByDateUseCase(date).collect { pendingScribbles ->
-                pendingScribbles
-                    .filter { scribble ->
-                        val isPending = scribble.status == ScribbleStatus.PENDING
-                                || scribble.status == ScribbleStatus.PARSING
-                        isPending && !parsingScribbleIds.contains(scribble.id)
+        getPendingScribblesByDateUseCase(date).collect { pendingScribbles ->
+            pendingScribbles
+                .filter { scribble ->
+                    val isPending = scribble.status == ScribbleStatus.PENDING
+                            || scribble.status == ScribbleStatus.PARSING
+                    isPending && !parsingScribbleIds.contains(scribble.id)
+                }
+                .forEach { scribble ->
+                    launch {
+                        parseScribble(scribble)
                     }
-                    .forEach { scribble ->
-                        launch {
-                            parseScribble(scribble)
-                        }
-                    }
-            }
+                }
         }
     }
 
@@ -64,21 +58,17 @@ class ParsePendingScribblesUseCase(
             val localDate = Instant.fromEpochMilliseconds(scribble.createdAt)
                 .toJavaInstant()
                 .atZone(ZoneId.systemDefault())
-                .toLocalDate()
+                .toLocalDateTime()
 
             llmEngine.parseWorkout(scribble.rawText)
                 .onSuccess {
                     logger.info("Successfully parsed scribble with id ${scribble.id}")
                     updateScribbleUseCase(scribble.copy(status = ScribbleStatus.SUCCESS))
-                    it.exercises.forEach { exercise ->
-                        addExerciseUseCase(
-                            date = CurrentDate(localDate),
-                            scribbleId = scribble.id,
-                            exerciseName = exercise.canonicalName,
-                            muscleGroup = exercise.muscleGroup,
-                            sets = exercise.sets
-                        )
-                    }
+                    addExercisesUseCase(
+                        date = CurrentDate(localDate),
+                        scribbleId = scribble.id,
+                        exercises = it.exercises
+                    )
                 }
                 .onFailure {
                     logger.error("Failed to parse scribble with id ${scribble.id}", it)

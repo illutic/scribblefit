@@ -6,7 +6,7 @@ import com.scribblefit.core.model.Exercise
 import com.scribblefit.feature.ai.domain.LLMEngine
 import com.scribblefit.feature.exercises.domain.ExerciseRepository
 import java.time.Instant
-import java.time.LocalDate
+import java.time.LocalDateTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
@@ -18,12 +18,12 @@ class GetExerciseAIInsightUseCase(
         .withZone(ZoneId.systemDefault())
 
     suspend operator fun invoke(dateLookBehind: Long = 7): Result<AIInsight> {
-        val currentDate = CurrentDate(LocalDate.now())
-        val startDate = CurrentDate(LocalDate.now().minusDays(dateLookBehind))
+        val currentDate = CurrentDate(LocalDateTime.now())
+        val startDate = CurrentDate(LocalDateTime.now().minusDays(dateLookBehind))
 
         val history: List<Exercise> = exerciseRepository.getExercisesInRange(
-            startDate = startDate.startOfDayInMillis,
-            endDate = currentDate.startOfDayInMillis
+            startDate = startDate.millis,
+            endDate = currentDate.millis
         )
 
         if (history.isEmpty()) {

@@ -16,8 +16,8 @@ class GetExercisesInRangeUseCase(
     ) = withContext(coroutineDispatcher) {
         runCatchingWithCancellation {
             exerciseRepository.getExercisesInRange(
-                startTime.startOfDayInMillis,
-                endTime.startOfDayInMillis
+                startTime.millis,
+                endTime.millis
             )
         }
     }

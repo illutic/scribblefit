@@ -15,8 +15,8 @@ class GetScribblesInRangeUseCase(
 ) {
     operator fun invoke(startDate: CurrentDate, endDate: CurrentDate): Flow<List<Scribble>> {
         return repository.getScribblesInRange(
-            startDate.startOfDayInMillis,
-            endDate.startOfDayInMillis
+            startDate.millis,
+            endDate.millis
         ).map { scribbles ->
             scribbles.filter { it.status == ScribbleStatus.COMPLETED }
         }.flowOn(coroutineDispatcher)

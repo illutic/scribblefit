@@ -1,62 +1,93 @@
 package com.scribblefit.feature.canvas.domain
 
 import com.scribblefit.core.model.Exercise
+import com.scribblefit.core.model.Scribble
+import com.scribblefit.core.model.ScribbleStatus
+import com.scribblefit.core.model.Set
 import com.scribblefit.feature.exercises.domain.ExerciseRepository
 import com.scribblefit.feature.scribble.domain.usecase.RemoveScribbleUseCase
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
-import kotlinx.coroutines.ExperimentalCoroutinesApi
-import kotlinx.coroutines.test.UnconfinedTestDispatcher
+import kotlinx.coroutines.test.StandardTestDispatcher
 import kotlinx.coroutines.test.runTest
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
+import org.junit.Before
 import org.junit.Test
 
-@OptIn(ExperimentalCoroutinesApi::class)
 class RemoveExerciseFromScribbleUseCaseTest {
 
-    private val exerciseRepository = mockk<ExerciseRepository>()
-    private val removeScribbleUseCase = mockk<RemoveScribbleUseCase>()
-    private val testDispatcher = UnconfinedTestDispatcher()
+    private val exerciseRepository: ExerciseRepository = mockk(relaxed = true)
+    private val removeScribbleUseCase: RemoveScribbleUseCase = mockk(relaxed = true)
+    private val testDispatcher = StandardTestDispatcher()
+    private lateinit var useCase: RemoveExerciseFromScribbleUseCase
 
-    private val useCase = RemoveExerciseFromScribbleUseCase(
-        exerciseRepository = exerciseRepository,
-        removeScribbleUseCase = removeScribbleUseCase,
-        coroutineDispatcher = testDispatcher
+    private val exercise = Exercise(
+        id = 1L, scribbleId = 10L, canonicalName = "Bench Press", muscleGroup = "Chest",
+        sets = listOf(Set(0, 1, 10, 100f)), createdAt = 1_000_000L
     )
 
-    @Test
-    fun `deletes exercise and scribble when it was the last exercise`() = runTest(testDispatcher) {
-        val exerciseId = 10L
-        val scribbleId = 1L
-
-        coEvery { exerciseRepository.deleteExercise(any()) } returns Unit
-        coEvery { exerciseRepository.getExercisesForScribble(any()) } returns emptyList()
-        coEvery { removeScribbleUseCase(any()) } returns Result.success(Unit)
-
-        useCase(exerciseId, scribbleId)
-
-        coVerify { exerciseRepository.deleteExercise(exerciseId) }
-        coVerify { removeScribbleUseCase(scribbleId) }
+    @Before
+    fun setup() {
+        useCase = RemoveExerciseFromScribbleUseCase(
+            exerciseRepository = exerciseRepository,
+            removeScribbleUseCase = removeScribbleUseCase,
+            coroutineDispatcher = testDispatcher
+        )
     }
 
     @Test
-    fun `deletes exercise but not scribble when other exercises remain`() = runTest(testDispatcher) {
-        val exerciseId = 10L
-        val scribbleId = 1L
-        val remainingExercise = Exercise(
-            id = 11L,
-            canonicalName = "Bench",
-            muscleGroup = "Chest",
-            sets = emptyList(),
-            createdAt = 0L
-        )
+    fun `invoke returns success when exercise is deleted and scribble has remaining exercises`() = runTest(testDispatcher) {
+        coEvery { exerciseRepository.getExercisesForScribble(10L) } returns listOf(exercise.copy(id = 2L))
 
-        coEvery { exerciseRepository.deleteExercise(any()) } returns Unit
-        coEvery { exerciseRepository.getExercisesForScribble(any()) } returns listOf(remainingExercise)
+        val result = useCase(1L, 10L)
 
-        useCase(exerciseId, scribbleId)
+        assertTrue(result.isSuccess)
+    }
 
-        coVerify { exerciseRepository.deleteExercise(exerciseId) }
+    @Test
+    fun `invoke calls deleteExercise with correct id`() = runTest(testDispatcher) {
+        coEvery { exerciseRepository.getExercisesForScribble(10L) } returns listOf(exercise.copy(id = 2L))
+
+        useCase(1L, 10L)
+
+        coVerify(exactly = 1) { exerciseRepository.deleteExercise(1L) }
+    }
+
+    @Test
+    fun `invoke removes scribble when no exercises remain`() = runTest(testDispatcher) {
+        coEvery { exerciseRepository.getExercisesForScribble(10L) } returns emptyList()
+
+        useCase(1L, 10L)
+
+        coVerify(exactly = 1) { removeScribbleUseCase(10L) }
+    }
+
+    @Test
+    fun `invoke does NOT remove scribble when other exercises remain`() = runTest(testDispatcher) {
+        coEvery { exerciseRepository.getExercisesForScribble(10L) } returns listOf(exercise.copy(id = 2L))
+
+        useCase(1L, 10L)
+
         coVerify(exactly = 0) { removeScribbleUseCase(any()) }
+    }
+
+    @Test
+    fun `invoke returns failure when deleteExercise throws`() = runTest(testDispatcher) {
+        coEvery { exerciseRepository.deleteExercise(any()) } throws RuntimeException("DB error")
+
+        val result = useCase(1L, 10L)
+
+        assertFalse(result.isSuccess)
+    }
+
+    @Test
+    fun `invoke does not check remaining exercises when deleteExercise fails`() = runTest(testDispatcher) {
+        coEvery { exerciseRepository.deleteExercise(any()) } throws RuntimeException("DB error")
+
+        useCase(1L, 10L)
+
+        coVerify(exactly = 0) { exerciseRepository.getExercisesForScribble(any()) }
     }
 }
