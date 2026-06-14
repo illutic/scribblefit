@@ -90,5 +90,6 @@ jobs:
       env:
         SERVICE_ACCOUNT_JSON: ${{ secrets.SERVICE_ACCOUNT_JSON }}
       run: |
+        echo "$SERVICE_ACCOUNT_JSON" > play-store-key.json
         gem install fastlane -NV
         fastlane deploy

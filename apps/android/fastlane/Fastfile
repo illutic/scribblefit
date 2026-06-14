@@ -8,7 +8,7 @@ platform :android do
       release_status: 'completed',
       aab: 'app/build/outputs/bundle/release/app-release.aab',
       package_name: 'com.scribblefit.app',
-      json_key_data: ENV['SERVICE_ACCOUNT_JSON']
+      json_key: 'play-store-key.json'
     )
   end
 end
