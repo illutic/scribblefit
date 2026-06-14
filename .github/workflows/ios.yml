@@ -46,10 +46,13 @@ jobs:
 
     - name: Test
       run: |
-        xcodebuild test -project ScribbleFit.xcodeproj \
-          -scheme ScribbleFit \
-          -destination 'platform=iOS Simulator,name=iPhone 17' \
-          clean test CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO
+        cd LocalPackages
+        for pkg in Core/* Features/*; do
+          if [ -d "$pkg" ] && [ -f "$pkg/Package.swift" ]; then
+            echo "Testing $pkg..."
+            (cd "$pkg" && swift test)
+          fi
+        done
 
     - name: Build Archive
       run: |
