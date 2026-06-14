@@ -61,7 +61,7 @@ jobs:
             if grep -q "testTarget" "$pkg/Package.swift"; then
               echo "Testing $pkg..."
               pkg_name=$(basename "$pkg")
-              (cd "$pkg" && xcodebuild test -scheme "$pkg_name" -destination 'platform=iOS Simulator,name=iPhone 15,OS=17.0')
+              (cd "$pkg" && xcodebuild test -scheme "$pkg_name" -destination 'platform=iOS Simulator,name=iPhone 15')
             else
               echo "Skipping $pkg (no test targets)"
             fi
