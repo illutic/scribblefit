@@ -121,7 +121,7 @@ private func makeScribble(id: UUID = UUID(), exercises: [Exercise] = []) -> Scri
 
 @MainActor
 private func XCTAssertThrowsErrorAsync(
-    _ expression: () async throws -> Void,
+    _ expression: @MainActor () async throws -> Void,
     file: StaticString = #filePath,
     line: UInt = #line
 ) async {
