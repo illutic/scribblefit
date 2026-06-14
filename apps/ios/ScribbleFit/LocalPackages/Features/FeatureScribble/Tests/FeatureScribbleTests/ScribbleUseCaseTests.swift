@@ -15,11 +15,11 @@ final class MockScribbleRepository: ScribbleRepository {
     var confirmedScribbles: [Scribble] = []
 
     // Stubs
-    var scribbleToReturn: Scribble? = nil
-    var shouldThrowOnAdd: Error? = nil
-    var shouldThrowOnUpdate: Error? = nil
-    var shouldThrowOnDelete: Error? = nil
-    var shouldThrowOnGet: Error? = nil
+    var scribbleToReturn: Scribble?
+    var shouldThrowOnAdd: Error?
+    var shouldThrowOnUpdate: Error?
+    var shouldThrowOnDelete: Error?
+    var shouldThrowOnGet: Error?
     var scribblesToStream: [Scribble] = []
 
     func observeScribbles(for date: Date) -> AsyncStream<[Scribble]> {
@@ -80,8 +80,8 @@ final class MockScribbleRepository: ScribbleRepository {
 
 @MainActor
 final class MockLLMService: LLMService {
-    var parsedResult: ParsedWorkoutResult? = nil
-    var shouldThrowOnParse: Error? = nil
+    var parsedResult: ParsedWorkoutResult?
+    var shouldThrowOnParse: Error?
     var generatedInsights: [AIInsight] = []
     var generatedExerciseInsight: AIInsight = AIInsight(insightType: .trend, text: "Mock insight")
 
@@ -220,7 +220,6 @@ final class CreateManualScribbleUseCaseTests: XCTestCase {
             exerciseName: "Squat",
             muscleGroup: "Legs",
             sets: [makeSet()],
-            notes: "",
             date: Date()
         )
 
@@ -233,7 +232,6 @@ final class CreateManualScribbleUseCaseTests: XCTestCase {
             exerciseName: "DeadLift",
             muscleGroup: "Back",
             sets: [],
-            notes: "",
             date: Date()
         )
 
@@ -241,25 +239,11 @@ final class CreateManualScribbleUseCaseTests: XCTestCase {
         XCTAssertTrue(rawText.contains("DeadLift"))
     }
 
-    func test_execute_withNotes_includesNotesInRawText() async throws {
-        try await sut.execute(
-            exerciseName: "OHP",
-            muscleGroup: "Shoulders",
-            sets: [],
-            notes: "Felt great",
-            date: Date()
-        )
-
-        let rawText = mockRepo.addedScribbles[0].rawText
-        XCTAssertTrue(rawText.contains("Felt great"))
-    }
-
-    func test_execute_withoutNotes_usesManualEntryFormat() async throws {
+    func test_execute_usesManualEntryFormat() async throws {
         try await sut.execute(
             exerciseName: "Row",
             muscleGroup: "Back",
             sets: [],
-            notes: "",
             date: Date()
         )
 
@@ -274,7 +258,6 @@ final class CreateManualScribbleUseCaseTests: XCTestCase {
             exerciseName: "BenchPress",
             muscleGroup: "Chest",
             sets: sets,
-            notes: "",
             date: Date()
         )
 
@@ -284,7 +267,7 @@ final class CreateManualScribbleUseCaseTests: XCTestCase {
     func test_execute_propagatesRepositoryError() async {
         mockRepo.shouldThrowOnAdd = NSError(domain: "DB", code: 99)
         await XCTAssertThrowsErrorAsync {
-            try await self.sut.execute(exerciseName: "x", muscleGroup: "y", sets: [], notes: "", date: Date())
+            try await self.sut.execute(exerciseName: "x", muscleGroup: "y", sets: [], date: Date())
         }
     }
 
@@ -294,7 +277,6 @@ final class CreateManualScribbleUseCaseTests: XCTestCase {
             exerciseName: "Curl",
             muscleGroup: "Arms",
             sets: [],
-            notes: "",
             date: fixedDate
         )
 

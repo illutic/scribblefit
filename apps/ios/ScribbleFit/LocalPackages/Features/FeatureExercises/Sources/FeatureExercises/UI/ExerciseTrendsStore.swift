@@ -7,13 +7,13 @@ import Combine
 @MainActor
 public final class ExerciseTrendsStore {
     public var state: ExerciseTrendsState
-    
+
     private let getExerciseTrendDataUseCase: GetExerciseTrendDataUseCase
     private let configRepository: ConfigRepository
-    
+
     private var cancellables = Set<AnyCancellable>()
     private var observationTask: Task<Void, Never>?
-    
+
     public init(
         exerciseName: String,
         getExerciseTrendDataUseCase: GetExerciseTrendDataUseCase,
@@ -22,10 +22,10 @@ public final class ExerciseTrendsStore {
         self.state = ExerciseTrendsState(exerciseName: exerciseName)
         self.getExerciseTrendDataUseCase = getExerciseTrendDataUseCase
         self.configRepository = configRepository
-        
+
         setupWeightUnitObservation()
     }
-    
+
     public func onIntent(_ intent: ExerciseTrendsIntent) {
         switch intent {
         case .loadData:
@@ -35,10 +35,10 @@ public final class ExerciseTrendsStore {
             startObserving()
         }
     }
-    
+
     private func startObserving() {
         state.isLoading = true
-        
+
         observationTask?.cancel()
         observationTask = Task {
             let stream = getExerciseTrendDataUseCase.execute(
@@ -54,7 +54,7 @@ public final class ExerciseTrendsStore {
             }
         }
     }
-    
+
     private func setupWeightUnitObservation() {
         configRepository.configPublisher
             .receive(on: RunLoop.main)

@@ -9,10 +9,10 @@ public final class ScribbleEntity {
     public var status: String
     public var createdAt: Date
     public var parsedJson: String?
-    
+
     @Relationship(deleteRule: .cascade, inverse: \ExerciseEntity.scribble)
     public var exercises: [ExerciseEntity] = []
-    
+
     public init(id: UUID, rawText: String, status: String, createdAt: Date, parsedJson: String? = nil) {
         self.id = id
         self.rawText = rawText
@@ -32,17 +32,17 @@ public final class ExerciseEntity {
     public var estimated1RM: Float?
     public var intensity: Float?
     public var improvement: Float?
-    
+
     public var scribble: ScribbleEntity?
-    
+
     @Relationship(deleteRule: .cascade, inverse: \SetEntity.exercise)
     public var sets: [SetEntity] = []
-    
+
     public init(
-        id: UUID, 
-        name: String, 
-        muscleGroup: String, 
-        createdAt: Date, 
+        id: UUID,
+        name: String,
+        muscleGroup: String,
+        createdAt: Date,
         isDraft: Bool = false,
         estimated1RM: Float? = nil,
         intensity: Float? = nil,
@@ -67,9 +67,9 @@ public final class SetEntity {
     public var reps: Int
     public var rpe: Float?
     public var notes: String?
-    
+
     public var exercise: ExerciseEntity?
-    
+
     public init(id: UUID, setNumber: Int, weight: Float?, reps: Int, rpe: Float? = nil, notes: String? = nil) {
         self.id = id
         self.setNumber = setNumber

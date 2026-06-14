@@ -13,10 +13,10 @@ private final class MockScribbleRepo: ScribbleRepository {
     var clearedIds: [UUID] = []
     var confirmedScribbles: [Scribble] = []
 
-    var scribbleToReturn: Scribble? = nil
-    var shouldThrowOnAdd: Error? = nil
-    var shouldThrowOnUpdate: Error? = nil
-    var shouldThrowOnDelete: Error? = nil
+    var scribbleToReturn: Scribble?
+    var shouldThrowOnAdd: Error?
+    var shouldThrowOnUpdate: Error?
+    var shouldThrowOnDelete: Error?
 
     func observeScribbles(for date: Date) -> AsyncStream<[Scribble]> {
         AsyncStream { $0.finish() }
@@ -46,7 +46,6 @@ private final class MockScribbleRepo: ScribbleRepository {
         confirmedScribbles.append(scribble)
     }
 }
-
 
 // MARK: - Helpers
 

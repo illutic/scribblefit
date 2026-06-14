@@ -4,7 +4,7 @@ struct CanvasHeader: View {
     let userName: String
     let greeting: String
     let onMenuClick: () -> Void
-    
+
     var body: some View {
         HStack {
             Text("\(greeting), \(userName.uppercased())")
@@ -24,7 +24,7 @@ struct CanvasHeader: View {
 struct QuickActionPills: View {
     let actions: [QuickActionType]
     let onActionClick: (QuickActionType) -> Void
-    
+
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 12) {
@@ -49,7 +49,7 @@ struct ScribbleInputArea: View {
     let isRecording: Bool
     let onSubmit: () -> Void
     let onMicClick: () -> Void
-    
+
     var body: some View {
         ScribbleFitTextField(
             text: $text,
@@ -79,7 +79,7 @@ struct ScribbleInputArea: View {
                                         .opacity(isRecording ? 0 : 1)
                                         .animation(.easeInOut(duration: 1).repeatForever(autoreverses: false), value: isRecording)
                                 }
-                                
+
                                 Text(isRecording ? "⏹️" : "🎙️")
                                     .font(.system(size: 20))
                             }
@@ -95,13 +95,13 @@ struct FeedItemRow: View {
     let item: FeedItem
     let onRetry: (String) -> Void
     let onConfirmClick: (ConfirmationItem) -> Void
-    
+
     var body: some View {
         HStack {
             if case .scribble = item {
                 Spacer()
             }
-            
+
             switch item {
             case .prompt(let prompt):
                 PromptBubble(item: prompt)
@@ -112,7 +112,7 @@ struct FeedItemRow: View {
             case .insight(let insight):
                 InsightBubble(item: insight)
             }
-            
+
             if case .scribble = item {
                 // No spacer on the right for scribbles
             } else {
@@ -125,7 +125,7 @@ struct FeedItemRow: View {
 
 struct PromptBubble: View {
     let item: PromptItem
-    
+
     var body: some View {
         Text("\(item.text) \(item.emoji)")
             .font(ScribbleFitFont.headlineSmall())
@@ -138,14 +138,14 @@ struct PromptBubble: View {
 struct ScribbleBubble: View {
     let item: ScribbleItem
     let onRetry: (String) -> Void
-    
+
     var body: some View {
         VStack(alignment: .trailing, spacing: 4) {
             HStack(spacing: 8) {
                 Text(item.rawText)
                     .font(ScribbleFitFont.bodyLarge())
                     .foregroundColor(item.status == .failed ? .red : ScribbleFitColor.primaryText)
-                
+
                 if item.status == .pending || item.status == .processing {
                     ProgressView()
                         .controlSize(.small)
@@ -155,7 +155,7 @@ struct ScribbleBubble: View {
             .padding(.vertical, 12)
             .background(item.status == .failed ? Color.red.opacity(0.1) : ScribbleFitColor.secondaryBackground)
             .cornerRadius(ScribbleFitShape.large)
-            
+
             if item.status == .failed {
                 Button("Failed to parse. Tap to retry.") {
                     onRetry(item.id)
@@ -213,7 +213,7 @@ struct ConfirmationCard: View {
 
 struct InsightBubble: View {
     let item: InsightItem
-    
+
     var body: some View {
         HStack(spacing: 8) {
             Text(item.emoji)

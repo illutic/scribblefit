@@ -4,7 +4,7 @@ public struct ParsedWorkout: Codable, Sendable {
     public let date: String
     public let location: String?
     public let exercises: [ParsedExercise]
-    
+
     public init(date: String, location: String? = nil, exercises: [ParsedExercise]) {
         self.date = date
         self.location = location
@@ -15,7 +15,7 @@ public struct ParsedWorkout: Codable, Sendable {
 public struct ParsedExercise: Codable, Sendable {
     public let canonicalName: String
     public let sets: [ParsedSet]
-    
+
     public init(canonicalName: String, sets: [ParsedSet]) {
         self.canonicalName = canonicalName
         self.sets = sets
@@ -27,7 +27,7 @@ public struct ParsedSet: Codable, Sendable {
     public let reps: Int
     public let rpe: Double?
     public let notes: String?
-    
+
     public init(weight: Double, reps: Int, rpe: Double? = nil, notes: String? = nil) {
         self.weight = weight
         self.reps = reps

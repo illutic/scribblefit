@@ -7,15 +7,15 @@ import Combine
 @MainActor
 public final class ExerciseDetailsStore {
     public var state: ExerciseDetailsState
-    
+
     private let getExerciseDetailsUseCase: GetExerciseDetailsUseCase
     private let getExerciseAIInsightUseCase: GetExerciseAIInsightUseCase
     private let removeExerciseUseCase: RemoveExerciseUseCase
     private let configRepository: ConfigRepository
-    
+
     private var cancellables = Set<AnyCancellable>()
     private var observationTask: Task<Void, Never>?
-    
+
     public init(
         exerciseName: String,
         getExerciseDetailsUseCase: GetExerciseDetailsUseCase,
@@ -28,11 +28,11 @@ public final class ExerciseDetailsStore {
         self.getExerciseAIInsightUseCase = getExerciseAIInsightUseCase
         self.removeExerciseUseCase = removeExerciseUseCase
         self.configRepository = configRepository
-        
+
         setupWeightUnitObservation()
         observeDetails()
     }
-    
+
     public func onIntent(_ intent: ExerciseDetailsIntent) {
         switch intent {
         case .refreshAIInsight:
@@ -49,7 +49,7 @@ public final class ExerciseDetailsStore {
             removeMostRecentExercise()
         }
     }
-    
+
     private func removeMostRecentExercise() {
         guard let id = state.details?.history.first?.exercise.id else { return }
         Task {
@@ -60,7 +60,7 @@ public final class ExerciseDetailsStore {
             }
         }
     }
-    
+
     private func observeDetails() {
         observationTask?.cancel()
         observationTask = Task {
@@ -68,12 +68,12 @@ public final class ExerciseDetailsStore {
             for await details in stream {
                 if Task.isCancelled { break }
                 self.state.details = details
-                
+
                 if details.history.isEmpty {
                     self.state.shouldDismiss = true
                     break
                 }
-                
+
                 // Auto-trigger AI if not present
                 if !details.history.isEmpty && state.aiInsight == nil {
                     refreshAIInsight()
@@ -81,10 +81,10 @@ public final class ExerciseDetailsStore {
             }
         }
     }
-    
+
     private func refreshAIInsight() {
         guard let history = state.details?.history, !history.isEmpty else { return }
-        
+
         Task {
             state.isGeneratingAI = true
             do {
@@ -96,7 +96,7 @@ public final class ExerciseDetailsStore {
             state.isGeneratingAI = false
         }
     }
-    
+
     private func setupWeightUnitObservation() {
         configRepository.configPublisher
             .receive(on: RunLoop.main)

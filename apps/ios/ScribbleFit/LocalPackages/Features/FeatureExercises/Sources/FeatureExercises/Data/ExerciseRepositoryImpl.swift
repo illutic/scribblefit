@@ -14,7 +14,7 @@ public final class ExerciseRepositoryImpl: ExerciseRepository {
     public init(modelContainer: ModelContainer) {
         self.modelContainer = modelContainer
         self.modelContext = modelContainer.mainContext
-        
+
         NotificationCenter.default.publisher(for: ModelContext.didSave)
             .receive(on: RunLoop.main)
             .sink { [weak self] _ in
@@ -47,7 +47,7 @@ public final class ExerciseRepositoryImpl: ExerciseRepository {
                         }
                     }
                 }
-            
+
             continuation.onTermination = { _ in
                 cancellable.cancel()
             }
@@ -71,7 +71,7 @@ public final class ExerciseRepositoryImpl: ExerciseRepository {
         let predicate = #Predicate<ScribbleEntity> { $0.id == scribbleId }
         var descriptor = FetchDescriptor<ScribbleEntity>(predicate: predicate)
         descriptor.fetchLimit = 1
-        
+
         if let scribble = try modelContext.fetch(descriptor).first {
             let exerciseWithDate = exercise.copy(createdAt: scribble.createdAt)
             let exerciseEntities = try modelContext.syncExercises(for: [exerciseWithDate])
@@ -88,15 +88,15 @@ public final class ExerciseRepositoryImpl: ExerciseRepository {
         let predicate = #Predicate<ExerciseEntity> { $0.id == id }
         var descriptor = FetchDescriptor<ExerciseEntity>(predicate: predicate)
         descriptor.fetchLimit = 1
-        
+
         if let entity = try modelContext.fetch(descriptor).first {
             entity.estimated1RM = exercise.estimated1RM
             entity.intensity = exercise.intensity
             entity.improvement = exercise.improvement
-            
+
             // Sync sets
             try modelContext.syncSets(for: entity, with: exercise.sets)
-            
+
             try modelContext.save()
             changeSubject.send()
         }

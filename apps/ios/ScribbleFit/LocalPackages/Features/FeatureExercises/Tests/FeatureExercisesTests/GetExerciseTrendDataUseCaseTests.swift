@@ -60,7 +60,7 @@ final class GetExerciseTrendDataUseCaseTests: XCTestCase {
         mockRepo.exercisesToStream = []
 
         let stream = sut.execute(exerciseName: "Bench", period: .all)
-        var result: ExerciseTrendResult? = nil
+        var result: ExerciseTrendResult?
         for await value in stream { result = value; break }
 
         XCTAssertEqual(result?.oneRM.dataPoints.count, 0)
@@ -71,7 +71,7 @@ final class GetExerciseTrendDataUseCaseTests: XCTestCase {
         mockRepo.exercisesToStream = []
 
         let stream = sut.execute(exerciseName: "Bench", period: .all)
-        var result: ExerciseTrendResult? = nil
+        var result: ExerciseTrendResult?
         for await value in stream { result = value; break }
 
         XCTAssertEqual(result?.oneRM.insights.trendDirection, .stable)
@@ -85,7 +85,7 @@ final class GetExerciseTrendDataUseCaseTests: XCTestCase {
         mockRepo.exercisesToStream = [ex1, ex2]
 
         let stream = sut.execute(exerciseName: "Bench Press", period: .all)
-        var result: ExerciseTrendResult? = nil
+        var result: ExerciseTrendResult?
         for await value in stream { result = value; break }
 
         XCTAssertEqual(result?.oneRM.dataPoints.count, 2)
@@ -99,7 +99,7 @@ final class GetExerciseTrendDataUseCaseTests: XCTestCase {
         mockRepo.exercisesToStream = [ex1, ex2]
 
         let stream = sut.execute(exerciseName: "Bench Press", period: .all)
-        var result: ExerciseTrendResult? = nil
+        var result: ExerciseTrendResult?
         for await value in stream { result = value; break }
 
         XCTAssertEqual(result?.oneRM.insights.trendDirection, .improving)
@@ -112,7 +112,7 @@ final class GetExerciseTrendDataUseCaseTests: XCTestCase {
         mockRepo.exercisesToStream = [ex1, ex2]
 
         let stream = sut.execute(exerciseName: "Bench Press", period: .all)
-        var result: ExerciseTrendResult? = nil
+        var result: ExerciseTrendResult?
         for await value in stream { result = value; break }
 
         XCTAssertEqual(result?.oneRM.insights.trendDirection, .declining)
@@ -127,7 +127,7 @@ final class GetExerciseTrendDataUseCaseTests: XCTestCase {
         mockRepo.exercisesToStream = [old, recent]
 
         let stream = sut.execute(exerciseName: "Bench Press", period: .oneMonth)
-        var result: ExerciseTrendResult? = nil
+        var result: ExerciseTrendResult?
         for await value in stream { result = value; break }
 
         XCTAssertEqual(result?.oneRM.dataPoints.count, 1)
@@ -140,7 +140,7 @@ final class GetExerciseTrendDataUseCaseTests: XCTestCase {
         mockRepo.exercisesToStream = exercises
 
         let stream = sut.execute(exerciseName: "Bench Press", period: .all)
-        var result: ExerciseTrendResult? = nil
+        var result: ExerciseTrendResult?
         for await value in stream { result = value; break }
 
         XCTAssertEqual(result?.oneRM.dataPoints.count, 5)
@@ -148,29 +148,31 @@ final class GetExerciseTrendDataUseCaseTests: XCTestCase {
 
     // MARK: - Personal Best
 
-    func test_execute_personalBest_isMaxAcrossAllPoints() async {
+    func test_execute_personalBest_isMaxAcrossAllPoints() async throws {
         let ex1 = makeTrendExercise(sets: [makeTrendSet(weight: 100, reps: 1)], daysAgo: 30)
         let ex2 = makeTrendExercise(sets: [makeTrendSet(weight: 150, reps: 1)], daysAgo: 1)
         mockRepo.exercisesToStream = [ex1, ex2]
 
         let stream = sut.execute(exerciseName: "Bench Press", period: .all)
-        var result: ExerciseTrendResult? = nil
+        var result: ExerciseTrendResult?
         for await value in stream { result = value; break }
 
-        XCTAssertEqual(result?.oneRM.insights.personalBest, 150.0, accuracy: 0.01)
+        let pb = try XCTUnwrap(result?.oneRM.insights.personalBest)
+        XCTAssertEqual(pb, 150.0, accuracy: 0.01)
     }
 
     // MARK: - Volume Calculation
 
-    func test_execute_volumeCalculatedCorrectly() async {
+    func test_execute_volumeCalculatedCorrectly() async throws {
         // 100kg * 5 reps = 500 volume
         let ex = makeTrendExercise(sets: [makeTrendSet(weight: 100, reps: 5)], daysAgo: 1)
         mockRepo.exercisesToStream = [ex]
 
         let stream = sut.execute(exerciseName: "Bench Press", period: .all)
-        var result: ExerciseTrendResult? = nil
+        var result: ExerciseTrendResult?
         for await value in stream { result = value; break }
 
-        XCTAssertEqual(result?.volume.dataPoints.first?.value, 500.0, accuracy: 0.01)
+        let value = try XCTUnwrap(result?.volume.dataPoints.first?.value)
+        XCTAssertEqual(value, 500.0, accuracy: 0.01)
     }
 }

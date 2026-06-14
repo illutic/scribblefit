@@ -11,11 +11,11 @@ import FoundationModels
 public final class LocalAIEngine: LLMEngine, AnalysisEngine {
     private let configRepository: ConfigRepository
     private let jsonDecoder = JSONDecoder()
-    
+
     public init(configRepository: ConfigRepository) {
         self.configRepository = configRepository
     }
-    
+
     public func parseWorkout(rawText: String) async -> ParsedWorkoutResult {
         let startTime = Date()
         do {
@@ -23,11 +23,11 @@ public final class LocalAIEngine: LLMEngine, AnalysisEngine {
             if #available(iOS 26.0, *) {
                 let config = await configRepository.getConfig()
                 let systemPrompt = config?.remoteConfig.parsePrompt ?? RemoteConfig.defaultParsePrompt
-                 
+
                 let session = LanguageModelSession { systemPrompt }
                 let response = try await session.respond(to: "Parse this gym note: \(rawText)")
                 let duration = Int64(Date().timeIntervalSince(startTime) * 1000)
-                
+
                 let cleanString = response.content
                     .replacingOccurrences(of: "```json", with: "")
                     .replacingOccurrences(of: "```", with: "")
@@ -37,7 +37,7 @@ public final class LocalAIEngine: LLMEngine, AnalysisEngine {
                 if let cleanData = cleanString.data(using: .utf8) {
                     // 3. Decode using the cleanData, not the original data
                     let dto = try jsonDecoder.decode(AIWorkoutDTO.self, from: cleanData)
-                    
+
                     return ParsedWorkoutResult(
                         workout: dto.toDomain(),
                         rawText: rawText,
@@ -61,7 +61,7 @@ public final class LocalAIEngine: LLMEngine, AnalysisEngine {
             )
         }
     }
-    
+
     public func generateSuggestion(context: String) async throws -> AnalysisSuggestion {
         #if canImport(FoundationModels)
         if #available(iOS 26.0, *) {
@@ -88,7 +88,7 @@ public final class LocalAIEngine: LLMEngine, AnalysisEngine {
         #endif
         throw NSError(domain: "LocalAIEngine", code: 0, userInfo: [NSLocalizedDescriptionKey: "Local AI Engine not supported"])
     }
-    
+
     public func generateSummary(period: SummaryPeriod, workoutData: String) async throws -> AnalysisSummary {
         #if canImport(FoundationModels)
         if #available(iOS 26.0, *) {
@@ -105,12 +105,12 @@ public final class LocalAIEngine: LLMEngine, AnalysisEngine {
                     let focus_area: String
                     let volume_delta: Double
                 }
-                
+
                 struct MuscleStatDTO: Codable {
                     let muscle_group: String
                     let volume_percentage: Double
                 }
-                
+
                 let dto = try jsonDecoder.decode(SummaryDTO.self, from: data)
                 return AnalysisSummary(
                     period: period,
@@ -126,7 +126,7 @@ public final class LocalAIEngine: LLMEngine, AnalysisEngine {
         #endif
         throw NSError(domain: "LocalAIEngine", code: 0, userInfo: [NSLocalizedDescriptionKey: "Local AI Engine not supported"])
     }
-    
+
     public func generateExerciseInsight(exerciseName: String, historyData: String) async throws -> ExerciseInsight {
         #if canImport(FoundationModels)
         if #available(iOS 26.0, *) {
@@ -142,7 +142,7 @@ public final class LocalAIEngine: LLMEngine, AnalysisEngine {
                     let trend_direction: String
                     let breakdown_text: String
                 }
-                
+
                 let dto = try jsonDecoder.decode(InsightDTO.self, from: data)
                 return ExerciseInsight(
                     exerciseId: exerciseName,
@@ -157,7 +157,7 @@ public final class LocalAIEngine: LLMEngine, AnalysisEngine {
         #endif
         throw NSError(domain: "LocalAIEngine", code: 0, userInfo: [NSLocalizedDescriptionKey: "Local AI Engine not supported"])
     }
-    
+
     public func isAvailable() async -> Bool {
         #if canImport(FoundationModels)
         if #available(iOS 26.0, *) {

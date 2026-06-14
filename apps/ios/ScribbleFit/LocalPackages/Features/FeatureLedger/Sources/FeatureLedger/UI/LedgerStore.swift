@@ -42,7 +42,7 @@ public final class LedgerStore {
                 startDate: state.startDate,
                 endDate: state.endDate
             )
-            
+
             for await scribbles in stream {
                 // Filter only completed scribbles
                 let completed = scribbles.filter { $0.status == .completed }

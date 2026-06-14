@@ -9,7 +9,7 @@ struct ScribbleCard: View {
     let onExerciseClick: (String) -> Void
     let onScribbleDetailsClick: (UUID) -> Void
     let onIntent: (CanvasIntent) -> Void
-    
+
     var body: some View {
         switch scribble.status {
         case .pending, .parsing:
@@ -39,16 +39,16 @@ struct ScribbleCard: View {
 private struct PendingScribbleCard: View {
     let scribble: Scribble
     @State private var isAnimating = false
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             ScribbleRawText(text: scribble.rawText)
-            
+
             HStack(spacing: 8) {
                 ProgressView()
                     .tint(Color.scribblePrimary)
                     .scaleEffect(0.8)
-                
+
                 Text(String(localized: "Parsing training data…"))
                     .font(.scribbleLabelMedium)
                     .foregroundStyle(Color.scribbleMidGray)
@@ -71,13 +71,13 @@ private struct ParsedScribbleCard: View {
     let weightUnit: WeightUnit
     let onClick: () -> Void
     let onExerciseClick: (String) -> Void
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
             HStack(alignment: .top) {
                 VStack(alignment: .leading, spacing: 12) {
                     ScribbleRawText(text: scribble.rawText)
-                    
+
                     if scribble.exercises.isEmpty {
                         Text(String(localized: "No exercises detected"))
                             .font(.scribbleLabelMedium)
@@ -93,7 +93,7 @@ private struct ParsedScribbleCard: View {
                                                 .font(.system(size: 24, weight: .bold))
                                                 .kerning(-0.5)
                                                 .foregroundStyle(Color.scribblePrimary)
-                                            
+
                                             Text(exercise.summary(weightUnit: weightUnit))
                                                 .font(.scribbleBodyMedium)
                                                 .foregroundStyle(Color.scribbleMidGray)
@@ -110,9 +110,9 @@ private struct ParsedScribbleCard: View {
                         .padding(.top, 4)
                     }
                 }
-                
+
                 Spacer()
-                
+
                 Button(action: onClick) {
                     Circle()
                         .fill(Color.scribblePrimary)
@@ -125,7 +125,7 @@ private struct ParsedScribbleCard: View {
                 }
                 .buttonStyle(.plain)
             }
-            
+
             Button(action: onClick) {
                 Text(String(localized: "TAP TO CONFIRM").uppercased())
                     .font(.scribbleLabelMedium)
@@ -153,18 +153,18 @@ private struct LoggedScribbleCard: View {
     let weightUnit: WeightUnit
     let onClick: () -> Void
     let onExerciseClick: (String) -> Void
-    
+
     private var weightUnitLabel: String {
         weightUnit == .kgs ? "kg" : "lbs"
     }
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             if scribble.exercises.isEmpty {
                 Button(action: onClick) {
                     VStack(alignment: .leading, spacing: 8) {
                         ScribbleRawText(text: scribble.rawText)
-                        
+
                         Text(String(localized: "LOGGED (NO EXERCISES)"))
                             .font(.scribbleLabelMedium)
                             .fontWeight(.bold)
@@ -182,14 +182,14 @@ private struct LoggedScribbleCard: View {
                                         .font(.system(size: 28, weight: .bold))
                                         .kerning(-1)
                                         .foregroundStyle(Color.scribblePrimary)
-                                    
+
                                     Text(exercise.summary(weightUnit: weightUnit))
                                         .font(.scribbleBodyMedium)
                                         .foregroundStyle(Color.scribbleMidGray)
                                 }
-                                
+
                                 Spacer()
-                                
+
                                 if exercise == scribble.exercises.first {
                                     HStack(spacing: 4) {
                                         Image(systemName: "checkmark.circle.fill")
@@ -210,13 +210,13 @@ private struct LoggedScribbleCard: View {
                                         .foregroundStyle(Color.scribbleMidGray.opacity(0.3))
                                 }
                             }
-                            
+
                             ExerciseStatsView(
                                 estimated1RM: exercise.estimated1RM.map { "\(Int($0))\(weightUnitLabel)" },
                                 intensity: exercise.intensity.map { "\(Int($0 * 100))%" },
                                 improvement: exercise.improvement.map { "\(($0 >= 0 ? "+" : ""))\(Int($0 * 100))% VS LAST SESSION" }
                             )
-                            
+
                             if exercise != scribble.exercises.last {
                                 Divider()
                                     .background(Color.scribblePrimary.opacity(0.1))
@@ -239,11 +239,11 @@ private struct LoggedScribbleCard: View {
 private struct FailedScribbleCard: View {
     let scribble: Scribble
     let onIntent: (CanvasIntent) -> Void
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             ScribbleRawText(text: scribble.rawText, color: Color.red.opacity(0.7))
-            
+
             HStack(spacing: 12) {
                 Button(action: { onIntent(.retryScribbleParsing(scribble)) }) {
                     Text(String(localized: "Retry"))
@@ -255,7 +255,7 @@ private struct FailedScribbleCard: View {
                         .background(Color.scribblePrimary)
                         .clipShape(Capsule())
                 }
-                
+
                 Button(action: { onIntent(.deleteScribble(scribble.id)) }) {
                     Text(String(localized: "Remove"))
                         .font(.scribbleLabelMedium)
@@ -278,7 +278,7 @@ private struct FailedScribbleCard: View {
 private struct ScribbleRawText: View {
     let text: String
     var color: Color = Color.scribbleMidGray
-    
+
     var body: some View {
         Text("\"\(text)\"")
             .font(.scribbleBodyMedium)

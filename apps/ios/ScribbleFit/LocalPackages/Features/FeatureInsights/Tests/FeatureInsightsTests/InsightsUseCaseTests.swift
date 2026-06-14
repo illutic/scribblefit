@@ -31,7 +31,7 @@ private final class MockScribbleRepository: ScribbleRepository {
 @MainActor
 private final class MockLLMService: LLMService {
     var insightsToReturn: [AIInsight] = []
-    var shouldThrow: Error? = nil
+    var shouldThrow: Error?
 
     func parseWorkout(rawText: String) async throws -> ParsedWorkoutResult {
         ParsedWorkoutResult(exercises: [], rawText: rawText)
@@ -92,7 +92,7 @@ final class GetFrequencyInsightsUseCaseTests: XCTestCase {
         let end = Date()
 
         let stream = sut.execute(startDate: start, endDate: end)
-        var result: FrequencyData? = nil
+        var result: FrequencyData?
         for await data in stream {
             result = data
             break
@@ -106,7 +106,7 @@ final class GetFrequencyInsightsUseCaseTests: XCTestCase {
         let ex2 = makeExercise()
         mockRepo.scribblesToStream = [makeCompletedScribble(exercises: [ex1, ex2])]
         let stream = sut.execute(startDate: Date(timeIntervalSinceNow: -86400), endDate: Date())
-        var result: FrequencyData? = nil
+        var result: FrequencyData?
         for await data in stream { result = data; break }
 
         XCTAssertEqual(result?.totalExercises, 2)
@@ -115,7 +115,7 @@ final class GetFrequencyInsightsUseCaseTests: XCTestCase {
     func test_execute_emptyScribbles_returnsZeroes() async {
         mockRepo.scribblesToStream = []
         let stream = sut.execute(startDate: Date(timeIntervalSinceNow: -86400), endDate: Date())
-        var result: FrequencyData? = nil
+        var result: FrequencyData?
         for await data in stream { result = data; break }
 
         XCTAssertEqual(result?.totalWorkouts, 0)
@@ -129,7 +129,7 @@ final class GetFrequencyInsightsUseCaseTests: XCTestCase {
         mockRepo.scribblesToStream = [makeCompletedScribble(), makeCompletedScribble()]
 
         let stream = sut.execute(startDate: start, endDate: end)
-        var result: FrequencyData? = nil
+        var result: FrequencyData?
         for await data in stream { result = data; break }
 
         XCTAssertEqual(result?.workoutsPerWeek ?? 0, 1.0, accuracy: 0.1)

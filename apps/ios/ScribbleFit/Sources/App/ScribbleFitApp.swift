@@ -76,7 +76,7 @@ struct ScribbleFitApp: App {
         let providerFactory = ScribbleFitAppCheckProviderFactory()
         AppCheck.setAppCheckProviderFactory(providerFactory)
         FirebaseApp.configure()
-        
+
         // Sign in anonymously to provide auth context for Gemini / App Check
         Auth.auth().signInAnonymously { _, error in
             if let error = error {
@@ -115,56 +115,56 @@ struct ScribbleFitApp: App {
             // Use Cases
             let getScribblesForDateUC = GetScribblesForDateUseCase(repository: scribbleRepo)
             self.getScribblesForDateUseCase = getScribblesForDateUC
-            
+
             let addRawScribbleUC = AddRawScribbleUseCase(repository: scribbleRepo)
             self.addRawScribbleUseCase = addRawScribbleUC
-            
+
             let removeScribbleUC = RemoveScribbleUseCase(repository: scribbleRepo)
             let confirmScribbleUC = ConfirmScribbleUseCase(scribbleRepository: scribbleRepo)
             self.confirmScribbleUseCase = confirmScribbleUC
-            
+
             let deleteScribbleUC = DeleteScribbleUseCase(removeScribbleUseCase: removeScribbleUC)
             self.deleteScribbleUseCase = deleteScribbleUC
-            
+
             let parsePendingScribblesUC = ParsePendingScribblesUseCase(scribbleRepository: scribbleRepo, llmProvider: routingLLM)
             self.parsePendingScribblesUseCase = parsePendingScribblesUC
-            
+
             let getAIOverviewUC = GetAIOverviewUseCase(scribbleRepository: scribbleRepo, llmProvider: routingLLM)
             self.getAIOverviewUseCase = getAIOverviewUC
 
             let clearAllDataUC = ClearAllDataUseCase(repository: settingsRepo)
             self.clearAllDataUseCase = clearAllDataUC
-            
+
             let checkLocalSupportUC = CheckLocalSupportUseCase(localLLM: localLLM)
             self.checkLocalSupportUseCase = checkLocalSupportUC
-            
+
             let exportUserDataUC = ExportUserDataUseCase(repository: settingsRepo)
             self.exportUserDataUseCase = exportUserDataUC
-            
+
             let getVolumeInsightsUC = GetVolumeInsightsUseCase(scribbleRepository: scribbleRepo)
             self.getVolumeInsightsUseCase = getVolumeInsightsUC
-            
+
             let getFrequencyInsightsUC = GetFrequencyInsightsUseCase(scribbleRepository: scribbleRepo)
             self.getFrequencyInsightsUseCase = getFrequencyInsightsUC
-            
+
             let getMuscleDistributionInsightsUC = GetMuscleDistributionInsightsUseCase(scribbleRepository: scribbleRepo)
             self.getMuscleDistributionInsightsUseCase = getMuscleDistributionInsightsUC
 
             let reorderSetsUC = ReorderSetsUseCase()
             self.reorderSetsUseCase = reorderSetsUC
-            
+
             let manualEditScribbleUC = ManualEditScribbleUseCase(scribbleRepository: scribbleRepo)
             self.manualEditScribbleUseCase = manualEditScribbleUC
-            
+
             let createManualScribbleUC = CreateManualScribbleUseCase(scribbleRepository: scribbleRepo)
             self.createManualScribbleUseCase = createManualScribbleUC
 
             let getExerciseDetailsUC = GetExerciseDetailsUseCase(scribbleRepository: scribbleRepo)
             self.getExerciseDetailsUseCase = getExerciseDetailsUC
-            
+
             let getExerciseAIInsightUC = GetExerciseAIInsightUseCase(llmService: routingLLM)
             self.getExerciseAIInsightUseCase = getExerciseAIInsightUC
-            
+
             let getExerciseTrendsUC = GetExerciseTrendDataUseCase(exerciseRepository: exerciseRepo)
             self.getExerciseTrendsUseCase = getExerciseTrendsUC
 
@@ -177,7 +177,7 @@ struct ScribbleFitApp: App {
 
             self.addManualExerciseUseCase = AddManualExerciseUseCase(exerciseRepository: exerciseRepo)
             self.addSetToExerciseUseCase = AddSetToExerciseUseCase(exerciseRepository: exerciseRepo)
-            
+
             let calculateTrendsUC = CalculateTrendsUseCase(exerciseRepository: exerciseRepo)
             self.calculateTrendsUseCase = calculateTrendsUC
 
@@ -252,7 +252,7 @@ struct ContentView: View {
     @Bindable var settingsStore: SettingsStore
     @Bindable var insightsStore: InsightsStore
     @Bindable var ledgerStore: LedgerStore
-    
+
     let getExerciseDetailsUseCase: GetExerciseDetailsUseCase
     let getExerciseAIInsightUseCase: GetExerciseAIInsightUseCase
     let getExerciseTrendsUseCase: GetExerciseTrendDataUseCase

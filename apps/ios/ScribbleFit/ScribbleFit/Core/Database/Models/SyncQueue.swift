@@ -6,10 +6,10 @@ public final class SyncQueue {
     @Attribute(.unique) public var id: String
     public var itemType: String
     public var rawText: String?
-    public var status: String 
+    public var status: String
     public var jsonData: String?
     public var createdAt: Date
-    
+
     public init(
         id: String = UUID().uuidString,
         itemType: String = "SCRIBBLE",
@@ -25,7 +25,7 @@ public final class SyncQueue {
         self.jsonData = jsonData
         self.createdAt = createdAt
     }
-    
+
     public var syncStatus: SyncStatus {
         get { SyncStatus(rawValue: status) ?? .pending }
         set { status = newValue.rawValue }

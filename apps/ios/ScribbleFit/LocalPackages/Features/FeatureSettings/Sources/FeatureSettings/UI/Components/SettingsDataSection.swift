@@ -4,7 +4,7 @@ import CoreDesignSystem
 struct SettingsDataSection: View {
     let isExporting: Bool
     let onIntent: (SettingsIntent) -> Void
-    
+
     var body: some View {
         SettingsContainer(title: String(localized: "Data Management")) {
             VStack(spacing: 12) {
@@ -25,7 +25,7 @@ struct SettingsDataSection: View {
                     .clipShape(Capsule())
                 }
                 .disabled(isExporting)
-                
+
                 Button(action: { onIntent(.showClearConfirmation(true)) }) {
                     Text(String(localized: "CLEAR ALL DATA"))
                         .font(.scribbleLabelMedium)

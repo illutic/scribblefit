@@ -21,12 +21,12 @@ public struct EmptyLedgerContent: View {
             Image(systemName: "calendar.badge.exclamationmark")
                 .font(.system(size: 64))
                 .foregroundStyle(Color.scribblePrimary.opacity(0.4))
-            
+
             Text(message)
                 .font(.scribbleHeadlineSmall)
                 .foregroundStyle(Color.scribblePrimary)
                 .multilineTextAlignment(.center)
-            
+
             Button(action: onCTATapped) {
                 Text(ctaLabel)
                     .font(.scribbleTitleMedium)

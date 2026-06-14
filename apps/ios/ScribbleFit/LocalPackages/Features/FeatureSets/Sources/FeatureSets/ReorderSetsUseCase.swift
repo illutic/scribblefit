@@ -3,7 +3,7 @@ import CoreModel
 
 public struct ReorderSetsUseCase: Sendable {
     public init() {}
-    
+
     public func execute(sets: [ExerciseSet]) -> [ExerciseSet] {
         return sets.enumerated().map { index, set in
             ExerciseSet(

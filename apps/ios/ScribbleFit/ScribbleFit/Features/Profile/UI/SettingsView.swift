@@ -89,7 +89,6 @@ public struct SettingsView: View {
                         }
                     }
 
-
                 }
 
                 Divider().background(ScribbleFitColor.divider)

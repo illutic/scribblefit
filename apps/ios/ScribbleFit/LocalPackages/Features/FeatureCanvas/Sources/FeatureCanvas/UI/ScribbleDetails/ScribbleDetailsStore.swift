@@ -7,11 +7,11 @@ import FeatureScribble
 @MainActor
 public final class ScribbleDetailsStore {
     public var state: ScribbleDetailsState
-    
+
     private let scribbleRepository: ScribbleRepository
     private let configRepository: ConfigRepository
     private let confirmScribbleUseCase: ConfirmScribbleUseCase
-    
+
     private let scribbleId: UUID?
 
     public init(
@@ -29,7 +29,7 @@ public final class ScribbleDetailsStore {
         self.scribbleRepository = scribbleRepository
         self.configRepository = configRepository
         self.confirmScribbleUseCase = confirmScribbleUseCase
-        
+
         if let id = scribbleId {
             Task {
                 await loadScribble(id)

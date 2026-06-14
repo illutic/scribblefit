@@ -5,9 +5,9 @@ public enum AppTab: String, CaseIterable, Identifiable {
     case workout
     case exercises
     case profile
-    
+
     public var id: String { self.rawValue }
-    
+
     public var title: String {
         switch self {
         case .workout: return "Workout"
@@ -15,7 +15,7 @@ public enum AppTab: String, CaseIterable, Identifiable {
         case .profile: return "Profile"
         }
     }
-    
+
     public var icon: String {
         switch self {
         case .workout: return "dumbbell.fill"
@@ -35,13 +35,13 @@ public final class NavigationManager: ObservableObject {
     @Published public var workoutPath = NavigationPath()
     @Published public var exercisesPath = NavigationPath()
     @Published public var profilePath = NavigationPath()
-    
+
     public init() {}
-    
+
     public func switchTab(to tab: AppTab) {
         activeTab = tab
     }
-    
+
     public func navigate(to destination: any Hashable, in tab: AppTab) {
         switch tab {
         case .workout: workoutPath.append(destination)
@@ -49,7 +49,7 @@ public final class NavigationManager: ObservableObject {
         case .profile: profilePath.append(destination)
         }
     }
-    
+
     public func pop(in tab: AppTab) {
         switch tab {
         case .workout: if !workoutPath.isEmpty { workoutPath.removeLast() }

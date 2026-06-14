@@ -53,24 +53,24 @@ public struct ExerciseTrendResult: Sendable {
 @MainActor
 public final class GetExerciseTrendDataUseCase {
     private let exerciseRepository: ExerciseRepository
-    
+
     public init(exerciseRepository: ExerciseRepository) {
         self.exerciseRepository = exerciseRepository
     }
-    
+
     public func execute(
         exerciseName: String,
         period: TrendPeriod
     ) -> AsyncStream<ExerciseTrendResult> {
         AsyncStream { continuation in
             let exercisesStream = exerciseRepository.observeExercises(query: exerciseName)
-            
+
             let task = Task {
                 for await exercises in exercisesStream {
                     let allHistory = exercises
                         .filter { $0.canonicalName.lowercased() == exerciseName.lowercased() }
                         .sorted(by: { $0.createdAt < $1.createdAt })
-                    
+
                     if allHistory.isEmpty {
                         let emptyData = MetricTrendData(
                             dataPoints: [],
@@ -82,30 +82,30 @@ public final class GetExerciseTrendDataUseCase {
                         ))
                         continue
                     }
-                    
+
                     let filteredHistory = filterByPeriod(allHistory, period: period)
-                    
+
                     let oneRMData = calculateMetricData(filteredHistory) { exercise in
                         exercise.sets.map { Calculations.calculate1RM(weight: $0.weight ?? 0, reps: $0.reps) }.max() ?? 0
                     }
-                    
+
                     let volumeData = calculateMetricData(filteredHistory) { exercise in
                         exercise.sets.reduce(Float(0.0)) { $0 + Calculations.calculateVolume(weight: $1.weight, reps: $1.reps) }
                     }
-                    
+
                     continuation.yield(ExerciseTrendResult(
                         oneRM: oneRMData,
                         volume: volumeData
                     ))
                 }
             }
-            
+
             continuation.onTermination = { _ in
                 task.cancel()
             }
         }
     }
-    
+
     private func calculateMetricData(
         _ history: [Exercise],
         valueExtractor: (Exercise) -> Float
@@ -113,30 +113,30 @@ public final class GetExerciseTrendDataUseCase {
         let dataPoints = history.map { exercise in
             TrendDataPoint(date: exercise.createdAt, value: valueExtractor(exercise))
         }
-        
+
         let personalBest = dataPoints.map { $0.value }.max() ?? 0
-        
+
         let percentageChange: Float = {
             guard dataPoints.count >= 2, let first = dataPoints.first?.value, first > 0 else { return 0 }
             let last = dataPoints.last?.value ?? 0
             return ((last - first) / first) * 100
         }()
-        
+
         let direction: TrendDirection = {
             if percentageChange > 5 { return .improving }
             if percentageChange < -5 { return .declining }
             return .stable
         }()
-        
+
         return MetricTrendData(
             dataPoints: dataPoints,
             insights: TrendInsights(personalBest: personalBest, percentageChange: percentageChange, trendDirection: direction)
         )
     }
-    
+
     private func filterByPeriod(_ history: [Exercise], period: TrendPeriod) -> [Exercise] {
         if period == .all { return history }
-        
+
         let calendar = Calendar.current
         let now = Date()
         let startDate: Date? = {
@@ -148,7 +148,7 @@ public final class GetExerciseTrendDataUseCase {
             case .all: return nil
             }
         }()
-        
+
         guard let start = startDate else { return history }
         return history.filter { $0.createdAt >= start }
     }

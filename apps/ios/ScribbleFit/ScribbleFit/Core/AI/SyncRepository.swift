@@ -15,7 +15,7 @@ public struct AISyncItem: Sendable {
     public let status: AISyncStatus
     public let jsonData: String?
     public let createdAt: Date
-    
+
     public init(id: String, itemType: String, rawText: String?, status: AISyncStatus, jsonData: String?, createdAt: Date) {
         self.id = id
         self.itemType = itemType

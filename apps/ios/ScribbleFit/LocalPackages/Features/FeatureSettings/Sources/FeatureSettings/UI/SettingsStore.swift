@@ -7,13 +7,13 @@ import CoreModel
 @MainActor
 public final class SettingsStore {
     public var state = SettingsState()
-    
+
     private let configRepository: ConfigRepository
     private let settingsRepository: SettingsRepository
     private let checkLocalSupportUseCase: CheckLocalSupportUseCase
     private let clearAllDataUseCase: ClearAllDataUseCase
     private let exportUserDataUseCase: ExportUserDataUseCase
-    
+
     private var cancellables = Set<AnyCancellable>()
 
     public init(
@@ -28,23 +28,23 @@ public final class SettingsStore {
         self.checkLocalSupportUseCase = checkLocalSupportUseCase
         self.clearAllDataUseCase = clearAllDataUseCase
         self.exportUserDataUseCase = exportUserDataUseCase
-        
+
         loadInitialData()
     }
 
     private func loadInitialData() {
         state = state.copy(config: configRepository.getConfig())
-        
+
         if let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String,
            let build = Bundle.main.infoDictionary?["CFBundleVersion"] as? String {
             state = state.copy(version: "\(version) (\(build))")
         }
-        
+
         Task {
             let isSupported = await checkLocalSupportUseCase.execute()
             state = state.copy(isLocalLlmSupported: isSupported)
         }
-        
+
         configRepository.configPublisher
             .receive(on: RunLoop.main)
             .sink { [weak self] config in
@@ -59,26 +59,26 @@ public final class SettingsStore {
             var newConfig = state.config
             newConfig.themePreference = theme
             configRepository.updateConfig(newConfig)
-            
+
         case .updateWeightUnit(let unit):
             var newConfig = state.config
             newConfig.weightUnit = unit
             configRepository.updateConfig(newConfig)
-            
+
         case .updateLlmProvider(let provider):
             var newConfig = state.config
             newConfig.preferredLlmProvider = provider
             configRepository.updateConfig(newConfig)
-            
+
         case .exportData:
             exportData()
-            
+
         case .clearAllData:
             clearData()
-            
+
         case .showClearConfirmation(let show):
             state = state.copy(isShowingClearConfirmation: show)
-            
+
         case .dismissError:
             state = state.copy(error: .some(nil))
         }

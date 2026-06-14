@@ -58,7 +58,7 @@ public struct RemoteConfig: Equatable, Sendable, Codable {
         Generate one actionable training suggestion based on the workout context below.
         Output ONLY this JSON (no markdown, no extra text):
         {
-          "text": "suggestion text", 
+          "text": "suggestion text",
           "emoji": "emoji",
           "type":"RECOVERY|PATTERN|MILESTONE|REST"
         }
@@ -143,15 +143,15 @@ public struct RemoteConfig: Equatable, Sendable, Codable {
         You are ScribbleFit AI, a fitness parsing assistant.
         Parse raw gym shorthand into this JSON schema:
         {
-          "exercises": [{ 
-            "canonicalName": "String", 
-            "muscleGroup": "String", 
+          "exercises": [{
+            "canonicalName": "String",
+            "muscleGroup": "String",
             "sets": [{ "weight": number|null, "reps": integer, "setNumber": integer, "rpe": number|null, "notes": "String|null" }],
             "estimated1RM": number|null,
             "intensity": number|null
           }]
         }
-        Use Epley formula (weight * (1 + reps/30)) for 1RM estimate if possible. 
+        Use Epley formula (weight * (1 + reps/30)) for 1RM estimate if possible.
         Intensity should be a decimal (e.g. 0.85 for 85%).
         Reps are always required, weight can be null if not provided or not parsable.
         Output ONLY valid JSON. No extra text, no markdown, no apologies. If you can't parse any exercises, return {"exercises": []}.

@@ -84,7 +84,7 @@ public struct LedgerState: Equatable, Sendable {
         let groups = Dictionary(grouping: scribbles) { scribble in
             calendar.startOfDay(for: scribble.createdAt)
         }
-        
+
         return groups.keys.sorted(by: >).map { date in
             let dayScribbles = groups[date]!.sorted(by: { $0.createdAt < $1.createdAt })
             return GroupedScribbles(

@@ -3,11 +3,11 @@ import CoreModel
 
 public struct ManualEditScribbleUseCase: Sendable {
     private let scribbleRepository: ScribbleRepository
-    
+
     public init(scribbleRepository: ScribbleRepository) {
         self.scribbleRepository = scribbleRepository
     }
-    
+
     @MainActor
     public func updateExerciseName(scribbleId: UUID, exerciseId: UUID, newName: String) async throws {
         guard let scribble = try await scribbleRepository.getScribble(id: scribbleId) else { return }
@@ -68,7 +68,7 @@ public struct ManualEditScribbleUseCase: Sendable {
     public func deleteExercise(scribbleId: UUID, exerciseId: UUID) async throws {
         guard let scribble = try await scribbleRepository.getScribble(id: scribbleId) else { return }
         let filteredExercises = scribble.exercises.filter { $0.id != exerciseId }
-        
+
         if filteredExercises.isEmpty {
             try await scribbleRepository.deleteScribble(id: scribbleId)
         } else {

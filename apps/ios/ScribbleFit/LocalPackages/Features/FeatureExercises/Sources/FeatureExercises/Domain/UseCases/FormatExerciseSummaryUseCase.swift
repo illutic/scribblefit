@@ -3,7 +3,7 @@ import CoreModel
 
 public struct FormatExerciseSummaryUseCase: Sendable {
     public init() {}
-    
+
     public func execute(exercise: Exercise, weightUnit: WeightUnit) -> String {
         if exercise.sets.isEmpty { return "" }
 

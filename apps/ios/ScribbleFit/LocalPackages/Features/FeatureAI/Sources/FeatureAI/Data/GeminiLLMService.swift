@@ -5,7 +5,7 @@ import CoreModel
 @MainActor
 public final class GeminiLLMService: LLMService {
     private let configRepository: ConfigRepository
-    
+
     private func getModel() -> GenerativeModel {
         return FirebaseAI.firebaseAI(backend: .googleAI()).generativeModel(
             modelName: "gemini-2.5-flash-lite",
@@ -28,20 +28,20 @@ public final class GeminiLLMService: LLMService {
     public func parseWorkout(rawText: String) async throws -> ParsedWorkoutResult {
         let sanitized = rawText.replacingOccurrences(of: "{", with: " ").replacingOccurrences(of: "}", with: " ")
         let prompt = config.remoteConfig.parsePrompt.replacingOccurrences(of: "{{rawText}}", with: "<workout_scribble>\(sanitized)</workout_scribble>")
-        
+
         let response = try await getModel().generateContent(prompt)
         guard let responseText = response.text else {
             throw NSError(domain: "GeminiLLMService", code: 500, userInfo: [NSLocalizedDescriptionKey: "No response from Gemini"])
         }
-        
+
         let cleanJson = responseText.replaceFirst("```json", with: "")
             .replaceFirst("```", with: "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
-            
+
         guard let data = cleanJson.data(using: .utf8) else {
             throw NSError(domain: "GeminiLLMService", code: 400, userInfo: [NSLocalizedDescriptionKey: "Failed to convert response to data"])
         }
-        
+
         let workoutResponse = try JSONDecoder().decode(WorkoutResponseDto.self, from: data)
         return ParsedWorkoutResult(
             exercises: workoutResponse.exercises.map { $0.toDomain() },
@@ -58,15 +58,15 @@ public final class GeminiLLMService: LLMService {
         guard let responseText = response.text else {
             throw NSError(domain: "GeminiLLMService", code: 500, userInfo: [NSLocalizedDescriptionKey: "No response from Gemini"])
         }
-        
+
         let cleanJson = responseText.replaceFirst("```json", with: "")
             .replaceFirst("```", with: "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
-            
+
         guard let data = cleanJson.data(using: .utf8) else {
             throw NSError(domain: "GeminiLLMService", code: 400, userInfo: [NSLocalizedDescriptionKey: "Failed to convert response to data"])
         }
-        
+
         let insightsResponse = try JSONDecoder().decode(InsightsResponseDto.self, from: data)
         return insightsResponse.insights.map { $0.toDomain() }
     }
@@ -74,20 +74,20 @@ public final class GeminiLLMService: LLMService {
     public func generateExerciseInsight(history: String) async throws -> AIInsight {
         let sanitized = history.replacingOccurrences(of: "{", with: " ").replacingOccurrences(of: "}", with: " ")
         let prompt = config.remoteConfig.insightPrompt.replacingOccurrences(of: "{{exerciseHistory}}", with: "<exercise_history>\(sanitized)</exercise_history>")
-        
+
         let response = try await getModel().generateContent(prompt)
         guard let responseText = response.text else {
             throw NSError(domain: "GeminiLLMService", code: 500, userInfo: [NSLocalizedDescriptionKey: "No response from Gemini"])
         }
-        
+
         let cleanJson = responseText.replaceFirst("```json", with: "")
             .replaceFirst("```", with: "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
-            
+
         guard let data = cleanJson.data(using: .utf8) else {
             throw NSError(domain: "GeminiLLMService", code: 400, userInfo: [NSLocalizedDescriptionKey: "Failed to convert response to data"])
         }
-        
+
         let dto = try JSONDecoder().decode(AIInsightDto.self, from: data)
         return dto.toDomain()
     }
@@ -139,7 +139,7 @@ private struct SetDto: Codable {
     let setNumber: Int
     let rpe: Float?
     let notes: String?
-    
+
     func toDomain() -> ExerciseSet {
         ExerciseSet(
             id: UUID(),

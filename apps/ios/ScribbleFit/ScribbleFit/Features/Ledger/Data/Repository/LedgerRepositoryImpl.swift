@@ -4,16 +4,16 @@ import SwiftData
 @MainActor
 public final class LedgerRepositoryImpl: LedgerRepository {
     private let database: ScribbleFitDatabase
-    
+
     public init(database: ScribbleFitDatabase) {
         self.database = database
     }
-    
+
     @MainActor
     public convenience init() {
         self.init(database: .shared)
     }
-    
+
     public func getWorkoutHistory() async throws -> [WorkoutHistory] {
         let logs = await database.getAllWorkoutLogs()
         var histories: [WorkoutHistory] = []

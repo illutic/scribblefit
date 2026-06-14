@@ -6,16 +6,16 @@ import Combine
 public final class ProfileViewModel: ObservableObject {
     private let userRepository: UserRepository
     private let navManager: NavigationManager
-    
+
     @Published public var uiState = ProfileUiState()
-    
+
     public init(userRepository: UserRepository, navManager: NavigationManager) {
         self.userRepository = userRepository
         self.navManager = navManager
-        
+
         refreshStats()
     }
-    
+
     public func refreshStats() {
         Task {
             do {
@@ -27,7 +27,7 @@ public final class ProfileViewModel: ObservableObject {
             }
         }
     }
-    
+
     public func onSettingsClick() {
         navManager.navigate(to: AppDestination.settings, in: .profile)
     }
@@ -35,9 +35,9 @@ public final class ProfileViewModel: ObservableObject {
 
 public struct ProfileUiState {
     public var userName: String = "George"
-    public var stats: UserStats? = nil
+    public var stats: UserStats?
     public var isLoading: Bool = true
-    
+
     public init(userName: String = "George", stats: UserStats? = nil, isLoading: Bool = true) {
         self.userName = userName
         self.stats = stats

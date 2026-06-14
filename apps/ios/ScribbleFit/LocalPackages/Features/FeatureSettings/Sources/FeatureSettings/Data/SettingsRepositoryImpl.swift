@@ -17,23 +17,23 @@ public final class SettingsRepositoryImpl: SettingsRepository {
     public func exportUserData() async throws -> URL {
         // Fetch all scribbles
         let scribblesDescriptor = FetchDescriptor<ScribbleEntity>()
-        
+
         let scribbles = try modelContext.fetch(scribblesDescriptor).map { $0.toDomain() }
-        
+
         let exportData = UserExportData(
             scribbles: scribbles,
             exportDate: Date()
         )
-        
+
         let encoder = JSONEncoder()
         encoder.outputFormatting = .prettyPrinted
         encoder.dateEncodingStrategy = .iso8601
-        
+
         let data = try encoder.encode(exportData)
-        
+
         let tempDir = FileManager.default.temporaryDirectory
         let fileURL = tempDir.appendingPathComponent("ScribbleFit_Export_\\(Date().timeIntervalSince1970).json")
-        
+
         try data.write(to: fileURL)
         return fileURL
     }
@@ -43,7 +43,7 @@ public final class SettingsRepositoryImpl: SettingsRepository {
         try modelContext.delete(model: ScribbleEntity.self)
         try modelContext.delete(model: ExerciseEntity.self)
         try modelContext.delete(model: SetEntity.self)
-        
+
         try modelContext.save()
     }
 }

@@ -7,7 +7,7 @@ public final class ExerciseDictionary {
     public var canonicalName: String
     public var muscleGroup: String
     public var aliases: [String]
-    
+
     public init(id: String = UUID().uuidString, canonicalName: String, muscleGroup: String, aliases: [String]) {
         self.id = id
         self.canonicalName = canonicalName

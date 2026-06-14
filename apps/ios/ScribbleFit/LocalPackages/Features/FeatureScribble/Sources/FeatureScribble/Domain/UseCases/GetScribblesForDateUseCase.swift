@@ -2,7 +2,7 @@ import Foundation
 import CoreModel
 
 @MainActor
-public struct GetScribblesForDateUseCase: Sendable {
+public struct GetScribblesForDateUseCase {
     private let repository: ScribbleRepository
 
     public init(repository: ScribbleRepository) {

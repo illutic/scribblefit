@@ -5,7 +5,7 @@ import CoreDesignSystem
 public struct SettingsView: View {
     @Bindable var store: SettingsStore
     let onDismiss: () -> Void
-    
+
     public init(store: SettingsStore, onDismiss: @escaping () -> Void) {
         self.store = store
         self.onDismiss = onDismiss
@@ -15,16 +15,16 @@ public struct SettingsView: View {
         NavigationStack {
             ZStack {
                 Color.scribbleBackground.ignoresSafeArea()
-                
+
                 ScrollView {
-                    VStack(spacing: 16){
+                    VStack(spacing: 16) {
                         SettingsAppearanceSection(
                             theme: Binding(
                                 get: { store.state.config.themePreference },
                                 set: { store.onIntent(.updateTheme($0)) }
                             )
                         )
-                        
+
                         SettingsAISection(
                             provider: Binding(
                                 get: { store.state.config.preferredLlmProvider },
@@ -33,19 +33,19 @@ public struct SettingsView: View {
                             isLocalSupported: store.state.isLocalLlmSupported,
                             onIntent: store.onIntent
                         )
-                        
+
                         SettingsUnitSection(
                             unit: Binding(
                                 get: { store.state.config.weightUnit },
                                 set: { store.onIntent(.updateWeightUnit($0)) }
                             )
                         )
-                        
+
                         SettingsDataSection(
                             isExporting: store.state.isExporting,
                             onIntent: store.onIntent
                         )
-                        
+
                         SettingsFooter(version: store.state.version)
                     }
                 }

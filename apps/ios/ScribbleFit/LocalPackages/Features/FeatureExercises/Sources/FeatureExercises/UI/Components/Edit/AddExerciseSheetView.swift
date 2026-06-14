@@ -6,7 +6,7 @@ public struct AddExerciseSheetView: View {
     public let weightUnitLabel: String
     public let onDismiss: () -> Void
     public let onSave: (String, String, [ExerciseSet]) -> Void
-    
+
     public init(
         weightUnitLabel: String,
         onDismiss: @escaping () -> Void,
@@ -16,17 +16,17 @@ public struct AddExerciseSheetView: View {
         self.onDismiss = onDismiss
         self.onSave = onSave
     }
-    
+
     @State private var exerciseName = ""
     @State private var muscleGroup = ""
     @State private var sets: [ExerciseSet] = []
-    
+
     var isSaveEnabled: Bool {
         !exerciseName.trimmingCharacters(in: .whitespaces).isEmpty &&
         !muscleGroup.trimmingCharacters(in: .whitespaces).isEmpty &&
         sets.contains { ($0.weight ?? 0.0) > 0 && $0.reps > 0 }
     }
-    
+
     public var body: some View {
         NavigationView {
             ScrollView {
@@ -35,36 +35,36 @@ public struct AddExerciseSheetView: View {
                         Text("EXERCISE")
                             .font(.scribbleLabelSmall.bold())
                             .foregroundColor(.scribbleMidGray)
-                        
+
                         TextField("e.g. Bench Press", text: $exerciseName)
                             .padding(16)
                             .background(Color.scribbleSurfaceContainerLow)
                             .cornerRadius(12)
                     }
-                    
+
                     VStack(alignment: .leading, spacing: 8) {
                         Text("MUSCLE GROUP")
                             .font(.scribbleLabelSmall.bold())
                             .foregroundColor(.scribbleMidGray)
-                        
+
                         TextField("e.g. Chest", text: $muscleGroup)
                             .padding(16)
                             .background(Color.scribbleSurfaceContainerLow)
                             .cornerRadius(12)
                     }
-                    
+
                     VStack(alignment: .leading, spacing: 8) {
                         Text("SETS")
                             .font(.scribbleLabelSmall.bold())
                             .foregroundColor(.scribbleMidGray)
-                        
+
                         ForEach(sets.indices, id: \.self) { index in
                             HStack(spacing: 12) {
                                 Text("\(sets[index].setNumber)")
                                     .font(.scribbleBodyMedium)
                                     .foregroundColor(.scribbleMidGray)
                                     .frame(width: 20)
-                                
+
                                 HStack {
                                     TextField("0", value: weightBinding(for: index), formatter: NumberFormatter.decimal)
                                         #if os(iOS)
@@ -76,10 +76,10 @@ public struct AddExerciseSheetView: View {
                                 .padding(8)
                                 .background(Color.scribbleSurfaceContainerLow)
                                 .cornerRadius(8)
-                                
+
                                 Text("x")
                                     .foregroundColor(.scribbleMidGray)
-                                
+
                                 HStack {
                                     TextField("0", value: repsBinding(for: index), formatter: NumberFormatter.integer)
                                         #if os(iOS)
@@ -91,7 +91,7 @@ public struct AddExerciseSheetView: View {
                                 .padding(8)
                                 .background(Color.scribbleSurfaceContainerLow)
                                 .cornerRadius(8)
-                                
+
                                 if sets.count > 1 {
                                     Button(action: {
                                         sets.remove(at: index)
@@ -104,7 +104,7 @@ public struct AddExerciseSheetView: View {
                                 }
                             }
                         }
-                        
+
                         Button(action: {
                             let nextNum = (sets.map { $0.setNumber }.max() ?? 0) + 1
                             sets.append(ExerciseSet(id: UUID(), setNumber: nextNum, weight: 0.0, reps: 0))

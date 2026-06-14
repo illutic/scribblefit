@@ -8,7 +8,7 @@ public enum FeedItem: Sendable, Identifiable {
     case scribble(ScribbleItem)
     case confirmation(ConfirmationItem)
     case insight(InsightItem)
-    
+
     public var id: String {
         switch self {
         case .prompt(let item): item.id
@@ -17,7 +17,7 @@ public enum FeedItem: Sendable, Identifiable {
         case .insight(let item): item.id
         }
     }
-    
+
     public var timestamp: Date {
         switch self {
         case .prompt(let item): item.timestamp

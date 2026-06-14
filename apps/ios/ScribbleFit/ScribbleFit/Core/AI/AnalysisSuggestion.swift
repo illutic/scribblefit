@@ -5,14 +5,14 @@ public struct AnalysisSuggestion: Codable, Sendable {
     public let emoji: String
     public let type: SuggestionType
     public let timestamp: Date
-    
+
     public init(text: String, emoji: String, type: SuggestionType, timestamp: Date) {
         self.text = text
         self.emoji = emoji
         self.type = type
         self.timestamp = timestamp
     }
-    
+
     public var fullText: String { "\(text) \(emoji)" }
 }
 

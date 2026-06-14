@@ -5,11 +5,11 @@ import Foundation
  */
 public final class ExecuteQuickActionUseCase {
     private let canvasRepository: CanvasRepository
-    
+
     public init(canvasRepository: CanvasRepository) {
         self.canvasRepository = canvasRepository
     }
-    
+
     public func execute(actionType: QuickActionType) async throws {
         let scribbleText = switch actionType {
         case .repeatLast: "Repeat last workout"

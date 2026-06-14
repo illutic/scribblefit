@@ -23,7 +23,7 @@ public struct ExerciseSet: Identifiable, Equatable, Sendable, Codable {
         self.rpe = rpe
         self.notes = notes
     }
-    
+
     public func copy(
         id: UUID? = nil,
         setNumber: Int? = nil,

@@ -21,8 +21,8 @@ final class ReorderSetsUseCaseTests: XCTestCase {
     func test_execute_renumbersSetsContinuously() {
         let sets = [
             ExerciseSet(id: UUID(), setNumber: 5, weight: 100.0, reps: 10),
-            ExerciseSet(id: UUID(), setNumber: 3, weight: 90.0,  reps: 8),
-            ExerciseSet(id: UUID(), setNumber: 1, weight: 80.0,  reps: 6)
+            ExerciseSet(id: UUID(), setNumber: 3, weight: 90.0, reps: 8),
+            ExerciseSet(id: UUID(), setNumber: 1, weight: 80.0, reps: 6)
         ]
 
         let result = sut.execute(sets: sets)
@@ -35,7 +35,7 @@ final class ReorderSetsUseCaseTests: XCTestCase {
     func test_execute_preservesWeightAndReps() {
         let sets = [
             ExerciseSet(id: UUID(), setNumber: 99, weight: 120.5, reps: 5),
-            ExerciseSet(id: UUID(), setNumber: 50, weight: nil,   reps: 12)
+            ExerciseSet(id: UUID(), setNumber: 50, weight: nil, reps: 12)
         ]
 
         let result = sut.execute(sets: sets)

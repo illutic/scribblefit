@@ -11,8 +11,8 @@ final class MockExerciseRepository: ExerciseRepository {
     var updatedExercises: [Exercise] = []
     var deletedIds: [UUID] = []
     var exercisesToReturn: [Exercise] = []
-    var exerciseToReturn: Exercise? = nil
-    var shouldThrow: Error? = nil
+    var exerciseToReturn: Exercise?
+    var shouldThrow: Error?
 
     func getExercises(query: String) async throws -> [Exercise] {
         if let e = shouldThrow { throw e }
@@ -56,9 +56,9 @@ final class MockExerciseRepository: ExerciseRepository {
 
 @MainActor
 final class MockScribbleRepo2: ScribbleRepository {
-    var scribbleToReturn: Scribble? = nil
+    var scribbleToReturn: Scribble?
     var deletedIds: [UUID] = []
-    var shouldThrow: Error? = nil
+    var shouldThrow: Error?
 
     func observeScribbles(for date: Date) -> AsyncStream<[Scribble]> { AsyncStream { $0.finish() } }
     func observeScribbles(startDate: Date, endDate: Date) -> AsyncStream<[Scribble]> { AsyncStream { $0.finish() } }
@@ -85,7 +85,7 @@ final class MockScribbleRepo2: ScribbleRepository {
 @MainActor
 final class MockExerciseLLMService: LLMService {
     var insightToReturn: AIInsight = AIInsight(insightType: .trend, text: "Great progress!")
-    var shouldThrow: Error? = nil
+    var shouldThrow: Error?
 
     func parseWorkout(rawText: String) async throws -> ParsedWorkoutResult {
         ParsedWorkoutResult(exercises: [], rawText: rawText)
@@ -447,7 +447,7 @@ final class GetExerciseAIInsightUseCaseTests: XCTestCase {
     }
 
     func test_execute_emptyHistory_throwsError() async {
-        await XCTAssertThrowsErrorAsync { try await self.sut.execute(history: []) }
+        await XCTAssertThrowsErrorAsync { _ = try await self.sut.execute(history: []) }
     }
 
     func test_execute_withHistory_returnsInsight() async throws {
@@ -468,7 +468,7 @@ final class GetExerciseAIInsightUseCaseTests: XCTestCase {
         let session = ExerciseHistorySession(exercise: ex, totalVolume: 100, maxWeight: 100, summary: "", isPersonalBest: false, scribbleId: UUID())
         mockLLM.shouldThrow = NSError(domain: "LLM", code: 500)
 
-        await XCTAssertThrowsErrorAsync { try await self.sut.execute(history: [session]) }
+        await XCTAssertThrowsErrorAsync { _ = try await self.sut.execute(history: [session]) }
     }
 
     func test_execute_takesAtMostFiveSessions() async throws {

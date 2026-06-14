@@ -39,16 +39,6 @@
 			path = Sources;
 			sourceTree = "<group>";
 		};
-		60344AA82F5B13AD00336125 /* ScribbleFitTests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = ScribbleFitTests;
-			sourceTree = "<group>";
-		};
-		60344AB22F5B13AD00336125 /* ScribbleFitUITests */ = {
-			isa = PBXFileSystemSynchronizedRootGroup;
-			path = ScribbleFitUITests;
-			sourceTree = "<group>";
-		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -81,8 +71,6 @@
 			isa = PBXGroup;
 			children = (
 				60344A982F5B13AC00336125 /* Sources */,
-				60344AA82F5B13AD00336125 /* ScribbleFitTests */,
-				60344AB22F5B13AD00336125 /* ScribbleFitUITests */,
 				60344A972F5B13AC00336125 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -136,9 +124,6 @@
 			dependencies = (
 				60344AA72F5B13AD00336125 /* PBXTargetDependency */,
 			);
-			fileSystemSynchronizedGroups = (
-				60344AA82F5B13AD00336125 /* ScribbleFitTests */,
-			);
 			name = ScribbleFitTests;
 			packageProductDependencies = (
 			);
@@ -158,9 +143,6 @@
 			);
 			dependencies = (
 				60344AB12F5B13AD00336125 /* PBXTargetDependency */,
-			);
-			fileSystemSynchronizedGroups = (
-				60344AB22F5B13AD00336125 /* ScribbleFitUITests */,
 			);
 			name = ScribbleFitUITests;
 			packageProductDependencies = (

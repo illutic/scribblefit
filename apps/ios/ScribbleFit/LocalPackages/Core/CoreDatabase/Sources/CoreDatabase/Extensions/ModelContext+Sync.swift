@@ -6,13 +6,13 @@ public extension ModelContext {
     @MainActor
     func syncExercises(for domainExercises: [Exercise]) throws -> [ExerciseEntity] {
         var entities: [ExerciseEntity] = []
-        
+
         for updated in domainExercises {
             let instanceId = updated.id
             let instancePredicate = #Predicate<ExerciseEntity> { $0.id == instanceId }
             var instanceDescriptor = FetchDescriptor<ExerciseEntity>(predicate: instancePredicate)
             instanceDescriptor.fetchLimit = 1
-            
+
             let instance: ExerciseEntity
             if let existingInstance = try self.fetch(instanceDescriptor).first {
                 instance = existingInstance
@@ -26,11 +26,11 @@ public extension ModelContext {
                 instance = updated.toEntity()
                 self.insert(instance)
             }
-            
+
             try syncSets(for: instance, with: updated.sets)
             entities.append(instance)
         }
-        
+
         return entities
     }
 
@@ -38,14 +38,12 @@ public extension ModelContext {
     func syncSets(for exercise: ExerciseEntity, with updatedSets: [ExerciseSet]) throws {
         let existingSets = exercise.sets
         var finalSets: [SetEntity] = []
-        
+
         // Delete removed
-        for existing in existingSets {
-            if !updatedSets.contains(where: { $0.id == existing.id }) {
-                self.delete(existing)
-            }
+        for existing in existingSets where !updatedSets.contains(where: { $0.id == existing.id }) {
+            self.delete(existing)
         }
-        
+
         // Update or Add
         for updated in updatedSets {
             if let existing = existingSets.first(where: { $0.id == updated.id }) {

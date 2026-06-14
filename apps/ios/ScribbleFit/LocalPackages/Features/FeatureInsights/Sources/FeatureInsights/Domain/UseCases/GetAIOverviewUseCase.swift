@@ -15,13 +15,13 @@ public final class GetAIOverviewUseCase {
         let calendar = Calendar.current
         let startDate = calendar.date(byAdding: .day, value: -lookbackDays, to: date) ?? date
         let stream = scribbleRepository.observeScribbles(startDate: startDate, endDate: date)
-        
+
         var scribbles: [Scribble] = []
         for await value in stream {
             scribbles = value
             break
         }
-        
+
         let completedScribbles = scribbles.filter { $0.status == .completed }
         let exercises = completedScribbles.flatMap { $0.exercises }
 

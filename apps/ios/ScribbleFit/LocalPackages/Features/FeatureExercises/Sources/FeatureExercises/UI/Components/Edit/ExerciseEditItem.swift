@@ -14,9 +14,9 @@ public struct ExerciseEditItem: View {
     public let onUpdateSetReps: (UUID, UUID, String) -> Void
     public let onDeleteSet: (UUID, UUID) -> Void
     public let onAddSet: (UUID) -> Void
-    
+
     @State private var nameText: String
-    
+
     public init(
         exercise: Exercise,
         weightUnitLabel: String,
@@ -43,7 +43,7 @@ public struct ExerciseEditItem: View {
         self.onAddSet = onAddSet
         _nameText = State(initialValue: exercise.canonicalName)
     }
-    
+
     public var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack {
@@ -51,19 +51,19 @@ public struct ExerciseEditItem: View {
                     .textFieldStyle(.plain)
                     .font(.scribbleTitleMedium.bold())
                     .foregroundColor(.scribblePrimary)
-                    .onChange(of: nameText) { oldValue, newValue in
+                    .onChange(of: nameText) { _, newValue in
                         onUpdateName(exercise.id, newValue)
                     }
-                
+
                 Spacer()
-                
+
                 Button(action: { onDeleteExercise(exercise.id) }) {
                     Image(systemName: "trash")
                         .font(.system(size: 16))
                         .foregroundColor(.scribbleMidGray.opacity(0.5))
                 }
             }
-            
+
             VStack(spacing: 8) {
                 ForEach(exercise.sets) { set in
                     SetEditRow(
@@ -77,7 +77,7 @@ public struct ExerciseEditItem: View {
                     )
                 }
             }
-            
+
             Button(action: { onAddSet(exercise.id) }) {
                 HStack(spacing: 8) {
                     Image(systemName: "plus.circle.fill")

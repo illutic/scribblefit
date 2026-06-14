@@ -5,11 +5,11 @@ import Foundation
  */
 public final class ProcessScribbleUseCase {
     private let canvasRepository: CanvasRepository
-    
+
     public init(canvasRepository: CanvasRepository) {
         self.canvasRepository = canvasRepository
     }
-    
+
     public func execute(rawText: String) async throws {
         try await canvasRepository.addScribble(rawText: rawText)
     }

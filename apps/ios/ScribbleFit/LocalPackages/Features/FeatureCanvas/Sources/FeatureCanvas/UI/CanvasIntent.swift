@@ -22,7 +22,7 @@ public enum CanvasIntent: Sendable {
     case deleteSet(UUID, UUID) // exerciseId, setId
     case addSet(UUID)
     case deleteExercise(UUID)
-    
+
     // Manual Entry
     case showAddExerciseSheet
     case hideAddExerciseSheet

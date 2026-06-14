@@ -9,9 +9,9 @@ public final class WorkoutSet {
     public var rpe: Double?
     public var notes: String?
     public var exerciseId: String
-    
+
     public var workout: WorkoutLog?
-    
+
     public init(id: String = UUID().uuidString, weight: Double, reps: Int, rpe: Double? = nil, notes: String? = nil, exerciseId: String) {
         self.id = id
         self.weight = weight

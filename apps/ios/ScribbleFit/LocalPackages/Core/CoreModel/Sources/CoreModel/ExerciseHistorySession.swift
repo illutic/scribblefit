@@ -8,9 +8,9 @@ public struct ExerciseHistorySession: Identifiable, Codable, Sendable, Equatable
     public let summary: String
     public let isPersonalBest: Bool
     public let scribbleId: UUID
-    
+
     public var date: Date { exercise.createdAt }
-    
+
     public init(
         id: UUID = UUID(),
         exercise: Exercise,

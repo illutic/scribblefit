@@ -6,11 +6,11 @@ import CoreModel
  */
 public struct AddManualExerciseUseCase: Sendable {
     private let exerciseRepository: ExerciseRepository
-    
+
     public init(exerciseRepository: ExerciseRepository) {
         self.exerciseRepository = exerciseRepository
     }
-    
+
     @MainActor
     public func execute(
         workoutId: UUID,
@@ -24,7 +24,7 @@ public struct AddManualExerciseUseCase: Sendable {
             muscleGroup: muscleGroup,
             sets: sets
         )
-        
+
         try await exerciseRepository.saveExercise(exercise, to: workoutId)
     }
 }

@@ -11,7 +11,7 @@ public struct ParsedWorkoutResult: Sendable {
     public let processingTimeMs: Int64
     public let reasoning: String?
     public let error: String?
-    
+
     public init(
         workout: ParsedWorkout?,
         rawText: String,

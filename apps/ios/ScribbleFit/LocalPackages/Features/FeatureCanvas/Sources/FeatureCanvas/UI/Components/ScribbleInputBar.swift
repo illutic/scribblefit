@@ -5,7 +5,7 @@ struct ScribbleInputBar: View {
     @Binding var text: String
     let placeholder: String
     let onSend: () -> Void
-    
+
     var body: some View {
         HStack(spacing: 12) {
             TextField(placeholder, text: $text)
@@ -13,7 +13,7 @@ struct ScribbleInputBar: View {
                 .padding(.leading, 16)
                 .submitLabel(.send)
                 .onSubmit(onSend)
-            
+
             if !text.isEmpty {
                 Button(action: onSend) {
                     Image(systemName: "arrow.up.circle.fill")

@@ -125,5 +125,5 @@ public struct SettingsUiState {
     public var isLoading: Bool = true
     public var availableModels: [String] = []
     public var isLoadingModels: Bool = false
-    public var modelLoadError: String? = nil
+    public var modelLoadError: String?
 }

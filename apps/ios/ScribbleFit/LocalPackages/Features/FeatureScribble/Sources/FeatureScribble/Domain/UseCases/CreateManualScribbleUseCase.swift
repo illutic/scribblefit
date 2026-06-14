@@ -7,11 +7,11 @@ import CoreModel
  */
 public struct CreateManualScribbleUseCase: Sendable {
     private let scribbleRepository: ScribbleRepository
-    
+
     public init(scribbleRepository: ScribbleRepository) {
         self.scribbleRepository = scribbleRepository
     }
-    
+
     @MainActor
     public func execute(
         exerciseName: String,
@@ -26,7 +26,7 @@ public struct CreateManualScribbleUseCase: Sendable {
             sets: sets,
             createdAt: date
         )
-        
+
         let scribble = Scribble(
             id: UUID(),
             rawText: "Manual Entry: \(exerciseName)",
@@ -34,7 +34,7 @@ public struct CreateManualScribbleUseCase: Sendable {
             createdAt: date,
             exercises: [exercise]
         )
-        
+
         try await scribbleRepository.addScribble(scribble)
     }
 }

@@ -3,15 +3,15 @@ import SwiftUI
 public struct CanvasView: View {
     @StateObject private var viewModel: CanvasViewModel
     @EnvironmentObject private var navManager: NavigationManager
-    
+
     public init(viewModel: CanvasViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
     }
-    
+
     public var body: some View {
         ZStack {
             ScribbleFitColor.background.ignoresSafeArea()
-            
+
             VStack(alignment: .leading, spacing: 0) {
                 CanvasHeader(
                     userName: viewModel.uiState.userName,
@@ -20,7 +20,7 @@ public struct CanvasView: View {
                 )
                 .padding(.horizontal, ScribbleFitSpacing.screenPadding)
                 .padding(.top, 10)
-                
+
                 ScrollViewReader { proxy in
                     ScrollView {
                         VStack(alignment: .leading, spacing: ScribbleFitSpacing.small) {
@@ -43,7 +43,7 @@ public struct CanvasView: View {
                                 )
                                 .id(item.id)
                             }
-                            
+
                             if viewModel.uiState.feedItems.count <= 1 {
                                 QuickActionPills(
                                     actions: viewModel.uiState.quickActions,
@@ -61,9 +61,9 @@ public struct CanvasView: View {
                         }
                     }
                 }
-                
+
                 Spacer()
-                
+
                 ScribbleInputArea(
                     text: Binding(
                         get: { viewModel.uiState.scribbleText },

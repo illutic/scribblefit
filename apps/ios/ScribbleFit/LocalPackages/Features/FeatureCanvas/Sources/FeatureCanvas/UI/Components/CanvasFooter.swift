@@ -6,7 +6,7 @@ struct CanvasFooter: View {
     let isSending: Bool
     let onSend: () -> Void
     let onManualAdd: () -> Void
-    
+
     var body: some View {
         HStack(alignment: .bottom, spacing: 12) {
             ScribbleInputBar(
@@ -16,7 +16,7 @@ struct CanvasFooter: View {
             )
             .disabled(isSending)
             .opacity(isSending ? 0.6 : 1.0)
-            
+
             Button(action: onManualAdd) {
                 Image(systemName: "plus.circle.fill")
                     .font(.system(size: 24))

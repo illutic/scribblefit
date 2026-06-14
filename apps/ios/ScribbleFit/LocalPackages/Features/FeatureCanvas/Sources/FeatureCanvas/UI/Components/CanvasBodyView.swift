@@ -12,7 +12,7 @@ struct CanvasBodyView: View {
     let onExerciseClick: (String) -> Void
     let onScribbleDetailsClick: (UUID) -> Void
     let onIntent: (CanvasIntent) -> Void
-    
+
     var body: some View {
         ScrollView {
             VStack(spacing: 40) {
@@ -21,7 +21,7 @@ struct CanvasBodyView: View {
                 } else if !aiInsights.isEmpty {
                     AIInsightsList(insights: aiInsights)
                 }
-                
+
                 if scribbles.isEmpty {
                     VStack(spacing: 24) {
                         Spacer().frame(height: 60)
@@ -46,7 +46,7 @@ struct CanvasBodyView: View {
                         }
                     }
                 }
-                
+
                 Spacer().frame(height: 80) // Bottom padding for floating input bar
             }
             .padding(.horizontal, 24)
@@ -58,7 +58,7 @@ struct CanvasBodyView: View {
                 .onEnded { value in
                     let horizontalSwipe = value.translation.width
                     let verticalSwipe = value.translation.height
-                    
+
                     // Ensure it's primarily a horizontal swipe
                     if abs(horizontalSwipe) > abs(verticalSwipe) {
                         if horizontalSwipe > 50 {
@@ -74,7 +74,7 @@ struct CanvasBodyView: View {
 
 struct AIInsightsLoadingView: View {
     @State private var isAnimating = false
-    
+
     var body: some View {
         VStack(spacing: 16) {
             ForEach(0..<1, id: \.self) { _ in
@@ -82,17 +82,17 @@ struct AIInsightsLoadingView: View {
                     Circle()
                         .fill(Color.scribblePrimary.opacity(0.1))
                         .frame(width: 32, height: 32)
-                    
+
                     VStack(alignment: .leading, spacing: 8) {
                         RoundedRectangle(cornerRadius: 4)
                             .fill(Color.scribbleMidGray.opacity(0.2))
                             .frame(width: 80, height: 12)
-                        
+
                         RoundedRectangle(cornerRadius: 4)
                             .fill(Color.scribblePrimary.opacity(0.1))
                             .frame(maxWidth: .infinity)
                             .frame(height: 16)
-                        
+
                         RoundedRectangle(cornerRadius: 4)
                             .fill(Color.scribblePrimary.opacity(0.1))
                             .frame(width: 200, height: 16)
@@ -170,4 +170,3 @@ private extension AIInsight {
         }
     }
 }
-

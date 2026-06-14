@@ -37,7 +37,7 @@ public final class LocalLLMService: LLMService {
     public func generateInsightsSummary(exercises: [Exercise]) async throws -> [AIInsight] {
         try await implementation.generateInsightsSummary(exercises: exercises)
     }
-    
+
     public func generateExerciseInsight(history: String) async throws -> AIInsight {
         try await implementation.generateExerciseInsight(history: history)
     }
@@ -85,7 +85,7 @@ private final class NativeLocalLLMService: LLMService {
         )
         return response.content.insights.map { $0.toDomain() }
     }
-    
+
     func generateExerciseInsight(history: String) async throws -> AIInsight {
         let config = configRepository.getConfig()
         let prompt = config.remoteConfig.insightPrompt.replacingOccurrences(of: "{{exerciseHistory}}", with: history)
@@ -104,7 +104,7 @@ private final class NativeLocalLLMService: LLMService {
 @MainActor
 private final class UnsupportedLocalLLMService: LLMService {
     func isSupported() async -> Bool { false }
-    
+
     func parseWorkout(rawText: String) async throws -> ParsedWorkoutResult {
         throw NSError(domain: "LocalLLM", code: 501, userInfo: [NSLocalizedDescriptionKey: "Local AI not supported on this device/OS version"])
     }
@@ -112,7 +112,7 @@ private final class UnsupportedLocalLLMService: LLMService {
     func generateInsightsSummary(exercises: [Exercise]) async throws -> [AIInsight] {
         throw NSError(domain: "LocalLLM", code: 501, userInfo: [NSLocalizedDescriptionKey: "Local AI not supported on this device/OS version"])
     }
-    
+
     func generateExerciseInsight(history: String) async throws -> AIInsight {
         throw NSError(domain: "LocalLLM", code: 501, userInfo: [NSLocalizedDescriptionKey: "Local AI not supported on this device/OS version"])
     }
@@ -164,7 +164,7 @@ private struct SetDto: Codable, Sendable {
     let setNumber: Int
     let rpe: Float?
     let notes: String?
-    
+
     func toDomain() -> ExerciseSet {
         ExerciseSet(
             id: UUID(),

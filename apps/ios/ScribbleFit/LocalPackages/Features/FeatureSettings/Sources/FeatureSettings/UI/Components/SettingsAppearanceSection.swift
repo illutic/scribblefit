@@ -3,7 +3,7 @@ import CoreModel
 
 struct SettingsAppearanceSection: View {
     @Binding var theme: ThemePreference
-    
+
     var body: some View {
         SettingsContainer(title: String(localized: "Appearance")) {
             Picker(String(localized: "Theme"), selection: $theme) {

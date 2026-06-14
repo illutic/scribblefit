@@ -7,9 +7,9 @@ import FeatureAI
 
 private final class MockSettingsRepository: SettingsRepository, @unchecked Sendable {
     var clearAllDataCalled = false
-    var exportedURL: URL? = nil
-    var shouldThrowOnClear: Error? = nil
-    var shouldThrowOnExport: Error? = nil
+    var exportedURL: URL?
+    var shouldThrowOnClear: Error?
+    var shouldThrowOnExport: Error?
 
     func clearAllData() async throws {
         if let e = shouldThrowOnClear { throw e }

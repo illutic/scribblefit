@@ -2,11 +2,11 @@ import SwiftUI
 
 public struct ProfileView: View {
     @StateObject private var viewModel: ProfileViewModel
-    
+
     public init(viewModel: ProfileViewModel) {
         _viewModel = StateObject(wrappedValue: viewModel)
     }
-    
+
     public var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: ScribbleFitSpacing.large) {
@@ -20,26 +20,26 @@ public struct ProfileView: View {
                                 .font(.system(size: 32, weight: .bold))
                                 .foregroundColor(ScribbleFitColor.primaryText)
                         )
-                    
+
                     VStack(alignment: .leading, spacing: 4) {
                         Text(viewModel.uiState.userName)
                             .font(ScribbleFitFont.titleLarge())
                             .foregroundColor(ScribbleFitColor.primaryText)
-                        
+
                         Text("Member since \(formatDate(viewModel.uiState.stats?.joinDate ?? Date()))")
                             .font(ScribbleFitFont.bodyMedium())
                             .foregroundColor(ScribbleFitColor.secondaryText)
                     }
                 }
                 .padding(.top, 24)
-                
+
                 // Stats Grid
                 VStack(alignment: .leading, spacing: 12) {
                     Text("LIFETIME STATS")
                         .font(ScribbleFitFont.labelMedium().bold())
                         .kerning(0.8)
                         .foregroundColor(ScribbleFitColor.secondaryText)
-                    
+
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
                         StatCard(label: "Total Workouts", value: "\(viewModel.uiState.stats?.totalWorkouts ?? 0)")
                         StatCard(label: "Total Volume", value: formatVolume(viewModel.uiState.stats?.lifetimeVolume ?? 0))
@@ -47,7 +47,7 @@ public struct ProfileView: View {
                         StatCard(label: "Current Streak", value: "3 days")
                     }
                 }
-                
+
                 // Actions
                 VStack(spacing: 0) {
                     Button(action: viewModel.onSettingsClick) {
@@ -66,14 +66,14 @@ public struct ProfileView: View {
                     }
                     Divider().background(ScribbleFitColor.divider)
                 }
-                
+
                 Spacer()
             }
             .padding(.horizontal, ScribbleFitSpacing.screenPadding)
         }
         .background(ScribbleFitColor.background)
     }
-    
+
     private func StatCard(label: String, value: String) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(label)
@@ -88,13 +88,13 @@ public struct ProfileView: View {
         .background(ScribbleFitColor.secondaryBackground)
         .cornerRadius(ScribbleFitShape.large)
     }
-    
+
     private func formatDate(_ date: Date) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "MMMM yyyy"
         return formatter.string(from: date)
     }
-    
+
     private func formatVolume(_ volume: Double) -> String {
         if volume >= 1000 {
             return "\(Int(volume / 1000))k lbs"

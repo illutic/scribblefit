@@ -11,7 +11,7 @@ import FeatureExercises
 @MainActor
 public final class CanvasStore {
     public var state = CanvasState()
-    
+
     private let getScribblesForDateUseCase: GetScribblesForDateUseCase
     private let addRawScribbleUseCase: AddRawScribbleUseCase
     private let confirmScribbleUseCase: ConfirmScribbleUseCase
@@ -23,7 +23,7 @@ public final class CanvasStore {
     private let reorderSetsUseCase: ReorderSetsUseCase
     private let calculateTrendsUseCase: CalculateTrendsUseCase
     private let configRepository: ConfigRepository
-    
+
     private var observationTask: Task<Void, Never>?
     private var aiInsightsTask: Task<Void, Never>?
     private var lastInsightDate: Date?
@@ -53,7 +53,7 @@ public final class CanvasStore {
         self.reorderSetsUseCase = reorderSetsUseCase
         self.calculateTrendsUseCase = calculateTrendsUseCase
         self.configRepository = configRepository
-        
+
         setupConfigObservation()
         observeScribbles()
         refreshAIInsights(force: true)
@@ -61,20 +61,20 @@ public final class CanvasStore {
 
     public func onIntent(_ intent: CanvasIntent) {
         switch intent {
-        case .updateScribbleText, .addScribble, .clickOnScribble, .dismissScribbleDialog, 
+        case .updateScribbleText, .addScribble, .clickOnScribble, .dismissScribbleDialog,
              .confirmScribble, .deleteScribble, .retryScribbleParsing:
             handleScribbleIntent(intent)
-            
+
         case .onPreviousDayClick, .onNextDayClick, .showDatePicker, .dismissDatePicker, .onDateSelected:
             handleDateIntent(intent)
-            
+
         case .updateExerciseName, .updateSetWeight, .updateSetReps, .deleteSet, .addSet, .deleteExercise,
              .showAddExerciseSheet, .hideAddExerciseSheet, .saveManualExercise:
             handleEditIntent(intent)
-            
+
         case .navigateToSettings, .dismissSettings, .toggleInputExpansion, .navigateToScribbleDetails, .dismissDetails, .navigateToExerciseDetails:
             handleUIIntent(intent)
-            
+
         default:
             break
         }
@@ -118,7 +118,7 @@ public final class CanvasStore {
         case .onDateSelected(let date):
             let startOfToday = Calendar.current.startOfDay(for: Date())
             let startOfSelected = Calendar.current.startOfDay(for: date)
-            
+
             if startOfSelected <= startOfToday {
                 state = state.copy(currentDate: date, isDatePickerVisible: false)
                 observeScribbles()
@@ -373,18 +373,18 @@ public final class CanvasStore {
         if !force, let lastDate = lastInsightDate, calendar.isDate(lastDate, inSameDayAs: state.currentDate) {
             return
         }
-        
+
         lastInsightDate = state.currentDate
         aiInsightsTask?.cancel()
         state = state.copy(aiInsights: [], isGeneratingInsights: true)
-        
+
         aiInsightsTask = Task {
             defer {
                 if !Task.isCancelled {
                     state = state.copy(isGeneratingInsights: false)
                 }
             }
-            
+
             do {
                 let insights = try await getAIOverviewUseCase.execute(date: state.currentDate)
                 if !Task.isCancelled {
@@ -398,12 +398,12 @@ public final class CanvasStore {
 
     private func changeDate(by days: Int) {
         guard let newDate = Calendar.current.date(byAdding: .day, value: days, to: state.currentDate) else { return }
-        
+
         let startOfToday = Calendar.current.startOfDay(for: Date())
         let startOfNewDate = Calendar.current.startOfDay(for: newDate)
-        
+
         if startOfNewDate > startOfToday { return }
-        
+
         state = state.copy(currentDate: newDate)
         observeScribbles()
         refreshAIInsights()
@@ -415,12 +415,12 @@ public final class CanvasStore {
             let stream = getScribblesForDateUseCase.execute(date: state.currentDate)
             for await scribbles in stream {
                 if Task.isCancelled { break }
-                
+
                 var augmentedScribbles: [Scribble] = []
-                
+
                 for scribble in scribbles {
                     var augmentedExercises: [Exercise] = []
-                    
+
                     if scribble.status == .completed {
                         for exercise in scribble.exercises {
                             let trends = await calculateTrendsUseCase.execute(exercise: exercise)
@@ -433,18 +433,18 @@ public final class CanvasStore {
                     } else {
                         augmentedExercises.append(contentsOf: scribble.exercises)
                     }
-                    
+
                     var augmentedScribble = scribble
                     augmentedScribble.exercises = augmentedExercises
                     augmentedScribbles.append(augmentedScribble)
                 }
-                
+
                 state = state.copy(scribbles: augmentedScribbles)
-                
+
                 if augmentedScribbles.contains(where: { $0.status == .pending }) {
                     triggerParsing()
                 }
-                
+
                 // Keep selectedScribble in sync if it's being edited
                 if let selected = state.selectedScribble {
                     let updated = augmentedScribbles.first(where: { $0.id == selected.id })
@@ -453,10 +453,10 @@ public final class CanvasStore {
             }
         }
     }
-    
+
     private func setupConfigObservation() {
         state = state.copy(weightUnit: configRepository.getConfig().weightUnit)
-        
+
         configRepository.configPublisher
             .receive(on: RunLoop.main)
             .sink { [weak self] config in

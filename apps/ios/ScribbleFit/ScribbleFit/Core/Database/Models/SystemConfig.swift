@@ -11,7 +11,7 @@ public final class SystemConfig {
     public var weightUnit: String
     public var themePreference: String
     public var updatedAt: Date
-    
+
     @Transient public var remoteConfig: CoreModel.RemoteConfig = CoreModel.RemoteConfig()
 
     public init(

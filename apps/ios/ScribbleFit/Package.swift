@@ -43,6 +43,6 @@ let package = Package(
                 .product(name: "FeatureExercises", package: "FeatureExercises")
             ],
             path: "Sources/ScribbleFitAggregator"
-        ),
+        )
     ]
 )

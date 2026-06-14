@@ -23,9 +23,9 @@ struct ScribbleConfirmationBottomSheet: View {
                 Text(String(localized: "Confirm Session"))
                     .font(.system(size: 24, weight: .bold))
                     .foregroundStyle(Color.scribblePrimary)
-                
+
                 Spacer()
-                
+
                 Button(action: onDismiss) {
                     Image(systemName: "xmark.circle.fill")
                         .font(.system(size: 24))
@@ -46,7 +46,7 @@ struct ScribbleConfirmationBottomSheet: View {
                 if scribble.status == .success {
                     confirmButton
                 }
-                
+
                 deleteButton
             }
         }
@@ -116,4 +116,3 @@ struct ScribbleConfirmationBottomSheet: View {
         .accessibilityIdentifier("deleteScribbleButton")
     }
 }
-

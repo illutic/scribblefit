@@ -8,38 +8,38 @@ public enum ScribbleFitColor {
     public static let richBlack = Color(hex: "101010")
     public static let midGray = Color(hex: "8E8EA0")
     public static let lightGray = Color(hex: "E5E5EA")
-    
+
     // Dark Mode
     public static let darkBlack = Color(hex: "101010")
     public static let darkGray = Color(hex: "1C1C1E")
     public static let offWhite = Color(hex: "F2F2F7")
     public static let dividerGray = Color(hex: "2C2C2E")
-    
+
     // Semantic Dynamic Colors
     public static var background: Color {
         Color(UIColor { traitCollection in
             return traitCollection.userInterfaceStyle == .dark ? UIColor(hex: "101010") : UIColor(hex: "FFFFFF")
         })
     }
-    
+
     public static var secondaryBackground: Color {
         Color(UIColor { traitCollection in
             return traitCollection.userInterfaceStyle == .dark ? UIColor(hex: "1C1C1E") : UIColor(hex: "F7F7F8")
         })
     }
-    
+
     public static var primaryText: Color {
         Color(UIColor { traitCollection in
             return traitCollection.userInterfaceStyle == .dark ? UIColor(hex: "F2F2F7") : UIColor(hex: "101010")
         })
     }
-    
+
     public static var secondaryText: Color {
         Color(UIColor { traitCollection in
             return traitCollection.userInterfaceStyle == .dark ? UIColor(hex: "8E8EA0") : UIColor(hex: "8E8EA0")
         })
     }
-    
+
     public static var divider: Color {
         Color(UIColor { traitCollection in
             return traitCollection.userInterfaceStyle == .dark ? UIColor(hex: "2C2C2E") : UIColor(hex: "E5E5EA")
@@ -59,7 +59,7 @@ public enum ScribbleFitSpacing {
     public static let xxl: CGFloat = 48
     public static let xxxl: CGFloat = 64
     public static let huge: CGFloat = 80
-    
+
     public static let screenPadding: CGFloat = 24
     public static let verticalGap: CGFloat = 32
 }
@@ -91,13 +91,13 @@ public struct ScribbleFitButton<Content: View>: View {
     let action: () -> Void
     let enabled: Bool
     let content: Content
-    
+
     public init(enabled: Bool = true, action: @escaping () -> Void, @ViewBuilder content: () -> Content) {
         self.action = action
         self.enabled = enabled
         self.content = content()
     }
-    
+
     public var body: some View {
         Button(action: action) {
             content
@@ -114,12 +114,12 @@ public struct ScribbleFitButton<Content: View>: View {
 public struct ScribbleFitPill: View {
     let text: String
     let action: () -> Void
-    
+
     public init(_ text: String, action: @escaping () -> Void) {
         self.text = text
         self.action = action
     }
-    
+
     public var body: some View {
         Button(action: action) {
             Text(text)
@@ -136,14 +136,14 @@ public struct ScribbleFitPill: View {
 public struct ScribbleFitTextField: View {
     @Binding var text: String
     let placeholder: String
-    var trailingIcon: AnyView? = nil
-    
+    var trailingIcon: AnyView?
+
     public init(text: Binding<String>, placeholder: String, trailingIcon: AnyView? = nil) {
         self._text = text
         self.placeholder = placeholder
         self.trailingIcon = trailingIcon
     }
-    
+
     public var body: some View {
         HStack(spacing: ScribbleFitSpacing.small) {
             ZStack(alignment: .leading) {
@@ -152,14 +152,14 @@ public struct ScribbleFitTextField: View {
                         .font(ScribbleFitFont.bodyLarge())
                         .foregroundColor(ScribbleFitColor.secondaryText.opacity(0.6))
                 }
-                
+
                 TextField("", text: $text)
                     .font(ScribbleFitFont.bodyLarge())
                     .foregroundColor(ScribbleFitColor.primaryText)
                     .autocapitalization(.none)
                     .disableAutocorrection(true)
             }
-            
+
             if let icon = trailingIcon {
                 icon
             }

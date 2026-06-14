@@ -5,7 +5,7 @@ import CoreDesignSystem
 struct ExerciseInsightCard: View {
     let insight: AIInsight?
     let isGenerating: Bool
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             if isGenerating {
@@ -20,14 +20,14 @@ struct ExerciseInsightCard: View {
                 HStack(alignment: .top, spacing: 8) {
                     Text(insight.insightType == .advice ? "💡" : "📈")
                         .font(.system(size: 20))
-                    
+
                     VStack(alignment: .leading, spacing: 12) {
                         Text(insight.insightType == .advice ? String(localized: "ADVICE") : String(localized: "TREND"))
                             .font(.scribbleLabelMedium)
                             .fontWeight(.bold)
                             .kerning(1)
                             .foregroundStyle(Color.scribbleMidGray)
-                        
+
                         Text(insight.text)
                             .font(.scribbleBodyMedium)
                             .fontWeight(.regular)

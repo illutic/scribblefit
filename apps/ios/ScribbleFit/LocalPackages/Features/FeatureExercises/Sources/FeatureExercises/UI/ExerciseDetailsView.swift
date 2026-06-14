@@ -5,12 +5,12 @@ import CoreDesignSystem
 public struct ExerciseDetailsView: View {
     @Bindable var store: ExerciseDetailsStore
     let onDismiss: () -> Void
-    
+
     // Dependencies for sub-screens
     let getExerciseTrendDataUseCase: GetExerciseTrendDataUseCase
     let getExerciseHistoryUseCase: GetExerciseHistoryUseCase
     let configRepository: ConfigRepository
-    
+
     public init(
         store: ExerciseDetailsStore,
         onDismiss: @escaping () -> Void,
@@ -24,12 +24,12 @@ public struct ExerciseDetailsView: View {
         self.getExerciseHistoryUseCase = getExerciseHistoryUseCase
         self.configRepository = configRepository
     }
-    
+
     public var body: some View {
         NavigationStack {
             ZStack {
                 Color.scribbleBackground.ignoresSafeArea()
-                
+
                 ScrollView {
                     VStack(spacing: 32) {
                         if store.state.isLoading {
@@ -42,23 +42,23 @@ public struct ExerciseDetailsView: View {
                                     insight: store.state.aiInsight,
                                     isGenerating: store.state.isGeneratingAI
                                 )
-                                
+
                                 SetsSection(
                                     sets: details.mostRecentSets,
                                     weightUnit: store.state.weightUnit == .kgs ? "kg" : "lbs"
                                 )
-                                
+
                                 WeeklyStatsCard(
                                     stats: details.weeklyStats,
                                     weightUnit: store.state.weightUnit == .kgs ? "kg" : "lbs"
                                 )
-                                
+
                                 TrendsSection(
                                     trends: details.trends,
                                     weightUnit: store.state.weightUnit == .kgs ? "kg" : "lbs",
                                     onViewAllClick: { store.onIntent(.viewAllTrendsTapped) }
                                 )
-                                
+
                                 HistorySection(
                                     historyCount: details.history.count,
                                     onViewHistoryClick: { store.onIntent(.viewAllHistoryTapped) }
@@ -66,7 +66,7 @@ public struct ExerciseDetailsView: View {
                             }
                             .padding(.horizontal, 24)
                         }
-                        
+
                         Spacer()
                             .frame(height: 40)
                     }

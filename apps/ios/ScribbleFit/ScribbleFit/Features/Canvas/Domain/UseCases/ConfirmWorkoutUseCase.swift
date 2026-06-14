@@ -6,19 +6,19 @@ import Foundation
 public final class ConfirmWorkoutUseCase {
     private let sessionRepository: WorkoutSessionRepository
     private let ledgerRepository: LedgerRepository
-    
+
     public init(sessionRepository: WorkoutSessionRepository, ledgerRepository: LedgerRepository) {
         self.sessionRepository = sessionRepository
         self.ledgerRepository = ledgerRepository
     }
-    
+
     public func execute(workout: ParsedWorkout) async throws {
         let totalVolume = workout.exercises.reduce(0.0) { (acc, exercise) in
             acc + exercise.sets.reduce(0.0) { (setAcc, set) in
                 setAcc + (set.weight * Double(set.reps))
             }
         }
-        
+
         let workoutHistory = WorkoutHistory(
             id: UUID().uuidString,
             date: Date(),
@@ -33,7 +33,7 @@ public final class ConfirmWorkoutUseCase {
                 )
             }
         )
-        
+
         try await ledgerRepository.logWorkout(workoutHistory)
         try await sessionRepository.clearActiveSession()
     }

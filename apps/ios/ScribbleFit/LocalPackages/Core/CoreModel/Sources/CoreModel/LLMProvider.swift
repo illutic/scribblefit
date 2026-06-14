@@ -3,7 +3,7 @@ import Foundation
 public struct ParsedWorkoutResult: Sendable, Codable {
     public let exercises: [Exercise]
     public let rawText: String
-    
+
     public init(exercises: [Exercise], rawText: String) {
         self.exercises = exercises
         self.rawText = rawText

@@ -4,15 +4,15 @@ import CoreDesignSystem
 
 public struct ExerciseHistoryView: View {
     @Bindable var store: ExerciseHistoryStore
-    
+
     public init(store: ExerciseHistoryStore) {
         self.store = store
     }
-    
+
     public var body: some View {
         ZStack {
             Color.scribbleBackground.ignoresSafeArea()
-            
+
             if store.state.isLoading {
                 ProgressView()
                     .tint(Color.scribblePrimary)
@@ -45,7 +45,7 @@ public struct ExerciseHistoryView: View {
         .navigationBarTitleDisplayMode(.large)
         #endif
     }
-    
+
     private func headerView(title: String) -> some View {
         HStack {
             Text(title)
@@ -62,7 +62,7 @@ public struct ExerciseHistoryView: View {
 private struct SessionRowView: View {
     let session: ExerciseHistorySession
     let onClick: () -> Void
-    
+
     var body: some View {
         Button(action: onClick) {
             VStack(alignment: .leading, spacing: 8) {
@@ -70,9 +70,9 @@ private struct SessionRowView: View {
                     Text(formatDate(session.date))
                         .font(.system(size: 14, weight: .bold))
                         .foregroundColor(Color.scribblePrimary)
-                    
+
                     Spacer()
-                    
+
                     if session.isPersonalBest {
                         Text("PB")
                             .font(.system(size: 12, weight: .bold))
@@ -83,12 +83,12 @@ private struct SessionRowView: View {
                             .cornerRadius(4)
                     }
                 }
-                
+
                 Text(session.summary)
                     .font(.system(size: 16))
                     .foregroundColor(Color.scribblePrimary)
                     .multilineTextAlignment(.leading)
-                
+
                 Text("\(String(localized: "Volume")): \(Int(session.totalVolume))")
                     .font(.system(size: 12))
                     .foregroundColor(Color.scribbleMidGray)
@@ -99,13 +99,13 @@ private struct SessionRowView: View {
         }
         .buttonStyle(PlainButtonStyle())
     }
-    
+
     private static let dateFormatter: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "EEE, MMM d"
         return formatter
     }()
-    
+
     private func formatDate(_ date: Date) -> String {
         return Self.dateFormatter.string(from: date)
     }

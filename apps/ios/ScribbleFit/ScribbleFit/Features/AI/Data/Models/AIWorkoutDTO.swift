@@ -5,7 +5,7 @@ struct AIWorkoutDTO: Codable {
     let date: String
     let location: String?
     let exercises: [AIExerciseDTO]
-    
+
     func toDomain() -> ParsedWorkout {
         return ParsedWorkout(
             date: self.date,
@@ -18,12 +18,12 @@ struct AIWorkoutDTO: Codable {
 struct AIExerciseDTO: Codable {
     let canonicalName: String
     let sets: [AISetDTO]
-    
+
     enum CodingKeys: String, CodingKey {
         case canonicalName = "canonical_name"
         case sets
     }
-    
+
     func toDomain() -> ParsedExercise {
         return ParsedExercise(
             canonicalName: self.canonicalName,
@@ -37,7 +37,7 @@ struct AISetDTO: Codable {
     let reps: Int
     let rpe: Double?
     let notes: String?
-    
+
     func toDomain() -> ParsedSet {
         return ParsedSet(
             weight: self.weight,

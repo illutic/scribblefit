@@ -5,9 +5,9 @@ public struct SettingsState: Equatable, Sendable {
     public var config: SystemConfig = SystemConfig()
     public var isLocalLlmSupported: Bool = true
     public var isExporting: Bool = false
-    public var exportURL: URL? = nil
+    public var exportURL: URL?
     public var isShowingClearConfirmation: Bool = false
-    public var error: String? = nil
+    public var error: String?
     public var version: String = "1.0.0"
 
     public init() {}

@@ -7,7 +7,7 @@ import CoreFirebase
 @main
 struct ScribbleFitApp: App {
     @StateObject private var appViewModel: AppViewModel
-    
+
     // Dependencies
     private let syncRepository: SyncRepository
     private let ledgerRepository: LedgerRepository
@@ -18,28 +18,28 @@ struct ScribbleFitApp: App {
     private let settingsRepository: SettingsRepository
     private let modelRepository: ModelRepository
     private let database: ScribbleFitDatabase
-    
+
     init() {
         // In a real app, we'd use a proper DI container
         let network = ScribbleFitNetworkClient.shared
         let database = ScribbleFitDatabase.shared
         self.database = database
-        
+
         let syncRepo = SyncRepositoryImpl(database: database)
         let ledgerRepo = LedgerRepositoryImpl(database: database)
         let configRepo = ConfigRepositoryImpl(database: database)
         let analysisRepo = AnalysisRepositoryImpl(database: database)
-        
+
         // AI Engines
         let geminiAIEngine = GeminiAIEngine(apiKey: "", configRepository: configRepo)
         let localAIEngine = LocalLLMService(configRepository: configRepo)
-        
+
         let dynamicEngine = DynamicLLMEngine(
             geminiService: geminiAIEngine,
             localService: localAIEngine,
             configRepository: configRepo
         )
-        
+
         let syncWorkoutUseCase = SyncWorkoutUseCase(
             syncRepository: syncRepo,
             engine: dynamicEngine,
@@ -98,13 +98,13 @@ struct SplashScreenView: View {
     var body: some View {
         ZStack {
             ScribbleFitColor.background.ignoresSafeArea()
-            
+
             VStack(spacing: 16) {
                 Text("ScribbleFit")
                     .font(.system(size: 40, weight: .black))
                     .foregroundColor(ScribbleFitColor.primaryText)
                     .tracking(-2)
-                
+
                 ProgressView()
                     .progressViewStyle(CircularProgressViewStyle(tint: ScribbleFitColor.primaryText))
             }

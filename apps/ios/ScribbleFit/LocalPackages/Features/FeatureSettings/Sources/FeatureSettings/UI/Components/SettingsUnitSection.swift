@@ -3,7 +3,7 @@ import CoreModel
 
 struct SettingsUnitSection: View {
     @Binding var unit: WeightUnit
-    
+
     var body: some View {
         SettingsContainer(title: String(localized: "Unit Preferences")) {
             Picker(String(localized: "Weight Unit"), selection: $unit) {

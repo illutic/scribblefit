@@ -37,7 +37,7 @@ public struct ScribbleDetailsState: Equatable, Sendable {
         if let selectedExerciseName = selectedExerciseName { newState.selectedExerciseName = selectedExerciseName }
         return newState
     }
-    
+
     public var canLog: Bool {
         guard let scribble = scribble else { return false }
         return scribble.status != .completed

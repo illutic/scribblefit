@@ -38,9 +38,9 @@ public struct Exercise: Identifiable, Equatable, Sendable, Codable {
 
     public func summary(weightUnit: WeightUnit) -> String {
         guard !sets.isEmpty else { return "" }
-        
+
         let unitLabel = weightUnit == .kgs ? "kg" : "lbs"
-        
+
         // Group consecutive identical sets
         var groups: [(weight: Float?, reps: Int, count: Int)] = []
         for set in sets {
@@ -50,7 +50,7 @@ public struct Exercise: Identifiable, Equatable, Sendable, Codable {
                 groups.append((weight: set.weight, reps: set.reps, count: 1))
             }
         }
-        
+
         func formatWeight(_ weight: Float?) -> String {
             if let weight = weight {
                 return "\(String(format: "%.1f", weight))\(unitLabel)"
@@ -58,7 +58,7 @@ public struct Exercise: Identifiable, Equatable, Sendable, Codable {
                 return String(localized: "Bodyweight")
             }
         }
-        
+
         if groups.count == 1 {
             let group = groups[0]
             // Standard format for uniform sets: "100.0kg • 3 sets x 10 reps"
@@ -70,7 +70,7 @@ public struct Exercise: Identifiable, Equatable, Sendable, Codable {
             }.joined(separator: ", ")
         }
     }
-    
+
     public func copy(
         id: UUID? = nil,
         scribbleId: UUID?? = nil,

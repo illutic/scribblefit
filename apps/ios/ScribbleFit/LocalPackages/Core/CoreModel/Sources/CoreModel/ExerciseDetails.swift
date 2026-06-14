@@ -7,7 +7,7 @@ public struct ExerciseDetails: Codable, Sendable {
     public let trends: ExerciseTrends
     public let history: [ExerciseHistorySession]
     public let mostRecentSets: [ExerciseSet]
-    
+
     public init(exerciseName: String, muscleGroup: String, weeklyStats: WeeklyStats, trends: ExerciseTrends, history: [ExerciseHistorySession], mostRecentSets: [ExerciseSet] = []) {
         self.exerciseName = exerciseName
         self.muscleGroup = muscleGroup
@@ -22,7 +22,7 @@ public struct WeeklyStats: Codable, Sendable {
     public let sessionsThisWeek: Int
     public let totalVolumeThisWeek: Float
     public let maxWeightThisWeek: Float
-    
+
     public init(sessionsThisWeek: Int, totalVolumeThisWeek: Float, maxWeightThisWeek: Float) {
         self.sessionsThisWeek = sessionsThisWeek
         self.totalVolumeThisWeek = totalVolumeThisWeek
@@ -37,7 +37,7 @@ public struct ExerciseTrends: Codable, Sendable {
     public let lastVolumeTrend: TrendDirection
     public let intensity: Float
     public let improvement: Float
-    
+
     public init(
         current1RM: Float,
         trendDirection: TrendDirection,

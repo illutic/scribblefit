@@ -4,10 +4,10 @@ import CoreModel
 public struct CanvasState: Equatable, Sendable {
     public var isLoading: Bool = false
     public var currentDate: Date = Date()
-    public var error: String? = nil
+    public var error: String?
     public var currentScribbleText: String = ""
     public var scribbles: [Scribble] = []
-    public var selectedScribble: Scribble? = nil
+    public var selectedScribble: Scribble?
     public var aiInsights: [AIInsight] = []
     public var isGeneratingInsights: Bool = false
     public var isDatePickerVisible: Bool = false
@@ -15,7 +15,7 @@ public struct CanvasState: Equatable, Sendable {
     public var isInputExpanded: Bool = false
     public var isSettingsVisible: Bool = false
     public var isAddExerciseSheetVisible: Bool = false
-    public var navigationState: NavigationState? = nil
+    public var navigationState: NavigationState?
 
     public enum NavigationState: Equatable, Sendable, Identifiable {
         case exerciseDetails(String)
@@ -94,7 +94,7 @@ public struct CanvasState: Equatable, Sendable {
     public let failedToParseText = String(localized: "Failed to parse workout")
     public let retryLabel = String(localized: "Retry")
     public let removeLabel = String(localized: "Remove")
-    
+
     public var weightUnitLabel: String {
         weightUnit == .kgs ? String(localized: "kg") : String(localized: "lbs")
     }

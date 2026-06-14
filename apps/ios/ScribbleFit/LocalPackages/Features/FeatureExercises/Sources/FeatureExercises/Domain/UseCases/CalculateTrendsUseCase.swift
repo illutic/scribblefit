@@ -5,27 +5,27 @@ import CoreCommon
 @MainActor
 public final class CalculateTrendsUseCase {
     private let exerciseRepository: ExerciseRepository
-    
+
     public init(exerciseRepository: ExerciseRepository) {
         self.exerciseRepository = exerciseRepository
     }
-    
+
     public func execute(exercise: Exercise) async -> ExerciseTrends? {
         do {
             let exercises = try await exerciseRepository.getExercises(query: exercise.canonicalName)
                 .filter { $0.canonicalName.lowercased() == exercise.canonicalName.lowercased() }
-            
+
             if exercises.isEmpty { return nil }
-            
+
             let sortedExercises = exercises.sorted(by: { $0.createdAt < $1.createdAt })
-            
+
             // Weekly Stats (last 7 days)
             let calendar = Calendar.current
             let now = Date()
             let sevenDaysAgo = calendar.date(byAdding: .day, value: -7, to: now)!
-            
+
             let thisWeekExercises = exercises.filter { $0.createdAt >= sevenDaysAgo }
-            
+
             let maxWeightThisWeek = thisWeekExercises.flatMap { $0.sets }
                 .compactMap { $0.weight }.max() ?? Float(0.0)
 
@@ -57,13 +57,13 @@ public final class CalculateTrendsUseCase {
             // Previous Session Volume
             let previousSession = sortedExercises.last(where: { $0.id != exercise.id })
             let previousVolume = previousSession?.sets.reduce(Float(0.0)) { $0 + ($1.weight ?? Float(0.0)) * Float($1.reps) } ?? Float(0.0)
-            
+
             let lastVolumeTrend: TrendDirection = {
                 if lastVolume > previousVolume { return .improving }
                 if lastVolume < previousVolume { return .declining }
                 return .stable
             }()
-            
+
             return ExerciseTrends(
                 current1RM: current1RM,
                 trendDirection: trendDirection,

@@ -9,7 +9,7 @@ import FeatureScribble
 public struct CanvasView: View {
     @Bindable var store: CanvasStore
     let settingsStore: SettingsStore
-    
+
     // Dependencies for sub-screens
     let getExerciseDetailsUseCase: GetExerciseDetailsUseCase
     let getExerciseAIInsightUseCase: GetExerciseAIInsightUseCase
@@ -24,10 +24,10 @@ public struct CanvasView: View {
     let scribbleRepository: ScribbleRepository
     let confirmScribbleUseCase: ConfirmScribbleUseCase
 
-    @State private var selectedExerciseName: String? = nil
-    @State private var selectedScribbleId: UUID? = nil
-    @State private var scribbleToDelete: UUID? = nil
-    
+    @State private var selectedExerciseName: String?
+    @State private var selectedScribbleId: UUID?
+    @State private var scribbleToDelete: UUID?
+
     public init(
         store: CanvasStore,
         settingsStore: SettingsStore,
@@ -116,9 +116,9 @@ public struct CanvasView: View {
             }
         }
     }
-    
+
     // MARK: - Components
-    
+
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
         #if os(iOS)
@@ -136,7 +136,7 @@ public struct CanvasView: View {
             }
         }
         #endif
-        
+
         ToolbarItem(placement: .principal) {
             HStack(spacing: 12) {
                 Button(action: { store.onIntent(.onPreviousDayClick) }) {
@@ -144,13 +144,13 @@ public struct CanvasView: View {
                         .font(.system(size: 14, weight: .bold))
                         .foregroundStyle(Color.scribblePrimary)
                 }
-                
+
                 Button(action: { store.onIntent(.showDatePicker) }) {
                     Text(store.state.dateString)
                         .font(.scribbleTitleMedium)
                         .foregroundStyle(Color.scribblePrimary)
                 }
-                
+
                 Button(action: { store.onIntent(.onNextDayClick) }) {
                     Image(systemName: "chevron.right")
                         .font(.system(size: 14, weight: .bold))
@@ -159,7 +159,7 @@ public struct CanvasView: View {
             }
         }
     }
-    
+
     private var bodyContent: some View {
         CanvasBodyView(
             scribbles: store.state.scribbles,
@@ -173,7 +173,7 @@ public struct CanvasView: View {
             onIntent: store.onIntent
         )
     }
-    
+
     private var footerView: some View {
         CanvasFooter(
             text: $store.state.currentScribbleText,
@@ -182,9 +182,9 @@ public struct CanvasView: View {
             onManualAdd: { store.onIntent(.showAddExerciseSheet) }
         )
     }
-    
+
     // MARK: - Navigation & Sheets
-    
+
     @ViewBuilder
     private func settingsView() -> some View {
         SettingsView(
@@ -192,7 +192,7 @@ public struct CanvasView: View {
             onDismiss: { store.onIntent(.dismissSettings) }
         )
     }
-    
+
     @ViewBuilder
     private func scribbleConfirmationSheet(for scribble: Scribble) -> some View {
         ScribbleConfirmationBottomSheet(
@@ -227,7 +227,7 @@ public struct CanvasView: View {
             }
         )
     }
-    
+
     @ViewBuilder
     private var deleteAlertActions: some View {
         Button(String(localized: "Delete"), role: .destructive) {
@@ -237,7 +237,7 @@ public struct CanvasView: View {
         }
         Button(String(localized: "Cancel"), role: .cancel) {}
     }
-    
+
     @ViewBuilder
     private var datePickerSheet: some View {
         CanvasDatePickerView(
@@ -248,7 +248,7 @@ public struct CanvasView: View {
             onDismiss: { store.onIntent(.dismissDatePicker) }
         )
     }
-    
+
     @ViewBuilder
     private func exerciseDetailsSheet(for name: String, onDismiss onDismiss: @escaping () -> Void) -> some View {
         ExerciseDetailsView(
@@ -265,7 +265,7 @@ public struct CanvasView: View {
             configRepository: configRepository
         )
     }
-    
+
     @ViewBuilder
     private func scribbleDetailsSheet(for id: UUID) -> some View {
         ScribbleDetailsView(

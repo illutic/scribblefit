@@ -14,7 +14,7 @@ struct VolumeChart: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            GeometryReader { geometry in
+            GeometryReader { _ in
                 Canvas { context, size in
                     if points.isEmpty { return }
 
@@ -36,14 +36,14 @@ struct VolumeChart: View {
                     let chartHeight = max(chartBottom - chartTop, 1)
 
                     func pointOffset(_ index: Int) -> CGPoint {
-                        let x = points.count > 1 
+                        let x = points.count > 1
                             ? chartLeft + CGFloat(index) / CGFloat(points.count - 1) * chartWidth
                             : chartLeft + chartWidth / 2
 
-                        let normalizedY = maxVolume > minVolume 
+                        let normalizedY = maxVolume > minVolume
                             ? CGFloat((points[index].volume - minVolume) / range)
                             : 0.5
-                        
+
                         let y = chartBottom - normalizedY * chartHeight
                         return CGPoint(x: x, y: y)
                     }
@@ -51,7 +51,7 @@ struct VolumeChart: View {
                     // Draw Y-axis labels (Max, Mid, Min)
                     let labelFont = Font.system(size: 10)
                     let midVolume = (maxVolume + minVolume) / 2
-                    let yLabels = maxVolume > minVolume 
+                    let yLabels = maxVolume > minVolume
                         ? [(maxVolume, chartTop), (midVolume, chartTop + chartHeight / 2), (minVolume, chartBottom)]
                         : [(maxVolume, chartTop + chartHeight / 2)]
 
@@ -59,7 +59,7 @@ struct VolumeChart: View {
                         let text = Text(formatAxisValue(value))
                             .font(labelFont)
                             .foregroundColor(.secondary)
-                        
+
                         context.draw(text, at: CGPoint(x: yAxisWidth / 2, y: y), anchor: .center)
                     }
 
@@ -113,10 +113,10 @@ struct VolumeChart: View {
                     }
 
                     // Draw X-axis labels (Start, Mid, End)
-                    let xLabelIndices = points.count <= 3 
+                    let xLabelIndices = points.count <= 3
                         ? Array(0..<points.count)
                         : [0, points.count / 2, points.count - 1]
-                    
+
                     let dateFormatter = VolumeChart.dateFormatter
 
                     for i in xLabelIndices {
@@ -124,7 +124,7 @@ struct VolumeChart: View {
                         let text = Text(dateFormatter.string(from: points[i].date))
                             .font(labelFont)
                             .foregroundColor(.secondary)
-                        
+
                         context.draw(text, at: CGPoint(x: p.x, y: chartBottom + 12), anchor: .top)
                     }
                 }

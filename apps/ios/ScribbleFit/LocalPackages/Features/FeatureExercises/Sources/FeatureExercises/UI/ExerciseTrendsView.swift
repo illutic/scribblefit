@@ -5,15 +5,15 @@ import CoreDesignSystem
 
 public struct ExerciseTrendsView: View {
     @Bindable var store: ExerciseTrendsStore
-    
+
     public init(store: ExerciseTrendsStore) {
         self.store = store
     }
-    
+
     public var body: some View {
         ZStack {
             Color.scribbleBackground.ignoresSafeArea()
-            
+
             if store.state.isLoading && store.state.oneRMDataPoints.isEmpty {
                 ProgressView()
                     .tint(Color.scribblePrimary)
@@ -22,7 +22,7 @@ public struct ExerciseTrendsView: View {
                     Image(systemName: "chart.line.uptrend.xyaxis")
                         .font(.system(size: 48))
                         .foregroundStyle(Color.scribbleMidGray)
-                    
+
                     Text(store.state.emptyDataMessage)
                         .font(.scribbleTitleMedium)
                         .foregroundStyle(Color.scribbleMidGray)
@@ -31,21 +31,21 @@ public struct ExerciseTrendsView: View {
                 ScrollView {
                     VStack(spacing: ScribbleFitSpacing.xl) {
                         periodPicker
-                        
+
                         trendChartSection(
                             title: store.state.oneRMSectionTitle,
                             data: store.state.oneRMDataPoints,
                             insights: store.state.oneRMInsights,
                             unit: store.state.weightUnitLabel
                         )
-                        
+
                         trendChartSection(
                             title: store.state.volumeSectionTitle,
                             data: store.state.volumeDataPoints,
                             insights: store.state.volumeInsights,
                             unit: store.state.weightUnitLabel
                         )
-                        
+
                         Spacer()
                             .frame(height: 40)
                     }
@@ -62,7 +62,7 @@ public struct ExerciseTrendsView: View {
             store.onIntent(.loadData)
         }
     }
-    
+
     private var periodPicker: some View {
         Picker(store.state.periodPickerLabel, selection: $store.state.selectedPeriod) {
             ForEach([TrendPeriod.oneMonth, .threeMonths, .sixMonths, .oneYear, .all], id: \.self) { period in
@@ -71,7 +71,7 @@ public struct ExerciseTrendsView: View {
         }
         .pickerStyle(.segmented)
     }
-    
+
     @ViewBuilder
     private func trendChartSection(
         title: String,
@@ -86,14 +86,14 @@ public struct ExerciseTrendsView: View {
                     .fontWeight(.bold)
                     .kerning(1)
                     .foregroundStyle(Color.scribbleMidGray)
-                
+
                 Spacer()
-                
+
                 if let insights = insights {
                     trendBadge(direction: insights.trendDirection, percentage: insights.percentageChange)
                 }
             }
-            
+
             VStack(alignment: .leading, spacing: ScribbleFitSpacing.small) {
                 if let lastValue = data.last?.value {
                     HStack(alignment: .bottom, spacing: 4) {
@@ -101,14 +101,14 @@ public struct ExerciseTrendsView: View {
                             .font(.scribbleHeadlineSmall)
                             .fontWeight(.bold)
                             .foregroundStyle(Color.scribblePrimary)
-                        
+
                         Text(unit)
                             .font(.scribbleBodyMedium)
                             .foregroundStyle(Color.scribbleMidGray)
                             .padding(.bottom, 4)
-                        
+
                         Spacer()
-                        
+
                         if let pb = insights?.personalBest {
                             VStack(alignment: .trailing, spacing: 2) {
                                 Text(store.state.personalBestLabel)
@@ -121,7 +121,7 @@ public struct ExerciseTrendsView: View {
                         }
                     }
                 }
-                
+
                 Chart {
                     ForEach(data) { point in
                         LineMark(
@@ -131,7 +131,7 @@ public struct ExerciseTrendsView: View {
                         .interpolationMethod(.catmullRom)
                         .foregroundStyle(Color.scribblePrimary)
                         .lineStyle(StrokeStyle(lineWidth: 3))
-                        
+
                         AreaMark(
                             x: .value("Date", point.date),
                             y: .value("Value", point.value)
@@ -144,7 +144,7 @@ public struct ExerciseTrendsView: View {
                                 endPoint: .bottom
                             )
                         )
-                        
+
                         PointMark(
                             x: .value("Date", point.date),
                             y: .value("Value", point.value)
@@ -154,7 +154,7 @@ public struct ExerciseTrendsView: View {
                     }
                 }
                 .chartXAxis {
-                    AxisMarks { value in
+                    AxisMarks { _ in
                         AxisGridLine(stroke: StrokeStyle(lineWidth: 0.5))
                             .foregroundStyle(Color.scribbleMidGray.opacity(0.2))
                         AxisValueLabel(format: .dateTime.month(.abbreviated).day())
@@ -182,7 +182,7 @@ public struct ExerciseTrendsView: View {
             .clipShape(RoundedRectangle(cornerRadius: ScribbleFitShape.large))
         }
     }
-    
+
     @ViewBuilder
     private func trendBadge(direction: TrendDirection, percentage: Float) -> some View {
         let isPositive = {
@@ -191,7 +191,7 @@ public struct ExerciseTrendsView: View {
             case .plateaued, .declining: return false
             }
         }()
-        
+
         Text(store.state.badgeText(for: direction, percentage: percentage))
             .font(.system(size: 10, weight: .bold))
             .foregroundStyle(isPositive ? Color.scribblePrimary : Color.scribbleMidGray)

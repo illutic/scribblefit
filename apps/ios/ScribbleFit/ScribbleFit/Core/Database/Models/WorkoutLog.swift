@@ -7,10 +7,10 @@ public final class WorkoutLog {
     public var date: Date
     public var location: String?
     public var totalVolume: Double?
-    
+
     @Relationship(deleteRule: .cascade, inverse: \WorkoutSet.workout)
     public var sets: [WorkoutSet]?
-    
+
     public init(id: String = UUID().uuidString, date: Date = Date(), location: String? = nil, totalVolume: Double? = nil) {
         self.id = id
         self.date = date

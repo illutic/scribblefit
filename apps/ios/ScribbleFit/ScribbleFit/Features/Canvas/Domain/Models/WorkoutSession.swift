@@ -8,7 +8,7 @@ public struct WorkoutSession: Codable, Sendable, Identifiable {
     public let startTime: Date
     public let lastActivityTime: Date
     public let exercises: [SessionExercise]
-    
+
     public init(id: String, startTime: Date, lastActivityTime: Date, exercises: [SessionExercise]) {
         self.id = id
         self.startTime = startTime
@@ -20,7 +20,7 @@ public struct WorkoutSession: Codable, Sendable, Identifiable {
 public struct SessionExercise: Codable, Sendable {
     public let canonicalName: String
     public let sets: [SessionSet]
-    
+
     public init(canonicalName: String, sets: [SessionSet]) {
         self.canonicalName = canonicalName
         self.sets = sets
@@ -32,7 +32,7 @@ public struct SessionSet: Codable, Sendable {
     public let reps: Int
     public let rpe: Double?
     public let notes: String?
-    
+
     public init(weight: Double, reps: Int, rpe: Double?, notes: String?) {
         self.weight = weight
         self.reps = reps

@@ -5,10 +5,10 @@ import CoreModel
 @Observable
 public final class ExerciseHistoryStore {
     public var state: ExerciseHistoryState
-    
+
     private let getExerciseHistoryUseCase: GetExerciseHistoryUseCase
     private let configRepository: ConfigRepository
-    
+
     public init(
         exerciseName: String,
         getExerciseHistoryUseCase: GetExerciseHistoryUseCase,
@@ -17,12 +17,12 @@ public final class ExerciseHistoryStore {
         self.state = ExerciseHistoryState(exerciseName: exerciseName)
         self.getExerciseHistoryUseCase = getExerciseHistoryUseCase
         self.configRepository = configRepository
-        
+
         Task {
             await self.onIntent(.loadHistory)
         }
     }
-    
+
     public func onIntent(_ intent: ExerciseHistoryIntent) {
         switch intent {
         case .loadHistory:
@@ -33,11 +33,11 @@ public final class ExerciseHistoryStore {
             NotificationCenter.default.post(name: NSNotification.Name("NavigateToCanvasDate"), object: date)
         }
     }
-    
+
     private func loadHistory() async {
         state.isLoading = true
         state.error = nil
-        
+
         do {
             let weightUnit = configRepository.getConfig().weightUnit
             let history = try await getExerciseHistoryUseCase.execute(
@@ -48,7 +48,7 @@ public final class ExerciseHistoryStore {
         } catch {
             state.error = error.localizedDescription
         }
-        
+
         state.isLoading = false
     }
 }

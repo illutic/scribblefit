@@ -9,7 +9,7 @@ import FeatureScribble
 public struct LedgerView: View {
     @Bindable var store: LedgerStore
     let onNavigateToCanvas: () -> Void
-    
+
     // Dependencies for sub-screens
     let getExerciseDetailsUseCase: GetExerciseDetailsUseCase
     let getExerciseAIInsightUseCase: GetExerciseAIInsightUseCase
@@ -113,7 +113,7 @@ public struct LedgerView: View {
             }
         }
     }
-    
+
     @ToolbarContentBuilder
     private var toolbarContent: some ToolbarContent {
         ToolbarItem(placement: .automatic) {

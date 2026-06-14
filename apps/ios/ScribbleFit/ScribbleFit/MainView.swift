@@ -2,13 +2,13 @@ import SwiftUI
 
 public struct MainView: View {
     @StateObject private var navManager = NavigationManager()
-    
+
     private let canvasRepository: CanvasRepository
     private let analysisRepository: AnalysisRepository
     private let userRepository: UserRepository
     private let settingsRepository: SettingsRepository
     private let modelRepository: ModelRepository
-    
+
     private let processScribbleUseCase: ProcessScribbleUseCase
     private let executeQuickActionUseCase: ExecuteQuickActionUseCase
     private let confirmWorkoutUseCase: ConfirmWorkoutUseCase
@@ -35,7 +35,7 @@ public struct MainView: View {
         self.confirmWorkoutUseCase = confirmWorkoutUseCase
         self.listenForSyncItemsUseCase = listenForSyncItemsUseCase
     }
-    
+
     public var body: some View {
         TabView(selection: $navManager.activeTab) {
             // Workout Tab
@@ -65,7 +65,7 @@ public struct MainView: View {
                 Label(AppTab.workout.title, systemImage: AppTab.workout.icon)
             }
             .tag(AppTab.workout)
-            
+
             // Exercises Tab
             NavigationStack(path: $navManager.exercisesPath) {
                 ExercisesView()
@@ -76,7 +76,7 @@ public struct MainView: View {
                 Label(AppTab.exercises.title, systemImage: AppTab.exercises.icon)
             }
             .tag(AppTab.exercises)
-            
+
             // Profile Tab
             NavigationStack(path: $navManager.profilePath) {
                 ProfileView(viewModel: ProfileViewModel(

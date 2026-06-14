@@ -75,7 +75,7 @@ public final class InsightsStore {
                     await MainActor.run { self.state.volumePoints = volume }
                 }
             }
-            
+
             // Frequency Observation (Primary loader trigger)
             Task {
                 let frequencyStream = self.getFrequencyInsightsUseCase.execute(startDate: startDate, endDate: endDate)
@@ -90,7 +90,7 @@ public final class InsightsStore {
                     }
                 }
             }
-            
+
             // Distribution Observation
             Task {
                 let distributionStream = self.getMuscleDistributionInsightsUseCase.execute(startDate: startDate, endDate: endDate)
