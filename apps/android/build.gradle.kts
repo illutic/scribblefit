@@ -10,3 +10,12 @@ plugins {
     alias(libs.plugins.firebase.crashlytics) apply false
     alias(libs.plugins.firebase.performance) apply false
 }
+
+allprojects {
+    configurations.all {
+        resolutionStrategy {
+            val kotlinVersion = libs.versions.kotlin.get()
+            force("org.jetbrains.kotlin:kotlin-metadata-jvm:$kotlinVersion")
+        }
+    }
+}

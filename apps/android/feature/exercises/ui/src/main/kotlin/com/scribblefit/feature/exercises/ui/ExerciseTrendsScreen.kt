@@ -17,6 +17,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
+import androidx.compose.material.icons.automirrored.rounded.ShowChart
 import androidx.compose.material.icons.rounded.ShowChart
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
@@ -113,7 +114,7 @@ private fun ExerciseTrendsContent(
                     verticalArrangement = Arrangement.spacedBy(ScribbleFitTheme.spacing.medium)
                 ) {
                     Icon(
-                        imageVector = Icons.Rounded.ShowChart,
+                        imageVector = Icons.AutoMirrored.Rounded.ShowChart,
                         contentDescription = null,
                         modifier = Modifier.size(48.dp),
                         tint = ScribbleFitTheme.colors.midGray

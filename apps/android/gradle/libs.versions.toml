@@ -1,27 +1,28 @@
 [versions]
-agp = "9.1.0"
-kotlin = "2.3.10"
-coreKtx = "1.18.0"
+agp = "9.2.1"
+kotlin = "2.4.0"
+coreKtx = "1.19.0"
 lifecycleRuntimeKtx = "2.10.0"
 activityCompose = "1.13.0"
-composeBom = "2026.03.00"
-navigation3 = "1.0.1"
+composeBom = "2026.05.01"
+navigation3 = "1.1.2"
 room = "2.8.4"
 hilt = "2.59.2"
 junit = "4.13.2"
 junitVersion = "1.3.0"
 espressoCore = "3.7.0"
-mockk = "1.13.17"
-turbine = "1.2.0"
+mockk = "1.14.11"
+turbine = "1.2.1"
 ksp = "2.3.6"
-coroutines = "1.10.2"
-serialization = "1.10.0"
-materialIcons = "1.7.8"
-mlkitGenai = "1.0.0-beta1"
+coroutines = "1.11.0"
+serialization = "1.11.0"
+materialIcons = "1.11.2"
+materialIconsCompose = "1.7.8"
+mlkitGenai = "1.0.0-beta2"
 slf4j = "1.7.36"
-material3 = "1.5.0-alpha15"
-firebase-bom = "34.12.0"
-google-services = "4.4.2"
+material3 = "1.5.0-alpha21"
+firebase-bom = "34.14.1"
+google-services = "4.4.4"
 firebase-crashlytics-plugin = "3.0.7"
 firebase-performance-plugin = "2.0.2"
 javaxInject = "1"
@@ -38,8 +39,8 @@ androidx-ui-tooling-preview = { group = "androidx.compose.ui", name = "ui-toolin
 androidx-ui-test-manifest = { group = "androidx.compose.ui", name = "ui-test-manifest" }
 androidx-ui-test-junit4 = { group = "androidx.compose.ui", name = "ui-test-junit4" }
 androidx-material3 = { group = "androidx.compose.material3", name = "material3", version.ref = "material3" }
-androidx-material-icons = { group = "androidx.compose.material", name = "material-icons-core", version.ref = "materialIcons" }
-androidx-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "materialIcons" }
+androidx-material-icons = { group = "androidx.compose.material", name = "material-icons-core", version.ref = "materialIconsCompose" }
+androidx-material-icons-extended = { group = "androidx.compose.material", name = "material-icons-extended", version.ref = "materialIconsCompose" }
 androidx-navigation3-runtime = { group = "androidx.navigation3", name = "navigation3-runtime", version.ref = "navigation3" }
 androidx-navigation3-ui = { group = "androidx.navigation3", name = "navigation3-ui", version.ref = "navigation3" }
 androidx-viewmodel-compose = { group = "androidx.lifecycle", name = "lifecycle-viewmodel-compose", version.ref = "lifecycleRuntimeKtx" }
