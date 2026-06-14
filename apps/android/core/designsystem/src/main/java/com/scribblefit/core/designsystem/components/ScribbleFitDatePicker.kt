@@ -16,8 +16,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.scribblefit.core.designsystem.ScribbleFitTheme
 import java.time.Instant
-import java.time.LocalDate
-import java.time.ZoneId
+import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,21 +65,21 @@ private fun scribbleFitDatePickerColors() = DatePickerDefaults.colors(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ScribbleFitDatePickerDialog(
-    initialDate: LocalDate,
-    onDateSelected: (LocalDate) -> Unit,
+    initialDate: LocalDateTime,
+    onDateSelected: (LocalDateTime) -> Unit,
     onDismiss: () -> Unit,
     confirmText: String = "OK",
     cancelText: String = "Cancel"
 ) {
     val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = initialDate.atStartOfDay(ZoneId.systemDefault())
-            .toInstant().toEpochMilli(),
+        initialSelectedDateMillis = initialDate.toLocalDate().atStartOfDay()
+            .toInstant(ZoneOffset.UTC).toEpochMilli(),
         selectableDates = object : SelectableDates {
             override fun isSelectableDate(utcTimeMillis: Long): Boolean {
                 val date = Instant.ofEpochMilli(utcTimeMillis)
-                    .atZone(ZoneId.systemDefault())
+                    .atZone(ZoneOffset.UTC)
                     .toLocalDate()
-                return !date.isAfter(LocalDate.now())
+                return !date.isAfter(LocalDateTime.now().toLocalDate())
             }
         }
     )
@@ -91,8 +91,9 @@ fun ScribbleFitDatePickerDialog(
                 onClick = {
                     datePickerState.selectedDateMillis?.let {
                         val date = Instant.ofEpochMilli(it)
-                            .atZone(ZoneId.systemDefault())
+                            .atZone(ZoneOffset.UTC)
                             .toLocalDate()
+                            .atStartOfDay()
                         onDateSelected(date)
                     }
                 }

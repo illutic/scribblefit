@@ -24,7 +24,9 @@ fun ScribbleWithExercises.toDomain(): Scribble =
     Scribble(
         id = scribble.scribbleId,
         rawText = scribble.rawText,
-        status = ScribbleStatus.valueOf(scribble.status),
+        status = runCatching { ScribbleStatus.valueOf(scribble.status.uppercase()) }.getOrDefault(
+            ScribbleStatus.FAILED
+        ),
         createdAt = scribble.createdAt,
         exercises = exercises.map { it.toDomain() }
     )

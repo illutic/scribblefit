@@ -114,7 +114,7 @@ fun ScribbleFitTheme(
     isSystemInDarkTheme: Boolean = isSystemInDarkTheme(),
     content: @Composable () -> Unit
 ) {
-    val scribbleFitColors =
+    val baseScribbleFitColors =
         if (isSystemInDarkTheme) darkScribbleFitColors else lightScribbleFitColors
 
     val colorScheme = when {
@@ -126,11 +126,32 @@ fun ScribbleFitTheme(
         }
 
         else -> if (isSystemInDarkTheme) {
-            darkScribbleFitColorScheme(scribbleFitColors)
+            darkScribbleFitColorScheme(baseScribbleFitColors)
         } else {
-            lightScribbleFitColorScheme(scribbleFitColors)
+            lightScribbleFitColorScheme(baseScribbleFitColors)
         }
     }
+
+    val finalScribbleFitColors =
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && isDynamicTheme) {
+            ScribbleFitColors(
+                primary = colorScheme.primary,
+                onPrimary = colorScheme.onPrimary,
+                surface = colorScheme.surface,
+                surfaceContainerLowest = colorScheme.surfaceContainerLowest,
+                surfaceContainerLow = colorScheme.surfaceContainerLow,
+                surfaceContainer = colorScheme.surfaceContainer,
+                surfaceContainerHigh = colorScheme.surfaceContainerHigh,
+                midGray = colorScheme.onSurfaceVariant,
+                dangerRed = colorScheme.error,
+                warningOrange = baseScribbleFitColors.warningOrange,
+                successGreen = baseScribbleFitColors.successGreen,
+                outlineVariant = colorScheme.outlineVariant,
+                background = colorScheme.background
+            )
+        } else {
+            baseScribbleFitColors
+        }
 
     val localView = LocalView.current
 
@@ -144,7 +165,7 @@ fun ScribbleFitTheme(
     }
 
     CompositionLocalProvider(
-        LocalColors provides scribbleFitColors,
+        LocalColors provides finalScribbleFitColors,
         LocalShapes provides ScribbleFitShapes,
         LocalSpacing provides ScribbleFitSpacing,
         LocalContentColor provides colorScheme.primary,

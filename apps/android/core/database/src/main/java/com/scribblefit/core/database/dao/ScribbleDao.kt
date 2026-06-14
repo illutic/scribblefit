@@ -30,7 +30,7 @@ interface ScribbleDao {
     fun getScribblesWithExercisesForDate(date: Long): Flow<List<ScribbleWithExercises>>
 
     @Transaction
-    @Query("SELECT * FROM scribbles WHERE createdAt >= :startDate AND createdAt <= :endDate")
+    @Query("SELECT * FROM scribbles WHERE createdAt >= :startDate AND createdAt < :endDate")
     fun getScribblesWithExercisesInRange(
         startDate: Long,
         endDate: Long

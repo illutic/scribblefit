@@ -12,8 +12,11 @@ import kotlinx.coroutines.flow.Flow
 
 @Dao
 interface ExerciseDao {
-    @Insert(onConflict = OnConflictStrategy.IGNORE)
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertExercise(exercise: ExerciseEntity): Long
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertWorkoutExercises(exercises: List<ExerciseEntity>): List<Long>
 
     @Update
     suspend fun updateExercise(exercise: ExerciseEntity)
@@ -38,7 +41,7 @@ interface ExerciseDao {
     fun getExerciseWithSets(exerciseId: Long): Flow<ExerciseWithSets?>
 
     @Transaction
-    @Query("SELECT * FROM exercises WHERE createdAt >= :startDate AND createdAt <= :endDate")
+    @Query("SELECT * FROM exercises WHERE createdAt >= :startDate AND createdAt < :endDate")
     fun getExercisesWithSetsInRange(startDate: Long, endDate: Long): Flow<List<ExerciseWithSets>>
 
     @Transaction

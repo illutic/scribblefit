@@ -27,5 +27,7 @@ object DatabaseModule {
     @Provides
     @Singleton
     fun provideDatabase(@ApplicationContext context: Context): ScribbleFitDatabase =
-        Room.databaseBuilder(context, ScribbleFitDatabase::class.java, DATABASE_NAME).build()
+        Room.databaseBuilder(context, ScribbleFitDatabase::class.java, DATABASE_NAME)
+            .fallbackToDestructiveMigration(true)
+            .build()
 }

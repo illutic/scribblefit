@@ -23,7 +23,7 @@ sealed interface Screen {
 
     data object Settings : Screen {
         override val route: String = "settings"
-        override val isTop: Boolean = false
+        override val isTop: Boolean = true
     }
 
     data class ExerciseDetails(val exerciseId: Long) : Screen {
