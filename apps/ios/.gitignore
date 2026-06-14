@@ -24,3 +24,4 @@ local.properties
 # Node
 node_modules/
 dist/
+GoogleService-Info.plist

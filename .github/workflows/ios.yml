@@ -29,6 +29,11 @@ jobs:
     - name: Install SwiftLint
       run: brew install swiftlint
 
+    - name: Create GoogleService-Info.plist
+      env:
+        GOOGLE_SERVICE_INFO_PLIST: ${{ secrets.GOOGLE_SERVICE_INFO_PLIST }}
+      run: echo "$GOOGLE_SERVICE_INFO_PLIST" > Sources/App/GoogleService-Info.plist
+
     - name: Install Swift Packages
       run: swift package resolve
 
