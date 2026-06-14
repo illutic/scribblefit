@@ -15,6 +15,7 @@ A cross-platform fitness tracking app that turns freeform text scribbles into st
   <img src="docs/screenshots/tablet_canvas.png" width="45%" />
   <img src="docs/screenshots/tablet_trends.png" width="45%" />
 </p>
+
 ## Core Concept
 ScribbleFit lets users jot down sessions in natural language (e.g., "bench press 3x10 80kg"). An LLM parses the text into structured exercises, sets, and reps -- no forms, no dropdowns. The interface is designed to feel like a premium physical journal.
 
