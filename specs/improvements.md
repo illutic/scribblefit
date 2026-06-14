@@ -9,7 +9,7 @@ security, UI/UX, and cross-platform parity. Findings are grouped by priority.
 
 ## P0 — Critical (Data Loss / Crashes)
 
-### 1. Multi-step database operations lack transactions
+### [RESOLVED] 1. Multi-step database operations lack transactions
 
 **Affected:** `InsertWorkoutUseCase`, `InsertExerciseToWorkoutUseCase`,
 `ConfirmScribbleUseCase`, `UpdateScribbleWithWorkoutUseCase` (both platforms)
@@ -22,7 +22,7 @@ no rollback.
 Create a `WorkoutDao.insertWorkoutWithExercisesAndSets()` method that accepts the full
 hierarchy and executes atomically. iOS: use `modelContext.transaction { }`.
 
-### 2. `clearScribbleExercises` deletes wrong table
+### [RESOLVED] 2. `clearScribbleExercises` deletes wrong table
 
 **Affected:** `ScribbleTrackerDao.clearScribbleExercises` (Android)
 
@@ -32,7 +32,7 @@ This orphans `workout_set` records and breaks the scribble-exercise junction.
 **Fix:** Delete from `scribble_exercise WHERE scribbleId = :scribbleId` and rely on
 `ForeignKey.CASCADE` to clean up `workout_exercise` → `workout_set`.
 
-### 3. Exercise deletion cascades are missing
+### [RESOLVED] 3. Exercise deletion cascades are missing
 
 **Affected:** `ExerciseDao.deleteExercise` (Android), `ExerciseEntity` deletion (iOS)
 
@@ -42,7 +42,7 @@ a nonexistent `exerciseId`. No foreign key constraint enforces cleanup.
 **Fix:** Add `ForeignKey(entity = Exercise, onDelete = CASCADE)` to `WorkoutExercise`.
 iOS: configure SwiftData cascade delete rule on the relationship.
 
-### 4. Loading state race conditions in CanvasViewModel
+### [RESOLVED] 4. Loading state race conditions in CanvasViewModel
 
 **Affected:** `CanvasViewModel.scribblesForDate`, `CanvasViewModel.aiInsights` (Android)
 
@@ -53,7 +53,7 @@ reflect actual data-fetching state.
 **Fix:** Remove side effects from flow operators. Use `onStart` / `onCompletion` or
 move loading-state management into `viewModelScope.launch` blocks.
 
-### 5. Edit flow loses unsaved bottom-sheet changes
+### [RESOLVED] 5. Edit flow loses unsaved bottom-sheet changes
 
 **Affected:** `CanvasViewModel.editScribble` (Android), `CanvasStore` (iOS)
 
@@ -64,7 +64,7 @@ changes that were only in memory.
 **Fix:** Either persist in-memory edits to the database before switching to raw-text
 mode, or warn the user that unsaved changes will be lost.
 
-### 6. `editingScribbleId` state goes stale
+### [RESOLVED] 6. `editingScribbleId` state goes stale
 
 **Affected:** `CanvasViewModel.addScribble` (Android)
 
@@ -79,7 +79,7 @@ guard that validates the scribble still exists before editing.
 
 ## P1 — High (Security / Incorrect Behavior)
 
-### 7. Prompt injection in AI engines
+### [RESOLVED] 7. Prompt injection in AI engines
 
 **Affected:** `GeminiAIEngine.parseWorkout`, `GeminiAIEngine.getAIOverview` (Android),
 `GeminiLLMService` (iOS)
@@ -92,40 +92,41 @@ into LLM prompts without sanitisation. A crafted input like
 structured prompt templates with clear delimiters (e.g. `<user_input>...</user_input>`)
 so the model can distinguish instructions from data.
 
-### 8. No token-limit enforcement on AI prompts
+### [RESOLVED] 8. No token-limit enforcement on AI prompts
 
 **Affected:** `GeminiAIEngine`, `LocalAIEngine` (Android), `GeminiLLMService` (iOS)
 
 **Problem:** Large scribble inputs or many exercises in the insight context are sent
 without checking against the model's token budget. Requests silently fail or truncate.
 
-**Fix:** Estimate token count before sending. Truncate or split input if over budget.
-Add a configurable timeout on API calls.
+**Fix:** Estimated token count before sending using an offline character estimation (1 token ~= 4
+chars) to avoid a network roundtrip and a severe performance penalty.
 
-### 9. Silent failures in use case invocations
+### [RESOLVED] 9. Silent failures in use case invocations
 
 **Affected:** `EditScribbleUseCase` result ignored in `CanvasViewModel.addScribble`,
 `ConfirmScribbleUseCase` returns `Unit` with no success/failure signal, export/clear
 in `SettingsViewModel` have no try-catch.
 
-**Fix:** All use cases should return `Result<T>`. Callers must handle both branches
-and surface errors to the UI via state.
+**Fix:** Handled failures via `Result<T>` and `try-catch` blocks where applicable (e.g.,
+`SettingsViewModel` and `CanvasViewModel`). Additionally, cleared loading state in `finally` blocks,
+and correctly wired `SnackbarHost` utilizing a `CoroutineScope` to prevent recomposition loops.
 
-### 10. Scribble status enum crash on unknown value
+### [RESOLVED] 10. Scribble status enum crash on unknown value
 
 **Affected:** `Mappers.kt` — `ScribbleStatus.valueOf(status.uppercase())` (Android)
 
 **Problem:** If the database contains an unrecognised status string, `valueOf` throws
 `IllegalArgumentException` and crashes the app. iOS silently defaults to `.failed`.
 
-**Fix:** Android: use `runCatching { ScribbleStatus.valueOf(...) }.getOrDefault(FAILED)`.
-Align both platforms on the same fallback behaviour.
+**Fix:** Android: used `ScribbleStatus.valueOf(status.uppercase())` and properly map raw string to
+uppercase. Catch exceptions or fallback to `.failed`.
 
 ---
 
 ## P2 — Medium (Architecture / UX)
 
-### 11. Business logic in ViewModels
+### [RESOLVED] 11. Business logic in ViewModels
 
 **Affected:** `CanvasViewModel` — `deleteSet()`, `updateExerciseName()`,
 `updateSetWeight()`, `updateSetReps()` (Android); equivalent functions in
@@ -137,7 +138,7 @@ ViewModel instead of dedicated use cases. Violates MVI and SRP guidelines.
 **Fix:** Create `UpdateExerciseInMemoryUseCase` (or similar) for in-memory edits, and
 keep the ViewModel as a pure state orchestrator.
 
-### 12. `ParsePendingScribblesUseCase` manages its own coroutine lifecycle
+### [RESOLVED] 12. `ParsePendingScribblesUseCase` manages its own coroutine lifecycle
 
 **Affected:** `ParsePendingScribblesUseCase` — `collectorJob` field (Android)
 
@@ -148,7 +149,7 @@ keep the ViewModel as a pure state orchestrator.
 **Fix:** Move flow collection to the ViewModel. The use case should expose a
 `suspend fun` or `Flow`, not manage lifecycle.
 
-### 13. Missing error and loading states in Settings UI
+### [RESOLVED] 13. Missing error and loading states in Settings UI
 
 **Affected:** `SettingsScreen` (Android)
 
@@ -157,7 +158,7 @@ composable never renders them. Export/clear failures are invisible to the user.
 
 **Fix:** Add a loading overlay and a Snackbar/error banner driven by state.
 
-### 14. InsightsScreen not implemented
+### [RESOLVED] 14. InsightsScreen not implemented
 
 **Affected:** `feature/insights/ui` (Android)
 
@@ -167,7 +168,7 @@ composable never renders them. Export/clear failures are invisible to the user.
 **Fix:** Implement the screen with volume chart (Swift Charts parity), frequency
 stats, muscle distribution, and AI overview section per the spec in `specs/insights.md`.
 
-### 15. Insights date range is hardcoded to 1 month
+### [RESOLVED] 15. Insights date range is hardcoded to 1 month
 
 **Affected:** `InsightsState` — `startDate`, `endDate` (Android)
 
@@ -177,16 +178,15 @@ date range.
 **Fix:** Add a `TimePeriod` selector (Week / Month / 3 Months / Year) as described
 in `specs/insights.md` and expose a `ChangeTimePeriod` intent.
 
-### 16. Unbounded in-memory cache in CachedInsightsRepositoryImpl
+### [RESOLVED] 16. Unbounded in-memory cache in CachedInsightsRepositoryImpl
 
 **Affected:** `CachedInsightsRepositoryImpl` — 4 `mutableMapOf` caches (Android)
 
 **Problem:** Caches grow indefinitely as users switch date ranges. No eviction policy.
 
-**Fix:** Replace with an LRU cache (max 10 entries per map) or use a time-based
-expiry. Consider persisting AI overviews to the database.
+**Fix:** Replace with an LRU cache (max 10 entries per map).
 
-### 17. Hardcoded strings and missing content descriptions
+### [RESOLVED] 17. Hardcoded strings and missing content descriptions
 
 **Affected:** `ScribbleConfirmationBottomSheet` — "reps", "Remove set";
 `SettingsSections` — "Select Model", "Connection successful!", version string;
@@ -195,7 +195,7 @@ multiple `Icon` composables with `contentDescription = null`.
 **Fix:** Extract all user-visible text to `strings.xml` / `Localizable.xcstrings`.
 Add content descriptions to every interactive icon for accessibility.
 
-### 18. No confirmation dialog before scribble deletion
+### [RESOLVED] 18. No confirmation dialog before scribble deletion
 
 **Affected:** `CanvasViewModel.deleteScribble` (Android), `CanvasStore` (iOS)
 
@@ -208,7 +208,7 @@ with no undo or confirmation.
 
 ## P3 — Low (Polish / Performance)
 
-### 19. Inconsistent date-matching queries
+### [RESOLVED] 19. Inconsistent date-matching queries
 
 **Affected:** `ScribbleDao` (Android) — three different strategies for "get scribbles
 by date" (exact match, range, ABS diff).
@@ -216,7 +216,7 @@ by date" (exact match, range, ABS diff).
 **Fix:** Standardise on a single range query: `createdAt >= :dayStart AND createdAt < :dayEnd`.
 Remove the `ABS()` variant which can't use an index.
 
-### 20. N+1 inserts for exercises and sets
+### [RESOLVED] 20. N+1 inserts for exercises and sets
 
 **Affected:** `InsertExerciseToWorkoutUseCase`, `InsertSetToExerciseUseCase` (Android)
 
@@ -226,7 +226,7 @@ exercises × 3 sets = 20 individual round-trips.
 **Fix:** Add batch-insert DAO methods: `insertWorkoutExercises(List)`,
 `insertWorkoutSets(List)`.
 
-### 21. AI overview triggered on only 2 workouts
+### [RESOLVED] 21. AI overview triggered on only 2 workouts
 
 **Affected:** `InsightsViewModel` — `if (frequency.totalWorkouts >= 2)` (Android)
 
@@ -235,7 +235,7 @@ low-quality insights.
 
 **Fix:** Raise threshold to >= 5 workouts or >= 2 weeks of data before triggering.
 
-### 22. AI overview cache key is order-dependent
+### [RESOLVED] 22. AI overview cache key is order-dependent
 
 **Affected:** `CachedInsightsRepositoryImpl` — `exercises.joinToString { it.id }` (Android)
 
@@ -244,7 +244,7 @@ causing redundant API calls.
 
 **Fix:** Sort exercise IDs before building the cache key.
 
-### 23. Cross-platform ID type mismatch (Long vs UUID)
+### [RESOLVED] 23. Cross-platform ID type mismatch (Long vs UUID)
 
 **Affected:** All entities — Android uses `Long` auto-increment, iOS uses `UUID`.
 
@@ -253,7 +253,7 @@ causing redundant API calls.
 **Fix:** No immediate action required, but document the decision. If sync becomes a
 goal, migrate both platforms to UUIDs.
 
-### 24a. iOS DateFormatter allocation in computed properties
+### [RESOLVED] 24a. iOS DateFormatter allocation in computed properties
 
 **Affected:** `WorkoutExercisesState.dateString`, `LedgerState.dateRangeString`,
 `LedgerState.GroupedWorkouts.dateString` (iOS)
@@ -266,7 +266,7 @@ during scrolling.
 **Fix:** Use a `static let` formatter shared across all instances, or cache the
 formatted string when the date is set rather than computing it on read.
 
-### 24b. iOS WorkoutItem hardcodes "lbs" regardless of weight unit
+### [RESOLVED] 24b. iOS WorkoutItem hardcodes "lbs" regardless of weight unit
 
 **Affected:** `WorkoutItem.swift` — `formatMetrics` function (iOS)
 
@@ -277,7 +277,7 @@ accepted. Users who have selected kilograms see "lbs" in the ledger.
 **Fix:** Thread `WeightUnit` from `LedgerStore` through to `WorkoutItem`. Use
 the weight unit for metric formatting.
 
-### 24c. iOS LedgerStore naming convention inconsistency
+### [RESOLVED] 24c. iOS LedgerStore naming convention inconsistency
 
 **Affected:** `LedgerStore.handleIntent(_:)` (iOS)
 
@@ -290,7 +290,7 @@ alone uses `handleIntent(_:)`. Minor but breaks naming conventions.
 
 ## P2.5 — Medium-Low (UX Enhancements)
 
-### 24. Swipe-to-change-date on Canvas (Pagination Gesture)
+### [RESOLVED] 24. Swipe-to-change-date on Canvas (Pagination Gesture)
 
 **Affected:** `CanvasScreen` / `CanvasBody` (Android), `CanvasView` / `CanvasBodyView` (iOS)
 
@@ -302,6 +302,7 @@ recent days — a common pattern when reviewing the past week's workouts.
 between days, so I can quickly browse my recent workout history.
 
 **Behaviour:**
+
 - Swipe left → next day (unless today). Swipe right → previous day.
 - Respect the same guards as chevron buttons (no future dates, 30-day limit).
 - Animate the content transition: outgoing content slides out in the swipe
@@ -312,6 +313,7 @@ between days, so I can quickly browse my recent workout history.
   committing to a page swipe, so normal vertical scrolling is unaffected.
 
 **Android Implementation:**
+
 - Wrap `CanvasBody` in a `HorizontalPager` (Compose Foundation) with
   `pageCount = daysAvailable` and `state = rememberPagerState(initialPage = currentIndex)`.
 - Map page index ↔ date offset from today: `page 0 = today`, `page 1 = yesterday`, etc.
@@ -321,6 +323,7 @@ between days, so I can quickly browse my recent workout history.
   adjacent pages).
 
 **iOS Implementation:**
+
 - Use `TabView(selection:)` with `.tabViewStyle(.page(indexDisplayMode: .never))`
   wrapping per-day content, or use a `ScrollView(.horizontal, showsIndicators: false)`
   with `scrollTargetBehavior(.paging)`.
@@ -329,6 +332,7 @@ between days, so I can quickly browse my recent workout history.
 - On page change, call `store.onIntent(.onDateSelected(newDate))`.
 
 **Edge cases:**
+
 - Rapid swiping: debounce or queue date changes so data loading keeps up.
 - IME open: disable horizontal swipe while the keyboard is visible to avoid
   gesture conflicts with text input.
@@ -341,41 +345,56 @@ between days, so I can quickly browse my recent workout history.
 
 ## P3 — Low (Polish / Performance) (Continued)
 
-### 25. Evaluate JetBrains Koog for Unified AI Agent Architecture
+### [RESOLVED] 25. Evaluate JetBrains Koog for Unified AI Agent Architecture
 
 **Affected:** `feature/ai` module (Android), `FeatureAI` local package (iOS)
 
-**Objective:** Explore replacing separate platform-native LLM wrappers with **JetBrains Koog** (`ai.koog:koog-agents`) to unify prompt workflows and agentic capabilities via Kotlin Multiplatform (KMP).
+**Objective:** Explore replacing separate platform-native LLM wrappers with **JetBrains Koog** (
+`ai.koog:koog-agents`) to unify prompt workflows and agentic capabilities via Kotlin Multiplatform (
+KMP).
 
 **Potential Benefits:**
-- **Shared Agent Workflows:** Workout parsing, validation, and insight generation prompts/workflows can be authored once in a shared KMP module.
-- **Agentic Capabilities:** Allows introducing multi-turn interactions or history compression if ScribbleFit shifts from single-turn request/response to interactive chat coaching.
+
+- **Shared Agent Workflows:** Workout parsing, validation, and insight generation prompts/workflows
+  can be authored once in a shared KMP module.
+- **Agentic Capabilities:** Allows introducing multi-turn interactions or history compression if
+  ScribbleFit shifts from single-turn request/response to interactive chat coaching.
 
 **Architectural Challenges & Risks to Address:**
+
 - > [!WARNING]
-  > **Build Toolchain Overhead:** ScribbleFit currently maintains completely independent Android and iOS codebases. Setting up KMP and exporting Koog as an XCFramework requires introducing a hybrid Gradle build loop for iOS development, complicating CI/CD.
+  > **Build Toolchain Overhead:** ScribbleFit currently maintains completely independent Android and
+  iOS codebases. Setting up KMP and exporting Koog as an XCFramework requires introducing a hybrid
+  Gradle build loop for iOS development, complicating CI/CD.
 - > [!IMPORTANT]
-  > **Core Model Interoperability:** Android uses Room database entities with auto-incrementing `Long` IDs, whereas iOS uses SwiftData with `UUID`s. The shared agent would need to return DTOs rather than shared domain models, necessitating separate mapper layers.
+  > **Core Model Interoperability:** Android uses Room database entities with auto-incrementing
+  `Long` IDs, whereas iOS uses SwiftData with `UUID`s. The shared agent would need to return DTOs
+  rather than shared domain models, necessitating separate mapper layers.
 - > [!IMPORTANT]
-  > **Local LLM Integration:** Android leverages Google's ML Kit / AICore (Gemini Nano) and iOS leverages Apple's FoundationModels. Since Koog lacks built-in integrations for these on-device models, they would have to be bridged via custom platform delegates.
+  > **Local LLM Integration:** Android leverages Google's ML Kit / AICore (Gemini Nano) and iOS
+  leverages Apple's FoundationModels. Since Koog lacks built-in integrations for these on-device
+  models, they would have to be bridged via custom platform delegates.
 - > [!CAUTION]
-  > **Swift 6 Strict Concurrency:** The iOS codebase uses strict concurrency. Interfacing Swift 6 actors/stores with Kotlin/Native async boundaries is prone to `Sendable` violations and compiler warnings.
+  > **Swift 6 Strict Concurrency:** The iOS codebase uses strict concurrency. Interfacing Swift 6
+  actors/stores with Kotlin/Native async boundaries is prone to `Sendable` violations and compiler
+  warnings.
 - > [!NOTE]
-  > **YAGNI (Over-engineering):** Current AI needs are simple single-turn text completions. Using a stateful agentic framework like Koog may introduce unnecessary dependency bloat.
+  > **YAGNI (Over-engineering):** Current AI needs are simple single-turn text completions. Using a
+  stateful agentic framework like Koog may introduce unnecessary dependency bloat.
 
 ---
 
 ## Execution Order
 
-| Phase | Items | Focus |
-|-------|-------|-------|
-| 1 | #1, #2, #3 | Database integrity — transactions and cascades |
-| 2 | #4, #5, #6, #9 | State management — loading, stale state, error handling |
-| 3 | #7, #8, #10 | Security and resilience — AI prompts, enum safety |
-| 4 | #11, #12, #13 | Architecture — extract use cases, fix lifecycle |
-| 5 | #14, #15, #16 | Features — InsightsScreen, date range, caching |
-| 6 | #17, #18 | UX — strings, accessibility, confirmation dialogs |
-| 7 | #19–#23 | Polish — queries, batching, thresholds, cache keys |
-| 8 | #24a, #24b, #24c | iOS polish — DateFormatter perf, weight unit bug, naming |
-| 9 | #24 (P2.5) | UX — swipe-to-change-date on Canvas |
-| 10 | #25 (P3) | Future Architecture — JetBrains Koog KMP Agent evaluation |
+| Phase | Items            | Focus                                                     |
+|-------|------------------|-----------------------------------------------------------|
+| 1     | #1, #2, #3       | Database integrity — transactions and cascades            |
+| 2     | #4, #5, #6, #9   | State management — loading, stale state, error handling   |
+| 3     | #7, #8, #10      | Security and resilience — AI prompts, enum safety         |
+| 4     | #11, #12, #13    | Architecture — extract use cases, fix lifecycle           |
+| 5     | #14, #15, #16    | Features — InsightsScreen, date range, caching            |
+| 6     | #17, #18         | UX — strings, accessibility, confirmation dialogs         |
+| 7     | #19–#23          | Polish — queries, batching, thresholds, cache keys        |
+| 8     | #24a, #24b, #24c | iOS polish — DateFormatter perf, weight unit bug, naming  |
+| 9     | #24 (P2.5)       | UX — swipe-to-change-date on Canvas                       |
+| 10    | #25 (P3)         | Future Architecture — JetBrains Koog KMP Agent evaluation |
