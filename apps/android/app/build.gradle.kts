@@ -12,7 +12,7 @@ android {
     defaultConfig {
         applicationId = "com.scribblefit.app"
         val ciBuildNumber = System.getenv("GITHUB_RUN_NUMBER")?.toIntOrNull() ?: 0
-        versionCode = ciBuildNumber
+        versionCode = 100 + ciBuildNumber
         versionName = "1.0.$ciBuildNumber"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
