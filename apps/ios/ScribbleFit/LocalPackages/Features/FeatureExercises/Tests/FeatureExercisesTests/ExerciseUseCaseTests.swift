@@ -167,9 +167,7 @@ final class AddManualExerciseUseCaseTests: XCTestCase {
 
     func test_execute_repositoryError_propagates() async {
         mockRepo.shouldThrow = NSError(domain: "DB", code: 1)
-        await XCTAssertThrowsErrorAsync {
-            try await self.sut.execute(workoutId: UUID(), exerciseName: "X", muscleGroup: "Y", sets: [])
-        }
+        do { try await self.sut.execute(workoutId: UUID(), exerciseName: "X", muscleGroup: "Y", sets: []); XCTFail("Expected error") } catch {}
     }
 }
 

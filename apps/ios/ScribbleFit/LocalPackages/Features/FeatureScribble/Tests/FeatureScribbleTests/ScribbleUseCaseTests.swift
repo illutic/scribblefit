@@ -266,9 +266,7 @@ final class CreateManualScribbleUseCaseTests: XCTestCase {
 
     func test_execute_propagatesRepositoryError() async {
         mockRepo.shouldThrowOnAdd = NSError(domain: "DB", code: 99)
-        await XCTAssertThrowsErrorAsync {
-            try await self.sut.execute(exerciseName: "x", muscleGroup: "y", sets: [], date: Date())
-        }
+        do { try await self.sut.execute(exerciseName: "x", muscleGroup: "y", sets: [], date: Date()); XCTFail("Expected error") } catch {}
     }
 
     func test_execute_dateIsPreserved() async throws {
