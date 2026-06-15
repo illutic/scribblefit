@@ -47,7 +47,7 @@ final class UpdateSystemConfigUseCaseTests: XCTestCase {
     override func tearDown() async throws {
         sut = nil
         mockRepository = nil
-        try await super.tearDown()
+        // try await super.tearDown() removed for Swift 6 XCTestCase data-race issue
     }
 
     // MARK: - Happy Path
