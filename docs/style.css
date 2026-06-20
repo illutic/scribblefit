@@ -145,7 +145,8 @@ main {
 
 .screenshots img {
     flex: 0 0 auto;
-    width: 260px;
+    height: 560px;
+    width: auto;
     border-radius: 32px; /* iOS style corners */
     box-shadow: 0 20px 40px rgba(0,0,0,0.5);
     border: 1px solid var(--glass-hover);
