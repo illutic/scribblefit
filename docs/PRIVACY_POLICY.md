@@ -5,9 +5,10 @@
 Welcome to ScribbleFit! Your privacy is critically important to us. This Privacy Policy explains how we collect, use, and protect your information when you use our mobile application (the "App") on Android and iOS.
 
 ## 1. Information We Collect
+**We do not gather, store, or process any personal data or workout information on our servers. No data, besides analytics is gathered.**
 
 ### A. Information You Provide
-- **Workout Data:** You provide text inputs ("Scribbles") describing your workouts, which are parsed into structured fitness data (exercises, sets, repetitions, weight).
+- **Workout Data:** You provide text inputs ("Scribbles") describing your workouts, which are parsed into structured fitness data (exercises, sets, repetitions, weight). This data is stored strictly locally on your device.
 
 ### B. Automatically Collected Information
 - **App Diagnostics:** We use analytics tools (such as Firebase Crashlytics and Performance Monitoring) to collect anonymous crash reports, device types, and performance metrics to help us fix bugs and improve the App.
@@ -31,11 +32,15 @@ These services have their own privacy policies governing how they handle data.
 ## 4. Data Security
 We implement reasonable and standard security measures to protect your data. Cloud data is encrypted in transit and at rest. However, no electronic transmission or storage is 100% secure.
 
-## 5. Children's Privacy
+## 5. Data Retention and Deletion
+- **Data Retention:** We do not store or retain any user data on our servers. Workout history is kept exclusively on your local device. App diagnostics and analytics retention is governed by Google Firebase's standard data retention policies.
+- **Data Deletion:** Since we do not store your personal data remotely, you can delete all your data at any time by navigating to Settings > Account > Delete Account or simply uninstalling the app. You can also contact us at support@scribblefit.com for data deletion requests, and we will confirm that no personal data is held on our servers.
+
+## 6. Children's Privacy
 Our App does not address anyone under the age of 13. We do not knowingly collect personally identifiable information from children under 13.
 
-## 6. Changes to This Privacy Policy
+## 7. Changes to This Privacy Policy
 We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last Updated" date.
 
-## 7. Contact Us
+## 8. Contact Us
 If you have any questions or suggestions about our Privacy Policy, do not hesitate to contact us at [support@scribblefit.com / @illutic].
