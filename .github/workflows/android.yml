@@ -3,8 +3,12 @@ name: Android CI/CD
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'apps/android/**'
   pull_request:
     branches: [ "main" ]
+    paths:
+      - 'apps/android/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}

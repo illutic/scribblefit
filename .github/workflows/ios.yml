@@ -3,8 +3,12 @@ name: iOS CI/CD
 on:
   push:
     branches: [ "main" ]
+    paths:
+      - 'apps/ios/**'
   pull_request:
     branches: [ "main" ]
+    paths:
+      - 'apps/ios/**'
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
